@@ -112,6 +112,14 @@
 	#define 	KEY_MIXTGT_USR4			142
 #endif
 
+#define 	LED_MCC_STREAM1			146
+#define 	KEY_MCC_STREAM1			146
+#define 	LED_MCC_STREAM2			157
+#define 	KEY_MCC_STREAM2			157
+#define 	LED_MCC_STREAM3			168
+#define 	KEY_MCC_STREAM3			168
+#define 	LED_MCC_STREAM4			179
+#define 	KEY_MCC_STREAM4			179
 
 #define 	LED_MIXTGT_USR5			153
 #define 	KEY_MIXTGT_USR5			153

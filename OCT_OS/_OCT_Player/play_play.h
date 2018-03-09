@@ -27,8 +27,7 @@
 
 
 Trackstruct* advance_track_TTC( 				Pagestruct* target_page,
-												Trackstruct* target_track,
-												unsigned char row );
+												Trackstruct* target_track );
 
 extern unsigned char how_selected_in_scale( 	Pagestruct* target_page,
 												unsigned char target_note,
@@ -241,25 +240,36 @@ void MIDI_OFF_build_new(	unsigned char midiCH,
 //
 // Scale the track clock into the provided value. Scales up (POS) and down (NEG)
 unsigned int scaleToTrackClock( 	unsigned int start_offset,
-									Trackstruct* target_track,
+									Pagestruct * target_page,
+									Trackstruct * target_track,
 									unsigned char scaleFlag 	){
 
 	unsigned char clock_multiplier 	= 0;
 	unsigned char clock_divisor		= 0;
 
+	unsigned char attr_TEMPOMUL = target_track->attr_TEMPOMUL;
+	unsigned char attr_TEMPOMUL_SKIP = target_track->attr_TEMPOMUL_SKIP;
+
+	#ifdef FEATURE_ENABLE_DICE
+	unsigned char row = row_of_track( target_page, target_track );
+	DiceOffsetClock dice_clock = dice_apply_clock_offset( target_page, row );
+	attr_TEMPOMUL = dice_clock.attr_TEMPOMUL;
+	attr_TEMPOMUL_SKIP = dice_clock.attr_TEMPOMUL_SKIP;
+	#endif
+
 	// EXTRACT THE TRACK CLOCK DATA
 	// Check the clock multiplier / divisor and extract values
-	switch( target_track->attr_TEMPOMUL_SKIP & 0x0F ){
+	switch( attr_TEMPOMUL_SKIP & 0x0F ){
 
 		// No divisor, only a multiplier value
 		case 0:
 			// Fill in the multiplier from the track
-			clock_multiplier = target_track->attr_TEMPOMUL;
+			clock_multiplier = attr_TEMPOMUL;
 			break;
 
 		default:
 			// Fill in with the real divisor value
-			clock_divisor = (target_track->attr_TEMPOMUL_SKIP & 0x0F) + 1;
+			clock_divisor = (attr_TEMPOMUL_SKIP & 0x0F) + 1;
 			break;
 	}
 
@@ -335,7 +345,7 @@ unsigned char getHyperstepPitch( 	Pagestruct* pagePt,
 	runningPitch	+= 	( 	( stepPt->attr_PIT * Track_PIT_factor[ temp ])
 							/ PIT_FACTOR_NEUTRAL_VALUE );
 
-	runningPitch	+= 	stepPt->attr_PIT;
+	//runningPitch	+= 	stepPt->attr_PIT;
 
 	// TOTAL: 	Normalize the pitch value into the valid interval
 	runningPitch 	= normalize( runningPitch, 0, 127 );
@@ -393,6 +403,16 @@ void play_row_ON( 	Pagestruct* 	target_page,
 					unsigned int 	in_G_TTC_abs_value,
 					unsigned char 	multiplier_flag )
 {
+	Stepstruct*		stepPt 			= target_page->Step[phys_row][locator-1];
+
+	if( 	( ( which_col == CURRENT )
+		&&	( stepPt->attr_STA < STEP_DEF_START ) )
+		||	( ( which_col == NEXT )
+		&&	( stepPt->attr_STA >= STEP_DEF_START ) ) ) {
+		// STA outside current play column
+		return;
+	}
+
 	unsigned char 	head_row;
 	signed int 		temp;
 	unsigned char 	i,
@@ -405,12 +425,20 @@ void play_row_ON( 	Pagestruct* 	target_page,
 	signed char 	EFF_pool_VEL 	= 0,
 					EFF_pool_PIT	= 0,
 					EFF_pool_LEN	= 0;
-	Stepstruct*		stepPt 			= target_page->Step[phys_row][locator-1];
+
 	card8 			phraseNum 		= stepPt->phrase_num;
 
 	// Get step strum level, in range [0, 18]. Value 9 is the neutral value.
 	card8 			strumLevel  	= ( target_page->Step[phys_row][locator-1]->chord_data & 0xF800 ) >> 11;
+	
+	signed char dice_pitch_offset 	= 0;
+	signed char dice_velocity_offset= 0;
+	signed int dice_length_offset	= 0;
+	signed char dice_start_offset	= 0;
 
+	unsigned char attr_TEMPOMUL = target_page->Track[phys_row]->attr_TEMPOMUL;
+	unsigned char attr_TEMPOMUL_SKIP = target_page->Track[phys_row]->attr_TEMPOMUL_SKIP;
+	
 	// Do not play track if its locator is at 0
 	if ( locator == 0 ) {
 		return;
@@ -431,6 +459,23 @@ void play_row_ON( 	Pagestruct* 	target_page,
 		head_row = phys_row;
 	}
 
+	#ifdef FEATURE_ENABLE_DICE
+	DiceOffsetClock dice_clock = dice_apply_clock_offset( target_page, phys_row );
+	attr_TEMPOMUL = dice_clock.attr_TEMPOMUL;
+	attr_TEMPOMUL_SKIP = dice_clock.attr_TEMPOMUL_SKIP;
+
+	#ifdef NEMO
+	dice_pitch_offset = dice_attr_flow_offset( target_page, NEMO_ATTR_PITCH, locator );
+	dice_velocity_offset 	= dice_attr_flow_offset( target_page, NEMO_ATTR_VELOCITY, locator );
+	dice_length_offset		= dice_attr_flow_offset( target_page, NEMO_ATTR_LENGTH, locator );
+	dice_start_offset	 	= dice_attr_flow_offset( target_page, NEMO_ATTR_START, locator );
+	#else
+	dice_pitch_offset = dice_attr_flow_offset( target_page, ATTR_PITCH, locator );
+	dice_velocity_offset 	= dice_attr_flow_offset( target_page, ATTR_VELOCITY, locator );
+	dice_length_offset		= dice_attr_flow_offset( target_page, ATTR_LENGTH, locator );
+	dice_start_offset	 	= dice_attr_flow_offset( target_page, ATTR_START, locator );
+	#endif
+	#endif
 
 	// Only in CURRENT call mode
 	// -> EFFector
@@ -489,8 +534,12 @@ void play_row_ON( 	Pagestruct* 	target_page,
 
 
 	// Chord pattern, size and offset init. STEP chord overrules TRACK chord.
+	#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+	card8 stepAuxNoteCt 		= get_chord_cardinality( stepPt, CHORD_OCTAVE_ALL );
+	#else
 	card16 step_chord_pattern 	= (stepPt->chord_data & 0x7FF);
 	card8 stepAuxNoteCt 		= my_bit_cardinality( step_chord_pattern );
+	#endif
 	card8 stepPolyphony 		= (stepPt->chord_up >> 29);
 	booln rollBo      			= stepPt->attr_STATUS & (1 << 7);
 
@@ -508,16 +557,17 @@ void play_row_ON( 	Pagestruct* 	target_page,
 		trackBasePitch = target_page->Track[head_row]->attr_PIT;
 	}
 
+
 	// PITCH: Differentiate between playing the pitch offsets or the natural pitches
 	// This computation of the initial pitch should suffice. FTS applied in chord loop
-
 	#ifdef EVENTS_FACTORIZED
 	//________FACTORIZED version
 	// PIT factor computation for the step pitch offset
 	pitch_initial	= normalize(
 			// Modulators
 			  EFF_pool_PIT
-
+			// Dice - flow shape pitch
+			+ dice_pitch_offset
 			// Step - factorized pitch attribute value
 			+ ( stepPt->attr_PIT
 					*  Track_PIT_factor[	target_page->Track[head_row]->PIT_factor
@@ -540,6 +590,8 @@ void play_row_ON( 	Pagestruct* 	target_page,
 	pitch_initial	= normalize(
 			// Modulators
 			  EFF_pool_PIT
+			// Dice flow shape pitch
+			+ dice_pitch_offset
 			// + target_page->Track[row]->event_PIT
 			+ target_page->Track[phys_row]->event_offset[ATTR_PITCH]
 
@@ -572,63 +624,59 @@ void play_row_ON( 	Pagestruct* 	target_page,
 
 		case CURRENT:
 			// Neutral and pushed start values
-			if ( 	( stepPt->attr_STA >= STEP_DEF_START )
-				){
-				// 1 / 6: Term simplification
-				start_offset = stepPt->attr_STA - STEP_DEF_START;
 
-				// 2 / 6: Apply event offset to track STA factor and store the value
-				temp = target_page->Track[head_row]->STA_factor
-								+ target_page->Track[phys_row]->event_offset[ATTR_START];
+			// 1 / 6: Term simplification
+			start_offset = stepPt->attr_STA - STEP_DEF_START;
 
-				// 3 / 6: Apply the event'ed track factor to the start offset
-				start_offset = (start_offset * Track_STA_factor[ temp ] );
-				start_offset = (start_offset / STA_FACTOR_NEUTRAL_VALUE );
+			// Dice flow shape start
+			start_offset += dice_start_offset;
 
-				// 4 / 6: Apply the 909 groove offset (track native)
-				start_offset += get_track_GRV_offset( target_page, head_row, locator-1, CURRENT );
+			// 2 / 6: Apply event offset to track STA factor and store the value
+			temp = target_page->Track[head_row]->STA_factor
+							+ target_page->Track[phys_row]->event_offset[ATTR_START];
 
-				// 5 / 6: Apply the track clock multiplier
-				start_offset = scaleToTrackClock( start_offset, target_page->Track[phys_row], POS );
+			// 3 / 6: Apply the event'ed track factor to the start offset
+			start_offset = (start_offset * Track_STA_factor[ temp ] );
+			start_offset = (start_offset / STA_FACTOR_NEUTRAL_VALUE );
 
-				// 6 / 6: Normalize the value of the start offset
-				start_offset = normalize( start_offset, 0, 192 );
-			}
-			else{
-				return;
-			}
+			// 4 / 6: Apply the 909 groove offset (track native)
+			start_offset += get_track_GRV_offset( target_page, head_row, locator-1, CURRENT );
+
+			// 5 / 6: Apply the track clock multiplier
+			start_offset = scaleToTrackClock( start_offset, target_page, target_page->Track[phys_row], POS );
+
+			// 6 / 6: Normalize the value of the start offset
+			start_offset = normalize( start_offset, 0, 192 );
 			break;
 
 
 		case NEXT:
 			// Consider all the pulled start value
-			if ( stepPt->attr_STA < STEP_DEF_START ){
 
-				// 1 / X: Term simplification
-				start_offset = (STEP_DEF_START - stepPt->attr_STA);
+			// 1 / X: Term simplification
+			start_offset = (STEP_DEF_START - stepPt->attr_STA);
 
-				// 2 / X: Apply event offset to track STA factor and store the value
-				temp = target_page->Track[head_row]->STA_factor
-								+ target_page->Track[phys_row]->event_offset[ATTR_START];
+			// Dice flow shape start
+			start_offset += dice_start_offset;
 
-				// 3 / X: Apply the event'ed track factor to the start offset
-				start_offset = (start_offset * Track_STA_factor[ temp ] );
-				start_offset = (start_offset / STA_FACTOR_NEUTRAL_VALUE );
+			// 2 / X: Apply event offset to track STA factor and store the value
+			temp = target_page->Track[head_row]->STA_factor
+							+ target_page->Track[phys_row]->event_offset[ATTR_START];
 
-				// 4 / X: Apply the 909 groove offset (track native)
-				start_offset += get_track_GRV_offset( target_page, head_row, locator-1, CURRENT );
+			// 3 / X: Apply the event'ed track factor to the start offset
+			start_offset = (start_offset * Track_STA_factor[ temp ] );
+			start_offset = (start_offset / STA_FACTOR_NEUTRAL_VALUE );
 
-				// 5 / X: Apply the track clock multiplier
-				start_offset = scaleToTrackClock( start_offset, target_page->Track[phys_row], POS );
+			// 4 / X: Apply the 909 groove offset (track native)
+			start_offset += get_track_GRV_offset( target_page, head_row, locator-1, CURRENT );
 
-				// 6 / X: Normalize the value of the start offset. Scale the 12/192 appropriately
-				start_offset = normalize( start_offset, 0, 12 );
-				temp = scaleToTrackClock( 12, target_page->Track[phys_row], POS );
-				start_offset = temp - start_offset;
-			}
-			else{
-				return;
-			}
+			// 5 / X: Apply the track clock multiplier
+			start_offset = scaleToTrackClock( start_offset, target_page, target_page->Track[phys_row], POS );
+
+			// 6 / X: Normalize the value of the start offset. Scale the 12/192 appropriately
+			start_offset = normalize( start_offset, 0, 12 );
+			temp = scaleToTrackClock( 12, target_page, target_page->Track[phys_row], POS );
+			start_offset = temp - start_offset;
 			break;
 	}
 
@@ -816,9 +864,12 @@ unsigned int play_row_MCC( 	Pagestruct* target_page,
 	// Calculate current column: value in interval [1,16]
 	locator = target_page->Track[phys_row]->attr_LOCATOR;
 
+	signed char dice_midicc_offset = 0;
+	#ifdef FEATURE_ENABLE_DICE
+	dice_midicc_offset = dice_attr_flow_offset( target_page, ATTR_MIDICC, locator );
+	#endif
 	// MCC data - if the bit on the current track is set play it
-	if ( MCCpattern & (1 << phys_row) ){
-
+	if ( ( MCCpattern & (1 << phys_row) ) ){
 		// Check the groove indicator. If necessary, look at next column for
 		// the attributes relevant for the note OFF. So virtually advance the locator.
 		if ( lookahead_indicator == NEXT ){
@@ -828,10 +879,8 @@ unsigned int play_row_MCC( 	Pagestruct* target_page,
 			which = NEXT;
 		}
 
-
 		// Only in CURRENT mode - implement EFFector
 		if ( (which == CURRENT) ){
-
 			// EFF pool generation - attribute offset - regardless of the active steps in track
 			switch( Track_get_MISC( target_page->Track[phys_row], EFF_BIT ) ){
 
@@ -841,10 +890,10 @@ unsigned int play_row_MCC( 	Pagestruct* target_page,
 					//	(		(unsigned char) target_page->Step[row][locator-1]->attr_MCC
 					//		-	STEP_DEF_MIDICC );
 					target_page->EFF_pool[ ATTR_MIDICC ] +=
-						( 	target_page->Step[phys_row][locator-1]->attr_MCC
+						normalize(	( 	target_page->Step[phys_row][locator-1]->attr_MCC
 							*  Track_MCC_factor[	target_page->Track[head_row]->MCC_factor
 												+ target_page->Track[phys_row]->event_offset[ATTR_MIDICC] ]
-							/ MCC_FACTOR_NEUTRAL_VALUE ) ;
+							/ MCC_FACTOR_NEUTRAL_VALUE ), STEP_MIN_MIDICC, STEP_MAX_MIDICC );
 					break;
 
 				case RECEIVE:
@@ -857,10 +906,10 @@ unsigned int play_row_MCC( 	Pagestruct* target_page,
 					EFF_pool_MCC = target_page->EFF_pool[ ATTR_MIDICC ];
 
 					target_page->EFF_pool[ ATTR_MIDICC ] +=
-						( 	target_page->Step[phys_row][locator-1]->attr_MCC
+							normalize(	( 	target_page->Step[phys_row][locator-1]->attr_MCC
 							*  Track_MCC_factor[	target_page->Track[head_row]->MCC_factor
 												+ target_page->Track[phys_row]->event_offset[ATTR_MIDICC] ]
-							/ MCC_FACTOR_NEUTRAL_VALUE ) ;
+							/ MCC_FACTOR_NEUTRAL_VALUE ), STEP_MIN_MIDICC, STEP_MAX_MIDICC );
 					break;
 			}
 		}
@@ -880,8 +929,9 @@ unsigned int play_row_MCC( 	Pagestruct* target_page,
 				break;
 
 			default:
+
 				value =	normalize(
-								 	EFF_pool_MCC +
+								 	EFF_pool_MCC + dice_midicc_offset +
 					   		 		(	(	target_page->Step[phys_row][locator-1]->attr_MCC
 											* Track_MCC_factor[	target_page->Track[head_row]->MCC_factor
 																+ target_page->Track[phys_row]->event_offset[ATTR_MIDICC] ] )
@@ -1016,21 +1066,32 @@ unsigned int PLAYER_play_row( 	Pagestruct* 	target_page,
 		perform_step_event( target_page->Step[target_row][col-1],
 							target_page->Track[target_row],
 							target_page,
-							target_row );
-	}
+							target_row,
+							col);
 
+
+
+	}
 
 	/////////////////
 	// MCC PROCESSING -> enqueue Step MCC (before note is played)
 	// Also, MCC is only played on the current column on the beat, no pulls.
+	unsigned char dice_MCC = 0;
+	#ifdef FEATURE_ENABLE_DICE
+	Trackstruct* target_dice = throw_dice(target_page);
+	if( target_dice ){
+		dice_MCC = target_dice->MCC_factor;
+	}
+	#endif
 	switch( which_col ){
 
 		case NEXT:
 			// Add the next round to compute the intermediate values based on old value
 		case CURRENT:
 
+
 			// Compute activity flag of the current step
-			MCCactivity = ( Step_get_MCC_ACTIVITY( target_page->Step[target_row][col-1] ) << target_row );
+			MCCactivity = ( Step_get_MCC_ACTIVITY( target_page->Step[target_row][col-1] ) << target_row ) | ( dice_MCC > 0 );
 
 			// No need to continue if no MCC activity.
 			if ( MCCactivity == 0) break;
@@ -1044,7 +1105,7 @@ unsigned int PLAYER_play_row( 	Pagestruct* 	target_page,
 			}
 
 			// MCC is still active after mute and solo operations
-			if (	( MCCactivity != 0 )
+			if (	( dice_MCC != 0 || MCCactivity != 0 )
 				){
 
 				// MCC sent for enqueing
@@ -1109,7 +1170,6 @@ unsigned char get_MIDI_MONITOR_for_track( Trackstruct* target_track ){
 }
 
 
-
 // Adjust the track multiplier of a track
 void adjust_tempomul( Pagestruct* target_page, Trackstruct* target_track ){
 
@@ -1134,7 +1194,7 @@ void adjust_tempomul( Pagestruct* target_page, Trackstruct* target_track ){
 
 			// Align the track to the current flow - in time for effector content to catch on
 			// Set the TTC and LOC values
-			target_track->attr_LOCATOR 	= target_track->attr_LOCATOR;
+			//target_track->attr_LOCATOR 	= target_track->attr_LOCATOR;
 			target_track->frame_ndx 	= target_track->attr_LOCATOR;
 			target_track->TTC 			= 1;
 
@@ -1162,11 +1222,12 @@ void adjust_tempomul( Pagestruct* target_page, Trackstruct* target_track ){
 // Single trigger of track, corresponding to a single TTC value
 Trackstruct* TTC_trigger_track( 	Pagestruct* target_page,
 									Trackstruct* target_track,
-									unsigned char multiplier,
-									unsigned char row){
+									unsigned char multiplier ){
 
 	// Pass-through variable of data between current and next trigger round
 	unsigned int last_CC = MIDICC_NONE;
+
+	unsigned char row = 0;
 
 	// Temp storage of midi monitor 1 or 2
 	unsigned char 	MIDI_LOAD_MONITOR = 0;
@@ -1177,7 +1238,7 @@ Trackstruct* TTC_trigger_track( 	Pagestruct* target_page,
 //}
 
 	// Always stay on top of the current track, following chains
-	target_track = advance_track_TTC ( target_page, target_track, row );
+	target_track = advance_track_TTC ( target_page, target_track );
 
 
 //if ( row_of_track( target_page, target_track) < 3 ){
@@ -1195,10 +1256,11 @@ Trackstruct* TTC_trigger_track( 	Pagestruct* target_page,
 		adjust_tempomul( target_page, target_track );
 	}
 
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	if (G_align_bit){
 		return target_track;
 	}
-
+	#endif
 	// Measure CPU load. If we hit the max load, set the CPU monitor to MIR_RED.
 	// The MIR_RED state will prevent any following tracks from being played.
 	// The CPU load value and the overload LEDs will be reset in cpu_load_reset() in kickSequencerThread().
@@ -1225,8 +1287,7 @@ Trackstruct* TTC_trigger_track( 	Pagestruct* target_page,
 			&& 	( (GRID_mutepattern & ( 1<<(target_page->pageNdx % 10))) == 0 )
 
 			){
-			
-			// FIXME: this fixed track chains but broke other things XXXXXXXXXXXXX
+
 			// Extract the row of the target track
 			row = row_of_track( target_page, target_track );
 
@@ -1346,9 +1407,11 @@ void PLAYER_play_track( Pagestruct* target_page, unsigned char row ){
 	Trackstruct* trackPt		= target_track;
 	Trackstruct* origin_track 	= target_page->Track[row];
 
-//	if ( Track_get_MISC(target_track, CONTROL_BIT ) ) {
-//		return;
-//	}
+	#ifdef FEATURE_ENABLE_SONG_UPE
+	if ( Track_get_MISC(target_track, CONTROL_BIT ) ) {
+		return;
+	}
+	#endif
 
 	// -----------------------------------------------------------------------------
 	// Handle hypersteps - generate triggers for the track
@@ -1372,7 +1435,7 @@ void PLAYER_play_track( Pagestruct* target_page, unsigned char row ){
 			if (	( target_track != NULL )
 				&& 	( target_track->chain_data[PLAY] != NULL )
 				){
-				target_track = TTC_trigger_track( target_page, target_track, i, row );
+				target_track = TTC_trigger_track( target_page, target_track, i );
 			}
 
 			// Check if we have played the full frame
@@ -1402,7 +1465,16 @@ void PLAYER_play_track( Pagestruct* target_page, unsigned char row ){
 	// -----------------------------------------------------------------------------
 
 
-	// Check whether we can play or need to tempo skip..
+	unsigned char attr_TEMPOMUL = target_track->attr_TEMPOMUL;
+	unsigned char attr_TEMPOMUL_SKIP = target_track->attr_TEMPOMUL_SKIP;
+	bool has_adjust_tempomul = ( G_TTC_abs_value == 1 && track_tempo_ptr );
+
+	#ifdef FEATURE_ENABLE_DICE
+	DiceOffsetClock dice_clock = dice_apply_clock_offset( target_page, row );
+	attr_TEMPOMUL = dice_clock.attr_TEMPOMUL;
+	attr_TEMPOMUL_SKIP = dice_clock.attr_TEMPOMUL_SKIP;
+	#endif
+
 	switch( target_track->attr_TEMPOMUL_SKIP >> 4 ){
 
 		// Play the track - no skipping, or was skipped and now time to play it
@@ -1424,7 +1496,7 @@ void PLAYER_play_track( Pagestruct* target_page, unsigned char row ){
 						if (	( target_track == origin_track )
 							&&	( target_track != NULL )
 							){
-							target_track = TTC_trigger_track( target_page, target_track, i, row );
+							target_track = TTC_trigger_track( target_page, target_track, i );
 						}
 					}
 					break;
@@ -1443,7 +1515,7 @@ void PLAYER_play_track( Pagestruct* target_page, unsigned char row ){
 						if (	( target_track == origin_track )
 							&&	( target_track != NULL )
 							){
-							target_track = TTC_trigger_track( target_page, target_track, i, row );
+							target_track = TTC_trigger_track( target_page, target_track, i );
 						}
 					}
 					break;
@@ -1454,23 +1526,31 @@ void PLAYER_play_track( Pagestruct* target_page, unsigned char row ){
 
 					// G_master_tempoMUL iterator - Execute as often as indicated by tempo multiplier
 					// or until there is a track switch due to a chain (origin != target)
-					for ( i=0; i < target_track->attr_TEMPOMUL; i++ ){
+
+
+					for ( i=0; i < attr_TEMPOMUL; i++ ){
+
 						// Trigger the Track on TTC values
 						if (	( target_track == origin_track )
 							&&	( target_track != NULL )
 							){
-							target_track = TTC_trigger_track( target_page, target_track, i, row );
+							target_track = TTC_trigger_track( target_page, target_track, i );
 						}
 					}
 
 					// Pick up operation in the potentially next track (e.g. in chains)
 					// The first click is already done, do the rest..
 					if ( target_track != origin_track ){
+						#ifdef FEATURE_ENABLE_DICE
+						attr_TEMPOMUL = dice_apply_clock_offset( target_page, row_of_track( target_page, target_track ) ).attr_TEMPOMUL;
+						#else
+						attr_TEMPOMUL = target_track->attr_TEMPOMUL;
+						#endif						
+						for ( i=0; i < attr_TEMPOMUL-1; i++ ){
 
-						for ( i=0; i < target_track->attr_TEMPOMUL-1; i++ ){
 							// Trigger the Track on TTC values - as long as it doesn't become NULL
 							if ( target_track != NULL ){
-								target_track = TTC_trigger_track( target_page, target_track, i, row );
+								target_track = TTC_trigger_track( target_page, target_track, i );
 							}
 						}
 					}
@@ -1479,14 +1559,25 @@ void PLAYER_play_track( Pagestruct* target_page, unsigned char row ){
 
 			} // Switch on G_master_tempoMUL
 
+			attr_TEMPOMUL = target_track->attr_TEMPOMUL;
+			attr_TEMPOMUL_SKIP = target_track->attr_TEMPOMUL_SKIP;
+
+			if( has_adjust_tempomul ){
+				// Tempo updated recalculate skip
+				#ifdef FEATURE_ENABLE_DICE
+				attr_TEMPOMUL_SKIP = dice_apply_clock_offset( target_page, row ).attr_TEMPOMUL_SKIP;
+				#else
+				attr_TEMPOMUL_SKIP = target_track->attr_TEMPOMUL_SKIP;
+				#endif
+			}
 
 			// Refill the upper nibble of the skipper indicator (which is counting the skips)
-			if ( 	( ( target_track->attr_TEMPOMUL_SKIP & 0x0F) != 0 )
+			if ( 	( ( attr_TEMPOMUL_SKIP & 0x0F) != 0 )
 				){
 
 				target_track->attr_TEMPOMUL_SKIP =
 						(target_track->attr_TEMPOMUL_SKIP & 0x0F)
-					|	((target_track->attr_TEMPOMUL_SKIP & 0x0F) << 4) ;
+					|	((attr_TEMPOMUL_SKIP & 0x0F) << 4) ;
 			}
 
 			break;

@@ -39,10 +39,10 @@ extern unsigned char is_selected_in_GRID( Pagestruct* target_page );
 extern char* ptr_of_track_attr_value( 	Pagestruct* target_page,
 								unsigned char track_ndx,
 								unsigned char attr_ndx );
-
+#ifndef FEATURE_ENABLE_CHORD_OCTAVE
 extern void 			show_chord_in_circle( 	Stepstruct* target_step, 
 												unsigned char offset );
-												
+#endif
 // This is the core routine to refresh the page - 
 // so it can be used also after interrupts have been disabled
 void Page_full_refresh() {

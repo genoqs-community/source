@@ -74,7 +74,7 @@ void readKeys_thread (cyg_addrword_t index){
 	unsigned int 	my_pressed_page 	= 0;
 	unsigned int 	my_pressed_mutator 	= 0;
 	unsigned char 	row = 0;
-	unsigned char	col = 0;
+	//unsigned char	col = 0;
 	unsigned short 	temp = 0;
 
 

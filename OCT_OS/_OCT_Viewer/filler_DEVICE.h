@@ -54,7 +54,11 @@
 		
 				// Show the RETURN key
 				MIR_write_dot( LED_RETURN,			MIR_GREEN);
-		
+
+				#ifdef CE_OS_ADDON_BUILD
+				MIR_write_dot( LED_EDIT_MASTER,		MIR_SHINE_GREEN);
+				#endif
+
 				// Show the Software Version
 				MIR_write_numeric_C(
 					SW_VERSION_MAJOR*100 + SW_VERSION_MINOR*10 + SW_VERSION_RELEASE );		

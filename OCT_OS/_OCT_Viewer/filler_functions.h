@@ -177,6 +177,7 @@ void MIR_write_dot( 			unsigned int button_ndx,
 
 				// Write to MIR
 				MIR[side][row][color]  |= 1 << col;
+				/* no break */
 		}
 	}
 

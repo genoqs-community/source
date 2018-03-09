@@ -121,8 +121,39 @@
 
 
 		// CIRCLES: INNER and OUTER CIRCLE
-		if ( MODE_OBJECT_SELECTION == CHORDEYE ){
+		if ( MODE_OBJECT_SELECTION >= CHORDEYE ){
+			#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+			// Show chord and strum values in the two circles
+			// ..
+			show_strum_in_circle( ( target_page->Step[row][col]->chord_data & 0xF800) >> 11 );
 
+			// Signal the big knob select LED
+			MIR_write_dot( LED_SCALE_MYSEL, MIR_RED   );
+			MIR_write_dot( LED_SCALE_MYSEL, MIR_GREEN );
+
+
+			// Show Chord
+			if ( MODE_OBJECT_SELECTION >= CHORDEYE_OCTAVE_FIRST ) {
+				unsigned char chord_octave = get_current_chord_octave();
+
+				// Show the chord octave layers
+				show_chord_octave(
+					target_page->Step[row][col],
+					( normalize( 	target_page->Track[row]->attr_PIT
+								+ target_page->Step[row][col]->attr_PIT,
+								0, 127 ) ) % 12,
+					chord_octave
+				);
+			} else {
+				// Show the chord octave positions orange, green and red
+				show_chord_octave_first(
+					target_page->Step[row][col],
+					( normalize( 	target_page->Track[row]->attr_PIT
+								+ target_page->Step[row][col]->attr_PIT,
+								0, 127 ) ) % 12
+				);
+			}
+			#else
 			// Show chord and strum values in the two circles
 			// ..
 			// Show absolute pitch in inner circle - orange - status is OFF
@@ -151,6 +182,7 @@
 			// Signal the big knob select LED
 			MIR_write_dot( LED_SCALE_MYSEL, MIR_RED   );
 			MIR_write_dot( LED_SCALE_MYSEL, MIR_GREEN );
+			#endif
 		}
 		else{
 
@@ -244,13 +276,48 @@
 
 		// CHORD ARRAY
 		// Show the real STEP CHORD cardinality in the chord indicator in red.
+		#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+		if( MODE_OBJECT_SELECTION > CHORDEYE ) {
+			// Chord mode toggle state (blink in stack chord mode)
+			MIR_write_dot( LED_SCALE_MYSEL, MIR_BLINK );
+
+			// Chord octave button 1 - 3 octave green unselected
+			MIR_write_dot( LED_SCALE_MOD, MIR_GREEN );
+			MIR_write_dot( LED_SCALE_SEL, MIR_GREEN );
+			MIR_write_dot( LED_SCALE_CAD, MIR_GREEN );
+
+			// Selected chord octave orange blink
+			switch( MODE_OBJECT_SELECTION ) {
+
+				case CHORDEYE_OCTAVE_FIRST:
+
+					MIR_write_dot( LED_SCALE_MOD, MIR_RED );
+					MIR_write_dot( LED_SCALE_MOD, MIR_BLINK );
+					break;
+
+				case CHORDEYE_OCTAVE_SECOND:
+
+					MIR_write_dot( LED_SCALE_SEL, MIR_RED );
+					MIR_write_dot( LED_SCALE_SEL, MIR_BLINK );
+					break;
+
+				case CHORDEYE_OCTAVE_THIRD:
+
+					MIR_write_dot( LED_SCALE_CAD, MIR_RED );
+					MIR_write_dot( LED_SCALE_CAD, MIR_BLINK );
+					break;
+			}
+		}
+
+		// Show number of notes in chord
+		MIR_write_dot( 258 - get_chord_cardinality( target_page->Step[row][col], CHORD_OCTAVE_ALL ), MIR_RED );
+		#else
 		MIR_write_dot( 258 -
 			my_bit_cardinality( target_page->Step[row][col]->chord_data & 0x7FF )+ 0, MIR_RED   );
-
+		#endif
 		// Show chord_size of the step - current and editable, in green.
 //		MIR_write_dot( 258 -
 //			3, MIR_GREEN );
 
 		MIR_write_dot( 258 -
 			(target_page->Step[row][col]->chord_up >> 29 )+ 0, MIR_GREEN );
-

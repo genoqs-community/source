@@ -1,0 +1,23 @@
+
+
+	
+		// TRACK SELECTORS
+		show (ELE_TRACK_SELECTORS, TRACK_SELECTION);
+		
+		// MATRIX
+		//
+		show (ELE_MATRIX, LAUFLICHT_BOTTOM) ;
+		show (ELE_MATRIX, PLAY_CROSSBARS) ;
+
+		// RETURN
+		//
+		show (ELE_RETURN, GREEN);
+				
+		// GLOBALS
+		//
+		show (ELE_GLOBALS, TRANSPORT);	
+		show (ELE_GLOBALS, NUMERIC_QUADRANT);
+		show (ELE_GLOBALS, BIG_KNOB);
+		show( ELE_GLOBALS, CLOCK );
+
+

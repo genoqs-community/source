@@ -61,16 +61,17 @@ void executeKey( unsigned int keyNdx ){
 					col=0,
 					temp=0
 					;
-
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	// decide whether to save the current song position
 	if ( keyNdx == KEY_STOP ) {
 		G_save_song_pos = ON;
 	} else if ( keyNdx == KEY_PLAY1 ) {
 		G_save_song_pos = !G_run_bit;
+		SEQUENCER_JUST_RESTARTED = OFF;
 	} else if ( keyNdx == KEY_PAUSE ) {
 		G_save_song_pos = !prev_G_pause_bit;
 	}
-
+	#endif
 	// Work on the page under the grid cursor
 	Pagestruct* target_page = &Page_repository[ GRID_CURSOR ];
 
@@ -80,9 +81,10 @@ void executeKey( unsigned int keyNdx ){
 	// Page pointer holder
 	Pagestruct* temp_page = NULL;
 	static Pagestruct* previous_page = NULL;
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	static Pagestruct* prev_previous_page = NULL; // used to validate page cluster selections
 	static unsigned char prev_previous_page_clear = ON;
-
+	#endif
 	// Used for syntax simplification
 	signed char* val_ptr = NULL;
 
@@ -99,37 +101,15 @@ void executeKey( unsigned int keyNdx ){
 	// Double click enters the mode or chord strum editing.
 	if( (keyNdx > 251)
 		){
-		// D O U B L E - C L I C K
-		if (	(DOUBLE_CLICK_TARGET == keyNdx)
-			&& 	(DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)
-			){
-
-		}
-
-
-		// SINGLE CLICK
-		else if ( (DOUBLE_CLICK_TARGET == 0)
-			){
-
-			DOUBLE_CLICK_TARGET = keyNdx;
-			DOUBLE_CLICK_TIMER = ON;
-			// Start the Double click Alarm
-			cyg_alarm_initialize(
-				doubleClickAlarm_hdl,
-				cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
-				DOUBLE_CLICK_ALARM_TIME );
-
-			// Single click code
-			if ( G_zoom_level == zoomSTRUM ){
+		if ( G_zoom_level == zoomSTRUM ){
 #if PHRASE_EDIT_VIEW_NEMO
-				// Switch the strum level view
-				PhraseCurNoteIx = 258 - keyNdx;
+			// Switch the strum level view
+			PhraseCurNoteIx = 258 - keyNdx;
 #endif
 
 #if PHRASE_EDIT_VIEW_OCTO
-				PhraseEditPoly( PhraseCurPhraseIx, 258 - keyNdx + 1 );
+			PhraseEditPoly( PhraseCurPhraseIx, 258 - keyNdx + 1 );
 #endif
-			}
 		}
 	} // Chord selector key pressed
 
@@ -164,7 +144,8 @@ void executeKey( unsigned int keyNdx ){
 
 			case zoomGRID:
 			case zoomGRIDTRACK:
-
+			// Enter the G_master_tempo
+				#ifdef FEATURE_ENABLE_SONG_UPE
 				if ( G_pause_bit == OFF ){
 					// Enter the G_master_tempo
 
@@ -255,7 +236,48 @@ void executeKey( unsigned int keyNdx ){
 					}
 
 				}
+				#else
+				// D O U B L E - C L I C K
+				if ((DOUBLE_CLICK_TARGET == keyNdx)
+						&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
 
+					// Handle the 100 button
+					if (	( keyNdx == 224 )
+						){
+
+						if 		( G_master_tempo  < 100 ) G_master_tempo = 100;
+						else if ( G_master_tempo == 100 ) G_master_tempo = MIN_TEMPO;
+						else if ( G_master_tempo  > 100 ) G_master_tempo = G_master_tempo - 100;
+
+						G_TIMER_REFILL_update();
+					}
+					else{
+						// Double click modifieds the large value
+						G_master_tempo = ((G_master_tempo / 100)*100) + ( BK_KEY_to_xdx( keyNdx ) *10);
+						G_TIMER_REFILL_update();
+					}
+				}
+
+				// SINGLE CLICK
+				else if (DOUBLE_CLICK_TARGET == 0) {
+
+					DOUBLE_CLICK_TARGET = keyNdx;
+					DOUBLE_CLICK_TIMER = ON;
+					// Start the Double click Alarm
+					cyg_alarm_initialize(
+						doubleClickAlarm_hdl,
+						cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+						DOUBLE_CLICK_ALARM_TIME );
+
+					// Double click on 100 sets the tempo to 100
+					if ( keyNdx != 224 ){
+
+						// Mmodifies the 1's value, do not react on the 100 button
+						G_master_tempo = (G_master_tempo / 10)*10 + BK_KEY_to_xdx( keyNdx );
+						G_TIMER_REFILL_update();
+					}
+				}
+				#endif
 				break;
 
 
@@ -271,6 +293,13 @@ void executeKey( unsigned int keyNdx ){
 
 						// When a track is selected, modify its program change
 						if ( my_bit_cardinality( target_page->trackSelection ) == 1 ){
+							// In preview mode enter the track velocity
+							if (	(	( target_page->editorMode == PREVIEW )
+									||	( target_page->editorMode == PREVIEW_PERFORM )
+									) ){
+								// Set in key_PAGE_sel_TRACK.h
+								break;
+							}
 
 							// Use val_ptr for syntax simplification
 							val_ptr = &target_page->Track[ my_bit2ndx( target_page->trackSelection )]->program_change;
@@ -455,12 +484,11 @@ void executeKey( unsigned int keyNdx ){
 					}
 
 					else{
-
 						// Double click modifieds the large value
 						*val_ptr = normalize (
-								((*val_ptr / 100)*100) + ( BK_KEY_to_xdx( keyNdx ) *10),
-								TRACK_MIN_PROGRAMCHANGE,
-								TRACK_MAX_PROGRAMCHANGE );
+							((*val_ptr / 100)*100) + ( BK_KEY_to_xdx( keyNdx ) *10),
+							TRACK_MIN_PROGRAMCHANGE,
+							TRACK_MAX_PROGRAMCHANGE );
 					}
 				}
 
@@ -491,6 +519,7 @@ void executeKey( unsigned int keyNdx ){
 
 	} // big knob keys
 
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	// Activate control track
 	else if ( keyNdx == KEY_BK200 && G_zoom_level == zoomTRACK ) {
 
@@ -519,7 +548,7 @@ void executeKey( unsigned int keyNdx ){
 			}
 		}
 	}
-
+	#endif
 	// RETURN : back to some default machine state
 	else if (	( keyNdx == KEY_RETURN )
 
@@ -544,10 +573,22 @@ void executeKey( unsigned int keyNdx ){
 					&&	( GRID_play_mode != GRID_CCMAP) )
 			){
 
+			if ( 	( G_zoom_level == zoomPAGE )
+					&& 	( target_page->OPS_mode == BIRDSEYE )
+					){
+				// Load page from flash
+				Flash_read_page( GRID_CURSOR );
+
+				// Enter interactive mode
+				target_page->OPS_mode = PASSIVE;
+			}
+
 			G_zoom_level = zoomPAGE;
 
 			target_page->trackSelection = OFF;
 			target_page->trackAttributeSelection = OFF;
+
+
 
 			// Unselect all steps in page, if any were selected
 			if ( target_page->stepSelection != 0 ){

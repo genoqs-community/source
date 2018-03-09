@@ -46,7 +46,7 @@
 			}
 		}
 
-
+		/*
 		// Some chord button is pressed
 		if ( is_pressed_keyrange( 252, 258 ) != FALSE ){
 
@@ -75,7 +75,7 @@
 			// Do not execute the rest of the clause
 			break;
 		}
-
+ 	 	 */
 
 		switch( target_page->OPS_mode ){
 

@@ -251,12 +251,12 @@ void rot_exe_EDIT( 	unsigned char rotNdx,
 				if ((1<<i) & (target_page->trackSelection)) {
 
 					target_page->Track[i]->event_offset[ATTR_MIDICH] = 0;
-
+					#ifdef FEATURE_ENABLE_SONG_UPE
 					if ( G_prev_rec_page == target_page->pageNdx )
 					{
 						Page_setTrackRecPattern( target_page, G_prev_rec_page_pattern );
 					}
-
+					#endif
 					modify_parameter 
 						(&target_page->Track[i]->attr_MCH, 
 						 	TRACK_MIN_MIDICH, TRACK_MAX_MIDICH, direction, OFF, FIXED);
@@ -271,6 +271,7 @@ void rot_exe_EDIT( 	unsigned char rotNdx,
 void rot_exe_MIX2EDIT( 	unsigned char rotNdx,
 							unsigned char direction,
 							Pagestruct* target_page ) {
+#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
 	// EDIT_TIMER handling
 	//
 	// Reset timer on every turn, so it doesnt run out
@@ -297,7 +298,7 @@ void rot_exe_MIX2EDIT( 	unsigned char rotNdx,
 						target_page->Track[i]->event_offset[ATTR_MIDITCH] = 0;
 
 							modify_parameter
-								(&*target_page->Track[i]->attr_TCH,
+								(&target_page->Track[i]->attr_STATUS,
 									TRACK_MIN_MIDITCH, TRACK_MAX_MIDITCH, direction, OFF, FIXED);
 
 					}
@@ -305,4 +306,6 @@ void rot_exe_MIX2EDIT( 	unsigned char rotNdx,
 				break;
 		}
 	} // Case where some track is selected
+#endif
 }
+

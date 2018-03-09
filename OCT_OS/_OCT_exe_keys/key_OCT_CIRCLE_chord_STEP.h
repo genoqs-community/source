@@ -27,6 +27,92 @@
 // Key execution for the Octave circle.
 
 
+#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+// Take a step and a bit offset and apply bit offset to the chord structure (including octave stacking)
+void build_step_chord_octave( Stepstruct* target_step, unsigned char note_offset, unsigned char toggle_octave_mask, bool clear_octave_mask ){
+
+	unsigned char octave_mask = 0;
+	unsigned char chord_size  = 0;
+	unsigned char toggle_size = 0;
+	unsigned char strip_msb	  = 0;
+	unsigned char current_chord_octave = get_current_chord_octave();
+
+	if ( clear_octave_mask ) {
+		set_chord_octave( target_step, note_offset, CHORD_OCTAVE_ALL, OFF );
+	} else{
+		octave_mask = get_chord_octave_mask( target_step, note_offset );
+	}
+
+	chord_size  = get_chord_cardinality( target_step, CHORD_OCTAVE_ALL );
+	toggle_size = my_bit_cardinality(  ( octave_mask ^ toggle_octave_mask ) & toggle_octave_mask );
+	strip_msb 	= max( 0, ( chord_size + toggle_size ) - 6 );
+
+	// Restrict cardinality of the chord to 7, i.e. 6 aux notes allowed
+	if ( 	( chord_size == 5 )
+		&& 	( CHECK_MASK ( toggle_octave_mask, current_chord_octave ) ) ) {
+		// Only single aux note left, choose the current octave when in the octave_mask
+		toggle_octave_mask = current_chord_octave;
+	} else {
+		// Trim top octave(s) until fit
+		while ( strip_msb-- ) {
+			CLEAR_BIT( toggle_octave_mask, my_msb( toggle_octave_mask ) );
+			if ( !toggle_octave_mask ) {
+				return;
+			}
+		}
+	}
+	toggle_chord_octave( target_step, note_offset, toggle_octave_mask );
+
+	// Set the polyphony of the step to the number of notes in chord.
+	set_step_chord_size( target_step, 200 );
+}
+
+
+// Take a step and a bit offset and apply bit offset to the chord structure (toggles through octaves similar to legacy chord UI - non stacking)
+void build_step_chord_switch( Stepstruct* target_step, unsigned char note_offset ){
+
+	unsigned char toggle_status = ON;
+	unsigned char chord_octave = CHORD_OCTAVE_FIRST;
+	unsigned char octave_mask = 0;
+
+	octave_mask = get_chord_octave_mask( target_step, note_offset );
+
+	if( octave_mask ) {
+		set_chord_octave( target_step, note_offset, CHORD_OCTAVE_ALL, OFF );
+	}
+
+	switch ( get_chord_octave_first( octave_mask ) ) {
+		case CHORD_OCTAVE_FIRST:
+			chord_octave = CHORD_OCTAVE_SECOND;
+			break;
+
+		case CHORD_OCTAVE_SECOND:
+			chord_octave = CHORD_OCTAVE_THIRD;
+			break;
+
+		case CHORD_OCTAVE_THIRD:
+			chord_octave = OFF;
+			break;
+
+		default:
+			chord_octave = CHORD_OCTAVE_FIRST;
+			toggle_status = OFF;
+			break;
+	}
+
+	if( toggle_status == OFF ){
+		// Restrict cardinality of the chord to 7, i.e. 6 aux notes allowed
+		if( get_chord_cardinality( target_step, CHORD_OCTAVE_ALL ) > 5 ) {
+			return;
+		}
+	}
+
+	toggle_chord_octave( target_step, note_offset, chord_octave );
+
+	// Set the polyphony of the step to the number of notes in chord.
+	set_step_chord_size( target_step, 200 );
+}
+#else
 // Take a step and a bit offset and apply bit offset to the chord structure
 void build_step_chord( 	Stepstruct* target_step,
 						unsigned char bit_offset ){
@@ -112,7 +198,7 @@ void build_step_chord( 	Stepstruct* target_step,
 
 	}
 }
-
+#endif
 
 
 void key_OCT_CIRCLE_chord_STEP( keyNdx ){
@@ -191,8 +277,53 @@ void key_OCT_CIRCLE_chord_STEP( keyNdx ){
 		}
 
 		// Build the actual step chord structure
-		build_step_chord( target_page->Step[row][col], bit_offset );
+		#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+		if ( MODE_OBJECT_SELECTION >= CHORDEYE_OCTAVE_FIRST ) {
+			unsigned char current_chord_octave = get_current_chord_octave();
 
+			// D O U B L E - C L I C K
+			if ((DOUBLE_CLICK_TARGET == keyNdx)
+					&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
+
+				unsigned char chord_octave_mask = get_chord_octave_mask( target_page->Step[row][col], bit_offset );
+
+				// Double click code:
+				if( key_offset == step_abs_pitch ) {
+					build_step_chord_octave( target_page->Step[row][col], bit_offset, CHORD_OCTAVE_SECOND | CHORD_OCTAVE_THIRD, true );
+				} else if( chord_octave_mask == current_chord_octave ) {
+					// No notes in octaves set full stack
+					build_step_chord_octave( target_page->Step[row][col], bit_offset, CHORD_OCTAVE_ALL, true );
+				} else {
+					// Notes in octaves clear and set current octave
+					build_step_chord_octave( target_page->Step[row][col], bit_offset, current_chord_octave, true );
+				}
+			}
+			// SINGLE CLICK
+			else if (DOUBLE_CLICK_TARGET == 0) {
+
+				DOUBLE_CLICK_TARGET = keyNdx;
+				DOUBLE_CLICK_TIMER = ON;
+				// Start the Double click Alarm
+				cyg_alarm_initialize(
+					doubleClickAlarm_hdl,
+					cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+					DOUBLE_CLICK_ALARM_TIME );
+
+				// Add note to chord
+				if( 	( MODE_OBJECT_SELECTION != CHORDEYE_OCTAVE_FIRST )
+					||	( key_offset != step_abs_pitch ) ) {
+					build_step_chord_octave( target_page->Step[row][col], bit_offset, current_chord_octave, false );
+				}
+			}
+		} else if ( key_offset == step_abs_pitch ) {
+			set_chord_octave( target_page->Step[row][col], bit_offset, CHORD_OCTAVE_ALL, OFF );
+		} else {
+			build_step_chord_switch( target_page->Step[row][col], bit_offset );
+		}
+		#else
+		// Build the actual step chord structure
+		build_step_chord( target_page->Step[row][col], bit_offset );
+		#endif
 	} // Key is in the octave circle
 
 }

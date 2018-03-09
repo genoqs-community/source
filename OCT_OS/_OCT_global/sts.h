@@ -79,7 +79,7 @@ typedef card32			   bool32;									/* For old (enum) 'bool's in structs. */
 	#define INT32_MAX			2147483647L
 #endif 
 #define CARD32_MIN				0UL
-#define CARD32_MAX				4294967295UL
+#define CARD32_MAX				0xFFFFFFFFUL
 #ifndef INT64_MIN
 	#define INT64_MIN			(- INT64_MAX -1)
 #endif 

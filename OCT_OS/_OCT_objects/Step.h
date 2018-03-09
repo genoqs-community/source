@@ -219,7 +219,7 @@ void Step_randomize( Stepstruct* target_step ){
 
 
 // Copies the contents of source step structure to the target step structure
-void Step_copy( const Stepstruct* source_step, Stepstruct* target_step ){
+void Step_copy( const Stepstruct* source_step, Stepstruct* target_step, bool copy_hyper_data ){
 
 	// Copy the event information
 	// Copy the length multiplier implicitly
@@ -247,7 +247,9 @@ void Step_copy( const Stepstruct* source_step, Stepstruct* target_step ){
 	target_step->attr_MCC		=	source_step->attr_MCC;
 
 	// Copy hyper data
-//	target_step->hyperTrack_ndx =	source_step->hyperTrack_ndx;
+	if( copy_hyper_data ) {
+		target_step->hyperTrack_ndx =	source_step->hyperTrack_ndx;
+	}
 }
 
 

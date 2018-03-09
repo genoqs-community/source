@@ -43,7 +43,7 @@
 	switch (content) {
 		
 		case GRID_SET_SWITCHMODE:
-
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			// page cluster selection
 			if ( GRID_p_selection_cluster == ON ) {
 
@@ -61,7 +61,7 @@
 
 				break;
 			}
-
+			#endif
 			// SOLO LED
 			// Find out whether there is something in the solo buffer
 			j = FALSE;
@@ -146,7 +146,21 @@
 
 		case TRACK_MUTEPATTERN:
 
-			MIR_write_buttool (RHS, target_page->trackMutepattern, MIR_RED);	
+			#ifdef FEATURE_ENABLE_SONG_UPE
+			// On the measure mutepattern
+			if (G_on_the_measure_trackMutepattern != 0) {
+				MIR_write_buttool (RHS, G_on_the_measure_trackMutepattern, MIR_RED);
+				MIR_write_buttool (RHS, G_on_the_measure_trackMutepattern, MIR_GREEN);
+				MIR_write_buttool (RHS, G_on_the_measure_trackMutepattern, MIR_BLINK);
+				MIR_write_buttool (RHS, target_page->trackMutepattern, MIR_RED);
+			}
+			else
+			{
+				MIR_write_buttool (RHS, target_page->trackMutepattern, MIR_RED);
+			}
+			#else
+				MIR_write_buttool (RHS, target_page->trackMutepattern, MIR_RED);	
+			#endif
 
 			break;
 			

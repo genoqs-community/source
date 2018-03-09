@@ -32,9 +32,14 @@
  * to operate the timer interrupt in player_start().
  */
 
+#ifdef FEATURE_ENABLE_SONG_UPE
 extern void stop_playing_page( 						Pagestruct* target_page,
 													unsigned char in_G_TTC_abs_value,
 													unsigned char pause);
+#else
+extern void stop_playing_page( 						Pagestruct* target_page,
+													unsigned char in_G_TTC_abs_value );
+#endif
 
 extern void set_track_locators( 					Pagestruct* target_page,
 													Trackstruct* in_track,
@@ -96,8 +101,8 @@ void advance_page_locators( Pagestruct* target_page ){
 		// Affected pages: multipliers: 1  2  4 (all pages)
 		case 1:
 			// Advance page locator: modulo operation acc. to page length
-			target_page->locator =
-				( target_page->locator % target_page->attr_LEN ) + 1;
+
+			target_page->locator = ( target_page->locator % target_page->attr_LEN ) + 1;
 
 			break;
 
@@ -114,11 +119,12 @@ void advance_page_locators( Pagestruct* target_page ){
 //____________________________________________________________________________________
 // Play the MIDI events queued up for the given timestamp
 void play_MIDI_queue( unsigned int in_G_MIDI_timestamp ){
-
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	if (G_align_bit)
 	{
 		return;
 	}
+	#endif
 	unsigned int i = 0;
 	unsigned char queue_size = 0;	// Stores initial queue size
 	MIDIeventstruct* queue_event = NULL;
@@ -143,7 +149,7 @@ void play_MIDI_queue( unsigned int in_G_MIDI_timestamp ){
 	} // queue iterator
 }
 
-
+#ifdef FEATURE_ENABLE_SONG_UPE
 void RESET_measure_locator( unsigned char inStop ) {
 
 	if ( !inStop ){
@@ -161,8 +167,7 @@ void RESET_measure_locator( unsigned char inStop ) {
 		G_run_bit 					= ON;
 	}
 }
-
-
+#endif
 //
 // PLAYER main entry point - called on each clock tick
 //____________________________________________________________________________________
@@ -170,17 +175,19 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 	// Counter variable
 	unsigned int i=0;
+	#ifdef FEATURE_ENABLE_SONG_UPE
+	unsigned int j=0;
 	unsigned int row=0;
 	Trackstruct* target_track = NULL;
 	unsigned int measure = (G_measure_indicator_value * 5) + G_measure_indicator_part;
 	unsigned int repeats = Repeats_Intervals[G_repeats_interval_idx];
-	if ( repeats == 4294967295 && measure >= 1279 )
+	if ( repeats == 0xFFFFFFFF && measure >= 1279 )
 	{
 		G_measure_indicator_value = 0;
 		G_measure_indicator_part = 0;
 		measure = 0;
 	}
-	if ( (repeats != 4294967295 && G_global_locator == 16 && ( measure == (G_measure_locator + repeats -1) )) || ( G_silent == ON )){
+	if ( (repeats != 0xFFFFFFFF && G_global_locator == 16 && ( measure == (G_measure_locator + repeats -1) )) || ( G_silent == ON )){
 		if ( G_repeats_delay == OFF || ( G_silent == ON && G_delay == 0 )){
 			MIDI_queue_flush();
 			RESET_measure_locator(OFF);
@@ -188,7 +195,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 			G_silent = OFF;
 			G_reset = OFF;
 			G_TTC_abs_value += 10;
-			SEQUENCER_JUST_STARTED = ON;
+			SEQUENCER_JUST_STARTED = OFF;
 			return;
 		}
 		if ( G_repeats_delay == ON && G_silent == OFF ){
@@ -202,7 +209,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		}
 		if (G_delay < 16) return;
 	}
-
+	#endif
 	// Play MIDI queue elements which are due at current timestamp
 	play_MIDI_queue( G_MIDI_timestamp );
 
@@ -228,14 +235,29 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 		// Advance the global locator - normal speed master
 		advance_global_locator();
-
+		#ifdef FEATURE_ENABLE_SONG_UPE
 		// on the measure
 		if ( G_global_locator == 1 ) {
+
+			// drum machine scene change
+			if ( GRID_p_set_note_presel != 255) {
+				MIDI_send(	MIDI_NOTE, GRID_p_set_midi_ch, GRID_p_set_note_offsets[GRID_p_set_note_presel], 127 );
+				GRID_p_set_note_presel = 255;
+			}
 
 			for ( i=0; i < GRID_NROF_BANKS; i++ ){
 
 				// Skip the banks that are not currently active
 				if ( GRID_p_selection[i] != NULL ){
+
+					// on the measure page mute
+					if ( G_on_the_measure_trackMutepattern != 0 && selected_page_cluster_right_neighbor( GRID_p_selection[i], G_on_the_measure_trackMutepattern_pageNdx ) ) {
+						for ( j=0; j < MATRIX_NROF_ROWS; j++ ){
+							if ( G_on_the_measure_track[j] != NULL ){
+								apply_page_cluster_track_mute_toggle( GRID_p_selection[i], G_on_the_measure_track[j] );
+							}
+						}
+					}
 
 					for ( row=0; row < MATRIX_NROF_ROWS; row ++ ){
 						target_track = GRID_p_selection[i]->Track[row];
@@ -252,6 +274,15 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 				}
 			}
 
+			// reset the on the measure mute pattern
+			if ( G_on_the_measure_trackMutepattern != 0 ){
+				for (j=0; j<MATRIX_NROF_ROWS; j++){
+					G_on_the_measure_track[j] = NULL;
+				}
+				G_on_the_measure_trackMutepattern = 0;
+				G_on_the_measure_trackMutepattern_pageNdx = 0;
+			}
+
 			if (!G_align_bit){
 				// Advance measure locator for pause measure scrolling
 				if ( G_measure_indicator_part++ != 255 && G_measure_indicator_part % 5 == 0 ) {
@@ -260,14 +291,14 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 				}
 			}
 		}
-
+		#endif
 		// PAGE PRESELECTION
 		// Preselect pages as appropriate in every bank ..supports variable page lengths.
 		for( i=0; i < GRID_NROF_BANKS; i++ ){
 
 			// First time we are executing this after a start..
 			if ( SEQUENCER_JUST_STARTED == TRUE ) {
-			
+
 				// Do not switch anything just upon sequencer start
 				break;
 			}
@@ -303,6 +334,10 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		// Select the preselections on every beat!
 		select_page_preselections();
 
+		#ifdef FEATURE_ENABLE_DICE
+		// Synchronize dice actions on beat.
+		dice_synchronize();
+		#endif
 	} // in_G_TTC_abs_value  == 1 ..on the BEAT TICK
 
 
@@ -319,6 +354,14 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		}
 	}
 
+	#ifdef FEATURE_ENABLE_DICE
+	// Advance DICE global clock (DICE_GLOBAL_CLOCK)
+	Trackstruct* target_dice = throw_dice(NULL);
+	if( target_dice && Dice_get_MISC( target_dice, DICE_GLOBAL_CLOCK ) ) {
+
+		PLAYER_play_track( DICE_bank, row_of_track( DICE_bank, Dice_get_global_clock_track() ) );
+	}
+	#endif
 }
 
 

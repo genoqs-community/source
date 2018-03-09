@@ -4,17 +4,55 @@
 #define		SW_VERSION_MINOR				 0	// Max 10 - Tens
 #define		SW_VERSION_RELEASE				 4	// Max 10 - Ones
 
-#define		SW_VERSION_INTERNAL				 50	// Max 127 - Row 0 number
+#define		SW_VERSION_INTERNAL				 64	// Max 127 - Row 0 number
 
 // SWITCH between 'MIDI' and 'USB' modes of the MIDI 2 Port
 #define		OCTDEF_UART2_MODE	 			MIDI
 //#define		OCTDEF_UART2_MODE	 			USB
-
 // POWER-ON LOAD BEHAVIOR
 #define 	LOAD_ON_POWERON					TRUE
 
+// BUILD CE OS WITH ADDON FEATURES
+#define 	CE_OS_ADDON_BUILD				TRUE
+
+#ifdef CE_OS_ADDON_BUILD
+
+#ifdef NEMO
+// NEMO FEATURE ENABLE
+//#define 	FEATURE_ENABLE_DICE				TRUE
+
+#else
+// OCTOPUS FEATURE ENABLE
+#define 	FEATURE_ENABLE_SONG_UPE			TRUE
+//#define 	FEATURE_ENABLE_KEYB_TRANSPOSE   TRUE
+
+#endif
+
+#endif
+
+// CORE BUILD FEATURE ENABLE
+#define 	FEATURE_ENABLE_CHORD_OCTAVE		TRUE
+
 /*
- * COMMUNITY FORK VERSION CHANGES
+ * Bug tracking spreadsheet
+ * https://docs.google.com/spreadsheets/d/1eM8S2VbLz8OsRawqJ4Pzusfqcv13wKgeyLU071252Nk/edit#gid=520555008
+ *
+ * COMMUNITY EDITION VERSION CHANGES
+ *  0.0.5.00		FINAL VERSION of 0.0.5
+ *
+ *  0.0.4.64	- 	Cases : 1.62x (64-68)
+ *
+ *  0.0.4.63	- 	Cases : 1.62x (62-63)
+ *  						Nemo x2 (41-47)
+ *
+ *  0.0.4.62	- 	Cases : 1.62x (55-61)
+ *  						Nemo x2 (41-44)
+ *
+ *  0.0.4.61	- 	Cases : 1.62x (52-54)
+ *  				Performance tuning
+ *
+ *  0.0.4.60	- 	Merge SONG UPE addon feature (octopus UI only)
+ *
  * 	0.0.4.50	-   Grid Page Cluster Selections:
  *				    implement grid page cluster select/move/copy/clear
  *				    implement grid page cluster selection state for MUT operations
@@ -58,26 +96,16 @@
  *					record [MIDI] lost after MIDI channel change
  *					implement GRID - mute all head clusters event (everything unselected)
  *					use TRACK->DIR as event type where 1 = page toggle, 2 = mute all
- * 	0.0.4.09	-	implement track events for target page tempo modifier inherit
- * 	0.0.4.08	-	Fix	- Nemo page toggle timing (track 3 6 steps late & global locator frame)
- * 					Implement (Oct/Nemo) Keyboard transpose
- *  0.0.4.07	-	Fix - control track selection LED should be orange
- *  				Fix - page cluster move toggle status
- *  				Fix - page cluster select requires cluster idx 0 press + idx 1 press
- *  0.0.4.06	-	implement scene export/import functionality
- *  0.0.4.05	-	implement track events for internal page cluster clear
- *					implement track events for internal page cluster move
- *  0.0.4.04	-	implement grid page cluster selection state for MUT operations
- *					implement continuous play chain move/clobber
- *  0.0.4.03	-	enable track events for internal track mute toggle 
- *  				implement track events for external start/stop MIDI (FA, FC) 
- *  				implement control track indicator green for track select column in page view
- *  				implement button to blink control track containing pages in grid
- *  0.0.4.02	-	enable track events for internal scene change
- *  0.0.4.01	-	Fix - stop event toggles grid page - don't toggle if already stopped
- *					Fix - enable mute functionality for track program change, etc. events
- *					Fix - flash btn 200 LED and program LED for control track bank 128
- *					Fix - enable numeric key press functionality for bank change
+ *  0.0.4.17	- 	Cases : 1.62x (43-51)
+ *  0.0.4.16	- 	Cases : 1.62x (32-42)
+ *  						Nemo x2 (32-40)
+ *  0.0.4.15	- 	Cases : 1.62x (9-13)
+ *  						Nemo x2 (17-31)
+ *  0.0.4.14	- 	Cases : 1.62x (9-13)
+ *  0.0.4.13	- 	Cases : 1.62x (1-8)
+ *  0.0.4.12	- 	Cases : Nemo x2 (1-16)
+ *  0.0.4.11	- 	implement DICE addon feature (Nemo UI only)
+ *  0.0.4.10	- 	implement Nemo x2
  *  0.0.4		-	[feature] Internal Program Change:
  *					{
  *						desc: toggle grid pages w/o needing 2nd sequencer to echo MIDI port 2

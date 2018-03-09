@@ -36,21 +36,21 @@
 // in the range from itself to the end
 void shuffle_array( unsigned char* in_array, unsigned char array_size ){
 
-	unsigned char i = 0;
-	unsigned char temp = 0;
-	unsigned char new_ndx = 0;
+  unsigned char i = 0;
+  unsigned char temp = 0;
+  unsigned char new_ndx = 0;
 
-	// Loop through the array elements
-	for ( i=0; i < array_size; i++ ){
+  // Loop through the array elements
+  for ( i=0; i < array_size; i++ ){
 
-		// Store the element
-		temp = in_array[i];
+    // Store the element
+    temp = in_array[i];
 
-		// Copy in a new random element from the left
-		new_ndx = i + (rand() % (array_size - i));
-		in_array[i] = in_array[new_ndx];
-		in_array[new_ndx] = temp;
-	}
+    // Copy in a new random element from the left
+    new_ndx = i + (rand() % (array_size - i));
+    in_array[i] = in_array[new_ndx];
+    in_array[new_ndx] = temp;
+  }
 }
 
 #endif
@@ -58,24 +58,24 @@ void shuffle_array( unsigned char* in_array, unsigned char array_size ){
 
 signed int my_max_value( signed int in_1, signed int in_2 ){
 
-	if ( in_1 < in_2 ){
-		return in_2;
-	}
-	else{
-		return in_1;
-	}
+  if ( in_1 < in_2 ){
+    return in_2;
+  }
+  else{
+    return in_1;
+  }
 }
 
 
 // Return the smaller of two numbers
 signed int my_min_value( signed int in_1, signed int in_2 ){
 
-	if ( in_1 < in_2 ){
-		return in_1;
-	}
-	else{
-		return in_2;
-	}
+  if ( in_1 < in_2 ){
+    return in_1;
+  }
+  else{
+    return in_2;
+  }
 }
 
 
@@ -83,73 +83,114 @@ signed int my_min_value( signed int in_1, signed int in_2 ){
 
 void my_print_bits(unsigned int value){
 // Scaffold: display an integer as a string of bits
-	int i=0;
-	// Value to mask off the bits in value
-	int mask=1<<15;
+  int i=0;
+  // Value to mask off the bits in value
+  int mask=1<<15;
 
-	// Lock mutex, print the string, unlock mutex
-	for (i=0; i<16; i++){
-		putchar (value & mask ? '1' : '-');
-		value <<= 1;
-		if ((15-i)%8 == 0) putchar(' ');
-	}
-	putchar('\n');
+  // Lock mutex, print the string, unlock mutex
+  for (i=0; i<16; i++){
+    putchar (value & mask ? '1' : '-');
+    value <<= 1;
+    if ((15-i)%8 == 0) putchar(' ');
+  }
+  putchar('\n');
 }
 
 
 void my_print_bits32(unsigned int value){
 // Scaffold: display an integer as a string of bits
-	unsigned int i=0;
-	// Value to mask off the bits in value
-	unsigned int mask=1<<31;
+  unsigned int i=0;
+  // Value to mask off the bits in value
+  unsigned int mask=1<<31;
 
-	// Lock mutex, print the string, unlock mutex
-	for (i=0; i<32; i++){
-		putchar (value & mask ? '1' : '-');
-		value <<= 1;
-		if ((31-i)%8 == 0) putchar(' ');
-	}
-	putchar('\n');
+  // Lock mutex, print the string, unlock mutex
+  for (i=0; i<32; i++){
+    putchar (value & mask ? '1' : '-');
+    value <<= 1;
+    if ((31-i)%8 == 0) putchar(' ');
+  }
+  putchar('\n');
 }
 
 
 // Returns the position of the first set bit in a bitpattern;
 // 33 is the "bit not found" flag
+/*
 unsigned int my_bit2ndx( unsigned int bitpattern ){
 
-	unsigned char i=0;
+  unsigned char i=0;
 
-	for ( i=0; i<33; i++ ){
+  for ( i=0; i<33; i++ ){
 
-		if ( bitpattern & (1<<i) ) break;
-	}
-	return i;
+    if ( bitpattern & (1<<i) ) break;
+  }
+  return i;
+}
+*/
+
+// Returns the position of the first set bit in a bitpattern;
+// Improved performance using de Bruijn lookup
+unsigned int my_bit2ndx( unsigned int bitpattern ) {
+
+    static const int MultiplyDeBruijnBitPosition[32] =
+    {
+      0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+      31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+    };
+
+    return MultiplyDeBruijnBitPosition[( ( unsigned int )( ( bitpattern & - bitpattern ) * 0x077CB531U ) ) >> 27];
+}
+
+/*
+unsigned char my_bit_cardinality( unsigned int bitpattern ){
+// Returns the number of set bits in the given bitpattern
+  unsigned char   i = 0;
+  unsigned char result = 0;
+
+  // Max length of bitpattern is 32 - integer
+  for (i=0; i<32; i++) {
+
+    if ( ((1<<i) & bitpattern) != 0 ) {
+
+      result++;
+    }
+  }
+  return result;
+}
+*/
+
+// Returns the number of set bits in the given bitpattern
+// Improved performance using divide & conquer bit count
+unsigned char my_bit_cardinality( unsigned int bitpattern ){
+
+    bitpattern = bitpattern - ((bitpattern >> 1) & 0x55555555);
+    bitpattern = (bitpattern & 0x33333333) + ((bitpattern >> 2) & 0x33333333);
+    bitpattern = (bitpattern + (bitpattern >> 4)) & 0x0F0F0F0F;
+    bitpattern = bitpattern + (bitpattern >> 8);
+    bitpattern = bitpattern + (bitpattern >> 16);
+    return bitpattern & 0x0000003F;
 }
 
 
-unsigned char my_bit_cardinality( unsigned int bitpattern ){
-// Returns the number of set bits in the given bitpattern
-	unsigned char 	i = 0;
-	unsigned char result = 0;
+unsigned int my_msb( unsigned int bitpattern ) {
 
-	// Max length of bitpattern is 32 - integer
-	for (i=0; i<32; i++) {
+    static const unsigned int bval[] =
+    {0,1,2,2,3,3,3,3,4,4,4,4,4,4,4,4};
 
-		if ( ((1<<i) & bitpattern) != 0 ) {
-
-			result++;
-		}
-	}
-	return result;
+    unsigned int result = 0;
+    if ( bitpattern & 0xFFFF0000 ) { result += 16; bitpattern >>= 16; }
+    if ( bitpattern & 0x0000FF00 ) { result += 8; bitpattern >>= 8; }
+    if ( bitpattern & 0x000000F0 ) { result += 4; bitpattern >>= 4; }
+    return result + bval[bitpattern] - 1;
 }
 
 
 // Used to produce time delays using busy wait
 void my_wait( unsigned int wait ){
 
-	unsigned int i=0;
+  unsigned int i=0;
 
-	for ( i=0; i < wait; i++ ){};
+  for ( i=0; i < wait; i++ ){};
 }
 
 
@@ -159,58 +200,58 @@ void my_wait( unsigned int wait ){
 // Shifts its contents in given direction over a distance of distance
 // and wraps contents accordigly.
 //
-unsigned int my_shift_bitpattern (	unsigned int bitpattern,
-									unsigned char length,
-									unsigned char direction,
-									unsigned char distance) {
+unsigned int my_shift_bitpattern (  unsigned int bitpattern,
+                  unsigned char length,
+                  unsigned char direction,
+                  unsigned char distance) {
 
-	// Get the trackpattern
-	unsigned int rightMostChunk = 0;
-	unsigned int leftMostChunk = 0;
-	unsigned int targetpattern = 0;
-	unsigned int bitmask = 0xffffffff >> (32 - length);
+  // Get the trackpattern
+  unsigned int rightMostChunk = 0;
+  unsigned int leftMostChunk = 0;
+  unsigned int targetpattern = 0;
+  unsigned int bitmask = 0xffffffff >> (32 - length);
 
-	//d_iag_printf( "*my_shift_bitp: l:%d dr:%d ds:%d  bitmask/bitp\n", length, direction, distance);
-	//my_print_bits32( bitmask);
-	//my_print_bits32( bitpattern );
+  //d_iag_printf( "*my_shift_bitp: l:%d dr:%d ds:%d  bitmask/bitp\n", length, direction, distance);
+  //my_print_bits32( bitmask);
+  //my_print_bits32( bitpattern );
 
-	// Compose the new bitpattern
-	switch (direction) {
-		case INC:
-			// Wrap right
-			// rightMostChunk = bitpattern & ( (1<<distance) - 1 );
-			rightMostChunk 	= bitpattern & ( bitmask >> (length - distance));
-	//d_iag_printf( "   rmC:\n" );
-	//my_print_bits32( rightMostChunk);
+  // Compose the new bitpattern
+  switch (direction) {
+    case INC:
+      // Wrap right
+      // rightMostChunk = bitpattern & ( (1<<distance) - 1 );
+      rightMostChunk  = bitpattern & ( bitmask >> (length - distance));
+  //d_iag_printf( "   rmC:\n" );
+  //my_print_bits32( rightMostChunk);
 
-			// leftMostChunk = bitpattern >> distance;
-			leftMostChunk 	= bitpattern  >> distance;
-	//d_iag_printf( "   lmC:\n" );
-	//my_print_bits32( leftMostChunk);
+      // leftMostChunk = bitpattern >> distance;
+      leftMostChunk   = bitpattern  >> distance;
+  //d_iag_printf( "   lmC:\n" );
+  //my_print_bits32( leftMostChunk);
 
-			targetpattern = (leftMostChunk) | (rightMostChunk << (length-distance));
-	//d_iag_printf( "   target:\n" );
-	//my_print_bits32( targetpattern );
+      targetpattern = (leftMostChunk) | (rightMostChunk << (length-distance));
+  //d_iag_printf( "   target:\n" );
+  //my_print_bits32( targetpattern );
 
-			break;
+      break;
 
-		case DEC:
-			// Wrap left
-			rightMostChunk = bitpattern & ( (1<<(length-distance)) - 1 );
-			leftMostChunk = bitpattern >> (length-distance);
-			targetpattern = (leftMostChunk) | (rightMostChunk << distance);
-			break;
-	}
+    case DEC:
+      // Wrap left
+      rightMostChunk = bitpattern & ( (1<<(length-distance)) - 1 );
+      leftMostChunk = bitpattern >> (length-distance);
+      targetpattern = (leftMostChunk) | (rightMostChunk << distance);
+      break;
+  }
 
-	// Return the new bitpattern
-	return targetpattern;
+  // Return the new bitpattern
+  return targetpattern;
 }
 
 
 // Takes the natural index of a matrix key (1-160) and returns its machine index.
 unsigned int machine_index_of_key( unsigned int matrix_ndx ){
 
-	return( 11 + matrix_ndx / 16 ) + ( (matrix_ndx) %16 )*11  ;
+  return( 11 + matrix_ndx / 16 ) + ( (matrix_ndx) %16 )*11  ;
 }
 
 

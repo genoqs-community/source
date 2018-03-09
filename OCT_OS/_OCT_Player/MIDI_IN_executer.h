@@ -61,7 +61,8 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  	switch( G_zoom_level ){
 
  	case zoomPAGE:
- 		//Wilson - Keyboard Transpose
+#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+ 		// Keyboard Transpose
  		// Only work on the current page.
  		target_page = &Page_repository[GRID_CURSOR];
  		if ( ( G_run_bit == ON )
@@ -70,9 +71,9 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  			&& 	( target_page->REC_bit == OFF 			))			) {
 
  				transpose_selection( target_page, in_pitch, in_velocity, inputMidiChan );
- 		 		return;
-
  		}
+ 		break;
+#endif
  	case zoomTRACK:
  	case zoomSTEP:
  		// Only work on the current page.
@@ -88,6 +89,10 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  			// Force the incoming MIDI notes to currently active scale
  			force_input_to_scale( 	target_page, (inputMidiBus*16) + inputMidiChan,
 								in_pitch, in_velocity );
+ 		} else if 	(	target_page->mixMode == INC &&
+ 					( in_velocity != OFF )	){
+ 			if ( target_page->Track[9]->attr_MCH == ((inputMidiBus*16) + inputMidiChan) )
+ 		  						modify_scale_composition( target_page, pitch_to_noteNdx( in_pitch ), G_scale_ndx );
  		}
  		// Nothing else to do..
 		return;
@@ -151,6 +156,11 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 					&&	( target_page->trackSelection == 0 )
 					&&	( G_zoom_level != zoomSTEP  )
 				){
+
+				// Prevent note stuck assign_note_to_selection
+				if ( NOTE_queue != NULL && in_velocity == OFF ){
+					NOTE_queue_remove( in_pitch );
+				}
 
   				// Force the incoming MIDI notes to currently active scale
  				force_input_to_scale( 	target_page, (inputMidiBus*16) + inputMidiChan,
@@ -232,6 +242,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 
  					// Compute the coordinates of the step to be activated
  					// Adjust the step start value according to current TTC. Logic: see book p.189
+ 					unsigned char target_row = row;
  					if ( current_TTC <= 6 ) {
 
  						// Place step in current column
@@ -251,12 +262,12 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  						// row = ... // this is the known LDT bug. Dirty fix now. Breaks on skipped rows.
  						if ( target_col < target_page->Track[row]->attr_LOCATOR-1 ){
  							// There was a wrap, lookup the next row to record
- 							row = row_of_track( target_page, target_page->Track[row]->chain_data[NEXT] );
+ 							target_row = row_of_track( target_page, target_page->Track[row]->chain_data[NEXT] );
  						}
  					}
 
  					// Record in notes to the rec enabled track
- 					record_note_to_track( 	target_page, 	row, 		target_col,
+ 					record_note_to_track( 	target_page, 	target_row, 		target_col,
 											target_start, 	in_pitch, 	in_velocity );
 
  					// Mark the page as touched
@@ -308,8 +319,8 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  	// This is where the incoming MIDI note will be sent to, unless re-channelled, below.
  	int outputMidiBus  = inputMidiBus; 		// Range [0, 1].
  	int outputMidiChan = inputMidiChan; 	// Range [1, 16].
-
- 	//Wilson - Keyboard Transpose
+	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+ 	// Keyboard Transpose
 	if ( (G_run_bit == ON)
 		&& 	( inputMidiChan > 0 )
 		&&	(	( Page_getTrackRecPattern(target_page) == 0 	)
@@ -324,7 +335,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 			transpose_selection( target_page, in_pitch, in_velocity, inputMidiChan );
 			return;
 	}
-
+	#endif
 	// PRINT THE NOTE!! (and disregard the rest..)
 	// d_iag_printf( "note TTC:%d UART:%d status:0x%x pi:0x%x ve:0x%x\n",
 	//	current_TTC, UART_ndx, status_byte, data_byte_1, data_byte_2 );
@@ -400,6 +411,11 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 					&&	( target_page->trackSelection == 0 )
 					&&	( G_zoom_level != zoomSTEP  )
 				){
+
+				// Prevent note stuck assign_note_to_selection
+				if ( NOTE_queue != NULL && in_velocity == OFF ){
+					NOTE_queue_remove( in_pitch );
+				}
 
   				// Force the incoming MIDI notes to currently active scale
  				force_input_to_scale( 	target_page, (inputMidiBus*16) + inputMidiChan,
@@ -480,7 +496,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  				// However, even in Stopped mode, the MIDI input is echoed to the outputs, after optional re-channelling.
 
  				if ( (G_run_bit == ON) && (G_track_rec_bit == ON) ) {
-
+ 					unsigned char target_row = row;
  					// Compute the coordinates of the step to be activated
  					// Adjust the step start value according to current TTC. Logic: see book p.189
  					if ( current_TTC <= 6 ) {
@@ -502,12 +518,12 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  						// row = ... // this is the known LDT bug. Dirty fix now. Breaks on skipped rows.
  						if ( target_col < target_page->Track[row]->attr_LOCATOR-1 ){
  							// There was a wrap, lookup the next row to record
- 							row = row_of_track( target_page, target_page->Track[row]->chain_data[NEXT] );
+ 							target_row = row_of_track( target_page, target_page->Track[row]->chain_data[NEXT] );
  						}
  					}
 
  					// Record in notes to the rec enabled track
- 					record_note_to_track( 	target_page, 	row, 		target_col,
+ 					record_note_to_track( 	target_page, 	target_row, 		target_col,
 											target_start, 	in_pitch, 	in_velocity );
 
  					// Mark the page as touched

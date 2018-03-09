@@ -1,10 +1,10 @@
 //
 // Copyright (C) 2004, 2005, 2006, 2007 genoQs Machines
-// This file is part of Octopus_OS -
+// This file is part of Octopus_OS - 
 // the firmware of the genoQs Machines Octopus, MIDI Control Sequencer
 //
-// The source code Octopus_OS is available for use in accordance with the
-// GNU General Public License (GPL). For more information about Open Source
+// The source code Octopus_OS is available for use in accordance with the 
+// GNU General Public License (GPL). For more information about Open Source 
 // licensing, please visit http://www.opensource.org/
 //
 // Octopus_OS is free software; you can redistribute it and/or modify
@@ -32,19 +32,19 @@
 // G R I D implementation
 //
 unsigned char 	Page_GRID[2][10][3];						// The Page GRID. Used by the VIEWER
-
+	
 unsigned char 	GRID_status = GRID_DEFAULT; 				// One of DEFAULT, SELECT, EXPORT
 unsigned char	GRID_scene = 0;								// Currently selected grid scene for play or storage
 unsigned char 	GRID_target_scene = 0;						// Target grid scene index for export operation
 
 // Mode of selection. Either GRID_SWITCH_DIRECT or GRID_SWITCH_OCLOCK.
-unsigned char	GRID_switch_mode = GRID_SWITCH_OCLOCK;
+unsigned char	GRID_switch_mode = GRID_SWITCH_OCLOCK;		
 // Keeps the triggermodes for the individual grid lines. Bit set means on
 
 //// Per default, all banks are in the RED trigger mode - i.e. manual
-//unsigned short 	GRID_bank_triggermode[GRID_NROF_BANKS]
+//unsigned short 	GRID_bank_triggermode[GRID_NROF_BANKS] 
 //					= { RED, RED, RED, RED, RED, RED, RED, RED, RED };
-
+					
 // Bank mutepattern - not used anymore
 unsigned short	GRID_bank_playmodes = GRID_BANK_SIMPLE;		// either _SIMPLE or _CHAIN
 
@@ -54,14 +54,17 @@ Pagestruct* 	GRID_p_selection 		[GRID_NROF_BANKS]; // Pointers of the pages that
 Pagestruct* 	GRID_p_preselection	  	[GRID_NROF_BANKS];	// Stores the page indexes of the pages to be selected at the next oclock
 Pagestruct* 	GRID_p_clock_presel	  	[GRID_NROF_BANKS];
 Pagestruct* 	GRID_p_set				[GRID_NROF_SETS ][GRID_NROF_BANKS]; // Stores the GRID sets
+unsigned char	GRID_p_set_note_offsets	[GRID_NROF_SETS ];
+unsigned char   GRID_p_set_midi_ch = 0; // Stores the global midi channel for note events
+char			GRID_p_set_note_presel = 255; // Stores the set index of the note to send on the measure
+
+
+#ifdef FEATURE_ENABLE_SONG_UPE
 Pagestruct* 	GRID_p_selection_buffer [GRID_NROF_BANKS]; 	// Temporary buffer for solo operations and other things
 
 // Page cluster selection active flag
 unsigned char	GRID_p_selection_cluster	= OFF;
 
-// This is the point of reference for GRID operations and Pages selections.
-// Defaults to 8, which is the first page of row 1.
-unsigned char 	GRID_CURSOR					= 8;
 // Used for page cluster selection criteria
 unsigned char 	PREV_GRID_CURSOR			= 8;
 
@@ -75,6 +78,13 @@ Trackstruct*	MIX_TRACK					= NULL;
 // Exclusions: col 16 is not a valid move target, row 0 is not a valid move target
 unsigned char move_map[127];
 unsigned char move_page_map[127];
+#else
+Pagestruct* 	GRID_p_selection_buffer [MATRIX_NROF_ROWS]; 	// Temporary buffer for solo operations and other things
+#endif
+
+// This is the point of reference for GRID operations and Pages selections. 
+// Defaults to 8, which is the first page of row 1.
+unsigned char 	GRID_CURSOR		= 8;
 
 // The attribute selected in Grid for MIX modification
 unsigned short 	GRID_mixAttribute = 1 << VELOCITY; // initialized to VELOCITY
@@ -86,9 +96,9 @@ unsigned char 	GRID_play_mode	= GRID_MIX;
 // Flag that indicates whether we are showing G_master_tempo or SELECT
 unsigned char 	GRID_bigknob_SELECT 	= OFF;
 
-// One of RECALL or CLEAR.
+// One of RECALL or CLEAR. 
 // Variable has to be int because of the KEY_xxx #defs.
-// Semantics: current GRID selection kept in a set, may be recalled
+// Semantics: current GRID selection kept in a set, may be recalled 
 // or cleared - i.e. overwritten by the current grid selection.
 unsigned int GRID_set_switchmode	= SEL_RECALL;
 
@@ -106,16 +116,19 @@ unsigned char GRID_MAP0_status = ON;
 // Needed for Track chainning mute in the player
 unsigned char SEQUENCER_JUST_STARTED = OFF;
 
+// Set to false after play is started the first time
+unsigned char SEQUENCER_JUST_RESTARTED = ON;
+
 // Stores the default values of the step attributes
 unsigned char stepDefaultAttrValue[STEP_NROF_ATTRIBUTES];
 
 // Stores selected tracks in a page as follows:
 // first ten bits keeps the track selection binary, then follows the source page ndx as decimal
-unsigned int TRACK_COPY_BUFFER 	= 0;
+unsigned int TRACK_COPY_BUFFER 	= 0;	
 
 // Stores the index of the page to be copied
 // ..uses the GRID_SELECTION_EMPTY flag for empty
-unsigned int PAGE_COPY_BUFFER	= GRID_SELECTION_EMPTY;
+unsigned int PAGE_COPY_BUFFER	= GRID_SELECTION_EMPTY;	
 
 
 // Contains 10 values for the tracks and one semantic value. 20 means empty.

@@ -956,7 +956,11 @@
 
 
 			case KEY_PAUSE:
+				#ifdef FEATURE_ENABLE_SONG_UPE
 				sequencer_command_PAUSE(OFF);
+				#else
+				sequencer_command_PAUSE();
+				#endif
 				break;
 
 

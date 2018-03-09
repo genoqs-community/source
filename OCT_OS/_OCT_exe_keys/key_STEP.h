@@ -498,7 +498,7 @@ void key_exec_STEP( unsigned int keyNdx ){
 				// Copy step data from buffer to pointer
 				if ( STEP_COPY_BUFFER != NULL ){
 
-					Step_copy( STEP_COPY_BUFFER, target_page->Step[row][col]);
+					Step_copy( STEP_COPY_BUFFER, target_page->Step[row][col], false );
 #ifdef COPY_BUFFER_FRESH
 					STEP_COPY_BUFFER = NULL;
 #endif
@@ -513,15 +513,24 @@ void key_exec_STEP( unsigned int keyNdx ){
 	//
 	// CIRCLE ENTERING FIELDS
 	//
-	if ( MODE_OBJECT_SELECTION == CHORDEYE ){
-		// Set chord_size according to the pressed chord button
+	switch( MODE_OBJECT_SELECTION ){
 
-		// Enter the chord aux notes via inner circle
-		key_OCT_CIRCLE_chord_STEP( keyNdx );
-	}
-	else{
-		// Enter the pitch via inner circle
-		key_OCT_CIRCLE_xpose_STEP( keyNdx );
+		case CHORDEYE:
+		#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+		case CHORDEYE_OCTAVE_FIRST:
+		case CHORDEYE_OCTAVE_SECOND:
+		case CHORDEYE_OCTAVE_THIRD:
+		#endif
+			// Set chord_size according to the pressed chord button
+
+			// Enter the chord aux notes via inner circle
+			key_OCT_CIRCLE_chord_STEP( keyNdx );
+			break;
+
+		default:
+			// Enter the pitch via inner circle
+			key_OCT_CIRCLE_xpose_STEP( keyNdx );
+			break;
 	}
 
 
@@ -548,7 +557,11 @@ void key_exec_STEP( unsigned int keyNdx ){
 		switch( MODE_OBJECT_SELECTION ){
 
 			case CHORDEYE:
-
+			#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+			case CHORDEYE_OCTAVE_FIRST:
+			case CHORDEYE_OCTAVE_SECOND:
+			case CHORDEYE_OCTAVE_THIRD:
+			#endif
 			// target_page->Step[row][col]->chord_data =
 			// 	( target_page->Step[row][col]->chord_data & 0x8FF )
 			//	|	( BK_KEY_to_xdx( keyNdx ) << 11 ) ;
@@ -736,8 +749,51 @@ void key_exec_STEP( unsigned int keyNdx ){
 	}
 
 
+	#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+	if( keyNdx > 251 && keyNdx < 259 ) {
+		// CHORD button
+		if ( MODE_OBJECT_SELECTION <= CHORDEYE ) {
 
+			// D O U B L E - C L I C K
+			if (	(	(DOUBLE_CLICK_TARGET == keyNdx)
+					&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY) )
+				){
+				MODE_OBJECT_SELECTION = CHORDEYE_OCTAVE_FIRST;
+			} else if ( DOUBLE_CLICK_TARGET == 0 ){
 
+				DOUBLE_CLICK_TARGET = keyNdx;
+				DOUBLE_CLICK_TIMER = ON;
+				// Start the Double click Alarm
+				cyg_alarm_initialize(
+					doubleClickAlarm_hdl,
+					cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+					DOUBLE_CLICK_ALARM_TIME );
+
+				// SINGLE CLICK CODE:
+				// Enter the CHORDEYE view
+				MODE_OBJECT_SELECTION = CHORDEYE;
+			}
+		}
+	}
+
+	if( keyNdx == KEY_SCALE_MYSEL ) {
+		// Set chord view mode
+		MODE_OBJECT_SELECTION = ( MODE_OBJECT_SELECTION == CHORDEYE ) ? CHORDEYE_OCTAVE_FIRST : CHORDEYE;
+	} else {
+		// 1 - 3 switches stack octave chord view
+		switch( keyNdx ) {
+			case KEY_SCALE_MOD:
+				MODE_OBJECT_SELECTION = CHORDEYE_OCTAVE_FIRST;
+				break;
+			case KEY_SCALE_SEL:
+				MODE_OBJECT_SELECTION = CHORDEYE_OCTAVE_SECOND;
+				break;
+			case KEY_SCALE_CAD:
+				MODE_OBJECT_SELECTION = CHORDEYE_OCTAVE_THIRD;
+				break;
+		}
+	}
+	#endif
 }
 
 

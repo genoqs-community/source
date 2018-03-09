@@ -220,13 +220,18 @@ cyg_handle_t	UART1_IN_mbox_handle;
 // This indicates globally whether Octopus is running or not, or in Step record mode
 unsigned char G_run_bit 		= OFF;
 unsigned char G_pause_bit 		= OFF;
+#ifdef FEATURE_ENABLE_SONG_UPE
 unsigned char G_scroll_bit 		= OFF;
 unsigned char prev_G_pause_bit  = OFF;
 unsigned char prev_G_stop_bit 	= OFF;
 unsigned char G_stop_bit		= OFF;
 unsigned char force_stop_bit	= OFF;
 unsigned char G_align_bit		= OFF;
-
+unsigned char G_track_page_chain_mod_bit = OFF;
+unsigned short G_on_the_measure_trackMutepattern = 0;
+unsigned char G_on_the_measure_trackMutepattern_pageNdx = 0;
+Trackstruct* G_on_the_measure_track[MATRIX_NROF_ROWS];
+#endif
 // This indicates the global track record mode.
 unsigned char G_track_rec_bit = OFF;
 
@@ -339,7 +344,7 @@ unsigned int G_MIDI_timestamp = 0;
 unsigned char G_manualStartBo = TRUE;
 
 
-// The max value an unsigned int may carry - 4294967295 - ours is smaller b/c something..
+// The max value an unsigned int may carry - 0xFFFFFFFF - ours is smaller b/c something..
 #define def_TIMESTAMP_MAX						 429496729
 
 // This indicates the operation mode: INTERACTIVE or PASSIVE
@@ -422,6 +427,8 @@ unsigned char POWERON_LOADED = FALSE;
 // Default play mode status
 unsigned char PLAY_MODE_STATUS = OFF;
 
+#define FACTOR_INTERVAL_TYPE_DEFAULT 	0
+#define FACTOR_INTERVAL_TYPE_SEMITONE 	1
 
 // Multiples of 16
 unsigned char Track_LEN_factor[ TRACK_MAX_LENFACTOR + 1 ] =
@@ -445,6 +452,11 @@ unsigned char Track_VEL_factor[ TRACK_MAX_VELFACTOR + 1 ] =
 unsigned char Track_PIT_factor[ TRACK_MAX_PITFACTOR + 1 ] =
 					{	0, 1, 3, 7, 12, 18, 26, 42, 50,
 						61, 72, 85, 98, 112, 128, 162, 200 };
+
+unsigned char Track_PIT_factor_semitone[ TRACK_MAX_PITFACTOR + 1 ] =
+					{	0, 6, 12, 18, 24, 30, 36, 42, 48,
+						54, 60, 66, 72, 78, 84, 90, 96 };
+
 #define PIT_FACTOR_NEUTRAL_VALUE 	50
 
 
@@ -518,7 +530,11 @@ unsigned char G_scale_ndx	= 1;	// Index of current scale. Has to be between 1 an
 unsigned char G_last_zoom_level	= zoomPAGE; // remembers the previous zoom level
 
 Pagestruct* G_pgmch_pending_page = NULL;
+#ifdef FEATURE_ENABLE_DICE
+unsigned char G_dice_run_bit 		= OFF;
+#endif
 
+#ifdef FEATURE_ENABLE_SONG_UPE
 // Allow MCH change w/o loosing track record status
 unsigned short G_prev_rec_page_pattern = 0;
 unsigned short G_prev_rec_page = 0;
@@ -526,7 +542,7 @@ unsigned short G_prev_rec_page = 0;
 unsigned char 	G_save_song_pos = OFF;
 unsigned char 	G_repeats_delay = ON;
 unsigned char 	G_repeats_interval_idx = 0;
-unsigned int	Repeats_Intervals[] = { 4294967295, 64, 32, 24, 16, 8, 4 };
+unsigned int	Repeats_Intervals[] = { 0xFFFFFFFF, 64, 32, 24, 16, 8, 4 };
 unsigned int	G_measure_locator = 0;
 unsigned char	G_measure_indicator_value = 0; // 5 Measure Nibbles
 unsigned char	G_measure_indicator_part = 0; // 1 Measure - 1/5 Nibble
@@ -538,3 +554,4 @@ Trackstruct*	G_rec_ctrl_track = NULL;
 Pagestruct*		G_rec_ctrl_page = NULL;
 Pagestruct*		G_last_ctrl_page[9] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 unsigned short	G_last_ctrl_offset[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+#endif

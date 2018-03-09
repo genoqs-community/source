@@ -396,6 +396,82 @@ unsigned char jump_skipped_position_new( 	Pagestruct* target_page,
 
 
 
+// Jump to next position having active STEP trigger destination.
+unsigned char jump_skipped_trigger_position(	Pagestruct* target_page,
+												Trackstruct* target_track,
+												unsigned char candidate,
+												unsigned char direction ){
+
+	if ( candidate == 0 ) return 0;
+
+	unsigned char i = 0, j = 0, k = 0;
+	unsigned char origin = candidate;
+	unsigned char row = row_of_track( target_page, target_track );
+
+	Trigger_Stack* trigger_stack = direction_repository[target_track->attr_DIR + target_track->event_offset[ATTR_DIRECTION]].trigger_set;
+
+	for ( i = 0; i < MATRIX_NROF_COLUMNS; k = 0, i++){
+		for ( j = 0; j < MATRIX_NROF_ROWS; j++ ){
+			if( trigger_stack[candidate].trigger[j] ){
+				if ( Step_get_status( target_page->Step[row][trigger_stack[candidate].trigger[j] - 1], STEPSTAT_SKIP ) == OFF ){
+					#ifdef FEATURE_ENABLE_DICE
+					if ( !dice_is_page_locator_skipped( target_page, trigger_stack[candidate].trigger[j] - 1 ) ){
+						break;
+					}
+					#else
+					break;
+					#endif
+				}
+				k++;
+			}
+		}
+
+		if ( j < MATRIX_NROF_ROWS ){
+			break;
+		}else{
+			if ( k == 0 ){
+				// is_trigger_stack_random
+				if ( Step_get_status( target_page->Step[row][candidate - 1], STEPSTAT_SKIP ) == ON ){
+					candidate = jump_skipped_position_new( target_page, target_track, candidate, direction );
+				}
+				break;
+			}
+
+			candidate = ( direction == DIRECTION_LINEAR ) ? ( origin + ( i + 1 ) ) % 17 : ( ( origin - i ) + 16 ) % 17;
+		}
+	}
+
+	return candidate;
+}
+
+// Jump to next random (non skipped) position.
+unsigned char get_random_position( Pagestruct* target_page, Trackstruct* target_track ){
+
+	unsigned char col = 0;
+	unsigned char row = row_of_track( target_page, target_track );
+
+	unsigned char active_length = 0;
+	unsigned char active_list[16];
+
+	for ( col = 0; col < MATRIX_NROF_COLUMNS; col++ ){
+		if ( Step_get_status( target_page->Step[row][col], STEPSTAT_SKIP ) == OFF ){
+			active_list[active_length] = col;
+			active_length++;
+		}
+	}
+
+	unsigned char result = 1 + ( active_list[rand() % active_length] );
+
+	#ifdef FEATURE_ENABLE_DICE
+	if( dice_is_page_locator_skipped( target_page, result ) ) {
+		result = 0;
+	}
+	#endif
+
+	return result;
+}
+
+
 // Returns the next trigger of the given track - from its trigger stack
 unsigned char get_next_trigger( Pagestruct* target_page, unsigned char row ){
 
@@ -403,13 +479,6 @@ unsigned char get_next_trigger( Pagestruct* target_page, unsigned char row ){
 	unsigned char result = 0;
 	unsigned char direction = DIRECTION_LINEAR;
 
-
-	// If the current trigger set is skipped, ignore it by returning 0 right away
-	if ( Step_get_status(
-			target_page->Step[row][target_page->Track[row]->frame_ndx - 1],
-				STEPSTAT_SKIP ) == ON ){
-		return 0;
-	}
 
 	// Iterate through the current trigger stack of the track
 	for (i=0; i < MATRIX_NROF_ROWS; i++){
@@ -491,7 +560,6 @@ unsigned char get_next_frame_ndx( Pagestruct* target_page, Trackstruct* target_t
 	unsigned char certainty = 0;
 
 
-
 //	if (	( target_page->pageNdx == 8 )
 //		&&	( row_of_track( target_page, target_track ) == 9 )
 //		){
@@ -508,8 +576,9 @@ unsigned char get_next_frame_ndx( Pagestruct* target_page, Trackstruct* target_t
 
 		// Assume you are on step 1 and jump forward from there to the next unskipped position.
 		candidate = 1;
-		candidate = jump_skipped_position_new( target_page, target_track, candidate, DIRECTION_LINEAR );
-
+		//candidate = jump_skipped_position_new( target_page, target_track, candidate, DIRECTION_LINEAR );
+		// Find next candidate and depending on certainty outcome the result
+		result = candidate = jump_skipped_trigger_position( target_page, target_track, candidate, DIRECTION_LINEAR );
 		// Extract the certainty from reached frame
 		certainty = direction_repository[ 	target_track->attr_DIR
 									+ 	target_track->event_offset[ATTR_DIRECTION] ]
@@ -534,7 +603,7 @@ unsigned char get_next_frame_ndx( Pagestruct* target_page, Trackstruct* target_t
 //	}
 
 	// Based on certainty, compute the next candidate and the move direction
-	if ( ((rand() % 100) ) < certainty ){
+	if ( certainty == 100 || ( ( ( rand() % 100) ) < certainty ) ){
 
 		// FORWARD moving result: direction is FORWARD
 		direction = DIRECTION_LINEAR;
@@ -557,9 +626,10 @@ unsigned char get_next_frame_ndx( Pagestruct* target_page, Trackstruct* target_t
 
 
 	// Jump over potentially skipped steps at new resulting position
-	result = jump_skipped_position_new( target_page, target_track, candidate, direction );
-
-
+	//result = jump_skipped_position_new( target_page, target_track, candidate, direction );
+	if ( candidate != result ) {
+		result = jump_skipped_trigger_position( target_page, target_track, candidate, direction );
+	}
 //	if (	( target_page->pageNdx == 8 )
 //		&&	( row_of_track( target_page, target_track ) == 9 )
 //		){
@@ -567,6 +637,7 @@ unsigned char get_next_frame_ndx( Pagestruct* target_page, Trackstruct* target_t
 //		d_iag_printf( "     result returned:%d\n", result );
 //	}
 
+	//every 4th tick
 	return result;
 }
 
@@ -593,6 +664,11 @@ unsigned char get_next_trackposition( Pagestruct* target_page, Trackstruct* targ
 										+ target_track->event_offset[ATTR_DIRECTION] ]
 					.trigger_set[ target_track->frame_ndx ].trigger,
 				10 );
+
+		if( is_trigger_random( target_track ) ){
+			// No trigger data get random position
+			target_track->trigger[1] = get_random_position( target_page, target_track );
+		}
 	}
 
 	// Get next trigger from the current trigger stack
@@ -638,7 +714,10 @@ unsigned char get_next_trackposition( Pagestruct* target_page, Trackstruct* targ
 					.trigger_set[ target_track->frame_ndx ].trigger,
 					10 );
 
-
+			if( is_trigger_random( target_track ) ){
+				// No trigger data get random position
+				target_track->trigger[1] = get_random_position( target_page, target_track );
+			}
 //	if (	( target_page->pageNdx == 8 )
 //		&&	( row == 9 )
 //		){
@@ -650,6 +729,13 @@ unsigned char get_next_trackposition( Pagestruct* target_page, Trackstruct* targ
 			// Get next trigger from the trigger stack
 			result = get_next_trigger( target_page, row );
 
+	//	if (	( target_page->pageNdx == 8 )
+	//		&&	( row == 9 )
+	//		){
+	//
+	//		d_iag_printf( "   result trigger:%d\n\n", result );
+	//	}
+
 
 //	if (	( target_page->pageNdx == 8 )
 //		&&	( row == 9 )
@@ -658,14 +744,6 @@ unsigned char get_next_trackposition( Pagestruct* target_page, Trackstruct* targ
 //		d_iag_printf( "   result trigger:%d\n\n", result );
 //	}
 
-
-
-			// The new trigger stack is empty (offset is still 0).. play a random position!
-			if ( result == 0 ){
-
-				// Generate random offset position
-				result = rand() % 17;
-			}
 		} // Track did not want to wrap
 	}
 
@@ -676,7 +754,6 @@ unsigned char get_next_trackposition( Pagestruct* target_page, Trackstruct* targ
 //
 //		d_iag_printf( "next trigger (final):%d\n\n", result );
 //	}
-
 
 	return result;
 }
@@ -729,6 +806,9 @@ Trackstruct* advance_track_locator( 	Pagestruct* target_page,
 
 		// SWITCH to the next track in the chain (track is part of a chain)
 		else if ( target_track->chain_data[NEXT] != target_track ){
+			#ifdef NEMO
+			track_window_follow_chain( target_page, target_track );
+			#endif
 
 			// Make the NEXT track the PLAY track in the whole track chain
 			update_trackchain_PLAY( target_page, target_track, target_track->chain_data[NEXT] );
@@ -783,11 +863,17 @@ Trackstruct* advance_track_locator( 	Pagestruct* target_page,
 
 	// Support PgmCh send on tracks that are part of a chain.
 	// Compare initial track with target track
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	if ( original_track != target_track && G_pause_bit == OFF ){
 		// Send the program change for the new track
 		send_track_program_change( target_track, target_page );
 	}
-
+	#else
+	if ( original_track != target_track ){
+		// Send the program change for the new track
+		send_track_program_change( target_track, target_page );
+	}
+	#endif
 
 	// Return the wrap to other track - condition flag
 	return target_track;
@@ -797,10 +883,10 @@ Trackstruct* advance_track_locator( 	Pagestruct* target_page,
 
 
 // Check if recording is going on in the chain of a given track
-unsigned char recording_active_in_chainof( Pagestruct* target_page, unsigned char row ){
+Trackstruct* recording_active_in_chainof( Pagestruct* target_page, unsigned char row ){
 
 	unsigned char i = 0;
-	unsigned char result = FALSE;
+	Trackstruct* result = NULL;
 	Trackstruct* current_track = target_page->Track[row];
 
 	for ( i=0; i < MATRIX_NROF_ROWS; i++ ){
@@ -809,7 +895,7 @@ unsigned char recording_active_in_chainof( Pagestruct* target_page, unsigned cha
 					( 1 << row_of_track( target_page, current_track ) )
 		){
 
-			result = TRUE;
+			result = current_track;
 			break;
 		}
 
@@ -824,10 +910,16 @@ unsigned char recording_active_in_chainof( Pagestruct* target_page, unsigned cha
 
 //________________________________________________________________________________________
 // Advance track TTC and locator for given track in page, according to chain setting.
-Trackstruct* advance_track_TTC( Pagestruct* target_page, Trackstruct* target_track, unsigned char row ){
+Trackstruct* advance_track_TTC( Pagestruct* target_page, Trackstruct* target_track ){
+
+	unsigned char row = 0;
+	Trackstruct* recording_track = NULL;
 
 	// Advance the row TTC first..
 	target_track->TTC = 	1 + (target_track->TTC % 12);
+
+	// Remember it for later lookup
+	row = row_of_track( target_page, target_track );
 
 	// Advance the track LOC (locator) on the 'one' of their TTC
 	if ( 	( target_track->TTC 	== 1 )
@@ -836,19 +928,24 @@ Trackstruct* advance_track_TTC( Pagestruct* target_page, Trackstruct* target_tra
 		// Universal track locator advancement - will return the next track in chain, or NULL
 		target_track = advance_track_locator( target_page, target_track, 0 );
 
-		// REC FLAG CARRY - carry REC flag over with the cursor, if recording going on in chain at hand
-		if (	( Page_getTrackRecPattern(target_page) != 0 )
-			&&	( recording_active_in_chainof( target_page, row ) )
-			&&	( target_track != NULL )
-			){
+		if( target_track->chain_data[NEXT] != target_track ) {
 
-			// Unset the recording bit from the original track..
-			//target_page->track_REC_pattern ^= ( 1 << row );
-			Page_flipTrackRecPatternBit( target_page, row );
+			recording_track = recording_active_in_chainof( target_page, row );
 
-			// ..and set the recording bit of the target page to the PLAY track of the given trow
-			// target_page->track_REC_pattern ^= ( 1 <<  row_of_track( target_page, target_track->chain_data[PLAY] ) );
-			Page_flipTrackRecPatternBit( target_page, row_of_track( target_page, target_track->chain_data[PLAY]) );
+			// REC FLAG CARRY - carry REC flag over with the cursor, if recording going on in chain at hand
+			if (	( Page_getTrackRecPattern(target_page) != 0 )
+				&&	( recording_track != NULL )
+				&&	( target_track != NULL )
+				){
+
+				// Unset the recording bit from the original track..
+				//target_page->track_REC_pattern ^= ( 1 << row );
+				Page_flipTrackRecPatternBit( target_page, row_of_track( target_page, recording_track) );
+
+				// ..and set the recording bit of the target page to the PLAY track of the given trow
+				// target_page->track_REC_pattern ^= ( 1 <<  row_of_track( target_page, target_track->chain_data[PLAY] ) );
+				Page_flipTrackRecPatternBit( target_page, row_of_track( target_page, target_track->chain_data[PLAY]) );
+			}
 		}
 	}
 

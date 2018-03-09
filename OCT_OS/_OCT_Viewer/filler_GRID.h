@@ -23,7 +23,7 @@
 //
 
 
-
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	// blink page cluster selection
 	if ( GRID_p_selection_cluster == ON ) {
 		page_cluster_selection( GRID_CURSOR );
@@ -34,7 +34,7 @@
 		MIR_write_dot( LED_MUTE_MASTER, MIR_GREEN );
 		MIR_write_dot( LED_MUTE_MASTER, MIR_BLINK );
 	}
-
+	#endif
 	//
 	// GRID  M I X  MODE
 	//
@@ -80,7 +80,7 @@
 		// Caution!! There is also some extra code in the ELE_MATRIX / GRID section.
 		show( ELE_TRACK_MUTATORS, GRID_SET_SWITCHMODE );
 
-
+		#ifdef FEATURE_ENABLE_SONG_UPE
 		// NUMERIC QUADRANT
 		if ( G_pause_bit == OFF ){
 			MIR_write_numeric_C( G_master_tempo );
@@ -108,9 +108,30 @@
 				}
 			}
 
-		}
+		}		
+		#else
+		// NUMERIC QUADRANT
+		MIR_write_numeric_C( G_master_tempo );
 
+
+		// Show cursor Marcel style
+		if ( is_pressed_key( KEY_ZOOM_PAGE ) ){
+
+			MIR_write_dot( KEY_ZOOM_PAGE, MIR_GREEN );
+
+			// Show the GRID cursor
+			temp = cursor_to_dot( GRID_CURSOR );
+			MIR_write_dot( temp, MIR_RED   );
+			MIR_write_dot( temp, MIR_GREEN );
+			MIR_write_dot( temp, MIR_BLINK );
+		}
+		#endif
 	} // // GRID_playmode == GRID_MIX
+
+
+
+
+
 
 
 
@@ -130,6 +151,7 @@
 		switch( GRID_rowzero_pagelength ){
 
 			case FALSE:
+				#ifdef FEATURE_ENABLE_SONG_UPE
 				// Show the repeats of the page under cursor
 				{
 					unsigned char posREP = (Page_repository[GRID_CURSOR].attr_STA - Page_repository[GRID_CURSOR].repeats_left) + 1;
@@ -156,6 +178,14 @@
 					}
 					MIR_fill_numeric( 1, numericREP, 9, MIR_BLINK );
 				}
+				#else
+				// Show the repeats of the page under cursor. Not in the above because
+				// ..for some reason doesn't work.
+				MIR_fill_numeric( 1, Page_repository[GRID_CURSOR].repeats_left, 9, MIR_GREEN );
+				MIR_fill_numeric( 	 Page_repository[GRID_CURSOR].repeats_left,
+									 Page_repository[GRID_CURSOR].attr_STA + 1, 9, MIR_RED );
+				MIR_write_dot( 10, MIR_RED );
+				#endif
 				break;
 
 			case TRUE:
@@ -194,6 +224,11 @@
 		}
 
 	} // GRID_play_mode == GRID_EDIT
+
+
+
+
+
 
 
 
@@ -340,7 +375,7 @@
 			show( ELE_EDIT_MASTER, GREEN );
 			break;
 	}
-
+#ifdef FEATURE_ENABLE_SONG_UPE
 	//
 	// Pause Measure Locator Scrolling (PMLS) - enabled
 	//
@@ -363,5 +398,5 @@
 		MIR_write_numeric_C( G_measure_indicator_value );
 
 	}
-
+#endif
 

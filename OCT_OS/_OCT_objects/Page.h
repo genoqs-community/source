@@ -49,9 +49,11 @@ extern 	void 			shiftAttributeMap( 		Pagestruct* target_page,
 extern unsigned char 	row_of_track( Pagestruct* target_page, Trackstruct* target_track );
 extern void 			NEMO_Page_RMX_track( Pagestruct* target_page, unsigned char row );
 
+#ifdef FEATURE_ENABLE_DICE
+extern Trackstruct* throw_dice( 				Pagestruct* target_page );
 
-
-
+extern signed int dice_attr_flow_offset( Pagestruct * target_page, unsigned char attr, const card8 locator );
+#endif
 
 void Page_clear( Pagestruct* pagePt )
 {
@@ -304,7 +306,11 @@ unsigned int 	Page_get_chord_trackpattern( Pagestruct* target_page, unsigned cha
 	unsigned int bitpattern=0;
 
 	for (col=0; col<16; col++) {
+		#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+		if ( 	( is_step_chord( target_page->Step[row][col] ) )
+		#else
 		if ( 	( my_bit_cardinality( target_page->Step[row][col]->chord_data & 0x7FF )>0 )
+		#endif
 			&&	( Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == ON )
 			){
 
@@ -350,7 +356,7 @@ unsigned int 	Page_get_selectOff_trackpattern(Pagestruct* target_page, unsigned 
 
 }
 
-
+#ifdef FEATURE_ENABLE_SONG_UPE
 // Return the bitpattern of the skipped steps
 unsigned int 	Page_get_locator_event_skippattern( 	Pagestruct* target_page,
 									unsigned char row ){
@@ -371,7 +377,7 @@ unsigned int 	Page_get_locator_event_skippattern( 	Pagestruct* target_page,
 
 	return bitpattern;
 }
-
+#endif
 
 // Return the bitpattern of the skipped steps
 unsigned int 	Page_get_skippattern( 	Pagestruct* target_page,
@@ -490,7 +496,12 @@ void Page_wrap_track (	Pagestruct* target_page,
 		// Do not shift this, or the events will shift along!
 		// shiftAttributeMap( target_page, row, ATTR_AMOUNT, 	direction );
 
-		if ( G_zoom_level == zoomSTEP ){
+		if ( 	( G_zoom_level == zoomSTEP )
+			#ifdef NEMO
+			&&	( ( NEMO_step_VER != VER_EVENT )
+			&&	( NEMO_step_VER != VER_RANGE ) )
+			#endif
+			&&	( row == target_page->stepSelectionSingleRow ) ) {
 
 			// Keep the coordinates of the selected step intact
 
@@ -612,7 +623,8 @@ void Track_copy( Pagestruct* source_page, unsigned char source_row,
 	for (i=0; i<MATRIX_NROF_COLUMNS; i++){
 
 		Step_copy( 	source_page->Step[source_row][i],
-					target_page->Step[target_row][i]  );
+					target_page->Step[target_row][i],
+					source_page != target_page  );
 	}
 }
 
@@ -655,9 +667,9 @@ void Page_copy( Pagestruct* source_page, Pagestruct* target_page ) {
 
 
 	// Copy all the other page attributes
+	#ifdef NEMO
 	target_page->track_window			= source_page->track_window;
-	target_page->track_window_shift		= source_page->track_window_shift;
-
+	#endif
 	target_page->locator 				= 0;
 	target_page->editorMode				= source_page->editorMode;
 	target_page->page_clear				= source_page->page_clear;
@@ -792,7 +804,10 @@ void Track_clear_full( Pagestruct* target_page, unsigned char track_ndx ){
 void Page_CLEAR_selected_tracks( Pagestruct* target_page ) {
 
 	unsigned char 	row = 0;
-
+	unsigned int	all_tracks_mask = 0x3ff;
+	#ifdef NEMO
+	all_tracks_mask = 0xff;
+	#endif
 	// Applies to the selected rows
 	for (row = 0; row < MATRIX_NROF_ROWS; row ++) {
 
@@ -805,7 +820,7 @@ void Page_CLEAR_selected_tracks( Pagestruct* target_page ) {
 	} // Iterate through the rows
 
 	// Mark page as cleared, if all tracks have been selected
-	if (target_page->trackSelection == 0x3ff) {
+	if (target_page->trackSelection == all_tracks_mask) {
 
 		// Mark the page as cleared
 		target_page->page_clear = ON;
@@ -1146,6 +1161,66 @@ void Page_FLT_selected_tracks( Pagestruct* target_page ) {
 
 
 
+
+// Compute the Page the leftmost neighbor to current page
+Pagestruct* Page_leftmost_neighbour( Pagestruct* target_page ) {
+
+	signed short 	this_ndx = 0;
+	unsigned char	j;
+	Pagestruct* 	leftmost_page = target_page;
+
+	this_ndx = target_page->pageNdx;
+
+	if ( Page_repository[this_ndx].page_clear == OFF ) {
+
+		for ( j = 0; j < MATRIX_NROF_COLUMNS; j++ ) {
+
+			this_ndx -= 10;
+
+			if (	( this_ndx < 0 )
+				||	( Page_repository[this_ndx].page_clear == ON ) ) {
+
+				leftmost_page = &Page_repository[this_ndx + 10];
+				break;
+			}
+
+		}
+	}
+
+	return leftmost_page;
+}
+
+
+
+// Compute the Page the rightmost neighbor to current page
+Pagestruct* Page_rightmost_neighbour( Pagestruct* target_page ) {
+
+	unsigned short 	this_ndx = 0;
+	unsigned char	j;
+	Pagestruct* 	rightmost_page = target_page;
+
+	this_ndx = target_page->pageNdx;
+	if ( Page_repository[this_ndx].page_clear == OFF ) {
+
+		for ( j = 0; j < MATRIX_NROF_COLUMNS; j++ ) {
+
+			this_ndx += 10;
+
+			if (	( ( this_ndx / 10 ) > MATRIX_NROF_COLUMNS - 1 )
+				||	( Page_repository[this_ndx].page_clear == ON ) ) {
+
+				rightmost_page = &Page_repository[this_ndx - 10];
+				break;
+			}
+
+		}
+	}
+
+	return rightmost_page;
+}
+
+
+
 //____________________________________________________________________________________________
 // Returns a random value according to the amount and interval passed
 signed char	randomize_byamount( 		signed int in_value,
@@ -1463,19 +1538,29 @@ unsigned char 	get_track_GRV_offset(	Pagestruct* target_page,
 		return 0;
 	}
 
-	// Compute the absolute delay according to GRV - and convert it to a value in [0..12]
-	if ( target_page->Track[row]->attr_GRV > 0 ){
+	signed char dice_groove_offset = 0;
 
-		switch( (target_page->Track[row]->attr_GRV+1) % 2 ){
+	#ifdef FEATURE_ENABLE_DICE
+	#ifdef NEMO
+	dice_groove_offset = dice_attr_flow_offset( target_page, NEMO_ATTR_GROOVE, col );
+	#else
+	dice_groove_offset = dice_attr_flow_offset( target_page, ATTR_GROOVE, col );
+	#endif
+	#endif
+
+	// Compute the absolute delay according to GRV - and convert it to a value in [0..12]
+	if ( target_page->Track[row]->attr_GRV + dice_groove_offset > 0 ){
+
+		switch( normalize(target_page->Track[row]->attr_GRV + dice_groove_offset + 1, STEP_MIN_GROOVE, STEP_MAX_GROOVE) % 2 ){
 
 		case 0:
 			// Real ODD values: Use the value / 2
-			delay = (target_page->Track[row]->attr_GRV+1) / 2;
+			delay = normalize(target_page->Track[row]->attr_GRV + dice_groove_offset + 1, STEP_MIN_GROOVE, STEP_MAX_GROOVE) / 2;
 			break;
 
 		case 1:
 			// Real EVEN values: Use the value of previous odd +/- 1
-			delay = (target_page->Track[row]->attr_GRV+1) / 2;
+			delay = normalize(target_page->Track[row]->attr_GRV + dice_groove_offset + 1, STEP_MIN_GROOVE, STEP_MAX_GROOVE) / 2;
 			switch( rand() % 3 ){
 				case 0: 			break;
 				case 1:	delay --;	break;
@@ -1595,13 +1680,13 @@ void Step_swap( Pagestruct* target_page, Stepstruct* a_step, Stepstruct* b_step 
 	Stepstruct buffer;
 
 	// Copy step A to buffer
-	Step_copy( a_step, &buffer );
+	Step_copy( a_step, &buffer, true );
 
 	// Copy step B to step A
-	Step_copy( b_step, a_step );
+	Step_copy( b_step, a_step, true );
 
 	// Copy step A to step B
-	Step_copy( &buffer, b_step );
+	Step_copy( &buffer, b_step, true );
 
 	// Update the step selection pattern
 	export_stepSELpattern( target_page );
@@ -1635,5 +1720,44 @@ void Step_move( Pagestruct* target_page, unsigned char row, unsigned char col, u
 	Step_swap( target_page, target_page->Step[row][col], target_page->Step[row][swap_col] );
 }
 
+void Step_zoom( 	Pagestruct* target_page,
+					unsigned char row,
+					unsigned char col ){
+
+	unsigned char rowctr = 0;
+	unsigned char colctr = 0;
+
+	Stepstruct *target_step = target_page->Step[row][col];
+
+	// Un-SELECT all potentially selected steps in page
+	if (target_page->stepSelection != 0) {
+
+		for (rowctr=0; rowctr<MATRIX_NROF_ROWS; rowctr++){
+			for (colctr=0; colctr<MATRIX_NROF_COLUMNS; colctr++){
+
+				Step_set_status( target_page->Step[rowctr][colctr], STEPSTAT_SELECT, OFF );
+			}
+		}
+		// Reset the counter of selected steps
+		target_page->stepSelection = 0;
+		target_page->stepAttributeSelection = OFF;
+	}
+
+	// Select the current step formally
+	Step_set_status( target_step, STEPSTAT_SELECT, ON );
+
+	// Update the step selection counter in page
+	target_page->stepSelection = 1;
+
+	// Remember STEP COORDINATES
+	target_page->stepSelectionSingleRow = row;
+	target_page->stepSelectionSingleCol = col;
+
+	// d_iag_printf( "zooming into step row:%d col:%d ts:%d\n",
+	//		row, col, target_page->trackSelection );
+
+	// Zoom into the step: Switch the mode
+	G_zoom_level = zoomSTEP;
+}
 
 

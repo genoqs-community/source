@@ -50,15 +50,15 @@
 		tap_step( target_page );
 
 	} // TAP KEY
-
-	// Wilson - Toggle transpose abs pitch mode
+	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	// Toggle transpose abs pitch mode
 	if (	( keyNdx == KEY_SCALE_SEL )
 		&&	( target_page->trackSelection != 0 )	){
 
 		target_page->pitch_abs ^= 1;
 
 	}
-
+	#endif
 	// TRACK "zoom" if single selection
 	if (keyNdx == KEY_ZOOM_TRACK) {
 
@@ -312,7 +312,11 @@
 						target_page->trackSelection = OFF;
 
 						// Stop playing the page and reset its track locators
+						#ifdef FEATURE_ENABLE_SONG_UPE
 						stop_playing_page( &Page_repository[m], G_TTC_abs_value, ON );
+						#else
+						stop_playing_page( &Page_repository[m], G_TTC_abs_value );
+						#endif
 						set_track_locators( &Page_repository[m], NULL, 0, 0 );
 
 						// Remove source page from GRID_selection
@@ -608,10 +612,12 @@
 	// Enable track trans-positions with one click and directly
 	#include "key_OCT_CIRCLE_xpose_TRACK.h"
 
-	//
-	// Enter VELOCITY using the BK keys
-	//
-	if ( 	( keyNdx == 201 )
+	// In page preview mode
+	// In preview mode enter the track velocity
+	if (	(	( target_page->editorMode == PREVIEW )
+			||	( target_page->editorMode == PREVIEW_PERFORM )
+			)
+		&&	( ( keyNdx == 201 )
 		||	( keyNdx == 200	)
 		||	( keyNdx == 199 )
 		|| 	( keyNdx == 198 )
@@ -620,9 +626,9 @@
 		||	( keyNdx == 206 )
 		||	( keyNdx == 216 )
 		|| 	( keyNdx == 215 )
-		||	( keyNdx == 224 )
+		||	( keyNdx == 224 ) )
 		){
-
+		// Enter VELOCITY using the BK keys
 		key_NUMERIC_QUADRANT_velo_TRACK( keyNdx );
 	}
 
@@ -678,7 +684,7 @@
 					target_page->Track[i]->TTC = 12;
 
 					// Now fire the next locator
-					advance_track_TTC( 	target_page, target_page->Track[i], i );
+					advance_track_TTC( 	target_page, target_page->Track[i] );
 
 					// Now play step in track at new location: page, row, column
 					// Check if the step is set first..

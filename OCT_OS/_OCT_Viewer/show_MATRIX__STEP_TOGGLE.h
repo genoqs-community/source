@@ -22,11 +22,11 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-
+		#ifdef FEATURE_ENABLE_SONG_UPE
 		if (is_pressed_key(KEY_ZOOM_PAGE)) {
 			return;
 		}
-
+		#endif
 		// MATRIX fields with track bitpatterns (Rows 0-9) of step toggle
 		for (i=0; i<MATRIX_NROF_ROWS; i++) {
 
@@ -57,7 +57,8 @@
 			MIR_write_trackpattern( Page_get_hyperpattern(target_page, i),
 									i,
 									MIR_SHINE_GREEN   );
-
+			
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			if (Track_get_MISC(target_page->Track[i], CONTROL_BIT) ){
 				MIR_write_trackpattern ( track_skippattern, i, MIR_GREEN );
 
@@ -67,6 +68,7 @@
 					MIR_blink_trackpattern ( track_skippattern, i );
 				}
 			}
+			#endif
 		}
 
 

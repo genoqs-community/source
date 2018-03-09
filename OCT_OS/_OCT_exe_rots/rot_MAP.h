@@ -243,7 +243,9 @@ void rot_exec_MAP( 	Pagestruct* target_page,
 			// MAP SHIFT inplementation: POSITION rotary
 			if ( rotNdx == POSITION ) {
 
-				if ( stepSelection == 0 ) {
+			if ( 	(stepSelection == 0 )
+				&&	( target_page->trackAttributeSelection != ( 1 << DIRECTION ) )
+				) {
 
 					shiftAttributeMap(
 						target_page,

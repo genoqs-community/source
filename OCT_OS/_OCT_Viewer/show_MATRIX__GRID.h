@@ -29,12 +29,12 @@
 
 			// GRID_CURSOR shown by blinking 
 			GRID_write_dot (GRID_CURSOR, MIR_BLINK);
-
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			// blink page cluster selection
 			if ( GRID_p_selection_cluster == ON ) {
 				page_cluster_selection( GRID_CURSOR );
 			}
-
+			#endif
 			if ( Page_repository[GRID_CURSOR].page_clear == ON ){	
 				// If on empty page then light position orange
 				GRID_write_dot (GRID_CURSOR, MIR_GREEN);
@@ -54,6 +54,7 @@
 						
 						// Show it in GREEN
 						GRID_write_dot( i, MIR_GREEN );
+
 					}
 					else {
 						
@@ -118,7 +119,12 @@
 
 						// Show it in GREEN
 						GRID_write_dot( i, MIR_GREEN );
-						// GRID_write_dot( i, MIR_BLINK );								
+						if (	( G_run_bit == ON )
+							&&	( Page_repository[i].attr_STA == 0 )
+							&&	( ( GRID_bank_playmodes & ( 1 << (i % 10) ) ) != 0 ) ){
+							// Indicate clustered page is page looping indefinitely
+							GRID_write_dot( i, MIR_BLINK );
+						}
 					}
 					else {
 						// Show it in GREEN
@@ -146,9 +152,11 @@
 
 	} // switch( GRID_play_mode )
 
+
 	// Write Grid to MIR
 	MIR_write_GRID ();
 
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	// Control track MIX ARMED
 	if ( MIX_TRACK != NULL && CHECK_BIT(MIX_TRACK->attr_MISC, TRK_CTRL_MIX) && Track_get_MISC(MIX_TRACK, CONTROL_BIT) ){
 		MIR_write_dot( LED_MIX_MASTER, MIR_RED );
@@ -156,6 +164,35 @@
 		MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
 	}
 
+	// Show the current grid set track if a note is set
+	if ( GRID_p_set_note_offsets[current_GRID_set] != 255 )
+	{
+		MIR_write_dot( 10, MIR_RED );
+		MIR_write_dot( 10, MIR_GREEN );
+		MIR_write_dot( 10, MIR_BLINK );
+	}
+
+	if ( is_pressed_key(196) )
+	{
+		if ( GRID_p_set_midi_ch <= 16 ){
+
+			MIR_point_numeric(
+				GRID_p_set_midi_ch,
+				9,	MIR_GREEN);
+		}
+		else if ( GRID_p_set_midi_ch <= 32 ){
+
+			MIR_point_numeric(
+				GRID_p_set_midi_ch - 16,
+				9,	MIR_RED);
+		}
+	}
+
+	if ( is_pressed_rowzero() && GRID_p_set_note_offsets[current_GRID_set] != 255 )
+	{
+		MIR_write_pitch_H( GRID_p_set_note_offsets[current_GRID_set], 9 );
+	}
+	#endif
 
 
 

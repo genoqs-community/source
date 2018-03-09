@@ -68,6 +68,7 @@ void interpret_SYSEX_stream( unsigned int stream_size ){
 		case def_OS_SYSEX_DUMP:
 			// d_iag_printf( "def_OS_SYSEX_DUMP\n" );
 			G_sysex_header = 0x00206400 + def_OS_SYSEX_DUMP;
+			/* no break */
 
 		case def_CONFIGFILE_SYSEX_DUMP:
 			// Tell the system we are done

@@ -38,7 +38,9 @@
 #include "../_OCT_objects/MIDI_queue.h"
 #include "../_OCT_objects/NOTE_ON_queue.h"
 #include "../_OCT_objects/Grid.h"
-
+#ifdef FEATURE_ENABLE_DICE
+#include "../_OCT_objects/Dice.h"
+#endif
 // #include "../_OCT_objects/Ableton.h"
 
 #include "../_OCT_init/Init_memory.h"

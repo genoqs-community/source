@@ -51,9 +51,9 @@ typedef struct stepstruct{
 	// |__|__|__|__|__|__|..|__|__|__|__|__|__|__|__|__|..|__|__|__|
 	//  31 30 29 28 27 26 .. 18 17 16 15 14 13 12 11 10 ..  2  1  0
 	//   |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-	//   |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  +--+--+--+--+------> first 11 bits: chord up
+	//   |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  +--+--+--+--+------> first 11 bits: chord up		(FEATURE_ENABLE_CHORD_OCTAVE first 12 bits)
 	//   |  |  |  |  |  |  |  |  |  |  +--+--+--+--+---------------------> 5 EMPTY
-	//   |  |  |  |  |  +--+--+--+--+------------------------------------> second 11 bits: chord up up
+	//   |  |  |  |  |  +--+--+--+--+------------------------------------> second 11 bits: chord up up 	(FEATURE_ENABLE_CHORD_OCTAVE first 12 bits)
 	//   |  |  |  +--+---------------------------------------------------> 2 EMPTY
 	//   +--+--+---------------------------------------------------------> chord stack size (max 6)
 
@@ -250,7 +250,7 @@ typedef struct trackstruct {
 	// Makes track attributes accessible by #defined labels. See legend above
 //	signed char attribute[ TRACK_NROF_ATTRIBUTES - 9 ];
 
-	unsigned char attr_STATUS;		// Not sure it is used anywhere..
+	unsigned char attr_STATUS;
 	unsigned char attr_VEL;
 	unsigned char attr_PIT;
 	unsigned char attr_LEN;
@@ -269,7 +269,7 @@ typedef struct trackstruct {
 
 	// A value of 0 means none is active, the rest is 1-128
 	unsigned char program_change;
-	unsigned char bank_change; // overloaded ctrl track move target
+	unsigned char bank_change;
 
 	// Holds the trigger data for the track: (pg. 331 book)
 	// A direction consists of frames. Each frame contains 0-9 position triggers.
@@ -315,13 +315,15 @@ typedef struct trackstruct {
 
 	// Holds the shapeindex of the flows per attribute
 	unsigned char flow_shape[10];
-
+	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
 	unsigned char attr_EMISC;			//ephemeral misc
 	unsigned char attr_GST; 			//PIT ghost (on track select) attribute
-	unsigned char *attr_TCH;			//transpose in channel
-
-	unsigned char ctrl_offset;		//used for control track event offset
+	// attr_STATUS is transpose in channel
+	#endif
 	
+	#ifdef FEATURE_ENABLE_SONG_UPE
+	unsigned char ctrl_offset;		//used for control track event offset
+	#endif
 } Trackstruct;
 
 
@@ -339,7 +341,7 @@ typedef struct pagestruct{
 
  	// Bitpattern that allows tracks to be visible and accessible in Nemo pages
 	unsigned char	track_window;
-	//Wilson Shift distance for the track window 1 = Rows (1-4) 2 = (5-8)
+	// Shift distance for the track window 1 = Rows (1-4) 2 = (5-8)
 	unsigned char 	track_window_shift;
 
 
@@ -480,16 +482,18 @@ typedef struct pagestruct{
 
 	// Store of the step selection patterns in the page. 16 bits per track.
 	unsigned short stepSELpattern[5][ MATRIX_NROF_ROWS ];
-
-	// Wilson - transpose pitch absolute mode toggle
+	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	// Transpose pitch absolute mode toggle
 	unsigned char pitch_abs;
-	
-	
+	#endif
+
+
 } Pagestruct;
 
-
-
-
+#ifdef FEATURE_ENABLE_DICE
+extern unsigned char 	SEL_DICE_BANK;
+extern Pagestruct* 		DICE_bank;
+#endif
 
 // =====================================================================================
 // Runtime data structure repositories
@@ -517,9 +521,18 @@ extern unsigned short	GRID_bank_playmodes;
 extern Pagestruct* 	GRID_p_selection 		[GRID_NROF_BANKS];
 extern Pagestruct* 	GRID_p_preselection	  	[GRID_NROF_BANKS];
 extern Pagestruct* 	GRID_p_clock_presel	  	[GRID_NROF_BANKS];
-extern Pagestruct* 	GRID_p_set				[GRID_NROF_SETS ][GRID_NROF_BANKS];
+extern Pagestruct* 	GRID_p_set				[GRID_NROF_SETS ][GRID_NROF_BANKS]; // Stores the GRID sets
+#ifdef FEATURE_ENABLE_SONG_UPE
+extern unsigned char   GRID_p_set_note_offsets	[GRID_NROF_SETS ];
+extern unsigned char   GRID_p_set_midi_ch;
+extern char			GRID_p_set_note_presel;
+#endif
+#ifdef FEATURE_ENABLE_SONG_UPE
 extern Pagestruct* 	GRID_p_selection_buffer [GRID_NROF_BANKS];
 extern unsigned char	GRID_p_selection_cluster;
+#else
+extern Pagestruct* 	GRID_p_selection_buffer [MATRIX_NROF_ROWS];
+#endif
 extern unsigned char 	GRID_CURSOR;
 extern unsigned short 	GRID_mixAttribute;
 extern unsigned char 	GRID_play_mode;
@@ -558,7 +571,10 @@ extern unsigned short NEMO_selectedStepAttribute;
 extern unsigned char NEMO_track_VFF;
 extern unsigned char NEMO_step_VER;
 #endif
-
+#ifdef FEATURE_ENABLE_DICE
+extern unsigned char dice_synced_attr;
+extern unsigned char dice_synced_value;
+#endif
 // From variables.h
 extern unsigned char follow_flag;
 extern unsigned char G_master_tempo;
@@ -568,6 +584,9 @@ extern unsigned char G_zoom_level;
 
 // From init_memory.h
 extern Pagestruct* GRID_assistant_page;
+
+// Shift distance for the track window 1 = Rows (1-4) 2 = (5-8)
+unsigned char	page_window;
 
 // =====================================================================================
 // End of grid declarations

@@ -42,8 +42,12 @@
 #define PAGE_MAX_LEN			128
 
 #define PAGE_DEF_STA			1
-#define	PAGE_MIN_STA			1
+#define	PAGE_MIN_STA			0
+#ifdef FEATURE_ENABLE_SONG_UPE
 #define	PAGE_MAX_STA			128
+#else
+#define	PAGE_MAX_STA			16
+#endif
 
 #define TRACK_DEF_MUTE			0
 #define TRACK_DEF_SELECT		0
@@ -276,6 +280,61 @@
 #define	STEPSTAT_SKIP			2
 #define STEPSTAT_EVENT			4
 
+#ifdef FEATURE_ENABLE_DICE
+//DICE definitions
+#define MAX_NROF_DICE			4
+#define DICE_DEF_SOLO			0
+#define DICE_DEF_SELECT			0
+
+#define DICE_MIN_VELFACTOR		0
+#define DICE_MAX_VELFACTOR		16
+#define DICE_DEF_VELFACTOR		0
+
+#define DICE_MIN_PITFACTOR		0
+#define DICE_MAX_PITFACTOR		16
+#define DICE_DEF_PITFACTOR		0
+
+#define DICE_MIN_LENGTH			1
+#define DICE_MAX_LENGTH			8
+#define DICE_DEF_LENGTH			1
+
+#define DICE_MIN_LENFACTOR		0
+#define DICE_MAX_LENFACTOR		16
+#define DICE_DEF_LENFACTOR		0
+
+#define	DICE_MIN_RANGE_LEN		DICE_MIN_LENFACTOR
+#define	DICE_MAX_RANGE_LEN		DICE_MAX_LENFACTOR
+#define DICE_DEF_RANGE_LEN		DICE_MAX_LENFACTOR
+
+#define DICE_MIN_START			1
+#define DICE_MAX_START			16
+#define DICE_DEF_START			1
+
+#define DICE_MIN_STAFACTOR		0
+#define DICE_MAX_STAFACTOR		16
+#define DICE_DEF_STAFACTOR		0
+
+#define	DICE_MIN_RANGE_STA		DICE_MIN_STAFACTOR
+#define	DICE_MAX_RANGE_STA		DICE_MAX_STAFACTOR
+#define DICE_DEF_RANGE_STA		DICE_MAX_STAFACTOR
+
+#define DICE_MIN_RANGE_DIR		0
+#define DICE_MAX_RANGE_DIR		DICE_MAX_DIRECTION
+#define DICE_DEF_RANGE_DIR		DICE_MAX_DIRECTION
+
+#define DICE_MIN_AMTFACTOR		0
+#define DICE_MAX_AMTFACTOR		16
+#define DICE_DEF_AMTFACTOR		0
+
+#define DICE_MIN_GRVFACTOR		0
+#define DICE_MAX_GRVFACTOR		16
+#define DICE_DEF_GRVFACTOR		0
+
+#define DICE_MIN_MCCFACTOR		0
+#define DICE_MAX_MCCFACTOR		16
+#define DICE_DEF_MCCFACTOR		0
+#endif
+
 // CC_MIXMAP DEFINES
 #define CC_MIN_AMOUNT			0
 #define	CC_MAX_AMOUNT			127
@@ -342,8 +401,12 @@
 #define 	ATTR_G_master_tempoMUL			14
 #define 	ATTR_G_master_tempoMUL_SKIP		15		// Counter used by fractional G_master_tempoMULs
 #define 	ATTR_CLOCK				16	// only used in NEMO
+#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 #define 	ATTR_MIDITCH			20	// transpose midi channel
-
+#endif
+#ifdef FEATURE_ENABLE_DICE
+#define		ATTR_DICE_BANK			21
+#endif
 #define 	NEMO_ATTR_STATUS			0
 #define		NEMO_ATTR_VELOCITY			2
 #define 	NEMO_ATTR_PITCH				1
@@ -362,4 +425,6 @@
 #define 	NEMO_ATTR_G_master_tempoMUL_SKIP		15		// Counter used by fractional G_master_tempoMULs
 #define 	NEMO_ATTR_CLOCK				16	// only used in NEMO
 #define		NEMO_ATTR_PGMCH				17  // only used in NEMO
+#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 #define		NEMO_ATTR_MIDITCH			20	// transpose channel
+#endif

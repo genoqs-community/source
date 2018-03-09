@@ -50,11 +50,11 @@
 //		return;
 //	}
 
-	// Load (restore) current page.
-	if ( keyNdx == KEY_RETURN ) {
-		Flash_read_page( GRID_CURSOR );
-		return;
-	}
+//	// Load (restore) current page.
+//	if ( keyNdx == KEY_RETURN ) {
+//		Flash_read_page( GRID_CURSOR );
+//		return;
+//	}
 
 	//
 	// MATRIX KEYS

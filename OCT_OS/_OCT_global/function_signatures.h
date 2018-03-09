@@ -42,10 +42,24 @@ extern 	void			driveSequencer();
 extern  unsigned int	kickSequencerThread( void );
 
 extern 	void 			midi_byte_interpret( 	unsigned char midi_byte );
-extern 	void 			sequencer_STOP();
+extern 	void 			sequencer_STOP( bool midi_send_stop );
+extern 	void 			sequencer_command_STOP();
 extern 	void 			sequencer_START();
 extern 	void 			sequencer_HALT();
-extern 	void 			sequencer_RESET(		unsigned char force_stop );
+#ifdef FEATURE_ENABLE_SONG_UPE
+extern	void			sequencer_command_PAUSE(unsigned char measure_scrolling);
+extern	void 			select_page_preselections();
+extern  unsigned char 	is_pre_selected_in_GRID( Pagestruct* target_page );
+
+extern 	void 			copy_ctrl_step_to_track( Pagestruct* page, Trackstruct* track, Stepstruct* step );
+extern	void 			copy_ctrl_track_to_step( Pagestruct* page, Trackstruct* track, Stepstruct* step );
+extern  void 			ctrl_event_set_target_page( Pagestruct* target_page );
+extern	void 			quick_assign_control_track ( Pagestruct* target_page, unsigned char trackIdx );
+extern	void 			make_control_track ( Pagestruct* target_page, unsigned char trackIdx );
+extern	void 			align_measure_locators();
+extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
+#endif
+extern 	void 			sequencer_RESET( unsigned char force_stop );
 
 extern unsigned int 	computeKeyNdx(			unsigned char reg,
 												unsigned char sigByte,
@@ -210,3 +224,11 @@ extern void 			MIR_write_numeric_C (unsigned char number);
 extern unsigned char 	Step_get_status ( Stepstruct* target_step, unsigned char target_bit);
 extern int 				scale_pitch( Pagestruct* pagePt, int pitch );
 
+#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+extern unsigned char 	get_chord_cardinality( Stepstruct* target_step, unsigned char octave_mask );
+extern void 			toggle_chord_octave( Stepstruct* target_step, unsigned char note_offset, unsigned char chord_octave_mask );
+extern bool 			is_step_chord( Stepstruct* target_step );
+extern void 			show_chord_octave( Stepstruct* target_step, unsigned char note_offset, unsigned char chord_octave );
+extern void 			show_chord_octave_first( Stepstruct* target_step, unsigned char note_offset );
+extern unsigned char 	get_current_chord_octave();
+#endif

@@ -34,7 +34,7 @@
 
 
 // Key execution code for DEFAULT keymode
-
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	if (keyNdx == KEY_MUTE_MASTER){
 		char selection = OFF;
 		for( i=1; i <= 10; i++ ){
@@ -80,7 +80,7 @@
 			break;
 		}
 	}
-
+	#endif
 	//
 	// TRACK_SELECTORS
 	//
@@ -106,10 +106,11 @@
 
 			// Check if we are not selecting a REC enabled track
 			if ( (Page_getTrackRecPattern(target_page) & (1 << (keyNdx-1)) ) != 0 ){
-
+				#ifdef FEATURE_ENABLE_SONG_UPE
 				// Allow MCH to retain record status
 				G_prev_rec_page_pattern = Page_getTrackRecPattern(target_page);
 				G_prev_rec_page = target_page->pageNdx;
+				#endif
 				// Disable the recording on that track
 				Page_setTrackRecPattern( target_page, 0 );
 			}
@@ -117,7 +118,9 @@
 
 				// Switch recording pattern to the pressed track selector' track
 				Page_setTrackRecPattern( target_page, (1 << i) );
+				#ifdef FEATURE_ENABLE_SONG_UPE
 				G_prev_rec_page_pattern = 0;
+				#endif
 			}
 		}
 	}
@@ -165,10 +168,10 @@
 				target_page->trackSelection = 0;
 				return;
 			}
-
+			#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
 			//backup PIT as ghost pitch on selection
 			target_page->Track[keyNdx-1]->attr_GST = target_page->Track[keyNdx-1]->attr_PIT;
-
+			#endif
 			// Toggle bit in trackSelection marking the track un/selected
 			target_page->trackSelection ^= 1 << (keyNdx-1);
 
@@ -191,6 +194,7 @@
 				return;
 			}
 
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			if ( Track_get_MISC(target_page->Track[keyNdx-1], CONTROL_BIT) == OFF ) {
 				// If this is a SINGLE PLAYMODE track
 				if ((target_page->Track[keyNdx-1]->attr_MISC & (1<<1)) > 0) {
@@ -199,8 +203,16 @@
 					target_page->Track[keyNdx-1]->attr_MISC =
 							target_page->Track[keyNdx-1]->attr_MISC & 0xFD;
 				}
-			}
+			}			
+			#else
+			// If this is a SINGLE PLAYMODE track
+			if ((target_page->Track[keyNdx-1]->attr_MISC & (1<<1)) > 0) {
 
+				// Allow it to play again by clearing second bit
+				target_page->Track[keyNdx-1]->attr_MISC =
+					target_page->Track[keyNdx-1]->attr_MISC & 0xFD;
+			}
+			#endif
 
 			// D O U B L E - C L I C K
 			if ((DOUBLE_CLICK_TARGET == keyNdx)

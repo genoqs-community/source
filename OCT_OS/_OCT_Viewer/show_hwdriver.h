@@ -138,6 +138,7 @@ void VIEWER_show_MIR(){
 				// ..and 8 bits for the others
 				default:
 					mirrorsize = 8;
+					/* no break */
 			}
 			bitpattern = mirror (bitpattern, mirrorsize);
 		} // if MIR_GREEN

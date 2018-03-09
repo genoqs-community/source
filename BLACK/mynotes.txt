@@ -1,0 +1,298 @@
+//
+// IMPLEMENTATION NOTES (top is last)
+//
+
+2006-03-15:
+- Added track cross-modulation: additive pitches and velocities
+- Some more bug fixes
+
+2006-02-24:
+- Some more cosmetic changes, release candidate level 1 reached
+
+2006-02-23:
+- Cleaned up the scale mode to a large extent. Easier to understand, handle, and explain.
+- There is no CAD mode for the moment. It will follow later on the legacy of the new model.
+
+2006-02-22:
+- More cleanup work done. Fixed bug in the scale interpretation and chord playing.
+- Force to scale is now available at the align position
+- Cadence mode is now disabled - to be revised later.
+
+
+2006-02-16:
+- Some internal changes regarding cleaning up of key interpretation and display options.
+- Chaining now works properly when applied during play operation
+- Align function now works properly in all track chain modes.
+
+
+2006-02-15:
+- Various modifications to make operation more consistent.
+- Tracks may be assigned their own tempo multipliers
+- GRID mode is now usable in terms of set saving and recalling
+
+
+2006-02-08:
+- Interactive mode now availabe in GRID and PAGE modes. This eliminates the need for 
+switching between operation modes in GRID.
+- GRID has now the notion of CC Maps. There is one set of MAPS (6 of them) available)
+and they behave the same way as they do in page mode.
+- The maps and some attributes in track mode as well, allow now value entry via the keys.
+- Step Preview mode is now built in - may be operated in play or stop mode. Can be toggled
+any time via the EDIT master button when in page mode.
+
+
+2006-01-15:
+MIDI Continuous Controller:
+- Each track can be assigned one MIDICC. The MCC value of track can be any of 0-127 plus 
+an extra MIDICC_NONE flag (4 green leds) which means 'no controller is assigned'.
+When a controller is assigned, every step may play its controller value or none at all.
+Remember that 0 is a valid value! No value is played when the MIDICC_NONE flag is showing.
+
+- Page direct MCC mode: double click on the EDIT button activates the MCC mode.
+The edit modes now adjust the AMT value of the track (invisibly) which at the same time 
+is sent as a value on the MIDI channel and controller of the respective track.
+
+- Page MAP mode (may be combined with the direct MCC mode):
+This is used to assign MIDI CC functions to the MIX rotarys. 
+Selecting one of VOL, PAN, MOD, EXP will let the mix rotarys send that CC information 
+on their respective track channels. The Map0-5 modes can store free CC assignments:
+for every rotary you may assign a MIDICC, a MIDICH and then regulate the amount to send
+that amount out to the MIDI channel under investigation.
+
+
+2005-11-15:
+
+- Clean up the define file - LED/KEY_TEMPO_MULTIPLIER_X replaced by LED/KEY_PLAYX
+
+
+2005-11-13:
+
+1. MIX rotarys in GRID mode remain without function.
+The idea is to introduce a velocity / volume variable assigned to the 
+GRID, which can be modified with the MIX knobs. No other attribute
+makes a lot of sense in a performance context.
+
+
+
+//
+// VERSION NOTES ON VARIOUS CODE STATES OF OCTOPUS - PACIFIC
+// shown are changes towards the previous version
+//
+
+-> P20060126
+. Chains are now fixed (in the new model) 
+. Performance is optimized, and is sufficient for 199bpm.
+
+-> P20060125
+. Tempomultiplier problems are fixed.
+. Still construction site because of the chains - work in progress, not stable.
+
+-> P20060123
+. New MIDI OFF model implemented and working. Need to fix the play mechanics.
+. construction site - debugging of the tempomultiplier problems.
+
+-> P20060120
+. Roland Fleming Step Atttribute edit mode implemented
+. Various other bug fixes
+
+-> P20060117
+. Fixed the grid (incl. arch. change)
+. Various smaller fixes from Marcel's Köln buglist. MIDI OFF is next.
+
+-> P20060116
+. Fixed the MCC issues discovered in Köln, fixed MIDI2 problems.
+. Grid fix started but not finished.
+
+-> P20060112
+. Implemented first draft of Remix (RMX) function
+. Started to implement the MIDI queue architecture. This version was shown in Köln.
+
+-> P20060111
+.Fixed direction playing (improved architecture)
+.Implemented Flip Track (FLT) Function as described book p.223
+
+-> P20060106
+.Implemented FOLLOW functionality
+.Fixed page chainig in Grid
+
+-> P20060101
+.Bug fix round from the book
+.Further UI fixes
+
+-> P20051231
+.Major UI improvements in the TRACK attribute map area
+.Enabled steps to transmit MCC data
+
+-> P20051230
+.First round of bugs has been fixed
+.Added some more STEP editing capabilities
+
+-> P20051220
+.MIDI2 fixed and presumably working
+.Various bug fixes
+
+-> P20051212
+.MIDI in more advanced
+.Started to activate MIDI2
+
+-> P20051209
+.MIDI IN infrastructure foundament started. 
+.Tapping implemented - Page mode and selected steps are the requirement
+
+-> P20051208
+.Program change operation fixed - was due to running status byte errors
+.Track locators advance was buggy - the first time a track would start - fixed
+
+-> P20051207
+.One-note scale situation now fixed
+.Various cosmetic (external) changes
+
+-> P20051206
+.CAD now works as supposed to. Adjusted display modes and information, is now working.
+.Legato mode for steps enabled.
+.MIDI CLOCK slave mode works now bug free. Still ticking only on MTC, no tempo recalculation
+but should suffice, as recalculation is expensive and givest startup issues.
+
+-> P20051203
+.Fixed another MIDI Off bug, where the locator offset was not being calculated correctly.
+
+-> P20051202
+.Fixed bug in the display of repeats_left. Switched to red and green display mode.
+
+-> P20051201
+.Corrected Scaling bug. Scale MOD and SEL work now presumably bug free now.
+.Switch now possible directly between MOD and SEL.
+
+-> P20051128
+.Introduced Repeats for GRID play mode. Pages can be repeated a specified number
+of times in cluster mode, before the next page gets activated.
+
+-> P20051121
+. Corrected MIDI OFF and direction playing bug. 
+.Parallel time line introduced and working well.
+
+-> P20051115
+.Switched resolution down to 1/192 of a note (TTC_ABS in [1..12])
+.Note OFFs are working for all speed levels (1x, 2x, 4x) including groove information
+.GRID mode selection is solved via ZOM button
+
+
+
+
+
+
+____________________________________________________________________
+//
+//	The following is a high level description of the Octopus model.
+//
+
+
+
+The PAGE Entity contains a few layers. 
+
+On the HUI Level there are Steps and Buttons.
+	STEPS and BUTTONS are similar, difference being that BUTTONS do not carry any Player information.
+	
+	BUTTONS 
+		Carry their respective information in the status byte.
+		
+	
+
+	CONTROL PARADIGM
+	The user interface uses a paradigm in which the user interacts with objects by applying functions
+	to them. We call functions with a well-defined scope tools. Ultimately the user employs tools to 
+	modify objects.
+	
+	OBJECTS
+	Objects are well defined entities. For details see their respective description. 
+	Octopus differentiates between the following object classes:
+	Step, Track, Page, Sequence, Macro and Effect.
+		An Effect is associated with a TRACK or a STEP and contains MIDI information beyond the 
+		note on/off scheme. It may be a midi-based delay effect, MIDI CC information or NRPN.
+	
+	TOOLS
+	A Tool is a selection path in the circular panel of octopus consisting of an Object class, one or more 
+	attributes of that object class, and a valid function. Once a tool is selected it can be employed on 
+	an object of the appropriate class (as indicated by the selection path) or on a selection of the same. 
+	
+	TOOLBOX
+	Tools may be built everytime on the fly, or, once built, they may be collected in the toolbox for
+	fast retrieval at any time during play. The toolbox holds up to 10 tools.
+	
+	HANDLES
+	A tool is employed upon an object in two ways. Once selected it can be used bare-hands, on an object 
+	or on a selection of objects. Another option is to assign a tool to a handle, where appropriate. 
+	There are four handles on octopus: two button columns and two knob columns (L and R respectively).
+	
+	
+
+Current model:
+--------------------
+Page consists of:
+	- a set of steps
+	- a set of buttons
+	
+	Every Step and Button keeps its own data.
+	
+	1. Data entry process:
+	- The interrupt routine calls the appropriate part of the Editor for the key press (sitch clause)
+	- The Editor piece acts on the selected key press in the VIEWER_page
+		. Routine for Steps
+		. Routine for Buttons (Object, Attribute, Function, Trackfn_X, Aux)
+		. 
+	
+--------------------
+
+New Model for Page writing:
+
+- get the chunk of data: array of 8 status characters (containing the LED status)
+
+	/* 8 bits hold the step status (counting right to left):
+	 * 
+	 * 1.bit 	(activity)		0: OFF		1: ON
+	 * 2.bit 	(blinker)		0: STEADY	1: BLINK
+	 * 3/4.bit	(color)			00:	red		01: green
+	 * 							10:	orange	11: rainbow
+	 */	
+	
+	will get something along the lines of 
+	
+	00 00  00 0 1
+	00 00  00 0 0
+	00 00  01 0 1
+	00 00  01 0 0
+	00 00  00 0 1
+	00 00  00 0 1
+	00 00  01 0 1
+	00 00  01 0 1
+
+- now sort through the green ones first (this is hardwired):
+	generate the bitpattern to be written on the green trip, taking care of the order
+	
+	bitpattern: for each character in the array: if status ON and color (GRN or ORG) write a 1 else a 0
+
+- write the bitpattern to the board
+
+- now on to the red ones (this is also hardwired) also producing the orange where appropriate:
+	bitpattern: for each character in the array: if status ON and color (RED or ORG) write a 1 else a 0
+	
+- write the bitpattern to the board
+
+This chunk is done. Next one please..
+
+
+
+
+
+	1. clock: select  (n-1)
+	2. write for 
+
+
+		for i=1 bis 71
+			fange mit grün an: generiere greenBitpattern (i)			
+			schreibe greenpattern
+
+
+
+
+	 

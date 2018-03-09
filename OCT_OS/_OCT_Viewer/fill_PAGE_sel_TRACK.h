@@ -126,8 +126,8 @@
 			if ( my_bit_cardinality( target_page->trackSelection ) == 1 ){
 				show( ELE_CHORD_SELECTOR, CHORD_SIZE_TRACK );
 			}
-
-			// Wilson - Toggle transpose abs pitch mode
+			#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+			// Toggle transpose abs pitch mode
 			if (	( target_page->pitch_abs == TRUE )	){
 
 				MIR_write_dot( LED_SCALE_SEL, MIR_GREEN 	);
@@ -137,3 +137,4 @@
 				MIR_write_dot( LED_SCALE_SEL, MIR_RED 	);
 
 			}
+			#endif

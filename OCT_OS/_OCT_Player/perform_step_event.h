@@ -71,7 +71,8 @@ unsigned char compute_event_offset( unsigned char current_value,
 void perform_step_event( 	Stepstruct* in_step,
 							Trackstruct* target_track,
 							Pagestruct* target_page,
-							unsigned char in_row){
+							unsigned char in_row,
+							unsigned char locator){
 
 	unsigned char direction = 0;
 
@@ -84,12 +85,25 @@ void perform_step_event( 	Stepstruct* in_step,
 	signed char event_value			= 0;
 	unsigned char event_val_rnd		= FALSE;
 
+	signed char dice_amount_offset = 0;
+
+	#ifdef FEATURE_ENABLE_DICE
+	#ifdef NEMO
+	dice_amount_offset = dice_attr_flow_offset( target_page, NEMO_ATTR_AMOUNT, locator );
+	#else
+	dice_amount_offset = dice_attr_flow_offset( target_page, ATTR_AMOUNT, locator );
+	#endif
+	#endif
+
 	event_value =
-		(	( in_step->attr_AMT
+		normalize( ( ( in_step->attr_AMT
 			  * Track_AMT_factor[	target_track->AMT_factor
 				 					+ target_track->event_offset[ATTR_AMOUNT] ] )
-			/ AMT_FACTOR_NEUTRAL_VALUE );
+			/ AMT_FACTOR_NEUTRAL_VALUE ) + dice_amount_offset, STEP_MIN_AMOUNT, STEP_MAX_AMOUNT );
 
+	if( event_value == 0 ) {
+		// Track fractions of event value
+	}
 	// Continue with 0 / void events, because they set the event offset to 0.
 
 	// POSITION attribute requires special handling
@@ -112,9 +126,11 @@ void perform_step_event( 	Stepstruct* in_step,
 	// All other attribute events - make the value assignments for final number crunching..
 	switch( (in_step->event_data & 0x0F) + 1 ){
 
-
-		case ATTR_VELOCITY:
-
+		#ifdef NEMO
+			case NEMO_ATTR_VELOCITY:
+		#else
+			case ATTR_VELOCITY:
+		#endif
 			target_val 		= &target_track->event_offset[ATTR_VELOCITY];
 
 			#ifdef EVENTS_FACTORIZED
@@ -133,9 +149,11 @@ void perform_step_event( 	Stepstruct* in_step,
 			max_offset		= target_track->event_max[ATTR_VELOCITY];
 			break;
 
-
-		case ATTR_PITCH:
-
+		#ifdef NEMO
+			case NEMO_ATTR_PITCH:
+		#else
+			case ATTR_PITCH:
+		#endif
 			target_val 		= &target_track->event_offset[ATTR_PITCH];
 
 			#ifdef EVENTS_FACTORIZED
@@ -237,7 +255,7 @@ void perform_step_event( 	Stepstruct* in_step,
 		case ATTR_MIDICH:
 
 			target_val 		= &target_track->event_offset[ATTR_MIDICH];
-			current_value	= target_track->attr_MCH - 1;
+			current_value	= 0;
 			min_value		= TRACK_MIN_MIDICH - 1;
 			max_value		= TRACK_MAX_MIDICH - 1;
 			current_offset	= target_track->event_offset[ATTR_MIDICH];
@@ -260,7 +278,8 @@ void perform_step_event( 	Stepstruct* in_step,
 //	}
 
 	// An event value of 0 resets the event offset to 0.
-	if ( event_value == 0 ){
+	if ( ( event_value == 0 )
+	&& ( ( ( in_step->event_data & 0x0F) + 1 ) != ATTR_AMOUNT ) ){
 
 		// As suggested by Pieter
 		*target_val = 0;

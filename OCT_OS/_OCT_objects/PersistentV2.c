@@ -41,9 +41,15 @@ void PersistentV2_SceneExport( ScenePersistentV2* targetScenePt )
 	targetScenePt->sizeBt 		= sizeof(ScenePersistentV2);
 	targetScenePt->version 		= 2;
 	targetScenePt->sceneCheckSum = 0;
+	#ifdef FEATURE_ENABLE_SONG_UPE
+	targetScenePt->midiCh = GRID_p_set_midi_ch;
+	#endif
 
 	// Grid set repository - stores the actual grid sets
 	for ( setIx = 0; setIx < GRID_NROF_SETS; setIx++ ) {
+		#ifdef FEATURE_ENABLE_SONG_UPE
+		targetScenePt->noteOffsets[setIx] = GRID_p_set_note_offsets[setIx];
+		#endif
 		for ( bankIx = 0; bankIx < GRID_NROF_BANKS; bankIx++ ) {
 			pageid_t pageId = ~0;
 			if ( GRID_p_set[setIx][bankIx] != NULL ) {
@@ -110,8 +116,15 @@ void PersistentV2_SceneImport( const ScenePersistentV2* sourceScenePt )
 		return;
 	}
 
+	#ifdef FEATURE_ENABLE_SONG_UPE
+	GRID_p_set_midi_ch = sourceScenePt->midiCh;
+	#endif
+
 	// Grid set repository - stores the actual grid sets
 	for ( setIx = 0; setIx < GRID_NROF_SETS; setIx++ ) {
+		#ifdef FEATURE_ENABLE_SONG_UPE
+		GRID_p_set_note_offsets[setIx] = sourceScenePt->noteOffsets[setIx];
+		#endif
 		for ( bankIx = 0; bankIx < GRID_NROF_BANKS; bankIx++ ) {
 			GRID_p_set[setIx][bankIx] = NULL;
 			pageid_t pageId = sourceScenePt->GRID_p_id_set[setIx][bankIx];
@@ -156,9 +169,15 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	targetGridPt->G_clock_source = G_clock_source;	// Can be any of OFF, INT(ernal), EXT(ernal)
 	targetGridPt->G_zoom_level = G_zoom_level;
 	targetGridPt->GRID_scene = GRID_scene;		// Currently selected grid scene for play or storage
+	#ifdef FEATURE_ENABLE_SONG_UPE
+	targetGridPt->midiCh = GRID_p_set_midi_ch;
+	#endif
 
 	// Grid set repository - stores the actual grid sets
 	for ( setIx = 0; setIx < GRID_NROF_SETS; setIx++ ) {
+		#ifdef FEATURE_ENABLE_SONG_UPE
+		targetGridPt->noteOffsets[setIx] = GRID_p_set_note_offsets[setIx];
+		#endif
 		for ( bankIx = 0; bankIx < GRID_NROF_BANKS; bankIx++ ) {
 			pageid_t pageId = ~0;
 			if ( GRID_p_set[setIx][bankIx] != NULL ) {
@@ -312,9 +331,15 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 	GRID_bank_playmodes = sourceGridPt->GRID_bank_playmodes;		// either _SIMPLE or _CHAIN
 	GRID_set_switchmode = sourceGridPt->GRID_set_switchmode;
 	current_GRID_set = sourceGridPt->current_GRID_set;
+	#ifdef FEATURE_ENABLE_SONG_UPE
+	GRID_p_set_midi_ch = sourceGridPt->midiCh;
+	#endif
 
 	// Grid set repository - stores the actual grid sets
 	for ( setIx = 0; setIx < GRID_NROF_SETS; setIx++ ) {
+		#ifdef FEATURE_ENABLE_SONG_UPE
+		GRID_p_set_note_offsets[setIx] = sourceGridPt->noteOffsets[setIx];
+		#endif
 		for ( bankIx = 0; bankIx < GRID_NROF_BANKS; bankIx++ ) {
 			GRID_p_set[setIx][bankIx] = NULL;
 			pageid_t pageId = sourceGridPt->GRID_p_id_set[setIx][bankIx];
@@ -828,7 +853,10 @@ void PersistentV2_TrackAndStepImport( Pagestruct* targetPagePt, card32 source_ro
 	targetTrackPt->CC_resolution = sourceTrackPt->CC_resolution;
 	targetTrackPt->hyper = sourceTrackPt->hyper;
 	targetTrackPt->gatePosition = 0; // Runtime data member.
-
+	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	//ghost note (transpose)
+	targetTrackPt->attr_GST = sourceTrackPt->attr_PIT;
+	#endif
 	// Attribute offset ranges
 	for (i=0; i < TRACK_NROF_ATTRIBUTES; i++) {
 		targetTrackPt->event_max[i] = sourceTrackPt->event_max[i];

@@ -28,8 +28,9 @@ extern unsigned char row_of_track( 				Pagestruct* target_page,
 												Trackstruct* target_track );
 extern unsigned int is_pressed_steprange();
 extern void show_preview_stepLEN( unsigned int index, unsigned char row, unsigned char col, unsigned char length );
+#ifdef FEATURE_ENABLE_SONG_UPE
 extern void	page_cluster_selection( unsigned char grid_cursor );
-
+#endif
 //
 // SHOW - Contains the workhorse code for MIR refill. Puts the content into the target display element (ELE)
 //
@@ -77,6 +78,7 @@ void show (unsigned int target, unsigned int content) {
 					break;
 				case BLINK:
 					MIR_write_dot (LED_MIX_MASTER, MIR_BLINK);
+					break;
 				case OFF:
 					break;
 			}
@@ -96,6 +98,7 @@ void show (unsigned int target, unsigned int content) {
 					break;
 				case BLINK:
 					MIR_write_dot (LED_MIX_INDICATOR, MIR_BLINK);
+					break;
 				case OFF:
 					break;
 			}
@@ -217,6 +220,7 @@ void show (unsigned int target, unsigned int content) {
 					break;
 				case BLINK:
 					MIR_write_dot (LED_EDIT_INDICATOR, MIR_BLINK);
+					break;
 				case OFF:
 					break;
 			}
@@ -298,7 +302,6 @@ void show (unsigned int target, unsigned int content) {
 		// M A T R I X
 		//
 		case ELE_MATRIX:
-
 			#include "show_MATRIX.h"
 			break;
 

@@ -69,7 +69,10 @@ Trackstruct 		Track_repository	[MAX_NROF_TRACKS];
 
 // PAGES
 Pagestruct 			Page_repository		[MAX_NROF_PAGES];
-
+#ifdef FEATURE_ENABLE_DICE
+// DICE performance modes
+Pagestruct*	DICE_bank		=	&Page_repository[DICE_PAGE];
+#endif
 Pagestruct* BUFFER_page 	= 	&Page_repository[149];
 
 // Used to keep some PAGE like information to be used by the GRID
@@ -80,6 +83,9 @@ Pagestruct* PAGE_assistant_page = &Page_repository[99];
 
 // Array of play mode pages - for indexes, see below
 Pagestruct* PLAY_MODE_page[9];
+#ifdef FEATURE_ENABLE_DICE
+unsigned char SEL_DICE_BANK;
+#endif
 // Later on, we do the following assignment:
 //	PLAY_MODE_page[8] = &Page_repository[89];
 //	PLAY_MODE_page[7] = &Page_repository[79];
@@ -269,9 +275,10 @@ void Grid_init(){
 		// GS: solved the above.
 		GRID_p_selection_buffer[i]	= NULL;
 
+		#ifdef FEATURE_ENABLE_SONG_UPE
 		GRID_p_selection_cluster	= OFF;
-		page_cluster_op				= 0;
-
+		page_cluster_op				= 0;		
+		#endif
 		// Same function but different data models
 		GRID_p_selection[i]			= NULL;
 		GRID_p_preselection [i] 	= NULL;
@@ -280,6 +287,10 @@ void Grid_init(){
 
 	// Init the GRID sets as empty
 	for (i=0; i < GRID_NROF_SETS; i++){
+
+		#ifdef FEATURE_ENABLE_SONG_UPE
+		GRID_p_set_note_offsets[i] = 255;
+		#endif
 
 		for (j=0; j < GRID_NROF_BANKS; j++){
 
@@ -290,7 +301,9 @@ void Grid_init(){
 	// Set the grid cursor to page 1 of bank 1
 #ifdef NEMO
 	GRID_CURSOR = 0;
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	PREV_GRID_CURSOR = 0;
+	#endif
 	// This is the default starting page, in row 0, which is selected.
 	GRID_p_selection[0] 	= &Page_repository[GRID_CURSOR];
 	GRID_p_preselection[0] 	= &Page_repository[GRID_CURSOR];
@@ -298,7 +311,12 @@ void Grid_init(){
 //	Page_repository[GRID_CURSOR].page_clear = OFF;
 #else
 	GRID_CURSOR = 8;
+	#ifdef FEATURE_ENABLE_SONG_UPE
+	for (j=0; j<MATRIX_NROF_ROWS; j++){
+		G_on_the_measure_track[j] = NULL;
+	}
 	PREV_GRID_CURSOR = 8;
+	#endif	
 	// This is the default starting page, in row 9, which is selected.
 	GRID_p_selection[8] 	= &Page_repository[GRID_CURSOR];
 	GRID_p_preselection[8] 	= &Page_repository[GRID_CURSOR];
@@ -325,6 +343,16 @@ void Grid_init(){
 	//
 	// Define initial values of track pitches
 	//
+	#ifdef NEMO
+	TRACK_DEFAULT_PITCH[0]	= 69;
+	TRACK_DEFAULT_PITCH[1]	= 67;
+	TRACK_DEFAULT_PITCH[2]	= 64;
+	TRACK_DEFAULT_PITCH[3]	= 62;
+	TRACK_DEFAULT_PITCH[4]	= 45;
+	TRACK_DEFAULT_PITCH[5]	= 43;
+	TRACK_DEFAULT_PITCH[6]	= 40;
+	TRACK_DEFAULT_PITCH[7]	= 38;
+	#else
 	TRACK_DEFAULT_PITCH[0]	= 69;
 	TRACK_DEFAULT_PITCH[1]	= 67;
 	TRACK_DEFAULT_PITCH[2]	= 64;
@@ -335,7 +363,9 @@ void Grid_init(){
 	TRACK_DEFAULT_PITCH[7]	= 40;
 	TRACK_DEFAULT_PITCH[8]	= 38;
 	TRACK_DEFAULT_PITCH[9]	= 36;
-
+	#endif
+	
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	// Allocate a 127 grid_cursor mapping table for special control track move operations
 	unsigned short idx = 0;
 	i = j = 0;
@@ -355,10 +385,8 @@ void Grid_init(){
 			if (idx == 128) goto out2;
 		}
 	}
-	out2:
-
-
-
+	out2:	
+	#endif
 //	// Copy the strum arrray contents from preset memory
 //	//	memcpy( 	OCT_step_strum_STA,
 //	//				&OCT_step_strum_STA_preset,
@@ -388,6 +416,8 @@ void Grid_init(){
 //		}
 //	}
 
+	// Initialise matrixScroll index
+	page_window				= 0xF;
 }
 
 
@@ -404,6 +434,11 @@ void Octopus_memory_CLR(){
 	Page_repository_init();
 
 	Grid_init();
+
+	#ifdef FEATURE_ENABLE_DICE
+	SEL_DICE_BANK = 0;
+	Dice_init();
+	#endif
 
 	MIR_init();
 
@@ -463,6 +498,11 @@ void Octopus_memory_init(){
 	// Init the NOTE_IN event repository, get it ready to receive
 	NOTE_IN_init();
 
+	#ifdef FEATURE_ENABLE_DICE
+	// Init Dice performance mode
+	SEL_DICE_BANK	= 0;
+	Dice_init();
+	#endif
 	// ABLETON page init
 //	ABLETON_init( &ABLETON_client );
 }
@@ -611,10 +651,9 @@ void PAGE_init (Pagestruct* target_page, pageid_t pageId, booln firstInitBo ){
 	// Init the step selection index
 	target_page->stepSELpattern_ndx = 0;
 
-	// This is only affecting NEMO
-	target_page->track_window				= 0x0F;
-	target_page->track_window_shift			= 0;
-
+	#ifdef NEMO
+	target_page->track_window				= 0xF;
+	#endif
 	target_page->trackSelection 			= 0;
 	target_page->trackSelectionStored 		= 0;
 	target_page->trackMutepattern 			= 0;
@@ -731,6 +770,9 @@ void PAGE_init (Pagestruct* target_page, pageid_t pageId, booln firstInitBo ){
 // #else
 	target_page->CHAINS_PLAY_HEAD = FALSE;
 // #endif
+	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	target_page->pitch_abs = FALSE;
+	#endif
 }
 
 

@@ -31,7 +31,8 @@ void rot_exec_PAGE_global( 	Pagestruct* target_page,
 							unsigned char rotNdx,
 							unsigned char direction ){
 
-
+	unsigned char i, j;
+	i = j = 0;
 
 	switch( rotNdx ){
 
@@ -75,29 +76,29 @@ void rot_exec_PAGE_global( 	Pagestruct* target_page,
 
 
 		case ROT_POS:
-
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			// Use POS to set the page repeat counter
 			// Modify the page repeats
 			modify_parameter( 	&Page_repository[GRID_CURSOR].repeats_left,
 								PAGE_MIN_STA, Page_repository[GRID_CURSOR].attr_STA, (( direction == INC ) ? DEC : INC ), OFF, FIXED );
+			#else
+			j = (&Page_repository[ GRID_CURSOR ])->locator;
+			// Compute the new locator to align the page under cursor to.
+			if ( direction == INC ){
 
-			// I don't know what this was doing?
-//			j = (&Page_repository[ GRID_CURSOR ])->locator;
-//			// Compute the new locator to align the page under cursor to.
-//			if ( direction == INC ){
-//
-//				i = ((&Page_repository[ GRID_CURSOR ])->locator % 16) + 1;
-//			}
-//			else if ( direction == DEC ){
-//
-//				i = (&Page_repository[ GRID_CURSOR ])->locator - 1;
-//				if ( i == 0 ){	i = 16;	}
-//			}
-//
-//			j = G_TTC_abs_value;
-//
-//			// Align the page under the cursor fully to the new locator.
-//			set_page_locators( &Page_repository[ GRID_CURSOR ], i, j );
+				i = ((&Page_repository[ GRID_CURSOR ])->locator % 16) + 1;
+			}
+			else if ( direction == DEC ){
+
+				i = (&Page_repository[ GRID_CURSOR ])->locator - 1;
+				if ( i == 0 ){	i = 16;	}
+			}
+
+			j = G_TTC_abs_value;
+
+			// Align the page under the cursor fully to the new locator.
+			set_page_locators( &Page_repository[ GRID_CURSOR ], i, j );
+			#endif
 			break;
 
 	} // switch( rotNDx )
@@ -538,12 +539,14 @@ void rot_exec_PAGE_local( 	Pagestruct* target_page,
 		// ..but un-selections may be accessed by the MIXER!! :-) (for steps only)
 		if (   (target_page->trackSelection != 0)
 			){
+			#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
 			//The exception is setting the keyboard transpose midi channel for selected tracks
 			if( (rotNdx == ROT_0)) {
 
 				rot_exe_MIX2EDIT( rotNdx, direction, target_page );
 
 			}
+			#endif
 			return;
 		}
 		// Modify the steps that are not selected - like the editor would!

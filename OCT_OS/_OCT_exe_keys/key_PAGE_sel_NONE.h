@@ -212,12 +212,12 @@
 	// MUTE MASTER
 	//
 	if (keyNdx == KEY_MUTE_MASTER) {
-
+		#ifdef FEATURE_ENABLE_SONG_UPE
 		if ( G_unarm_ctrl == ON ){
 			unarm_ctrl();
 			break;
 		}
-
+		#endif
 		// Only active if no track is selected
 		if (target_page->trackSelection != 0){
 			break;
@@ -364,7 +364,7 @@
 					){
 
 					// Copy step data from buffer to pointer
-					Step_copy( STEP_COPY_BUFFER, page_preview_step );
+					Step_copy( STEP_COPY_BUFFER, page_preview_step, false );
 
 					// Unselect the step (not sure if really needed )
 					Step_set_status( page_preview_step, STEPSTAT_SELECT, OFF );
@@ -373,6 +373,17 @@
 					#ifdef COPY_BUFFER_FRESH
 					// STEP_COPY_BUFFER = NULL;
 					#endif
+				}
+				break;
+
+			case KEY_ZOOM:
+				if ( page_preview_step != NULL ){
+
+					// Coordinates of previewed selected step
+					row = page_preview_step_row;
+					col = page_preview_step_col;
+
+					Step_zoom( target_page, row, col );
 				}
 				break;
 			} // Switch on the mutator buttons
@@ -412,14 +423,27 @@
 			}
 
 
-
-			// MUTE operation depending on the chainstatus - Head or Segment
-			// Head: Check the chain status: mute all tracks in the same chain (new model)
-			// Segment: each track handled on its own.
-
 			// Start with the pressed track.
 			current_track = target_page->Track[ keyNdx-187 ];
 
+			#ifdef FEATURE_ENABLE_SONG_UPE
+			if ( G_track_page_chain_mod_bit == ON ){
+				apply_page_cluster_track_mute_toggle( target_page, current_track );
+			}
+			else if ( G_track_page_chain_mod_bit == SCALE_MOD ){
+				apply_page_track_mute_toggle( target_page, current_track, &G_on_the_measure_trackMutepattern );
+				G_on_the_measure_trackMutepattern_pageNdx = target_page->pageNdx;
+				G_on_the_measure_track[keyNdx-187] = current_track;
+			}
+			else
+			{
+				apply_page_track_mute_toggle( target_page, current_track, &target_page->trackMutepattern );
+				target_page->trackMutepatternStored = target_page->trackMutepattern;			
+			}
+			#else
+			apply_page_track_mute_toggle( target_page, current_track, &target_page->trackMutepattern );
+			target_page->trackMutepatternStored = target_page->trackMutepattern;
+			
 			// Depending on the way we choose the track base..
 			switch( target_page->CHAINS_PLAY_HEAD ){
 
@@ -440,14 +464,13 @@
 				case FALSE:
 					target_page->trackMutepattern ^=
 						( 1 << row_of_track( target_page, current_track ));
-					ctrl_event_mute_target_track( target_page, current_track );
 					break;
 			}
-
-
+			
 			// Update the stored variable
 			target_page->trackMutepatternStored = target_page->trackMutepattern;
-
+			#endif
+			
 
 			// D O U B L E - C L I C K
 			if ((DOUBLE_CLICK_TARGET == keyNdx)
@@ -526,6 +549,21 @@
 		target_page->SCL_align ^= ON;
 	}
 
+	#ifdef FEATURE_ENABLE_SONG_UPE
+	if ( keyNdx == KEY_SCALE_MOD )
+	{
+		if ( G_track_page_chain_mod_bit == OFF ){
+			G_track_page_chain_mod_bit = ON;
+		}
+		else if ( G_track_page_chain_mod_bit == ON ){
+			G_track_page_chain_mod_bit = SCALE_MOD;
+		}
+		else {
+			G_track_page_chain_mod_bit = OFF;
+		}
+	}
+	#endif
+
 	// In page preview mode
 	// In preview mode enter the step velocity, like in MAP preview mode
 	if (	(	( target_page->editorMode == PREVIEW )
@@ -594,7 +632,11 @@
 
 		case KEY_PAUSE:
 			if ( G_clock_source != EXT ){
+				#ifdef FEATURE_ENABLE_SONG_UPE
 				sequencer_command_PAUSE(OFF);
+				#else
+				sequencer_command_PAUSE();
+				#endif
 			}
 			break;
 
@@ -617,15 +659,32 @@
 					// Starting track is the currently recording one
 					current_track = target_page->Track[temp];
 
-					// Iterate through the chain and place all tracks in artificial selection
-					for ( i = 0; i < MATRIX_NROF_ROWS; i++ ){
+					// D O U B L E - C L I C K  C O N S T R U C T
+					// DOUBLE CLICK SCENARIO
+					if ((DOUBLE_CLICK_TARGET == keyNdx)
+							&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
 
-						// Place current track into the selection
-						target_page->trackSelection |=
-							( 1 << row_of_track( target_page, current_track ) );
+						// Double click code
+						// ...
+						// Add all tracks in recording chain to an artificial track selection
+						target_page->trackSelection = page_get_armed_chain_selection( target_page );
+					} // end of double click scenario
 
-						// Move the track pointer along the chain
-						current_track = current_track->chain_data[NEXT];
+					// SINGLE CLICK SCENARIO
+					else if (DOUBLE_CLICK_TARGET == 0) {
+
+							DOUBLE_CLICK_TARGET = keyNdx;
+							DOUBLE_CLICK_TIMER = ON;
+							// Start the Double click Alarm
+							cyg_alarm_initialize(
+									doubleClickAlarm_hdl,
+									cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+									DOUBLE_CLICK_ALARM_TIME );
+
+						// Single click code
+						// ...
+						// Add the currently recording track to selection
+						target_page->trackSelection = Page_getTrackRecPattern(target_page);
 					}
 
 					// Clear the achieved track selection

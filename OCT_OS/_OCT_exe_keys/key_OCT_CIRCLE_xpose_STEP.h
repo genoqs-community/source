@@ -193,7 +193,19 @@ void key_OCT_CIRCLE_xpose_STEP( unsigned int keyNdx ){
 //	row, i, target_page->Track[row]->attr_PIT );
 
 	} // Key is in the octave circle
+	else if (	( G_zoom_level == zoomPAGE )
+						&&	(	( target_page->editorMode == PREVIEW )
+							||	( target_page->editorMode == PREVIEW_PERFORM )
+							)
+						&&	( page_preview_step != NULL )
+					){
 
+					row = page_preview_step_row;
+					col = page_preview_step_col;
+
+		// Set the size value into the step
+		set_step_chord_size( target_page->Step[row][col], 258 - keyNdx );
+	}
 }
 
 

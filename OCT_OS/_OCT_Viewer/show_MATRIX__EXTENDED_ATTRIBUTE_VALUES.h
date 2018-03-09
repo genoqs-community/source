@@ -183,68 +183,69 @@
 							i,	MIR_BLINK );
 					}
 					break;
-
+				#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
 				case ATTR_MIDITCH:
-					if ( 	*target_page->Track[i]->attr_TCH
+					if ( 	target_page->Track[i]->attr_STATUS
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH] == 0 ){
 
 						MIR_point_numeric(
-							*target_page->Track[i]->attr_TCH+1
+							target_page->Track[i]->attr_STATUS+1
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
 							i,	MIR_RED );
 						MIR_point_numeric(
-							*target_page->Track[i]->attr_TCH+1
+							target_page->Track[i]->attr_STATUS+1
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
 							i,	MIR_BLINK );
 					}
-					else if ( 	*target_page->Track[i]->attr_TCH
+					else if ( 	target_page->Track[i]->attr_STATUS
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH] <= 16
 						){
 
 						MIR_point_numeric(
-							*target_page->Track[i]->attr_TCH-0
+							target_page->Track[i]->attr_STATUS-0
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
 							i,	MIR_GREEN);
 					}
 
-					else if ( 	*target_page->Track[i]->attr_TCH
+					else if ( 	target_page->Track[i]->attr_STATUS
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH] <= 32
 						){
 
 						MIR_point_numeric(
-							*target_page->Track[i]->attr_TCH-16
+							target_page->Track[i]->attr_STATUS-16
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
 							i,	MIR_RED);
 					}
 
-					else if ( 	*target_page->Track[i]->attr_TCH
+					else if ( 	target_page->Track[i]->attr_STATUS
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH] <= 48
 						){
 
 						MIR_point_numeric(
-							*target_page->Track[i]->attr_TCH-32
+							target_page->Track[i]->attr_STATUS-32
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
 							i,	MIR_GREEN);
 						MIR_point_numeric(
-							*target_page->Track[i]->attr_TCH-32
+							target_page->Track[i]->attr_STATUS-32
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
 							i,	MIR_BLINK);
 					}
 
-					else if ( 	*target_page->Track[i]->attr_TCH
+					else if ( 	target_page->Track[i]->attr_STATUS
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH] <= 64
 						){
 
 						MIR_point_numeric(
-							*target_page->Track[i]->attr_TCH-48
+							target_page->Track[i]->attr_STATUS-48
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
 							i,	MIR_RED );
 						MIR_point_numeric(
-							*target_page->Track[i]->attr_TCH-48
+							target_page->Track[i]->attr_STATUS-48
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
 							i,	MIR_BLINK );
 					}
 					break;
+				#endif
 			}
 		}
 

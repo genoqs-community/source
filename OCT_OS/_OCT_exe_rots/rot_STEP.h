@@ -44,7 +44,11 @@ void rot_exec_STEP( 	Pagestruct* target_page,
 				switch( MODE_OBJECT_SELECTION ){
 
 					case CHORDEYE:
-
+					#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+					case CHORDEYE_OCTAVE_FIRST:
+					case CHORDEYE_OCTAVE_SECOND:
+					case CHORDEYE_OCTAVE_THIRD:
+					#endif
 						// Enter the step strum level
 //						PhraseMultiTweakReset();
 //						PhraseEditStepNumber( target_page->Step[row][col], direction );

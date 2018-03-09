@@ -78,11 +78,6 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>NEMO_OS</name>
-			<type>2</type>
-			<location>/home/genoqs/Desktop/Octopus-fork/NEMO_OS</location>
-		</link>
-		<link>
 			<name>ecos-3.0</name>
 			<type>2</type>
 			<location>/home/genoqs/Desktop/software/ecos/ecos-3.0</location>

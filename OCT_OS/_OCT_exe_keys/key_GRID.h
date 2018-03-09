@@ -22,7 +22,7 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	if (keyNdx == KEY_MUTE_MASTER){
 
 		if ( G_rec_ctrl_page != NULL ){
@@ -131,6 +131,7 @@
 		PREV_GRID_CURSOR = GRID_CURSOR;
 	}
 	// -- END GRID PAGE CLUSTER SELECTIONS
+	#endif
 
 
 
@@ -227,7 +228,7 @@
 		// ALIGN KEY
 		// Set locators of playing pages to the GLOBAL LOCATOR
 		if ( keyNdx == KEY_ALIGN ){
-
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			if ( G_pause_bit == OFF ){
 				// Freeze the global locator value
 				j = G_global_locator;
@@ -246,7 +247,21 @@
 				G_measure_locator = (G_measure_indicator_value * 5) + G_measure_indicator_part;
 				align_measure_locators();
 				sequencer_command_PAUSE(ON);
+			}			
+			#else
+			// Freeze the global locator value
+			j = G_global_locator;
+			k = G_TTC_abs_value;
+
+			for ( i=0; i< GRID_NROF_BANKS; i++ ){
+
+				// If the page is currently playing
+				if ( GRID_p_selection[i] != NULL ){
+
+					set_page_locators( 	GRID_p_selection[i], j, k );
+				}
 			}
+			#endif
 		}
 
 
@@ -290,7 +305,7 @@
 				// nothing to do
 			}
 		}
-
+		#ifdef FEATURE_ENABLE_SONG_UPE
 		if ( keyNdx == KEY_MIX_MASTER ){
 			CLEAR_BIT(MIX_TRACK->attr_MISC, TRK_CTRL_MOVE);
 			CLEAR_BIT(MIX_TRACK->attr_MISC, TRK_CTRL_MIX);
@@ -300,7 +315,18 @@
 			SET_BIT(MIX_TRACK->attr_MISC, TRK_CTRL_PGTGL);
 			MIX_TRACK = NULL;
 		}
-
+		if ( keyNdx == 10 ){ // grid selection row 0 button
+			if ( GRID_p_set_note_offsets[current_GRID_set] == 255 )
+			{
+				GRID_p_set_note_offsets[current_GRID_set] = current_GRID_set;
+				GRID_p_set_note_presel = current_GRID_set;
+			}
+			else
+			{
+				GRID_p_set_note_offsets[current_GRID_set] = 255; // turn note send off
+			}
+		}
+		#endif
 		// MATRIX
 		// operate on the GRID set or switch to EDIT mode..
 		if ( (keyNdx >= 11) && (keyNdx <= 185) ) {
@@ -439,11 +465,8 @@
 
 										G_zoom_level = zoomPAGE;
 									}
-
-
-
 								} // GRID editormode is active
-								
+
 								else{
 									// Remember the page currently selected in the bank
 									previous_page = GRID_p_clock_presel[ target_page->pageNdx % 10 ];
@@ -453,13 +476,16 @@
 									switch ( is_selected_in_GRID( target_page ) ) {
 										case ON:
 											grid_select( target_page, OFF );
+											#ifdef FEATURE_ENABLE_SONG_UPE
 											ctrl_event_page_toggle( target_page );
+											#endif
 											break;
 
 										case OFF:
 											grid_select( target_page, ON  );
+											#ifdef FEATURE_ENABLE_SONG_UPE
 											ctrl_event_page_toggle( target_page );
-
+											#endif
 											// Klaus Gstettner request: send PgmCh when queuing page
 											// i.e. the o'clock switchmode (queue mechanism)..
 											// ..and the page needs to have a chromatic scale selected
@@ -491,7 +517,7 @@
 		if (	(keyNdx >= 187)
 			&& 	(keyNdx <= 195)
 			){
-
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			// page cluster selection -- disable everything else
 			if ( GRID_p_selection_cluster == ON ) {
 
@@ -517,7 +543,7 @@
 
 				break; // disable all other MUT keys
 			}
-
+			#endif
 
 // Old-school - toggling the page mutepatterns
 //			// Make sure there is a page playing in the bank pressed
@@ -718,10 +744,13 @@
 		// CLOCK SOURCE
 		//
 		if ( keyNdx == KEY_CLOCK ) {
-
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			if ( G_pause_bit == OFF ){
 				key_clock_select( target_page, KEY_CLOCK );
 			}
+			#else
+			key_clock_select( target_page, KEY_CLOCK );
+			#endif
 		} // KEY_CLOCK was pressed
 
 
@@ -1009,7 +1038,40 @@
 					switch( GRID_rowzero_pagelength ){
 
 						case FALSE:
+							#ifdef FEATURE_ENABLE_SONG_UPE
+							// Repeats statement removed
+							#else
+							// D O U B L E - C L I C K  C O N S T R U C T
+							// DOUBLE CLICK SCENARIO
+							if ((DOUBLE_CLICK_TARGET == keyNdx)
+									&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
 
+								// Double click code
+								// ...
+								// Set repeat forever
+								target_page->attr_STA = 0;
+								target_page->repeats_left = 1;
+							} // end of double click scenario
+
+
+							// SINGLE CLICK SCENARIO
+							else if (DOUBLE_CLICK_TARGET == 0) {
+
+									DOUBLE_CLICK_TARGET = keyNdx;
+									DOUBLE_CLICK_TIMER = ON;
+									// Start the Double click Alarm
+									cyg_alarm_initialize(
+											doubleClickAlarm_hdl,
+											cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+											DOUBLE_CLICK_ALARM_TIME );
+
+								// Single click code
+								// ...
+								// Set the "repeats" value
+								target_page->attr_STA = (keyNdx - 9) / 11;
+								target_page->repeats_left = target_page->attr_STA;
+							}
+							#endif
 							break;
 
 						case TRUE:
@@ -1125,17 +1187,19 @@
 
 					// Classic toggle behavior
 					switch ( is_selected_in_GRID( target_page ) ) {
-						ctrl_event_page_toggle( target_page );
 						case ON:
 							grid_select( target_page, OFF );
+							#ifdef FEATURE_ENABLE_SONG_UPE
 							ctrl_event_page_toggle( target_page );
+							#endif
 							break;
 
 						case OFF:
 							grid_select( target_page, ON  );
 							target_page->page_clear = OFF;
+							#ifdef FEATURE_ENABLE_SONG_UPE
 							ctrl_event_page_toggle( target_page );
-
+							#endif
 							// Klaus Gstettner request: send PgmCh when queuing page
 							// i.e. the o'clock switchmode (queue mechanism)..
 							// ..and the page needs to have a chromatic scale selected
@@ -1165,7 +1229,6 @@
 					// Clear selected tracks in page - only applies to step status
 					Page_CLEAR_selected_tracks( target_page );
 
-
 					for ( i=0; i < MATRIX_NROF_ROWS; i++ ){
 
 						// Re-assign the track initial pitches to the tracks in the page
@@ -1176,7 +1239,15 @@
 					}
 
 					// Unselect all tracks in cursor page
-					target_page->trackSelection = OFF;
+					target_page->trackSelection 		= OFF;
+					target_page->trackMutepattern		= OFF;
+					target_page->trackMutepatternStored = OFF;
+					target_page->trackSolopattern		= OFF;
+
+					// Remove page from grid selections
+					GRID_p_selection[ target_page->pageNdx % 10 ] = NULL;
+					GRID_p_preselection[ target_page->pageNdx % 10 ] = NULL;
+					GRID_p_clock_presel[ target_page->pageNdx % 10 ] = NULL;
 
 					// Mark page as cleared
 					target_page->page_clear = ON;
@@ -1190,9 +1261,9 @@
 						target_page->Track[row]->chain_data[PREV] = target_page->Track[row];
 						target_page->Track[row]->chain_data[PLAY] = target_page->Track[row];
 					}
-
+					#ifdef FEATURE_ENABLE_SONG_UPE
 					PAGE_init(target_page, target_page->pageNdx, false);
-
+					#endif
 					break;
 
 
@@ -1309,8 +1380,11 @@
 
 	// EDIT MASTER KEY
 	// Toggles the editmode for GRID
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	if ( keyNdx == KEY_EDIT_MASTER && G_rec_ctrl_page == NULL){
-
+	#else
+	if ( keyNdx == KEY_EDIT_MASTER ){
+	#endif
 		GRID_editmode ^=1 ;
 	}
 
@@ -1323,7 +1397,7 @@
 	if ( G_clock_source != EXT ){
 
 		switch( keyNdx ){
-
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			case KEY_STOP:
 				G_stop_bit = ON;
 				unsigned char pause = G_pause_bit;
@@ -1340,7 +1414,15 @@
 					G_pause_bit = OFF;
 				}
 				break;
+			#else
+			case KEY_STOP:
+				sequencer_command_STOP();
+				break;
 
+			case KEY_PAUSE:
+				sequencer_command_PAUSE();
+				break;
+			#endif
 			case KEY_PLAY1:
 			case KEY_PLAY2:
 			case KEY_PLAY4:
@@ -1349,7 +1431,7 @@
 		}
 	}
 
-
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	//
 	// Pause Measure Locator Scrolling (PMLS) - enabled
 	//
@@ -1419,6 +1501,7 @@
 		}
 
 	}
+#endif
 
 
 

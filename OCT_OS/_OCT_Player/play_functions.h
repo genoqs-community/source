@@ -31,9 +31,15 @@ extern void 	MIDI_send( 	unsigned char type,
 							unsigned char val0,
 							unsigned char val1,
 							unsigned char val2 );
+
+#ifdef FEATURE_ENABLE_SONG_UPE
 extern void 	selected_page_cluster_clear( unsigned char grid_cursor );
 extern void 	selected_page_cluster_move( unsigned char grid_cursor, unsigned char prev_grid_cursor );
+#endif
 
+#ifdef FEATURE_ENABLE_DICE
+extern unsigned char	dice_page_locator( Pagestruct* target_page, unsigned char page_locator_value );
+#endif
 
 unsigned int normalize( signed int value,
 						signed int min_limit,
@@ -114,7 +120,6 @@ void compute_chain_startpoints( unsigned char target_bank ){
 
 
 
-
 // Computes the preselection for a given GRID bank
 void compute_chain_presel( unsigned char target_bank ){
 
@@ -123,28 +128,31 @@ void compute_chain_presel( unsigned char target_bank ){
 					this_ndx = 0;
 
 	// If a manual "clock-" preselection was made..
-	if ( 	( GRID_p_clock_presel[ target_bank ] != GRID_p_preselection[ target_bank ]
+	if ( 	( GRID_p_clock_presel[ target_bank ] != GRID_p_preselection[ target_bank ] )
 
 		// ..(but not not in the case where the bank is not playing at all)
-		&&	( GRID_p_preselection[ target_bank ] != NULL )) // FIXME: is this the correct fix?
+//		&&	( GRID_p_preselection[ target_bank ] != NULL )
 		){
-		
+
 		// break - want to keep it that way.
 		return;
 	}
 
 	// If bank already active..
 	if ( (GRID_p_selection[target_bank]  !=  NULL) ){
+
+		unsigned char repeats_left = GRID_p_selection[ target_bank ]->repeats_left;
 		// If playmode CHAIN, select the next page for play.
 		// For now take the neighbor to the right, and if none, the furthest left
 		if (GRID_bank_playmodes & ( 1 << target_bank )){
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			// Decrease the "repeats" value. If it is not 0, break;
 			if ( !G_save_song_pos ) {
-				GRID_p_selection[ target_bank ]->repeats_left--;
+				repeats_left = --GRID_p_selection[ target_bank ]->repeats_left;
 				G_last_ctrl_offset[ target_bank ]++;
 			} else {
 				if (GRID_p_selection[ target_bank ]->repeats_left >= 1) {
-					GRID_p_selection[ target_bank ]->repeats_left--;
+					repeats_left = --GRID_p_selection[ target_bank ]->repeats_left;
 					G_last_ctrl_offset[ target_bank ]++;
 				} else {
 					GRID_p_selection[ target_bank ]->repeats_left = GRID_p_selection[ target_bank ]->attr_STA;
@@ -156,14 +164,33 @@ void compute_chain_presel( unsigned char target_bank ){
 			if ( GRID_p_selection[ target_bank ]->attr_LEN < PAGE_DEF_LEN ){
 
 				// Stop playing the old page if it was not empty..
-				stop_playing_page( GRID_p_selection[target_bank],	G_TTC_abs_value, prev_G_pause_bit );
+				if ( repeats_left == 0 ){
+					stop_playing_page( GRID_p_selection[target_bank],	G_TTC_abs_value, prev_G_pause_bit );
+				}
+				// ..and set its locators to 0 for the next round of play.
+				set_track_locators( GRID_p_selection[target_bank], NULL, 0, 0 );
+			}
+			#else
+			// Decrease the "repeats" value. If it is not 0, break;
+			if( GRID_p_selection[ target_bank ]->repeats_left > 0 ) {
+				repeats_left = --GRID_p_selection[ target_bank ]->repeats_left;
+			}
+
+			// Re-trigger /continuum switch - continuum for length 16(DEF) and more
+			if ( GRID_p_selection[ target_bank ]->attr_LEN < PAGE_DEF_LEN ){
+
+				// Stop playing the old page if it was not empty..
+				if ( repeats_left == 0 ){
+					stop_playing_page( GRID_p_selection[target_bank],	G_TTC_abs_value );
+				}
 
 				// ..and set its locators to 0 for the next round of play.
 				set_track_locators( GRID_p_selection[target_bank], NULL, 0, 0 );
 			}
-
+			#endif
 			// If the page still has repeats left to play
-			if ( GRID_p_selection[ target_bank ]->repeats_left > 0 ){
+			if (	( repeats_left > 0 )
+				|| 	( GRID_p_selection[ target_bank ]->attr_STA == 0 ) ){
 
 				// Move on to the next bank and disregard the code below
 				return;
@@ -230,8 +257,11 @@ void compute_chain_presel( unsigned char target_bank ){
 			if ( GRID_p_selection[ target_bank ]->attr_LEN < PAGE_DEF_LEN ){
 
 				// Stop playing the old page if it was not empty..
+				#ifdef FEATURE_ENABLE_SONG_UPE
 				stop_playing_page( GRID_p_selection[target_bank],	G_TTC_abs_value, prev_G_pause_bit );
-
+				#else
+				stop_playing_page( GRID_p_selection[target_bank],	G_TTC_abs_value );
+				#endif
 				// ..and set its locators to 0 for the next round of play.
 				set_track_locators( GRID_p_selection[target_bank], NULL, 0, 0 );
 			}
@@ -296,17 +326,18 @@ void toggle_PLAY_MODE( unsigned char target_status ){
 }
 
 
-
 // Send the program change stored in a single track
 void send_track_program_change( Trackstruct* target_track, Pagestruct* target_page ){
 
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	Pagestruct* temp_page = NULL;
 	Stepstruct* temp_step = NULL;
-	unsigned char adjMCH, ctrl_bank;
-	unsigned char n, row, i, j, k = 0;
+	unsigned char adjMCH;
+	unsigned char n, i, j, k = 0;
 	signed short next_ndx = 0;
 	signed char track_offset = 0;
 
+	// FIXME this condition does not belong here for UPE
 	// Make sure that the track has valid program change data
 	if (	( target_track->program_change != 0 )
 		){
@@ -483,16 +514,37 @@ void send_track_program_change( Trackstruct* target_track, Pagestruct* target_pa
 				MIDI_send( 	MIDI_CC, target_track->attr_MCH, 0,	target_track->bank_change-1 );
 			}
 
-			// Program change as dedicated message
-			MIDI_send( 	MIDI_PGMCH,
+			// Make sure that the track has valid program change data
+			if (	( target_track->program_change != 0 )   ){
+
+				// Program change as dedicated message
+				MIDI_send( 	MIDI_PGMCH,
 					normalize( target_track->attr_MCH + target_track->event_offset[ATTR_MIDICH],
 							TRACK_MIN_MIDICH, TRACK_MAX_MIDICH ),
 							target_track->program_change - 1,
 							0 );
+			}
 		}
 	}
-}
+	#else
 
+		// Bank change - via controller 0
+		if ( target_track->bank_change != 0 ){
+
+			MIDI_send( 	MIDI_CC, target_track->attr_MCH, 0,	target_track->bank_change-1 );
+		}
+
+		// Make sure that the track has valid program change data
+		if (	( target_track->program_change != 0 )   ){
+			// Program change as dedicated message
+			MIDI_send( 	MIDI_PGMCH,
+				normalize( target_track->attr_MCH + target_track->event_offset[ATTR_MIDICH],
+						TRACK_MIN_MIDICH, TRACK_MAX_MIDICH ),
+					target_track->program_change - 1,
+					0 );
+		}
+	#endif
+}
 
 // Send the program changes stored in the target page tracks
 void send_program_changes( Pagestruct* target_page ){
@@ -503,8 +555,9 @@ void send_program_changes( Pagestruct* target_page ){
 
 		// Send the PgmChanges for all HEAD rows in page
 		if ( target_page->Track[row] == target_page->Track[row]->chain_data[HEAD] ){
-
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			target_page->Track[row]->ctrl_offset = 0; // reset event offset counter
+			#endif
 			// Send the program change associated with the particular track
 			send_track_program_change( target_page->Track[row], target_page );
 
@@ -535,7 +588,7 @@ void switch_gridbank( unsigned char target_bank ){
 			GRID_p_preselection [target_bank],
 			GRID_switch_mode );
 */
-
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	// HALT the old page
 	if ( GRID_p_selection[target_bank] != NULL && G_reset == ON) {
 		G_reset = OFF;
@@ -567,12 +620,7 @@ void switch_gridbank( unsigned char target_bank ){
 
 		// Reset all track locators - may have changed
 		// ..?
-		// Wilson - Align imported page to the current locator ( fix Nemo 1 hit page toggle bug)
-		if ( PLAY_MODE_STATUS_original == OFF ) {
-			// This breaks the Octopus event timing
-			 GRID_p_selection[target_bank]->locator = G_global_locator;
-			 set_page_locators( GRID_p_selection[target_bank], G_global_locator, G_TTC_abs_value );
-		}
+
 		// Send the program change signals stored in the page tracks
 		// Make sure we do not repeat what we have done in the Klaus Gstettner mode
 		if (	( GRID_switch_mode == GRID_SWITCH_OCLOCK )
@@ -601,6 +649,66 @@ void switch_gridbank( unsigned char target_bank ){
 			PLAY_MODE_switch_new( target_bank, ON );
 		}
 	}
+	#else
+	// HALT the old page
+	if ( GRID_p_selection[target_bank] != NULL ) {
+
+		// PLAYMODE handling
+		if (	( PLAY_MODE_STATUS_original == ON )
+			){
+
+			// Restore the old state of the page from PLAY buffer
+			// First turn the PLAY mode OFF, then bring it ON again - down below
+			PLAY_MODE_switch_new( target_bank, OFF );
+		}
+
+		// Stop playing the old page if it was not empty..
+		stop_playing_page( GRID_p_selection[target_bank],	G_TTC_abs_value );
+
+		// ..and set its locators to 0 for the next round of play.
+		set_track_locators( GRID_p_selection[target_bank], NULL, 0, 0 );
+
+		// Set the page locator to 0, just to be consistent with using
+		// a locator of 0 to indicate that page or track is not playing.
+		GRID_p_selection[target_bank]->locator = 0;
+	}
+
+	// ACTIVATE the new page into the grid selection
+	GRID_p_selection [target_bank] = GRID_p_preselection [target_bank];
+
+	// Make sure we do not operate on an invalid page pointer
+	if ( GRID_p_selection [target_bank] != NULL ){
+
+		// Reset all track locators - may have changed
+		// ..?
+
+		// Send the program change signals stored in the page tracks
+		// Make sure we do not repeat what we have done in the Klaus Gstettner mode
+		if (	( GRID_switch_mode == GRID_SWITCH_OCLOCK )
+			&&	( GRID_p_selection [target_bank]->force_to_scale == TRUE )
+			&&	( GRID_p_selection [target_bank]->scaleNotes[ G_scale_ndx ] == SCALE_SIG_CHR )
+			){
+			// The program change has already been sent out.. no further need
+			// ..nothing to do!
+		}
+		else{
+			send_program_changes( GRID_p_selection[ target_bank ] );
+		}
+		// Advance its locators once, moving them from 0 to 1, indicating activity
+		advance_page_locators( GRID_p_selection[target_bank] );
+
+		// Refill the page repeats value
+		GRID_p_selection[target_bank]->repeats_left = GRID_p_selection[target_bank]->attr_STA;
+
+		// PLAYMODE handling
+		if (	( PLAY_MODE_STATUS_original == ON )
+			){
+
+			// Restore the old state of the page from PLAY buffer
+			PLAY_MODE_switch_new( target_bank, ON );
+		}
+	}
+	#endif
 }
 
 
@@ -660,7 +768,11 @@ void select_page_preselections() {
 				if (	( 	(GRID_p_selection[i]->pageNdx % 10) == (target_page->pageNdx % 10) )
 					&& 	( 	(G_zoom_level == zoomPAGE)
 						|| 	(G_zoom_level == zoomMIXMAP) )
+					#ifdef NEMO
+					&&	(	G_track_rec_bit == ON )
+					#else
 					&& 	( 	follow_flag == FOLLOW_PAGE )
+					#endif
 					){
 
 					// We are in the same row, so do the switch of the VIEWER _page
@@ -668,6 +780,13 @@ void select_page_preselections() {
 
 					// Update the GRID CURSOR
 					GRID_CURSOR = target_page->pageNdx;
+
+					#ifdef NEMO
+					if( page_is_chain_follow( target_page ) ) {
+						// Reset track window to top
+						target_page->track_window = NEMO_WINDOW;
+					}
+					#endif
 				}
 			}
 
@@ -704,3 +823,399 @@ void Player_wait( unsigned int in_UART_BASE ){
 	}
 }
 
+#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+// Fill phrase with step chord aux note data
+void fill_phrase_pool( PhraseStruct* phraseObj, Stepstruct* target_step ) {
+
+	unsigned char octave_mask = 0;
+	unsigned char i = 0;
+	unsigned char first_offset 	= 0;
+	unsigned char second_offset	= get_chord_cardinality( target_step, CHORD_OCTAVE_FIRST );
+	unsigned char third_offset 	= second_offset + get_chord_cardinality( target_step, CHORD_OCTAVE_SECOND );
+
+	for ( i = 0; i < 12; i++ ) {
+		octave_mask = get_chord_octave_mask( target_step, i );
+
+		if( i && !octave_mask ) {
+			continue;
+		}
+
+		if ( i == 0 || CHECK_MASK( octave_mask, CHORD_OCTAVE_FIRST ) ) {
+			PhrasePtAddPit( phraseObj, first_offset++, i );
+		}
+
+		if ( CHECK_MASK( octave_mask, CHORD_OCTAVE_SECOND ) ) {
+			PhrasePtAddPit( phraseObj, ++second_offset, i + 12);
+		}
+
+		if ( CHECK_MASK( octave_mask, CHORD_OCTAVE_THIRD ) ) {
+			PhrasePtAddPit( phraseObj, ++third_offset, i + 24 );
+		}
+	}
+}
+#endif
+
+// Check if trigger stack is unset (random pick)
+bool is_trigger_stack_random( Trigger_Stack* trigger_stack ){
+
+	return	( trigger_stack->trigger[0] | trigger_stack->trigger[1] | trigger_stack->trigger[2] | trigger_stack->trigger[3] | trigger_stack->trigger[4]
+		    | trigger_stack->trigger[5] | trigger_stack->trigger[6] | trigger_stack->trigger[7] | trigger_stack->trigger[8] | trigger_stack->trigger[9] ) == 0;
+}
+
+
+// Helper check if track trigger is unset (random pick)
+bool is_trigger_random( Trackstruct* target_track  ){
+
+	return is_trigger_stack_random( &direction_repository[target_track->attr_DIR + target_track->event_offset[ATTR_DIRECTION]].trigger_set[target_track->frame_ndx] );
+}
+
+
+// Nemo x2 only - Follow chain when follow chain mode and crossing Nemo track window
+void track_window_follow_chain( Pagestruct* target_page, Trackstruct* target_track ){
+	#ifdef NEMO
+	if( 	( target_page->trackSelection == 0 )
+		&&	( page_is_chain_follow( target_page ) )
+		&& 	( CHECK_BIT( target_page->track_window, row_of_track( target_page, target_track->chain_data[HEAD] ) )
+		||  ( CHECK_BIT( target_page->track_window, row_of_track( target_page, target_track->chain_data[HEAD]->chain_data[PREV] ) ) ) )
+		&& 	( !CHECK_BIT( target_page->track_window, row_of_track( target_page, target_track->chain_data[NEXT] ) ) ) ) {
+
+		target_page->track_window = CHECK_MASK( target_page->track_window, NEMO_WINDOW ) ? NEMO_WINDOW << NEMO_NROF_ROWSHIFT : NEMO_WINDOW;
+	}
+	#endif
+}
+
+
+// Get a pointer to the flow factor array
+unsigned char get_track_flow_factor( const unsigned char attribute, const unsigned char factor_type, const unsigned char col ) {
+
+	#ifdef NEMO
+	switch( attribute ) {
+		case NEMO_ATTR_PITCH:
+			switch( factor_type ) {
+				case FACTOR_INTERVAL_TYPE_SEMITONE:
+				return Track_PIT_factor_semitone[col];
+				default:
+				return Track_PIT_factor[col];
+			}
+			break;
+		case NEMO_ATTR_VELOCITY:return Track_VEL_factor[col];
+		case NEMO_ATTR_LENGTH: 	return Track_LEN_factor[col];
+		case NEMO_ATTR_START: 	return Track_STA_factor[col];
+		case NEMO_ATTR_AMOUNT: 	return Track_AMT_factor[col];
+		case NEMO_ATTR_GROOVE:	return Track_GRV_factor[col];
+		case NEMO_ATTR_MIDICC: 	return Track_MCC_factor[col];
+	}
+	#else
+	switch( attribute ){
+		case ATTR_PITCH:
+			switch( factor_type ) {
+				case FACTOR_INTERVAL_TYPE_SEMITONE:
+				return Track_PIT_factor_semitone[col];
+				default:
+				return Track_PIT_factor[col];
+			}
+			break;
+		case ATTR_VELOCITY: return Track_VEL_factor[col];
+		case ATTR_LENGTH: 	return Track_LEN_factor[col];
+		case ATTR_START: 	return Track_STA_factor[col];
+		case ATTR_AMOUNT: 	return Track_AMT_factor[col];
+		case ATTR_GROOVE:	return Track_GRV_factor[col];
+		case ATTR_MIDICC: 	return Track_MCC_factor[col];
+	}
+	#endif
+	return 0;
+}
+
+#ifdef FEATURE_ENABLE_DICE
+// Dice synchronized attribute changes
+void dice_synchronize() {
+
+	if( dice_synced_attr == 0 ) {
+		return;
+	}
+
+	unsigned char col = 0;
+	unsigned char offset = 0;
+	unsigned char j;
+	unsigned char k;
+
+	Trackstruct* target_dice = throw_dice( NULL );
+	if( target_dice ) {
+		unsigned char dice_selected_clock = Dice_get_selected_clock_type( target_dice );
+		unsigned char dice_length = TRACK_MAX_LENGTH / ( 1 << target_dice->attr_LEN );
+
+		if( dice_synced_attr != ATTR_MISC && Dice_is_quantizer( target_dice ) ) {
+			// Dice action quantized to dice grid entry.
+			if( G_global_locator % dice_length > 0 ){
+				return;
+			}
+		}
+
+		unsigned char i = 0;
+
+		switch( dice_synced_attr ) {
+
+		case ATTR_MISC:
+			j = G_global_locator;
+			k = G_TTC_abs_value;
+
+			for ( i = 0; i < GRID_NROF_BANKS; i++ ){
+				// If the page is currently playing
+				if ( Dice_is_grid_row_diced( target_dice, i ) && GRID_p_selection[i] != NULL ){
+
+					set_page_locators( 	target_dice->attr_STA + GRID_p_selection[i], j % ( target_dice->attr_STA + dice_length ), k );
+				}
+			}
+		break;
+
+		case ATTR_LOCATOR:
+			i = dice_synced_value - 1;
+			if( Dice_is_grid_row_diced( target_dice, i ) ) {
+				j = G_global_locator;
+				k = G_TTC_abs_value;
+
+				// Resync previously diced grid row
+				// If the page is currently playing
+				if ( GRID_p_selection[i] != NULL ){
+
+					set_page_locators( GRID_p_selection[i], j, k );
+				}
+			}
+			DICE_bank->trackSelection ^= 1 << i;
+
+			// Toggle run bit (active when track selection ).
+			G_dice_run_bit = ( DICE_bank->trackSelection == 0 ) ? OFF : ON;
+			break;
+
+		case ATTR_LENGTH:
+			col = dice_synced_value;
+			if( col > 8 && col < 14 ){
+				target_dice->attr_LEN = col - 9;
+				target_dice->attr_TEMPOMUL = 0;
+			}
+
+			offset = max( 1, 1 << ( 4 - (  (target_dice->attr_LEN - 1 ) + 1 ) ) );
+			target_dice->attr_STA = ROUNDUP( target_dice->attr_STA - ( offset - 1 ), offset );
+			break;
+
+		case ATTR_START:
+			col = dice_synced_value;
+			offset = max( 1, 1 << ( 4 - (  (target_dice->attr_LEN - 1 ) + 1 ) ) );
+			target_dice->attr_STA = ROUNDUP( col - ( offset - 1 ), offset );
+
+			break;
+
+		case ATTR_DICE_BANK:
+			SEL_DICE_BANK = dice_synced_value;
+			break;
+
+		case NEMO_ATTR_G_master_tempoMUL:
+			if( Dice_is_edit_tempo( target_dice ) ) {
+				Dice_set_TEMPOMUL( target_dice, dice_synced_value, dice_selected_clock );
+				Dice_set_TEMPOMUL_SKIP( target_dice, 0, dice_selected_clock );
+			}
+			break;
+
+		case NEMO_ATTR_G_master_tempoMUL_SKIP:
+			if( Dice_is_edit_tempo( target_dice ) ) {
+				Dice_set_TEMPOMUL( target_dice, 1, dice_selected_clock );
+				Dice_set_TEMPOMUL_SKIP( target_dice, dice_synced_value, dice_selected_clock );
+			}
+			break;
+		}
+
+		if( CHECK_BIT( DICE_bank->editorMode, DICE_ALIGN ) ) {
+			// Resync dice page locators
+			j = G_global_locator;
+			k = G_TTC_abs_value;
+			dice_length = TRACK_MAX_LENGTH / ( 1 << target_dice->attr_LEN );
+			for ( i=0; i < GRID_NROF_BANKS; i++ ) {
+				// If the page is currently playing
+				if ( Dice_is_grid_row_diced( target_dice, i ) && GRID_p_selection[i] != NULL ) {
+
+					set_page_locators( 	target_dice->attr_STA + GRID_p_selection[i], j % ( target_dice->attr_STA + dice_length ), k );
+				}
+			}
+			CLEAR_BIT( DICE_bank->editorMode, DICE_ALIGN );
+		}
+	}
+
+	dice_synced_attr = 0;
+	dice_synced_value = 0;
+}
+
+
+// Return current Dice state NULL (inactive)
+Trackstruct* throw_dice( Pagestruct* target_page ) {
+
+	Trackstruct* dice = NULL;
+	// Dice active for page target
+ 	if( ( target_page == NULL || ( G_dice_run_bit && ( DICE_bank->trackSelection & ( 1<<(target_page->pageNdx % 10 ) ) ) ) ) ){
+ 		dice = Dice_get();
+ 	}
+
+ 	return dice;
+}
+
+
+// Align Dice Global Clock locator
+void dice_align_clock(Trackstruct* target_dice) {
+
+	set_track_locators( GRID_p_selection[DICE_PAGE], target_dice, G_global_locator, G_TTC_abs_value );
+}
+
+
+// Is locator outside dice frame
+bool dice_is_page_locator_skipped( Pagestruct* target_page, const unsigned char locator ) {
+
+	bool skipped = false;
+	Trackstruct* target_dice = throw_dice( target_page );
+
+	if( target_dice ) {
+		unsigned char length = target_page->attr_LEN / ( 1 << target_dice->attr_LEN );
+		skipped	= !( locator >= target_dice->attr_STA && locator < ( target_dice->attr_STA + length ) );
+	}
+
+	return skipped;
+}
+
+
+// Get Dice clock offset
+const unsigned char dice_clock_offset( Pagestruct * target_page, unsigned char row, unsigned char clock_type ) {
+
+	unsigned char clock_offset = 0;
+
+	Trackstruct* target_dice = throw_dice( target_page );
+	if( ( target_page != DICE_bank ) ) {
+		switch( clock_type ) {
+		case ATTR_G_master_tempoMUL:
+			return Dice_get_TEMPOMUL( target_dice, DICE_TRACK_CLOCK );
+		case ATTR_G_master_tempoMUL_SKIP:
+			return Dice_get_TEMPOMUL_SKIP( target_dice, DICE_TRACK_CLOCK );
+		default:
+			return 0;
+		}
+	}
+
+	return clock_offset;
+}
+
+// Apply clock offset to to track tempoMUL and tempoMUL_SKIP
+const DiceOffsetClock dice_apply_clock_offset( Pagestruct * target_page, unsigned char row ) {
+
+	Trackstruct* target_track = target_page->Track[row];
+
+	DiceOffsetClock dice_clock;
+	if( target_track ) {
+		dice_clock.attr_TEMPOMUL = target_track->attr_TEMPOMUL;
+		dice_clock.attr_TEMPOMUL_SKIP = target_track->attr_TEMPOMUL_SKIP;
+	}
+
+	Trackstruct* target_dice = throw_dice( target_page );
+	if( target_dice && target_page != DICE_bank ) {
+		unsigned char dice_multiplier_offset = 0;
+		unsigned char dice_divisor_offset = 0;
+		signed char dice_clock_delta = 0;
+		Trackstruct* target_track = target_page->Track[row];
+
+		switch( target_track->attr_TEMPOMUL_SKIP & 0x0F ) {
+
+			case 0:
+				if( target_track->attr_TEMPOMUL != 15 ) {
+					dice_divisor_offset = dice_clock_offset( target_page, row, ATTR_G_master_tempoMUL_SKIP );
+					if( dice_divisor_offset > 0 ) {
+						dice_clock_delta = target_track->attr_TEMPOMUL - dice_divisor_offset;
+
+						if( dice_clock_delta > 0 ) {
+							dice_clock.attr_TEMPOMUL = dice_clock_delta;
+						} else {
+							dice_clock_delta = dice_clock_delta != 0 ? dice_clock_delta : -1;
+							dice_clock.attr_TEMPOMUL = 1;
+							dice_clock.attr_TEMPOMUL_SKIP =
+									( target_track->attr_TEMPOMUL_SKIP & 0xF0 )
+								|	( min( 1 - ( dice_clock_delta + 1 ), 14 ) );
+
+						}
+					} else {
+						dice_multiplier_offset = max( 0, dice_clock_offset( target_page, row, ATTR_G_master_tempoMUL ) - 1 );
+						dice_clock.attr_TEMPOMUL = min( target_track->attr_TEMPOMUL + dice_multiplier_offset, 14 );
+					}
+				}
+				break;
+
+			default:
+				if( target_track->attr_TEMPOMUL != 25 ) {
+
+					dice_multiplier_offset = max( 0, dice_clock_offset( target_page, row, ATTR_G_master_tempoMUL ) - 1 );
+					if( dice_multiplier_offset > 0 ) {
+
+						dice_clock_delta = ( target_track->attr_TEMPOMUL_SKIP & 0x0F ) - dice_multiplier_offset;
+
+						if( dice_clock_delta > 0 ) {
+							dice_clock.attr_TEMPOMUL_SKIP =
+									( target_track->attr_TEMPOMUL_SKIP & 0xF0 )
+									|	( min( dice_clock_delta, 14 ) );
+						} else {
+							dice_clock_delta = dice_clock_delta != 0 ? dice_clock_delta : -1;
+							dice_clock.attr_TEMPOMUL_SKIP = 0;
+							dice_clock.attr_TEMPOMUL = min( 1 - ( dice_clock_delta + 1 ), 14 );
+						}
+					} else {
+						dice_divisor_offset = dice_clock_offset( target_page, row, ATTR_G_master_tempoMUL_SKIP );
+						dice_clock.attr_TEMPOMUL_SKIP =
+								( target_track->attr_TEMPOMUL_SKIP & 0xF0 )
+							|	( min( dice_divisor_offset + ( target_track->attr_TEMPOMUL_SKIP & 0x0F ), 14 ) );
+					}
+				}
+				break;
+		}
+	}
+
+	return dice_clock;
+}
+
+
+
+// Get Dice attribute flow offset
+signed int dice_attr_flow_offset( Pagestruct * target_page, const unsigned char attribute, const card8 track_locator ) {
+
+	signed int dice_offset = 0;
+
+	Trackstruct* target_dice = throw_dice( target_page );
+
+	if( target_page != DICE_bank && target_dice ) {
+		bool is_dice_global_clock = Dice_get_MISC( target_dice, DICE_GLOBAL_CLOCK );
+
+		// Select scaled locator (global / track)
+		unsigned char locator = is_dice_global_clock ? max( 1, Dice_get_global_clock_track()->attr_LOCATOR ) : track_locator;
+
+		// Calculate dice note pitch offset.
+		unsigned char dice_span = is_dice_global_clock ? TRACK_MAX_LENGTH : 1 << ( 4 - target_dice->attr_LEN );
+
+		// Index of flow pitch.
+		unsigned char dice_flow_position = REMAP_RANGE( 0, dice_span - 1, 0, 15, locator - 1 );
+
+		// Attribute factor.
+		unsigned char attr_factor = Dice_get_factor( target_dice, attribute );
+
+		// Calculate ATTR offset Remap range.
+		unsigned char factor_offset = attr_factor < 17 ? attr_factor : attr_factor - 16;
+
+		DiceFlowAttributes flow_attributes = Dice_get_flow_attributes( attribute );
+
+		if( Dice_is_flow_attribute_flat( attribute ) ) {
+			// Behave as straight offset multiplier.
+			dice_offset = normalize( get_track_flow_factor( attribute, flow_attributes.attr_INTERVAL, factor_offset ) * flow_attributes.attr_SCALE, -flow_attributes.attr_MAX, flow_attributes.attr_MAX );
+		}
+		else {
+
+			// Get dice flow pitch scaled by factor
+			dice_offset = normalize( Dice_get_flow_attribute_value( attribute, dice_flow_position ) * get_track_flow_factor( attribute, FACTOR_INTERVAL_TYPE_DEFAULT, factor_offset ) / flow_attributes.attr_NEUTRAL, -flow_attributes.attr_MAX, flow_attributes.attr_MAX );
+		}
+
+		dice_offset = attr_factor < 17 ? dice_offset : -dice_offset;
+	}
+
+	return dice_offset;
+}
+#endif

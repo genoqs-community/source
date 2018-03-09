@@ -80,23 +80,29 @@ switch (content) {
 								MIR_write_dot( LED_SCALE_MYSEL, MIR_GREEN );
 							}
 
-							// Show the currently active banks
-							for( i=0; i<GRID_NROF_BANKS; i++ ){
+							if (	!(	(	( target_page->editorMode == PREVIEW )
+										||	( target_page->editorMode == PREVIEW_PERFORM )
+										)
+									&&	( is_pressed_steprange() != 0 ))) {
 
-								// There is a page playing in the bank
-								if ( GRID_p_selection[i] != NULL ){
+								// Show the currently active banks
+								for( i=0; i<GRID_NROF_BANKS; i++ ){
 
-									// All active pages in green
-									MIR_write_dot( circleNrField[8-i], MIR_GREEN );
+									// There is a page playing in the bank
+									if ( GRID_p_selection[i] != NULL ){
 
-									// Current page blinking orange
-									if ( GRID_p_selection[i] == target_page ){
+										// All active pages in green
+										MIR_write_dot( circleNrField[8-i], MIR_GREEN );
 
-										MIR_write_dot( circleNrField[8-i], MIR_RED   );
-										MIR_write_dot( circleNrField[8-i], MIR_BLINK );
+										// Current page blinking orange
+										if ( GRID_p_selection[i] == target_page ){
+
+											MIR_write_dot( circleNrField[8-i], MIR_RED   );
+											MIR_write_dot( circleNrField[8-i], MIR_BLINK );
+										}
 									}
-								}
-							} // bank iterator
+								} // bank iterator
+							}
 							break;
 
 						case OFF:
@@ -214,9 +220,11 @@ switch (content) {
 			if ( G_clock_source == INT ) {
 				// MIR_write_dot (LED_STOP, MIR_BLINK);
 			}
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			if ( prev_G_stop_bit == OFF && G_pause_bit == ON ){
 				MIR_write_dot (LED_STOP, MIR_BLINK);
 			}
+			#endif
 		}
 
 		// Pause condition
@@ -283,7 +291,7 @@ switch (content) {
 				switch( GRID_status ){
 
 					case GRID_DEFAULT:
-
+						#ifdef FEATURE_ENABLE_SONG_UPE
 						if ( G_pause_bit == OFF ){
 
 							// G_master_tempo shows switchmode for the GRID
@@ -311,7 +319,18 @@ switch (content) {
 							MIR_write_dot( LED_FOLLOW, MIR_RED );
 							MIR_write_dot( LED_FOLLOW, MIR_GREEN );
 						}
+						#else
+						// G_master_tempo shows switchmode for the GRID
+						if ( GRID_switch_mode == GRID_SWITCH_OCLOCK ){
+							MIR_write_dot( LED_TEMPO, MIR_RED   );
+						}
+						else{
+							MIR_write_dot( LED_TEMPO, MIR_GREEN );
+						}
 
+						//ALIGN is available
+						MIR_write_dot( LED_ALIGN, MIR_GREEN );
+						#endif
 						break;
 
 
@@ -344,15 +363,15 @@ switch (content) {
 
 
 			case zoomPAGE:
-
+				#ifdef FEATURE_ENABLE_SONG_UPE
 				if ( G_rec_ctrl_track != NULL ){
 					MIR_write_dot( LED_MUTE_MASTER, MIR_RED );
 					MIR_write_dot( LED_MUTE_MASTER, MIR_GREEN );
 					MIR_write_dot( LED_MUTE_MASTER, MIR_BLINK );
 				}
-
+				#endif
 				// In PREVIEW mode show the track VEL in circle
-				if (	( target_page->trackSelection == 1 )
+				if (	( my_bit_cardinality( target_page->trackSelection ) == 1 )
 					&&	(	( target_page->editorMode == PREVIEW )
 						||	( target_page->editorMode == PREVIEW_PERFORM )
 						)
@@ -459,7 +478,7 @@ switch (content) {
 //								MIR_write_numeric_C( target_page->Track[ my_bit2ndx( target_page->trackSelection )]->program_change );
 //								MIR_write_dot( LED_PROGRAM, MIR_RED );
 //								MIR_write_dot( LED_PROGRAM, MIR_GREEN );
-
+								#ifdef FEATURE_ENABLE_SONG_UPE
 								// Control track MIX ARMED
 								if ( Track_get_MISC(target_page->Track[ my_bit2ndx( target_page->trackSelection )], CONTROL_BIT)
 										&& CHECK_BIT(target_page->Track[ my_bit2ndx( target_page->trackSelection )]->attr_MISC, TRK_CTRL_MIX)
@@ -558,7 +577,31 @@ switch (content) {
 									MIR_write_dot (KEY_BK200, MIR_GREEN);
 									MIR_write_dot (KEY_BK200, MIR_BLINK);
 								}
+								#else
+								// Display the program or bank change
+								switch( CHANGE_BANK_OR_PGM ){
 
+									case PGM:
+										// Write the Program change number in the numeric quadrant of the Circle
+										MIR_write_numeric_C( target_page->Track[ my_bit2ndx( target_page->trackSelection )]->program_change );
+
+										MIR_write_dot( LED_PROGRAM, MIR_RED );
+										MIR_write_dot( LED_PROGRAM, MIR_GREEN );
+
+										MIR_write_dot( LED_SCALE_MYSEL, MIR_GREEN );
+										break;
+
+									case BANK:
+										// Write the bank change number in the numeric quadrant of the Circle
+										MIR_write_numeric_C( target_page->Track[ my_bit2ndx( target_page->trackSelection )]->bank_change );
+
+										MIR_write_dot( LED_SCALE_MYSEL, MIR_RED );
+										MIR_write_dot( LED_SCALE_MYSEL, MIR_GREEN );
+
+										MIR_write_dot( LED_PROGRAM, MIR_GREEN );
+										break;
+								}
+								#endif
 								break;
 						}
 

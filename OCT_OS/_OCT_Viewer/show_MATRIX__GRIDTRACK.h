@@ -64,5 +64,14 @@
 			}
 		}
 
+		#ifdef FEATURE_ENABLE_SONG_UPE
+		// Show the current grid set track if a note is set
+		if ( GRID_p_set_note_offsets[current_GRID_set] != 255 )
+		{
+			MIR_write_dot( 10, MIR_RED );
+			MIR_write_dot( 10, MIR_GREEN );
+			MIR_write_dot( 10, MIR_BLINK );
+		}
+		#endif
 
 

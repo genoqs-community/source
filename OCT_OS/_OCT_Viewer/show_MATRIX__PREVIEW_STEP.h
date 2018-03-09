@@ -38,5 +38,11 @@
 							+	target_page->Step[row][col]->attr_PIT, ON 	);
 
 
+	// Show the real STEP CHORD cardinality in the chord indicator in red.
+	#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+	MIR_write_dot( 258 - get_chord_cardinality( target_page->Step[row][col], CHORD_OCTAVE_ALL ), MIR_RED );
+	#else
+	MIR_write_dot( 258 - my_bit_cardinality( target_page->Step[row][col]->chord_data & 0x7FF ), MIR_RED   );
+	#endif
 
-
+	MIR_write_dot( 258 - (target_page->Step[row][col]->chord_up >> 29 ), MIR_GREEN );

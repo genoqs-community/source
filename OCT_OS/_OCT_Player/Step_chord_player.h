@@ -103,7 +103,11 @@
 
 	// If the step has aux (chord) notes defined, add the pitch offsets of aux notes to the phrase object.
 	// We will only be dealing with the phrase offsets from now on.
-
+	#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+	if ( stepAuxNoteCt ) {
+		fill_phrase_pool( &phraseObj, stepPt );
+	}
+	#else
 	for ( i=0; i < stepAuxNoteCt; i++ ) {
 
 		// Get the Nth aux note's pitch offset.
@@ -116,7 +120,7 @@
 			case 2:	PhrasePtAddPit( &phraseObj, i+1, 24 ); break;
 		}
  	}
-
+	#endif
 	//---------------------------------------------------------------------------------------
 	// ADAPTIVE or NORMAL PHRASING
 	//---------------------------------------------------------------------------------------
@@ -198,26 +202,25 @@
 		//---------------------------------------------------------------------------------------
 		// START OFFSET (STA)
 		//---------------------------------------------------------------------------------------
+		intn phrase_STA = PhrasePtGetSta( &phraseObj, noteIx );
+		// Subject phrase_STA to track speed multiplier if the phrase is not a strum.
 
-		intn note_offset_STA = start_offset + PhrasePtGetSta( &phraseObj, noteIx );
-
-		// Subject note_offset_STA to track speed multiplier if the phrase is not a strum.
 		if ( !PhrasePtIsStrum(&phraseObj) ) {
-			Trackstruct* target_track = target_page->Track[phys_row];
 
-			switch( target_track->attr_TEMPOMUL_SKIP & 0x0F ){
+			switch( attr_TEMPOMUL_SKIP & 0x0F ){
 			// Track equals or above normal speed
 			case 0:
-				note_offset_STA /= target_track->attr_TEMPOMUL;
+				phrase_STA /= attr_TEMPOMUL;
 				break;
 
 			// Track below normal speed
 			default:
-				note_offset_STA *= ((target_track->attr_TEMPOMUL_SKIP & 0x0F) + 1);
+				phrase_STA *= ((attr_TEMPOMUL_SKIP & 0x0F) + 1);
 				break;
 			}
 		}
 
+		intn note_offset_STA = start_offset + phrase_STA;
 
 
 		//---------------------------------------------------------------------------------------
@@ -275,6 +278,8 @@
 		intn velocity 	=
 			normalize(
 				(	(		EFF_pool_VEL
+						// Dice - flow shape velocity
+						+ 	dice_velocity_offset
 						+   PhrasePtGetVel( &phraseObj, noteIx )
 
 						+ (	(	stepPt->attr_VEL
@@ -293,6 +298,8 @@
 		intn velocity 	=
 			normalize(
 				(	(		EFF_pool_VEL
+						// Dice - flow shape velocity
+						+ 	dice_velocity_offset
 						+	target_page->Track[phys_row]->event_offset[ATTR_VELOCITY]
 						+	PhrasePtGetVel( &phraseObj, noteIx )
 
@@ -324,8 +331,8 @@
 
 		// NOTE OFF data: channel, pitch, length -- so we have control over length
 		// Compute the track clock divisor multiplier - adjusting the length
-		if ( (target_page->Track[phys_row]->attr_TEMPOMUL_SKIP & 0x0F)> 0 ) {
-			j = (target_page->Track[phys_row]->attr_TEMPOMUL_SKIP & 0x0F) + 1;
+		if ( (attr_TEMPOMUL_SKIP & 0x0F)> 0 ) {
+			j = (attr_TEMPOMUL_SKIP & 0x0F) + 1;
 		}
 		else {
 			j = 1;
@@ -333,7 +340,9 @@
 
 		// Compute the real length. The Step length should be multiplied by the track LEN factor here..
 		// Step LEN factor taken into account (10fold) and then the value normalized.
-		temp = ( ( stepPt->attr_LEN
+		temp = ( ( ( stepPt->attr_LEN
+				// Dice - flow shape length
+				+ dice_length_offset )
 				// Step length multiplier
 				* ((stepPt->event_data & 0xF0)>>4) )
 				// LEN Factor of the track
@@ -382,8 +391,8 @@
 					// Make sure we do not accidentally get a legato effect
 					temp = length + note_offset_STA;
 
-					if ( temp >= STEP_MAX_LENGTH ){
-						temp = STEP_MAX_LENGTH;
+					if ( temp >= STEP_MAX_LENGTH  * j ){
+						temp = STEP_MAX_LENGTH * j;
 					}
 
 					// Channel, pitch, velocity, timestamp offset (length)
@@ -402,8 +411,8 @@
 
 				// Make sure we do not accidentally get a legato effect
 				temp = length + note_offset_STA;
-				if ( temp >= STEP_MAX_LENGTH * ((stepPt->event_data & 0xF0)>>4) ){
-					temp = STEP_MAX_LENGTH * ((stepPt->event_data & 0xF0)>>4);
+				if ( temp >= STEP_MAX_LENGTH * j * ((stepPt->event_data & 0xF0)>>4) ){
+					temp = STEP_MAX_LENGTH * j * ((stepPt->event_data & 0xF0)>>4);
 				}
 
 				// Channel, pitch, velocity, timestamp offset (length)

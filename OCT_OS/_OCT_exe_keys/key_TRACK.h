@@ -361,22 +361,15 @@
 
 				// Break up original value in tens and ones.
 				i = target_page->Track[row]->attr_AMT / 10;
-				j = target_page->Track[row]->attr_AMT % 10;
 
-				if ( col < 12 ){
+				if ( col < 10 ){
 
 					// Compute new tens
 					i = 10 * (col + 1);
 
-					// Get new ones value, leave it as it is otherwise
-					if ( col < 9 ){
-						// j = col + 1;
-						j = 0;
-					}
-
 					// Write the final value into the attribute
 					target_page->Track[row]->attr_AMT =
-						normalize( i + j, 0, 127 );
+						normalize( i, 0, 100 );
 				}
 				else{
 
@@ -965,7 +958,7 @@
 	//
 	key_exe_chainselectors( keyNdx );
 
-
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	if ( Track_get_MISC(target_page->Track[ my_bit2ndx( target_page->trackSelection )], CONTROL_BIT) ) {
 		// NOTE: should have used a bitmask -- don't feel like refactoring it now
 
@@ -1069,6 +1062,7 @@
 			CLEAR_BIT(target_page->Track[ my_bit2ndx( target_page->trackSelection )]->attr_MISC, TRK_CTRL_EXT_STOP);
 		}
 	}
+	#endif
 
 	//
 	// BIG KNOB KEYS
@@ -1083,7 +1077,9 @@
 
 				if (	( (target_page->trackSelection & (1<<i)) != 0 )
 					&&	( ((unsigned char) target_page->Track[ my_bit2ndx( target_page->trackSelection )]->program_change) > 0 )
+					#ifdef FEATURE_ENABLE_SONG_UPE
 					&& ( Track_get_MISC(target_page->Track[i], CONTROL_BIT) == OFF || target_page->Track[i]->attr_MCH >= 16 )
+					#endif
 				){
 					MIDI_send( 	MIDI_PGMCH,
 								target_page->Track[i]->attr_MCH
@@ -1120,7 +1116,9 @@
 
 				if (	( (target_page->trackSelection & (1<<i)) != 0 )
 					&&	( ((unsigned char) target_page->Track[ my_bit2ndx( target_page->trackSelection )]->bank_change) > 0 )
+					#ifdef FEATURE_ENABLE_SONG_UPE
 					&& ( Track_get_MISC(target_page->Track[i], CONTROL_BIT) == OFF ) // ! internal pgmch
+					#endif
 				){
 
 					// Bank change on controller 0
@@ -1309,7 +1307,7 @@
 //
 //
 //			case KEY_PAUSE:
-//				sequencer_command_PAUSE(OFF);
+//				sequencer_command_PAUSE();
 //				break;
 //
 //

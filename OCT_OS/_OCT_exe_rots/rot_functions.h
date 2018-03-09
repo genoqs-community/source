@@ -224,7 +224,7 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 
 						// Shift the phrase data
 						// thisStepPt->phrase_num 	= nextStepPt->phrase_num;
-						// thisStepPt->phrase_data = nextStepPt->phrase_data;
+						thisStepPt->phrase_data = nextStepPt->phrase_data;
 
 						// Shift the hyperTrack_ndx: needs both Step and Track update
 						thisStepPt->hyperTrack_ndx = nextStepPt->hyperTrack_ndx;
@@ -269,7 +269,7 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 
 					// Shift the phrase data
 					// thisStepPt->phrase_num 	=	buffer_phrase_num;
-					// thisStepPt->phrase_data =	buffer_phrase_data;
+					thisStepPt->phrase_data =	buffer_phrase_data;
 
 					// Shift the hypertrack data
 					thisStepPt->hyperTrack_ndx = buffer_hyperTrackNdx;
@@ -324,7 +324,7 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 						thisStepPt->chord_up 	=	nextStepPt->chord_up;
 
 						// thisStepPt->phrase_num 	=	nextStepPt->phrase_num;
-						// thisStepPt->phrase_data =	nextStepPt->phrase_data;
+						thisStepPt->phrase_data =	nextStepPt->phrase_data;
 
 						thisStepPt->hyperTrack_ndx = nextStepPt->hyperTrack_ndx;
 						if ( thisStepPt->hyperTrack_ndx < MATRIX_NROF_ROWS ){
@@ -368,7 +368,7 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 
 					// Shift the phrase data - obsolote - done in another place.
 					// target_page->Step[row][0]->phrase_num 	= buffer_phrase_num;
-					// target_page->Step[row][0]->phrase_data 	= buffer_phrase_data;
+					target_page->Step[row][0]->phrase_data 	= buffer_phrase_data;
 
 					target_page->Step[row][0]->hyperTrack_ndx = buffer_hyperTrackNdx;
 					if ( thisStepPt->hyperTrack_ndx < MATRIX_NROF_ROWS ){

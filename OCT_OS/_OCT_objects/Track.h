@@ -52,14 +52,15 @@ void Track_soft_init( Trackstruct* target_track ){
 	target_track->attr_TEMPOMUL			= 1;
 	target_track->attr_TEMPOMUL_SKIP 	= 0;
 	target_track->attr_MISC      	= (1 << 2);		// sets the chord bit
-
+	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
 	target_track->attr_EMISC		= 0;
-	target_track->attr_STATUS		= TRACK_DEF_MIDITCH; //we are stealing attr_STATUS to allow us to persist with current persistence checksum
-	target_track->attr_GST 			= TRACK_DEF_PITCH; 		//Ghost pitch buffer
-	target_track->attr_TCH 			= &target_track->attr_STATUS;	//transpose in channel
-
+	target_track->attr_STATUS		= TRACK_DEF_MIDITCH;
+	target_track->attr_GST 			= TRACK_DEF_PITCH;
+	#endif
+	
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	target_track->ctrl_offset = 0;
-
+	#endif
 		#ifdef EVENTS_FACTORIZED
 	target_track->event_max[ATTR_VELOCITY]	= TRACK_MAX_VELFACTOR;
 		#endif // EVENTS_FACTORIZED
@@ -156,7 +157,11 @@ void Track_hard_init( Trackstruct* target_track, trackid_t trackId ){
 	target_track->chain_data[PLAY] = target_track;
 
 	// Initialization sequence
+	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	target_track->attr_STATUS 		= TRACK_DEF_MIDITCH;
+	#else
 	target_track->attr_STATUS 		= OFF;
+	#endif
 	target_track->attr_LOCATOR		= 0;
 	target_track->TTC				= 0;
 
@@ -173,6 +178,7 @@ void Track_hard_init( Trackstruct* target_track, trackid_t trackId ){
 unsigned char Track_get_MISC( 	Trackstruct* target_track,
 								unsigned char target_flag 	){
 	unsigned char result=0;
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	unsigned char ctrl=target_track->attr_MISC & 1;
 
 	switch( target_flag ){
@@ -190,7 +196,21 @@ unsigned char Track_get_MISC( 	Trackstruct* target_track,
 			result = (target_track->attr_MISC & 0xC0) >> 6;
 			break;
 	}
-	if (ctrl == ON) return OFF;
+	if (ctrl == ON) return OFF;	
+	#else
+	switch( target_flag ){
+
+		case CHORD_BIT:
+			// Return the value of the CHORD value in the target track
+			result = (target_track->attr_MISC & 0x1C) >> 2;
+			break;
+
+		case EFF_BIT:
+			// Check the status of the EFF bits in the target track
+			result = (target_track->attr_MISC & 0xC0) >> 6;
+			break;
+	}	
+	#endif
 	return result;
 }
 

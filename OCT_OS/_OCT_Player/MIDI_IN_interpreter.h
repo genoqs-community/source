@@ -172,8 +172,11 @@ void G_midi_interpret_REALTIME( unsigned char midi_byte ){
 
 			// Only react if running on external clock
 			// Need to reset because ...
-		 	sequencer_RESET(ON);
-
+			#ifdef FEATURE_ENABLE_SONG_UPE
+			sequencer_RESET(ON);
+			#else
+		 	sequencer_RESET(OFF);
+			#endif
 			midi_clock_in_counter++;
 
 			// Jumpstart the sequencer
@@ -196,7 +199,7 @@ void G_midi_interpret_REALTIME( unsigned char midi_byte ){
 			switch ( G_run_bit ){
 				case ON:
 					// This is not a full STOP command, can be pause as well
-					//sequencer_command_PAUSE(OFF);
+					//sequencer_command_PAUSE();
 					sequencer_HALT();
 
 					// MIDI CLOCK: STOP - echo the first stop command as well (Duncan).
@@ -213,7 +216,7 @@ void G_midi_interpret_REALTIME( unsigned char midi_byte ){
 				case OFF:
 					// This is a full stop for the slave machine.
 					// sequencer_command_STOP();
-					sequencer_STOP();
+					sequencer_command_STOP();
 					break;
 			}
 			midi_clock_in_counter = 0;

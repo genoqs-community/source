@@ -47,7 +47,7 @@ void rot_exec_GRID( 	Pagestruct* target_page,
 			if (	( G_clock_source != EXT )
 				&&	( GRID_play_mode != GRID_EDIT )
 				){
-	
+				#ifdef FEATURE_ENABLE_SONG_UPE
 				if ( G_pause_bit == OFF ){
 					modify_parameter( &G_master_tempo, MIN_TEMPO, MAX_TEMPO, direction, ON, FIXED);
 					G_TIMER_REFILL_update();
@@ -55,12 +55,39 @@ void rot_exec_GRID( 	Pagestruct* target_page,
 				} else { // PMLS Mode
 					modify_parameter( &G_measure_indicator_value, 0, 254, direction, ON, FIXED);
 				}
+				#else
+				modify_parameter( &G_master_tempo, MIN_TEMPO, MAX_TEMPO, direction, ON, FIXED);
+				G_TIMER_REFILL_update();
+				#endif
 			}
 			break;
 
 		
 		// EDIT encoders
+		#ifdef FEATURE_ENABLE_SONG_UPE
 		case 1: case 2: case 3: case 4: case 5: 
+		case 6: case 7: case 8: case 9:
+
+			// Ensure the right mode for the encoder operation - i.e. page is selected
+			if ( GRID_play_mode == GRID_EDIT ){
+
+				// Apply global page modifications
+				rot_exec_PAGE_global( target_page, rotNdx, direction );
+			}
+
+			if ( rotNdx == ROT_PIT && is_pressed_rowzero() && GRID_p_set_note_offsets[current_GRID_set] != 255 )
+			{
+				// Modify the page pitch
+				modify_parameter( 	&GRID_p_set_note_offsets[current_GRID_set],
+									PAGE_MIN_PIT, PAGE_MAX_PIT, direction, OFF, FIXED );
+				break;
+			}
+			break;
+			
+		case 10:
+			// Set the MIDI Channel for grid scene note events
+			modify_parameter(&GRID_p_set_midi_ch, TRACK_MIN_MIDICH, TRACK_MAX_MIDICH, direction, OFF, FIXED);
+		#else
 		case 6: case 7: case 8: case 9: case 10:
 
 			// Ensure the right mode for the encoder operation - i.e. page is selected
@@ -70,7 +97,7 @@ void rot_exec_GRID( 	Pagestruct* target_page,
 				rot_exec_PAGE_global( target_page, rotNdx, direction );
 			}
 			break;
-			
+		#endif
 
 		// MIX encoders
 		case 11: case 12: case 13: case 14: case 15: 

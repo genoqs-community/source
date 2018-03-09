@@ -80,7 +80,8 @@
 		intn velocity 	=
 			normalize(
 				(	(		EFF_pool_VEL
-
+						// Dice - flow shape velocity
+						+ 	dice_velocity_offset
 						+ (	(	stepPt->attr_VEL
 								* Track_VEL_factor[	target_page->Track[head_row]->VEL_factor
 													+ target_page->Track[phys_row]->event_offset[ATTR_VELOCITY] ] )
@@ -97,6 +98,8 @@
 		intn velocity 	=
 			normalize(
 				(	(		EFF_pool_VEL
+						// Dice - flow shape velocity
+						+ 	dice_velocity_offset
 						+	target_page->Track[phys_row]->event_offset[ATTR_VELOCITY]
 
 						+ (	(	stepPt->attr_VEL
@@ -115,8 +118,8 @@
 		// NOTE OFF build new-- channel, pitch, length -- so we have control over length
 		// compute the length of the OFF note
 		// Compute the track clock divisor multiplier - adjusting the length
-		if ( (target_page->Track[phys_row]->attr_TEMPOMUL_SKIP & 0x0F) > 0 ){
-			j = (target_page->Track[phys_row]->attr_TEMPOMUL_SKIP & 0x0F) + 1;
+		if ( (attr_TEMPOMUL_SKIP & 0x0F) > 0 ){
+			j = (attr_TEMPOMUL_SKIP & 0x0F) + 1;
 		}
 		else {
 			j = 1;
@@ -125,7 +128,9 @@
 		// LENGTH
 
 		// Apply LEN factor to the step length
-		temp 	= (	( target_page->Step[phys_row][locator-1]->attr_LEN
+		temp 	= (	( ( target_page->Step[phys_row][locator-1]->attr_LEN
+					// Dice - flow shape length
+					+ 	dice_length_offset )
 //						* target_page->Step[phys_row][locator-1]->LEN_multiplier )
 						* ((target_page->Step[phys_row][locator-1]->event_data & 0xF0)>>4) )
 					* Track_LEN_factor[ target_page->Track[head_row]->LEN_factor
@@ -153,7 +158,7 @@
 
 			default:
 				// All other cases
-				length 	= ( ( temp + EFF_pool_LEN ) /  target_page->Track[phys_row]->attr_TEMPOMUL ) * j;
+				length 	= ( ( temp + EFF_pool_LEN ) /  attr_TEMPOMUL ) * j;
 				break;
 		}
 
@@ -162,7 +167,7 @@
 
 
 		// Build NOTE OFF - accounting for the Legato case as well
-		switch( target_page->Step[phys_row][locator-1]->attr_LEN ){
+		switch( target_page->Step[phys_row][locator-1]->attr_LEN + dice_length_offset){
 			case LEGATO:	length = def_TIMESTAMP_MAX;		break;
 			default:		length = start_offset + length;	break;
 		}

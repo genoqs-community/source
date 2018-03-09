@@ -110,6 +110,11 @@
 #define		PROVISORY			2	// used to indicate the provisory record mode
 #define		MIDI_IN				3	// used to indicate MIDI_IN recording mode
 
+#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+#define		CHORDEYE_OCTAVE_THIRD	7	// Used in Step mode to display a chord 3rd octave
+#define		CHORDEYE_OCTAVE_SECOND	6	// Used in Step mode to display a chord 2nd octave
+#define		CHORDEYE_OCTAVE_FIRST	5	// Used in Step mode to display a chord 1st octave
+#endif
 #define		CHORDEYE			4	// Used in Step mode to display a chord
 #define		EMBEDDED			3	// Used to show the pitches of steps selected in map
 #define 	BIRDSEYE			2	// Used for the mode where pages ops are available from within the page
@@ -163,7 +168,9 @@
 #define		zoomMIXMAP				11
 #define 	zoomAMANDA				12	// Locked out mode
 #define		zoomABLETON				13	// Ableton controller mode
-
+#ifdef FEATURE_ENABLE_DICE
+#define		zoomDICE				14
+#endif
 
 #define 	NOTHING					0
 #define 	MATRIX					1
@@ -191,7 +198,9 @@
 #define 	BIG_KNOB				120
 #define		CLOCK					13
 #define 	FOLLOW					14
-
+#ifdef FEATURE_ENABLE_DICE
+#define 	DICE					15
+#endif
 #define 	TRACK_SELECTION				13
 #define 	TRACK_MUTEPATTERN			130
 #define		TRACK_SOLOPATTERN			131
@@ -274,8 +283,9 @@
 // #define		GRID_TRIGGERMODES		30
 #define		GRID_SET_SWITCHMODE		44
 #define 	GRID_BANK_PLAYMODES		45
-
-
+#ifdef FEATURE_ENABLE_DICE
+#define 	DICE_GRID_SELECTION		46
+#endif
 // CHAIN MOODE DEFS
 //#define 	TEN_OF_ONE				0	// MODE 1: TEN OF ONE
 #define 	CHAINMODE_1				0
@@ -405,6 +415,19 @@
 #define		FOLLOW_PAGE				2
 #define		FOLLOW_TRACK			3
 
+#ifdef FEATURE_ENABLE_DICE
+// This defines the dice page repository location
+#define		DICE_PAGE				159
+
+// This defines the dice attrMISC flags
+// This defines the dice attrMISC flags
+#define		DICE_TRACK_CLOCK		1 // Track Dice multiplier / divider clock flag [*******x]
+#define		DICE_GLOBAL_CLOCK		2 // Track Dice multiplier / divider clock flag [******x*]
+
+// This defines dice bank editorMode
+#define		DICE_QUANT				1 // Quantise user to dice grid
+#define		DICE_ALIGN				2 // Align dice pages to global
+#endif
 // MIDI EVENTS: There can be at most this many events in the MIDI QUEUE.
 // Make sure this is not below 10 or so, otherwise something bad may happen.. :-(
 // #define 	 MIDI_NROF_EVENTS		2000
@@ -417,7 +440,9 @@
 #define		SEL_CLEAR				1
 
 // Used in the Track MISC attribute as flags
+#ifdef FEATURE_ENABLE_SONG_UPE
 #define 	CONTROL_BIT				0
+#endif
 #define 	CHORD_BIT				2
 #define		EFF_BIT					7
 
@@ -448,11 +473,23 @@
 #define 	CONSTANT_BLINK			TRUE
 
 
-#define min(a, b)	(a)<(b)?(a):(b)
-#define max(a, b)	(a)>(b)?(a):(b)
+#define min(a, b)	((a)<(b)?(a):(b))
+#define max(a, b)	((a)>(b)?(a):(b))
 
 #define 	HYPERSTEPS_PLAY_NOTES	TRUE
 
+#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+#define		CHORD_OCTAVE_FIRST		1
+#define		CHORD_OCTAVE_SECOND		2
+#define		CHORD_OCTAVE_THIRD		4
+#define		CHORD_OCTAVE_ALL		0x7
+
+#define		CHORD_OCTAVE_STATUS_CURRENT	1
+#define		CHORD_OCTAVE_STATUS_OTHER	2
+#define		CHORD_OCTAVE_STATUS_ALL		4
+#endif
+
+#ifdef FEATURE_ENABLE_SONG_UPE
 #define		TRK_CTRL_PGTGL			1
 #define		TRK_CTRL_MUT_PGTGL		2
 #define		TRK_CTRL_EXT_PLAY		3
@@ -461,9 +498,11 @@
 #define		TRK_CTRL_MIX			6
 #define		TRK_CTRL_MOVE			7
 #define		TRK_CTRL_TEMPO			0
+#endif
 
 #define		PGM_CLST_CLR			1
 #define		PGM_CLST_CPY			2
 
-#define		GST_TOGGLE				0 //ghost pitch flag
-
+#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
+#define		GST_TOGGLE				0
+#endif

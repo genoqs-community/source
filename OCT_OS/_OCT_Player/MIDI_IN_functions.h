@@ -40,6 +40,7 @@ extern void 			midi_note_execute( 		unsigned char UART_ndx,
 												unsigned char data_byte_2	);
 
 
+
 // MIDI defintions
 #define 	MIDI_STATUS_BYTE 					0x80
 #define 	MIDI_DATA_BYTE 						0x00
@@ -247,7 +248,11 @@ void set_step_chord_size( Stepstruct* target_step, unsigned char size ){
 
 		case 200:
 			// This is a flag to update the value to the natural value
+			#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+			temp = get_chord_cardinality( target_step, CHORD_OCTAVE_ALL );
+			#else
 			temp = my_bit_cardinality( target_step->chord_data & 0x7FF );
+			#endif
 			break;
 
 		default:
@@ -278,8 +283,120 @@ void set_step_chord_size( Stepstruct* target_step, unsigned char size ){
 //
 // Add the given pitch to the chord structure of the given step
 // stackmode INC means to add to whats there, DEC means start fresh
-void make_chord( Stepstruct* target_step, signed char track_pitch, signed char in_pitch ){
 
+void make_chord( Stepstruct* target_step, signed char track_pitch, signed char in_pitch ){
+#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+	unsigned char 	i				= 0;
+	unsigned char 	j				= 0;
+	unsigned char 	bit_offset 		= 0;
+	signed char 	step_abs_pitch 	= 0;
+	unsigned char 	pitch_delta 	= 0;
+	unsigned char 	local_chordSize	= 0;
+
+	unsigned char 	lowest_pitch 	= 200;
+	unsigned char   step_pitches[7] = { 200, 200, 200, 200, 200, 200, 200 };
+
+	unsigned char 	chord_octave 	= CHORD_OCTAVE_FIRST;
+	unsigned char 	octave_mask		= 0;
+	unsigned char 	first_offset 	= 0;
+	unsigned char 	second_offset	= get_chord_cardinality( target_step, CHORD_OCTAVE_FIRST );
+	unsigned char 	third_offset 	= second_offset + get_chord_cardinality( target_step, CHORD_OCTAVE_SECOND );
+
+	// Restrict cardinality of the chord to 7, i.e. 6 aux notes allowed
+	if ( get_chord_cardinality( target_step, CHORD_OCTAVE_ALL ) > 5 ){
+		// Do not continue
+		return;
+	}
+
+	// Compute the absolute pitch of the step we are recording into.
+	step_abs_pitch = normalize( track_pitch + target_step->attr_PIT, 0, 127);
+
+	// If incoming pitch is lower bring the step down to that pitch.
+	// Remember all pitches so far and bring all back, lowest first.
+	if ( in_pitch < step_abs_pitch ){
+
+		// Find the size of the note stack making up the chord
+		local_chordSize = get_chord_cardinality( target_step, CHORD_OCTAVE_ALL ) + 1;
+
+		// Save the base pitch of the step before computing the chord stack
+		step_pitches[0] = step_abs_pitch;
+
+		// Remember all pitches from the step chord stack
+		for ( i = 0; i < 12; i++ ) {
+			octave_mask = get_chord_octave_mask( target_step, i );
+
+			if ( CHECK_MASK( octave_mask, CHORD_OCTAVE_FIRST ) ) {
+				step_pitches[first_offset++] = step_abs_pitch + i;
+			}
+
+			if ( CHECK_MASK( octave_mask, CHORD_OCTAVE_SECOND ) ) {
+				step_pitches[++second_offset] = step_abs_pitch + i + 12;
+			}
+
+			if ( CHECK_MASK( octave_mask, CHORD_OCTAVE_THIRD ) ) {
+				step_pitches[++third_offset] = step_abs_pitch + i + 24;
+			}
+		}
+
+		// Clear step chord data and up, bring the step down to in_pitch
+		target_step->chord_data = (9 << 11);
+		target_step->phrase_num = 0;
+		target_step->phrase_data = PHRASE_DATA_INIT_VAL;
+		target_step->chord_up 	= 0;
+		target_step->attr_PIT 	= adjust_PIT_to_trackpitch( in_pitch, track_pitch );
+
+		// Add the other pitches to the pitch stack
+		for ( i=0; i < local_chordSize; i++ ){
+
+			// Initialize the reference point
+			lowest_pitch = 200;
+
+			// Find the lowest pitch in the array
+			for (j=0; j < local_chordSize; j++ ){
+
+				if ( step_pitches[j] < lowest_pitch ){
+					lowest_pitch = step_pitches[j];
+					step_pitches[j] = 200;
+				}
+			}
+
+			// Add the lowest pitch to the chord
+			if ( lowest_pitch != 200 ){
+				make_chord( target_step, track_pitch, lowest_pitch );
+			}
+		}
+	}
+
+	else {
+
+		// Store the difference between the pitches
+		pitch_delta = in_pitch - step_abs_pitch;
+
+		// Compute the bit offset of in_pitch into the chord data array
+		bit_offset = pitch_delta % 12;
+
+		// Don't react on the same note (roll) just yet.. but on all other offsets
+		if ( bit_offset == 0 && pitch_delta < 12 ){
+			 return;
+		}
+
+		if (	( pitch_delta >= 12 )
+			&&	( pitch_delta < 24 ) ){
+			chord_octave = CHORD_OCTAVE_SECOND;
+		}
+		else if ( 	( pitch_delta >= 24 )
+			&&	( pitch_delta < 36 ) ) {
+			chord_octave = CHORD_OCTAVE_THIRD;
+		}
+
+		if( !is_set_chord_octave( target_step, bit_offset, chord_octave ) ) {
+			toggle_chord_octave( target_step, bit_offset, chord_octave );
+		}
+
+		// Update the chord size to natural value
+		set_step_chord_size( target_step, 200 );
+	}
+#else
 	unsigned char 	i				= 0;
 	unsigned char 	j				= 0;
 	unsigned char 	bit_offset 		= 0;
@@ -289,7 +406,6 @@ void make_chord( Stepstruct* target_step, signed char track_pitch, signed char i
 	unsigned char 	chord_offset 	= 0;
 	unsigned char 	local_chordSize	= 0;
 	unsigned char 	lowest_pitch 	= 200;
-
 //	d_iag_printf( "make_chord*%x stepBase:%d trackBase:%d add:%d\n",
 //			target_step, target_step->attr_PIT, track_pitch, in_pitch );
 
@@ -397,7 +513,7 @@ void make_chord( Stepstruct* target_step, signed char track_pitch, signed char i
 		// Update the chord size to natural value
 		set_step_chord_size( target_step, 200 );
 	}
-
+#endif
 }
 
 
@@ -428,6 +544,7 @@ unsigned char is_step_queued( Stepstruct* in_step ){
 // Basically reads out the event values and fills them into the target step.
 void G_midi_insert_event( 	NOTEeventstruct* in_event,
 							unsigned int in_timestamp,
+							Pagestruct* target_page,
 							Trackstruct* target_track 	){
 
 	unsigned int stepLength = 0;
@@ -445,11 +562,11 @@ void G_midi_insert_event( 	NOTEeventstruct* in_event,
 //  d_iag_printf( "\n0:LEN:%d\n", stepLength );
 
 	// Apply track clock multipliers and divisors, produce value with reference to track clock.
-	stepLength = scaleToTrackClock( stepLength, in_event->target_track, NEG );
+	stepLength = scaleToTrackClock( stepLength, target_page, in_event->target_track, NEG );
 // d_iag_printf( "1:LEN:%d\n", stepLength );
 
 	// Match LEN value into step, using the step LEN multiplier. Max multiplier is 8!
-	stepLengthMax = scaleToTrackClock( STEP_MAX_LENGTH, in_event->target_track, NEG );
+	stepLengthMax = scaleToTrackClock( STEP_MAX_LENGTH, target_page, in_event->target_track, NEG );
 	stepLengthMax = 192;
  // d_iag_printf( "2:LENmax:%d\n", stepLengthMax );
 
@@ -506,7 +623,7 @@ void CCMAP_learn( 	Pagestruct* target_page,
 	unsigned char controller_channel = ((status_byte & 0x0F) + 1 ) + ( 16 * UART_ndx );
 
 #ifdef NEMO
-	// nothing to do
+	if ( GRID_assistant_page->REC_bit == OFF ) return;
 #else
 	// Make sure the page is rec enabled
 	if ( target_page->REC_bit == OFF ) return;
@@ -632,7 +749,7 @@ void record_note_to_track( 	Pagestruct* target_page,
 			if ( off_event != NULL ){
 
 				// Insert event into the sequencing engine - i.e. activate corresponding step!
-				G_midi_insert_event( off_event, G_MIDI_timestamp, target_page->Track[row] );
+				G_midi_insert_event( off_event, G_MIDI_timestamp, target_page, target_page->Track[row] );
 			}
 			break;
 
@@ -950,22 +1067,23 @@ void modify_scale_composition( 	Pagestruct* target_page,
 	}
 }
 
-
-//Wilson - Transpose pitch assignment
-//Offset track base pitch on incomming transpose channel attr_TCH
-//Restore pitch when key velocity is strong
-//NOTE_OFF restores previous pitch (GST attribute)
+#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+// Transpose pitch assignment
+// Offset track base pitch on incoming transpose channel attr_STATUS
+// Restore pitch when key velocity is strong
+// NOTE_OFF restores previous pitch (GST attribute)
 void transpose_selection(	Pagestruct* target_page,
 							unsigned char in_pitch,
 							unsigned char in_velocity,
 							unsigned char inputMidiChan	) {
+
 	unsigned char i = 0;
 
 	for ( i=0; i < MATRIX_NROF_ROWS; i++ ){
 		// Apply to every selected track..
-		if ( *target_page->Track[i]->attr_TCH
+		if ( target_page->Track[i]->attr_STATUS
 			&& ( in_velocity > 0 )
-			&& ( inputMidiChan == *target_page->Track[i]->attr_TCH) ) {
+			&& ( inputMidiChan == target_page->Track[i]->attr_STATUS) ) {
 				// velocity is strong trigger mode
 			 	SET_BIT_VALUE( target_page->Track[i]->attr_EMISC, GST_TOGGLE, (int) (in_velocity > 88) );
 				if ( CHECK_BIT( target_page->Track[i]->attr_EMISC, GST_TOGGLE) ) {
@@ -978,7 +1096,7 @@ void transpose_selection(	Pagestruct* target_page,
 
 					} else {
 
-						target_page->Track[i]->attr_PIT = in_pitch + (60 - target_page->Track[i]->attr_GST); //offset relative fixed to middle C midi 60
+						target_page->Track[i]->attr_PIT = in_pitch + (target_page->Track[i]->attr_GST - MIDDLE_C); //offset relative fixed to middle C midi 60
 					//	printf( "in pitch: %d\n",in_pitch );
 					}
 				}
@@ -986,6 +1104,7 @@ void transpose_selection(	Pagestruct* target_page,
 		}
 	}
 }
+#endif
 
 //_______________________________________________________________________________________
 //
@@ -1056,9 +1175,13 @@ void assign_note_to_selection( 	Pagestruct* target_page,
 
 					// Line up record finger to real finger - this is the first step in session
 					STEP_RECORD_FINGER = G_pressed_keys[i];
+
+					// Compute the key coordinates
+					#ifdef NEMO
+					STEP_RECORD_FINGER += track_get_window_shift( target_page );
+					#endif
 				}
 
-				// Compute the key coordinates
 				row = row_of( 		STEP_RECORD_FINGER );
 				col = column_of(	STEP_RECORD_FINGER );
 

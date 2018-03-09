@@ -23,9 +23,11 @@ void key_clock_select( Pagestruct* target_page, unsigned short keyNdx ){
 				case OFF:
 				case INT:
 					// Stop the sequencer properly, but fool it into not sending out ALL NOTES OFF
+					#ifdef FEATURE_ENABLE_SONG_UPE
 					prev_G_stop_bit = (G_run_bit == ON);
+					#endif
 					G_run_bit = ON;
-					sequencer_STOP();
+					sequencer_command_STOP();
 					// Switch the clock source
 					G_clock_source = EXT;
 					// Make sure the CLOCK LED is lit
@@ -46,7 +48,7 @@ void key_clock_select( Pagestruct* target_page, unsigned short keyNdx ){
 			if ( G_run_bit == ON ){
 
 				// Stop the sequencer properly
-				sequencer_STOP();
+				sequencer_command_STOP();
 				// Switch the clock source
 				G_clock_source = OFF;
 				// Make sure the CLOCK LED is lit

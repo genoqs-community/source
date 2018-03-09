@@ -42,6 +42,11 @@
 				break;
 
 			case CHORDEYE:
+			#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+			case CHORDEYE_OCTAVE_FIRST:
+			case CHORDEYE_OCTAVE_SECOND:
+			case CHORDEYE_OCTAVE_THIRD:
+			#endif
 				// If no more chord button pressed anymore, return to default
 				if ( is_pressed_keyrange( 252, 258 ) == 0
 					){
@@ -61,9 +66,8 @@
 			MODE_OBJECT_SELECTION = BIRDSEYE;
 		}
 		// Some chord button is pressed
-		else if ( is_pressed_keyrange( 252, 258 ) != 0 
+		else if ( 	( is_pressed_keyrange( 252, 258 ) != 0 )
 			){
-
 			// Get the chord key pressed and compute the size
 			temp = is_pressed_keyrange( 252, 258 );
 	
@@ -77,9 +81,10 @@
 									 [target_page->stepSelectionSingleCol], 258 - temp );	
 			}
 
-
+		#ifndef FEATURE_ENABLE_CHORD_OCTAVE
 			// Enter the CHORDEYE view
-			MODE_OBJECT_SELECTION = CHORDEYE;					
+			MODE_OBJECT_SELECTION = CHORDEYE;
+		#endif
 		}
 
 

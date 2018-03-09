@@ -55,7 +55,7 @@
 			MIR_write_factor_C( target_page->attr_VEL );
 
 			// RETURN (load page)
-			MIR_write_dot( LED_RETURN, MIR_RED   );
+			MIR_write_dot( LED_RETURN, MIR_GREEN   );
 			MIR_write_dot( LED_RETURN, MIR_BLINK );
 
 			// EDIT INDICATOR
@@ -68,6 +68,7 @@
 			switch( GRID_rowzero_pagelength ){
 
 				case FALSE:
+				#ifdef FEATURE_ENABLE_SONG_UPE
 				{
 					unsigned char posREP = (Page_repository[GRID_CURSOR].attr_STA - Page_repository[GRID_CURSOR].repeats_left) + 1;
 					unsigned char numericSTA = (Page_repository[GRID_CURSOR].attr_STA/16)+1;
@@ -90,8 +91,15 @@
 					}
 					MIR_fill_numeric( 1, numericREP, 9, MIR_BLINK );
 				}
+				#else
+					// Show the repeats of the page under cursor. Not in the above because
+					// ..for some reason doesn't work.
+					MIR_fill_numeric( 1, target_page->repeats_left, 9, MIR_GREEN );
+					MIR_fill_numeric( 	 target_page->repeats_left,
+										 target_page->attr_STA + 1, 9, MIR_RED );
+					MIR_write_dot( 10, MIR_RED );
+				#endif
 				break;
-
 				case TRUE:
 					// Show the pagelength in hex really - resolution of 16 steps..
 					MIR_fill_numeric( 1, (target_page->attr_LEN/16)+1, 9, MIR_RED );
@@ -182,7 +190,8 @@
 				// Show RCL option
 				show (ELE_SELECT_MASTER, RED);
 			}
-
+			
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			// CONTROL TRACK INDICATOR
 			for (i=0; i<MATRIX_NROF_ROWS; i++) {
 				if ( Track_get_MISC(target_page->Track[i], CONTROL_BIT) == ON && target_page->Track[i]->attr_STATUS != 127){
@@ -194,7 +203,7 @@
 							MIR_GREEN );
 				}
 			}
-
+			#endif
 
 
 			// MUTE MASTER
@@ -232,7 +241,7 @@
 			show (ELE_TRACK_MUTATORS, TRACK_SOLOPATTERN);
 			show (ELE_TRACK_MUTATORS, TRACK_MUTEPATTERN);
 
-			// When in preview mode also show TGL, CPY and PST for preview step
+			// When in preview mode also show TGL, ZOM, CPY and PST for preview step
 			if (	( 	( target_page->editorMode == PREVIEW )
 					||	( target_page->editorMode == PREVIEW_PERFORM )
 					)
@@ -240,6 +249,7 @@
 				){
 
 		 		MIR_write_dot( LED_TGGL, MIR_GREEN );
+		 		MIR_write_dot( LED_ZOOM, MIR_GREEN );
 		 		MIR_write_dot( LED_COPY, MIR_GREEN );
 
 		 		if (STEP_COPY_BUFFER != NULL ){
@@ -283,6 +293,19 @@
 				show_SCALE_SELECTOR_scale_selection( target_page );
 			}
 
+			#ifdef FEATURE_ENABLE_SONG_UPE
+			if ( G_track_page_chain_mod_bit == ON && target_page->OPS_mode != BIRDSEYE )
+			{
+				MIR_write_dot( LED_SCALE_MOD,	MIR_RED	);
+			}
+			// on the measure mode
+			else if ( G_track_page_chain_mod_bit == SCALE_MOD && target_page->OPS_mode != BIRDSEYE )
+			{
+				MIR_write_dot( LED_SCALE_MOD,	MIR_RED );
+				MIR_write_dot( LED_SCALE_MOD,	MIR_GREEN );
+				MIR_write_dot( LED_SCALE_MOD,	MIR_BLINK );
+			}
+			#endif
 
 			// EDIT MASTER
 			// Activity only when no track is selected

@@ -231,7 +231,7 @@
 				col = target_page->stepSelectionSingleCol;
 
 				// Copy step data from buffer to pointer
-				Step_copy( STEP_COPY_BUFFER, target_page->Step[row][col]);
+				Step_copy( STEP_COPY_BUFFER, target_page->Step[row][col], false );
 
 				// Unselect the step
 				Step_set_status( target_page->Step[row][col], STEPSTAT_SELECT, OFF );
@@ -259,7 +259,11 @@
 
 
 			case KEY_PAUSE:
+				#ifdef FEATURE_ENABLE_SONG_UPE
 				sequencer_command_PAUSE(OFF);
+				#else
+				sequencer_command_PAUSE();
+				#endif
 				break;
 
 

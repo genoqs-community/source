@@ -40,7 +40,7 @@
 					controller=0;
 	
 	while (1) {
-		
+
 		// Read in the next MIDI OUT message
 		message = cyg_mbox_get( UARTx_OUT_mbox_handle );
 			
