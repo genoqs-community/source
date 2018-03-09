@@ -1,0 +1,65 @@
+_____________________________________
+
+Octopus JTag Factory Restore - v1.6.2
+_____________________________________
+
+1. Connect the Olimex JTag Adapter to the Octopus Heart and USB.
+2. Install and run openocd:
+	$ openocd -f octopus_jtag-openocd.cfg
+3. In a second terminal run:
+	$ telnet localhost 4444
+4. Issue the halt command
+	> halt
+5. Write the image file directly to flash memory:
+	> flash write_image erase OCT_JTAG_FACTORY_RESTORE_v1.6.2.bin 0x01800000 bin
+	
+-------
+
+IMPORTANT NOTE:
+
+This should be an absolute last resort in attempting to restore a board that won't boot by any other means.
+This procedure was derived and tested against a board having a manufacturing defect -- corrupt flash memory.
+Because the test board is corrput the restore process has never completed. It is not known for sure whether
+this will work or not. You have been warned.
+
+-------
+
+CONSOLE OUTPUT (CORRUPUT BOARD):
+
+====================================================================================
+
+genoqs@ubuntu:~/oct$ openocd -f octopus_jtag-openocd.cfg
+Open On-Chip Debugger 0.5.0 (2012-03-24-14:29)
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.berlios.de/doc/doxygen/bugs.html
+Info : only one transport option; autoselect 'jtag'
+3000 kHz
+fast memory access is enabled
+Info : clock speed 3000 kHz
+Info : JTAG tap: s3c4510.cpu tap/device found: 0x1f0f0f0f (mfg: 0x787, part: 0xf0f0, ver: 0x1)
+Info : Embedded ICE version 1
+Info : s3c4510.cpu: hardware has 2 breakpoint/watchpoint units
+Info : accepting 'telnet' connection from 4444
+auto erase enabled
+Info : Flash Manufacturer/Device: 0x0001 0x2249
+Error: flash write block failed status: 0x84a420
+Error: error writing to flash at address 0x01800000 at offset 0x00000000
+in procedure 'flash'
+auto erase enabled
+Error: flash write block failed status: 0x84a450
+Error: error writing to flash at address 0x01800000 at offset 0x00000000
+in procedure 'flash'
+auto erase enabled
+Error: flash write block failed status: 0x84a450
+Error: error writing to flash at address 0x01800000 at offset 0x00000000
+in procedure 'flash'
+auto erase enabled
+Error: flash write block failed status: 0x84a3f0
+Error: error writing to flash at address 0x01800000 at offset 0x00000000
+in procedure 'flash'
+auto erase enabled
+Error: flash write block failed status: 0x84a3f0
+Error: error writing to flash at address 0x01800000 at offset 0x00000000
+in procedure 'flash'
+^C
