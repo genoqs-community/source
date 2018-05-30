@@ -441,7 +441,7 @@
 				target_page->trackMutepatternStored = target_page->trackMutepattern;			
 			}
 			#else
-			apply_page_track_mute_toggle( target_page, current_track, &target_page->trackMutepattern );
+			//apply_page_track_mute_toggle( target_page, current_track, &target_page->trackMutepattern );
 			target_page->trackMutepatternStored = target_page->trackMutepattern;
 			
 			// Depending on the way we choose the track base..
