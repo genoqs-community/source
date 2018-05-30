@@ -40,6 +40,7 @@
 			quick_assign_control_track(&Page_repository[pressed], ctrl_event_assign_target_page(&Page_repository[pressed]));
 		}
 	}
+	#endif
 
 
 	// GRID PAGE CLUSTER SELECTIONS
@@ -85,6 +86,7 @@
 
 		if ( PREV_GRID_CURSOR + 10 == GRID_CURSOR && is_pressed_key(keyNdx - 11) ) {
 
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			// --------------------------------------------------------------------------------
 			// Control Track Reference Page Selection
 			//
@@ -93,6 +95,7 @@
 				MIX_TRACK->attr_MCH = 9 - (PREV_GRID_CURSOR % 10);
 			}
 			// --------------------------------------------------------------------------------
+			#endif
 
 			previous_page = &Page_repository[ PREV_GRID_CURSOR ];
 
@@ -131,7 +134,6 @@
 		PREV_GRID_CURSOR = GRID_CURSOR;
 	}
 	// -- END GRID PAGE CLUSTER SELECTIONS
-	#endif
 
 
 
@@ -517,7 +519,6 @@
 		if (	(keyNdx >= 187)
 			&& 	(keyNdx <= 195)
 			){
-			#ifdef FEATURE_ENABLE_SONG_UPE
 			// page cluster selection -- disable everything else
 			if ( GRID_p_selection_cluster == ON ) {
 
@@ -543,7 +544,6 @@
 
 				break; // disable all other MUT keys
 			}
-			#endif
 
 // Old-school - toggling the page mutepatterns
 //			// Make sure there is a page playing in the bank pressed

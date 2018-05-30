@@ -59,18 +59,8 @@ unsigned char   GRID_p_set_midi_ch = 0; // Stores the global midi channel for no
 char			GRID_p_set_note_presel = 255; // Stores the set index of the note to send on the measure
 
 
-#ifdef FEATURE_ENABLE_SONG_UPE
-Pagestruct* 	GRID_p_selection_buffer [GRID_NROF_BANKS]; 	// Temporary buffer for solo operations and other things
-
 // Page cluster selection active flag
 unsigned char	GRID_p_selection_cluster	= OFF;
-
-// Used for page cluster selection criteria
-unsigned char 	PREV_GRID_CURSOR			= 8;
-
-unsigned char page_cluster_op 				= 0;
-
-Trackstruct*	MIX_TRACK					= NULL;
 
 // Hacky way to index a move target using a char
 // Rule: if pgmch is 0 bankch = row index counting from top to bottom
@@ -78,6 +68,15 @@ Trackstruct*	MIX_TRACK					= NULL;
 // Exclusions: col 16 is not a valid move target, row 0 is not a valid move target
 unsigned char move_map[127];
 unsigned char move_page_map[127];
+unsigned char page_cluster_op 				= 0;
+
+// Used for page cluster selection criteria
+unsigned char 	PREV_GRID_CURSOR			= 8;
+
+#ifdef FEATURE_ENABLE_SONG_UPE
+Pagestruct* 	GRID_p_selection_buffer [GRID_NROF_BANKS]; 	// Temporary buffer for solo operations and other things
+
+Trackstruct*	MIX_TRACK					= NULL;
 #else
 Pagestruct* 	GRID_p_selection_buffer [MATRIX_NROF_ROWS]; 	// Temporary buffer for solo operations and other things
 #endif

@@ -43,7 +43,6 @@
 	switch (content) {
 		
 		case GRID_SET_SWITCHMODE:
-			#ifdef FEATURE_ENABLE_SONG_UPE
 			// page cluster selection
 			if ( GRID_p_selection_cluster == ON ) {
 
@@ -61,7 +60,6 @@
 
 				break;
 			}
-			#endif
 			// SOLO LED
 			// Find out whether there is something in the solo buffer
 			j = FALSE;

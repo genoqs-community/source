@@ -23,18 +23,19 @@
 //
 
 
-	#ifdef FEATURE_ENABLE_SONG_UPE
 	// blink page cluster selection
 	if ( GRID_p_selection_cluster == ON ) {
 		page_cluster_selection( GRID_CURSOR );
 	}
 
+#ifdef FEATURE_ENABLE_SONG_UPE
 	if ( G_rec_ctrl_track != NULL ){
 		MIR_write_dot( LED_MUTE_MASTER, MIR_RED );
 		MIR_write_dot( LED_MUTE_MASTER, MIR_GREEN );
 		MIR_write_dot( LED_MUTE_MASTER, MIR_BLINK );
 	}
-	#endif
+#endif
+
 	//
 	// GRID  M I X  MODE
 	//

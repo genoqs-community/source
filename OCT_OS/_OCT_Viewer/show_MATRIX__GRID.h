@@ -29,12 +29,10 @@
 
 			// GRID_CURSOR shown by blinking 
 			GRID_write_dot (GRID_CURSOR, MIR_BLINK);
-			#ifdef FEATURE_ENABLE_SONG_UPE
 			// blink page cluster selection
 			if ( GRID_p_selection_cluster == ON ) {
 				page_cluster_selection( GRID_CURSOR );
 			}
-			#endif
 			if ( Page_repository[GRID_CURSOR].page_clear == ON ){	
 				// If on empty page then light position orange
 				GRID_write_dot (GRID_CURSOR, MIR_GREEN);

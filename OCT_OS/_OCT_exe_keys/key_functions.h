@@ -67,7 +67,6 @@ void apply_page_track_mute_toggle( Pagestruct* target_page, Trackstruct* current
 	*trackMutepattern = mutepattern;
 }
 
-#ifdef FEATURE_ENABLE_SONG_UPE
 // apply a track mute toggle for the entire page cluster
 void apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track ){
 
@@ -349,6 +348,7 @@ void selected_page_cluster_move( unsigned char grid_cursor, unsigned char prev_g
 		}
 	}
 
+#ifdef FEATURE_ENABLE_SONG_UPE
 	// --------------------------------------------------------------------------------
 	// Control Track Reference Page Selection
 	//
@@ -358,8 +358,8 @@ void selected_page_cluster_move( unsigned char grid_cursor, unsigned char prev_g
 		SET_BIT(MIX_TRACK->attr_MISC, TRK_CTRL_MOVE);
 	}
 	// --------------------------------------------------------------------------------
-}
 #endif
+}
 
 // Modifies the length of the previewed step in the matrix
 void adjust_preview_stepLEN( unsigned char col ){
