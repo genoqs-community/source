@@ -1,10 +1,10 @@
 
 
-#define 	SW_VERSION_MAJOR				 0	// Max 10 - Hundreds
+#define 	SW_VERSION_MAJOR				 5	// Max 10 - Hundreds
 #define		SW_VERSION_MINOR				 0	// Max 10 - Tens
-#define		SW_VERSION_RELEASE				 4	// Max 10 - Ones
+#define		SW_VERSION_RELEASE				 1	// Max 10 - Ones
 
-#define		SW_VERSION_INTERNAL				 64	// Max 127 - Row 0 number
+#define		SW_VERSION_INTERNAL				 0	// Max 127 - Row 0 number
 
 // SWITCH between 'MIDI' and 'USB' modes of the MIDI 2 Port
 #define		OCTDEF_UART2_MODE	 			MIDI
@@ -13,7 +13,7 @@
 #define 	LOAD_ON_POWERON					TRUE
 
 // BUILD CE OS WITH ADDON FEATURES
-#define 	CE_OS_ADDON_BUILD				TRUE
+#define 	CE_OS_ADDON_BUILD				FALSE
 
 #ifdef CE_OS_ADDON_BUILD
 
@@ -23,7 +23,7 @@
 
 #else
 // OCTOPUS FEATURE ENABLE
-#define 	FEATURE_ENABLE_SONG_UPE			TRUE
+//#define 	FEATURE_ENABLE_SONG_UPE			TRUE
 //#define 	FEATURE_ENABLE_KEYB_TRANSPOSE   TRUE
 
 #endif

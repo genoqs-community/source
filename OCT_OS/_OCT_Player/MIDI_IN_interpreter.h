@@ -106,10 +106,10 @@ void G_midi_interpret_REALTIME( unsigned char midi_byte ){
 
  	#define PULSE_HISTORY_CT 	8
 
-	static unsigned int pulseTicksVc[PULSE_HISTORY_CT] = { 0 };
+	static float pulseTicksVc[PULSE_HISTORY_CT] = { 0 };
 	static int pulseIx = 0;
-	static int avgPulseTicks = 0;
-	unsigned int curPulseTicks;
+	static float avgPulseTicks = 0;
+	float curPulseTicks;
 
 
 	// EXT clock is a must to continue..
@@ -147,7 +147,7 @@ void G_midi_interpret_REALTIME( unsigned char midi_byte ){
 				for ( ix = 0; ix < PULSE_HISTORY_CT; ix++ ) {
 					avgPulseTicks += pulseTicksVc[ix];
 				}
-				avgPulseTicks /= PULSE_HISTORY_CT;
+				avgPulseTicks /= ((float) PULSE_HISTORY_CT);
 
 				// Now convert the average pulse ticks value to tempo in BPM.
 				// We first calc the number of ticks it takes for a quarter note (24 pulses, a beat).
@@ -156,8 +156,8 @@ void G_midi_interpret_REALTIME( unsigned char midi_byte ){
 				// value, which is also used in external clock mode for CPU overload protection.
 
 				if ( avgPulseTicks > 0 ) {
-					unsigned int beatTicks = avgPulseTicks * 24;
-					unsigned int bpm = (TIMER_TICKS_PER_SEC * 60 + (beatTicks>>1)) / beatTicks;
+					float beatTicks = avgPulseTicks * (float) 24;
+					unsigned int bpm = ((TIMER_TICKS_PER_SEC * 60) + ((beatTicks/2)) / beatTicks);
 					if ( (bpm >= MIN_TEMPO) && (bpm <= MAX_TEMPO) && (bpm != G_master_tempo) ) {
 						G_master_tempo = bpm;
 						G_TIMER_REFILL_update();
