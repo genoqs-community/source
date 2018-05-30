@@ -549,7 +549,6 @@
 		target_page->SCL_align ^= ON;
 	}
 
-	#ifdef FEATURE_ENABLE_SONG_UPE
 	if ( keyNdx == KEY_SCALE_MOD )
 	{
 		if ( G_track_page_chain_mod_bit == OFF ){
@@ -562,7 +561,6 @@
 			G_track_page_chain_mod_bit = OFF;
 		}
 	}
-	#endif
 
 	// In page preview mode
 	// In preview mode enter the step velocity, like in MAP preview mode

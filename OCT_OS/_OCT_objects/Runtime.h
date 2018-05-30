@@ -522,14 +522,14 @@ extern Pagestruct* 	GRID_p_selection 		[GRID_NROF_BANKS];
 extern Pagestruct* 	GRID_p_preselection	  	[GRID_NROF_BANKS];
 extern Pagestruct* 	GRID_p_clock_presel	  	[GRID_NROF_BANKS];
 extern Pagestruct* 	GRID_p_set				[GRID_NROF_SETS ][GRID_NROF_BANKS]; // Stores the GRID sets
-#ifdef FEATURE_ENABLE_SONG_UPE
 extern unsigned char   GRID_p_set_note_offsets	[GRID_NROF_SETS ];
 extern unsigned char   GRID_p_set_midi_ch;
+extern unsigned char   GRID_p_selection_cluster;
+#ifdef FEATURE_ENABLE_SONG_UPE
 extern char			GRID_p_set_note_presel;
 #endif
 #ifdef FEATURE_ENABLE_SONG_UPE
 extern Pagestruct* 	GRID_p_selection_buffer [GRID_NROF_BANKS];
-extern unsigned char	GRID_p_selection_cluster;
 #else
 extern Pagestruct* 	GRID_p_selection_buffer [MATRIX_NROF_ROWS];
 #endif

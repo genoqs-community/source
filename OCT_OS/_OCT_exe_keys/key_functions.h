@@ -2571,9 +2571,7 @@ void import_GRID_set( unsigned int source_set ){
 		select_page_preselections();
 	}
 
-	#ifdef FEATURE_ENABLE_SONG_UPE
 	GRID_p_set_note_presel = source_set;
-	#endif
 }
 
 

@@ -293,7 +293,6 @@
 				show_SCALE_SELECTOR_scale_selection( target_page );
 			}
 
-			#ifdef FEATURE_ENABLE_SONG_UPE
 			if ( G_track_page_chain_mod_bit == ON && target_page->OPS_mode != BIRDSEYE )
 			{
 				MIR_write_dot( LED_SCALE_MOD,	MIR_RED	);
@@ -305,7 +304,6 @@
 				MIR_write_dot( LED_SCALE_MOD,	MIR_GREEN );
 				MIR_write_dot( LED_SCALE_MOD,	MIR_BLINK );
 			}
-			#endif
 
 			// EDIT MASTER
 			// Activity only when no track is selected

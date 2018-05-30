@@ -161,6 +161,7 @@
 		MIR_write_dot( LED_MIX_MASTER, MIR_GREEN );
 		MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
 	}
+	#endif
 
 	// Show the current grid set track if a note is set
 	if ( GRID_p_set_note_offsets[current_GRID_set] != 255 )
@@ -190,7 +191,7 @@
 	{
 		MIR_write_pitch_H( GRID_p_set_note_offsets[current_GRID_set], 9 );
 	}
-	#endif
+
 
 
 

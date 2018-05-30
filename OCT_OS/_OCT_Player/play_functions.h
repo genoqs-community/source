@@ -32,10 +32,8 @@ extern void 	MIDI_send( 	unsigned char type,
 							unsigned char val1,
 							unsigned char val2 );
 
-#ifdef FEATURE_ENABLE_SONG_UPE
 extern void 	selected_page_cluster_clear( unsigned char grid_cursor );
 extern void 	selected_page_cluster_move( unsigned char grid_cursor, unsigned char prev_grid_cursor );
-#endif
 
 #ifdef FEATURE_ENABLE_DICE
 extern unsigned char	dice_page_locator( Pagestruct* target_page, unsigned char page_locator_value );

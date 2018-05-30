@@ -220,6 +220,7 @@ cyg_handle_t	UART1_IN_mbox_handle;
 // This indicates globally whether Octopus is running or not, or in Step record mode
 unsigned char G_run_bit 		= OFF;
 unsigned char G_pause_bit 		= OFF;
+unsigned char G_track_page_chain_mod_bit = OFF;
 #ifdef FEATURE_ENABLE_SONG_UPE
 unsigned char G_scroll_bit 		= OFF;
 unsigned char prev_G_pause_bit  = OFF;
@@ -227,7 +228,6 @@ unsigned char prev_G_stop_bit 	= OFF;
 unsigned char G_stop_bit		= OFF;
 unsigned char force_stop_bit	= OFF;
 unsigned char G_align_bit		= OFF;
-unsigned char G_track_page_chain_mod_bit = OFF;
 unsigned short G_on_the_measure_trackMutepattern = 0;
 unsigned char G_on_the_measure_trackMutepattern_pageNdx = 0;
 Trackstruct* G_on_the_measure_track[MATRIX_NROF_ROWS];

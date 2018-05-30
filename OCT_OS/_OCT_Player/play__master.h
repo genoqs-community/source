@@ -235,15 +235,10 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 		// Advance the global locator - normal speed master
 		advance_global_locator();
-		#ifdef FEATURE_ENABLE_SONG_UPE
+
 		// on the measure
 		if ( G_global_locator == 1 ) {
-
-			// drum machine scene change
-			if ( GRID_p_set_note_presel != 255) {
-				MIDI_send(	MIDI_NOTE, GRID_p_set_midi_ch, GRID_p_set_note_offsets[GRID_p_set_note_presel], 127 );
-				GRID_p_set_note_presel = 255;
-			}
+		#ifdef FEATURE_ENABLE_SONG_UPE
 
 			for ( i=0; i < GRID_NROF_BANKS; i++ ){
 
@@ -290,8 +285,15 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 					G_measure_indicator_value++;
 				}
 			}
-		}
 		#endif
+
+			// drum machine scene change
+			if ( GRID_p_set_note_presel != 255) {
+				MIDI_send(	MIDI_NOTE, GRID_p_set_midi_ch, GRID_p_set_note_offsets[GRID_p_set_note_presel], 127 );
+				GRID_p_set_note_presel = 255;
+			}
+		}
+
 		// PAGE PRESELECTION
 		// Preselect pages as appropriate in every bank ..supports variable page lengths.
 		for( i=0; i < GRID_NROF_BANKS; i++ ){

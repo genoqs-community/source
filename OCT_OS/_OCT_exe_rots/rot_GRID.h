@@ -64,7 +64,6 @@ void rot_exec_GRID( 	Pagestruct* target_page,
 
 		
 		// EDIT encoders
-		#ifdef FEATURE_ENABLE_SONG_UPE
 		case 1: case 2: case 3: case 4: case 5: 
 		case 6: case 7: case 8: case 9:
 
@@ -87,17 +86,6 @@ void rot_exec_GRID( 	Pagestruct* target_page,
 		case 10:
 			// Set the MIDI Channel for grid scene note events
 			modify_parameter(&GRID_p_set_midi_ch, TRACK_MIN_MIDICH, TRACK_MAX_MIDICH, direction, OFF, FIXED);
-		#else
-		case 6: case 7: case 8: case 9: case 10:
-
-			// Ensure the right mode for the encoder operation - i.e. page is selected
-			if ( GRID_play_mode == GRID_EDIT ){
-
-				// Apply global page modifications
-				rot_exec_PAGE_global( target_page, rotNdx, direction );
-			}
-			break;
-		#endif
 
 		// MIX encoders
 		case 11: case 12: case 13: case 14: case 15: 
