@@ -106,21 +106,22 @@
 
 			// Check if we are not selecting a REC enabled track
 			if ( (Page_getTrackRecPattern(target_page) & (1 << (keyNdx-1)) ) != 0 ){
-				#ifdef FEATURE_ENABLE_SONG_UPE
+
 				// Allow MCH to retain record status
 				G_prev_rec_page_pattern = Page_getTrackRecPattern(target_page);
 				G_prev_rec_page = target_page->pageNdx;
-				#endif
+
 				// Disable the recording on that track
 				Page_setTrackRecPattern( target_page, 0 );
+				G_track_rec_bit = OFF;
 			}
 			else{
 
 				// Switch recording pattern to the pressed track selector' track
 				Page_setTrackRecPattern( target_page, (1 << i) );
-				#ifdef FEATURE_ENABLE_SONG_UPE
-				G_prev_rec_page_pattern = 0;
-				#endif
+
+				G_prev_rec_page_pattern = Page_getTrackRecPattern(target_page);
+				G_prev_rec_page = target_page->pageNdx;
 			}
 		}
 	}

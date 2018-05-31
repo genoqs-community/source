@@ -538,12 +538,11 @@ unsigned char G_dice_run_bit 		= OFF;
 
 unsigned char 	G_save_song_pos = OFF;
 unsigned int	G_measure_locator = 0;
-
-#ifdef FEATURE_ENABLE_SONG_UPE
 // Allow MCH change w/o loosing track record status
 unsigned short G_prev_rec_page_pattern = 0;
 unsigned short G_prev_rec_page = 0;
 
+#ifdef FEATURE_ENABLE_SONG_UPE
 unsigned char 	G_repeats_delay = ON;
 unsigned char 	G_repeats_interval_idx = 0;
 unsigned int	Repeats_Intervals[] = { 0xFFFFFFFF, 64, 32, 24, 16, 8, 4 };
