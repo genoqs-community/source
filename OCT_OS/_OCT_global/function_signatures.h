@@ -56,9 +56,10 @@ extern	void 			copy_ctrl_track_to_step( Pagestruct* page, Trackstruct* track, St
 extern  void 			ctrl_event_set_target_page( Pagestruct* target_page );
 extern	void 			quick_assign_control_track ( Pagestruct* target_page, unsigned char trackIdx );
 extern	void 			make_control_track ( Pagestruct* target_page, unsigned char trackIdx );
-extern	void 			align_measure_locators();
 extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
 #endif
+extern	void 			align_measure_locators();
+
 extern 	void 			sequencer_RESET( unsigned char force_stop );
 
 extern unsigned int 	computeKeyNdx(			unsigned char reg,

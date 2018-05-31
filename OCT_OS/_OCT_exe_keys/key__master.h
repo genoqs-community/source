@@ -61,17 +61,20 @@ void executeKey( unsigned int keyNdx ){
 					col=0,
 					temp=0
 					;
-	#ifdef FEATURE_ENABLE_SONG_UPE
+
 	// decide whether to save the current song position
 	if ( keyNdx == KEY_STOP ) {
 		G_save_song_pos = ON;
 	} else if ( keyNdx == KEY_PLAY1 ) {
 		G_save_song_pos = !G_run_bit;
 		SEQUENCER_JUST_RESTARTED = OFF;
-	} else if ( keyNdx == KEY_PAUSE ) {
+	}
+#ifdef FEATURE_ENABLE_SONG_UPE
+	else if ( keyNdx == KEY_PAUSE ) {
 		G_save_song_pos = !prev_G_pause_bit;
 	}
-	#endif
+#endif
+
 	// Work on the page under the grid cursor
 	Pagestruct* target_page = &Page_repository[ GRID_CURSOR ];
 

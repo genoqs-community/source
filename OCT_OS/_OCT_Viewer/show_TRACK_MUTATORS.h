@@ -144,7 +144,6 @@
 
 		case TRACK_MUTEPATTERN:
 
-			#ifdef FEATURE_ENABLE_SONG_UPE
 			// On the measure mutepattern
 			if (G_on_the_measure_trackMutepattern != 0) {
 				MIR_write_buttool (RHS, G_on_the_measure_trackMutepattern, MIR_RED);
@@ -156,9 +155,6 @@
 			{
 				MIR_write_buttool (RHS, target_page->trackMutepattern, MIR_RED);
 			}
-			#else
-				MIR_write_buttool (RHS, target_page->trackMutepattern, MIR_RED);	
-			#endif
 
 			break;
 			

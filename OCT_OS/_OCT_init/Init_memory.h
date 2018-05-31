@@ -310,13 +310,13 @@ void Grid_init(){
 	GRID_p_clock_presel[0]	= &Page_repository[GRID_CURSOR];
 //	Page_repository[GRID_CURSOR].page_clear = OFF;
 #else
-	GRID_CURSOR = 8;
-	#ifdef FEATURE_ENABLE_SONG_UPE
 	for (j=0; j<MATRIX_NROF_ROWS; j++){
 		G_on_the_measure_track[j] = NULL;
 	}
+	#ifdef FEATURE_ENABLE_SONG_UPE
+	GRID_CURSOR = 8;
 	PREV_GRID_CURSOR = 8;
-	#endif	
+	#endif
 	// This is the default starting page, in row 9, which is selected.
 	GRID_p_selection[8] 	= &Page_repository[GRID_CURSOR];
 	GRID_p_preselection[8] 	= &Page_repository[GRID_CURSOR];

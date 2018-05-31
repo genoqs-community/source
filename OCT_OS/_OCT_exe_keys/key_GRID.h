@@ -1398,12 +1398,6 @@
 
 		switch( keyNdx ){
 			#ifdef FEATURE_ENABLE_SONG_UPE
-			case KEY_STOP:
-				G_stop_bit = ON;
-				unsigned char pause = G_pause_bit;
-				sequencer_command_STOP();
-				G_pause_bit = pause;
-				break;
 
 			case KEY_PAUSE:
 				if ( G_pause_bit == OFF ){
@@ -1416,7 +1410,10 @@
 				break;
 			#else
 			case KEY_STOP:
+				G_stop_bit = ON;
+				unsigned char pause = G_pause_bit;
 				sequencer_command_STOP();
+				G_pause_bit = pause;
 				break;
 
 			case KEY_PAUSE:
@@ -1427,6 +1424,17 @@
 			case KEY_PLAY2:
 			case KEY_PLAY4:
 				sequencer_command_PLAY();
+				break;
+		}
+	}
+	else
+	{
+		switch( keyNdx ){
+			case KEY_STOP:
+				G_stop_bit = ON;
+				unsigned char pause = G_pause_bit;
+				sequencer_command_STOP();
+				G_pause_bit = pause;
 				break;
 		}
 	}

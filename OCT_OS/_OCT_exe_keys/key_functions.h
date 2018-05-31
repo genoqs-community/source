@@ -58,9 +58,6 @@ void apply_page_track_mute_toggle( Pagestruct* target_page, Trackstruct* current
 		case FALSE:
 			mutepattern ^=
 				( 1 << row_of_track( target_page, current_track ));
-			#ifdef FEATURE_ENABLE_SONG_UPE
-			ctrl_event_mute_target_track( target_page, current_track );
-			#endif
 			break;
 	}
 
@@ -105,7 +102,7 @@ void apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct*
 	}
 }
 
-unsigned char selected_page_cluster_right_neighbor( Pagestruct* temp_page, unsigned char pageNdx )
+unsigned int selected_page_cluster_right_neighbor( Pagestruct* temp_page, unsigned char pageNdx )
 {
 	signed short	this_ndx = 0;
 
@@ -894,6 +891,7 @@ void clear_ctrl_track( Pagestruct* target_page, Trackstruct* target_track ){
 	Track_clear_full( target_page, target_track->trackId % 10 );
 	target_track->attr_MCH = 0;
 }
+
 #endif
 
 //
@@ -1265,7 +1263,6 @@ void sequencer_RESET( unsigned char force_stop ){
 	NOTE_IN_init();
 }
 
-#ifdef FEATURE_ENABLE_SONG_UPE
 void align_measure_locators(){
 
 	unsigned int	n=0,
@@ -1280,8 +1277,8 @@ void align_measure_locators(){
 	// [INIT] Reset the locators
 	sequencer_RESET(ON);
 	G_pause_bit 				= ON;
-	G_scroll_bit 				= ON;
-	prev_G_stop_bit				= ON;
+//	G_scroll_bit 				= ON;
+//	prev_G_stop_bit				= ON;
 	G_MIDI_timestamp			= 0;
 	G_global_locator			= 0;
 	G_TTC_abs_value				= 0;
@@ -1289,8 +1286,8 @@ void align_measure_locators(){
 
 	for (i=0; i <= GRID_NROF_BANKS; i++) { // for each grid bank
 
-		G_last_ctrl_offset[i] = 0;
-		G_last_ctrl_page[i] = NULL;
+//		G_last_ctrl_offset[i] = 0;
+//		G_last_ctrl_page[i] = NULL;
 
 		// Reset all repeats and offsets
 		for (j=0; j < MATRIX_NROF_COLUMNS; j++) {
@@ -1301,10 +1298,10 @@ void align_measure_locators(){
 			Page_repository[next_ndx].trackMutepattern = 0;
 			for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
 
-				if ( Track_get_MISC(Page_repository[next_ndx].Track[row], CONTROL_BIT ) ) {
-					Page_repository[next_ndx].Track[row]->ctrl_offset = 0;
-					Page_repository[next_ndx].Track[row]->attr_LOCATOR = 0;
-				}
+//				if ( Track_get_MISC(Page_repository[next_ndx].Track[row], CONTROL_BIT ) ) {
+//					Page_repository[next_ndx].Track[row]->ctrl_offset = 0;
+//					Page_repository[next_ndx].Track[row]->attr_LOCATOR = 0;
+//				}
 			}
 		}
 
@@ -1330,7 +1327,7 @@ void align_measure_locators(){
 			}
 		}
 
-		G_last_ctrl_page[ i ] = &Page_repository[next_ndx];
+//		G_last_ctrl_page[ i ] = &Page_repository[next_ndx];
 	}
 
 //	// fire pre-play events
@@ -1360,7 +1357,7 @@ void align_measure_locators(){
 			if ( (GRID_bank_playmodes & ( 1 << i )) == 0 ) continue;
 
 			if ( GRID_p_selection[i] != NULL ){
-				G_last_ctrl_offset[i]++;
+//				G_last_ctrl_offset[i]++;
 			}
 
 			// Skip if we are pointing to a null page in the bank..
@@ -1376,10 +1373,10 @@ void align_measure_locators(){
 			for ( row=0; row < MATRIX_NROF_ROWS; row ++ ){
 				target_track = GRID_p_selection[i]->Track[row];
 				// control track
-				if ( Track_get_MISC(target_track, CONTROL_BIT ) && target_track->trackId != 65535 ) {
-					target_track->ctrl_offset++;
-					send_track_program_change( target_track, GRID_p_selection[i] );
-				}
+//				if ( Track_get_MISC(target_track, CONTROL_BIT ) && target_track->trackId != 65535 ) {
+//					target_track->ctrl_offset++;
+//					send_track_program_change( target_track, GRID_p_selection[i] );
+//				}
 			}
 
 			// Move the page locator position
@@ -1433,17 +1430,17 @@ void align_measure_locators(){
 					// Iterate page tracks to fire explicit control track events
 					for ( row=0; row < MATRIX_NROF_ROWS; row ++ ){
 						target_track = Page_repository[next_ndx].Track[row];
-						target_track->ctrl_offset = OFF;
+//						target_track->ctrl_offset = OFF;
 
 						// control track
-						if ( Track_get_MISC(target_track, CONTROL_BIT) && target_track->trackId != 65535
-						){
-							send_track_program_change( target_track, &Page_repository[next_ndx] );
-						}
+//						if ( Track_get_MISC(target_track, CONTROL_BIT) && target_track->trackId != 65535
+//						){
+//							send_track_program_change( target_track, &Page_repository[next_ndx] );
+//						}
 					}
 
-					G_last_ctrl_page[ i ] = &Page_repository[next_ndx];
-					G_last_ctrl_offset[ i ] = 0;
+//					G_last_ctrl_page[ i ] = &Page_repository[next_ndx];
+//					G_last_ctrl_offset[ i ] = 0;
 
 					GRID_p_selection[ i ] = &Page_repository[next_ndx];
 					GRID_p_preselection[ i ] = &Page_repository[next_ndx];
@@ -1458,7 +1455,7 @@ void align_measure_locators(){
 	}
 	// First time didn't work second time did
 	G_run_bit = ON;
-	G_align_bit = ON;
+//	G_align_bit = ON;
 	if (G_measure_locator > 0){
 		for (i=0; i < GRID_NROF_BANKS; i++) { // for each grid bank
 			if (GRID_p_selection[ i ] != NULL && GRID_p_selection[ i ]->page_clear == OFF && (GRID_bank_playmodes & ( 1 << i )) != 0){
@@ -1467,6 +1464,7 @@ void align_measure_locators(){
 			}
 		}
 	}
+
 	for (i=0; i < GRID_NROF_BANKS; i++) { // for each grid bank
 		// clear all pre-selections
 		GRID_p_preselection[ i ] = NULL;
@@ -1474,9 +1472,9 @@ void align_measure_locators(){
 			GRID_p_preselection[ i ] = GRID_p_selection[ i ];
 		}
 	}
-	G_align_bit = OFF;
+//	G_align_bit = OFF;
 	G_run_bit = OFF;
-	G_reset = ON;
+//	G_reset = ON;
 }
 
 void drivePageCursor(Pagestruct* target_page, unsigned int measures){
@@ -1490,7 +1488,6 @@ void drivePageCursor(Pagestruct* target_page, unsigned int measures){
 		}
 	}
 }
-#endif
 
 // Send an ALL NOTES OFF message on all channels
 void send_ALL_NOTES_OFF(){
@@ -1565,7 +1562,6 @@ void sequencer_STOP( bool midi_send_stop ) {
 }
 
 
-#ifdef FEATURE_ENABLE_SONG_UPE
 // Just a wrapper to stay call-name consistent
 void sequencer_command_STOP(){
 
@@ -1575,12 +1571,12 @@ void sequencer_command_STOP(){
 
 		// Double click code
 		// ...
-		G_measure_indicator_value = 0;
-		G_measure_indicator_part = 0;
-		prev_G_pause_bit = OFF;
+//		G_measure_indicator_value = 0;
+//		G_measure_indicator_part = 0;
+//		prev_G_pause_bit = OFF;
 		if ( SEQUENCER_JUST_RESTARTED == ON || G_pause_bit == ON ) // double click at startup or in grid scroll (paused) view
 		{
-			G_measure_locator = 0;
+//			G_measure_locator = 0;
 			align_measure_locators();
 //			unsigned int	row=0;
 //			unsigned int 	i=0;
@@ -1614,18 +1610,14 @@ void sequencer_command_STOP(){
 
 		// Single click code
 		sequencer_STOP( true );
+#ifdef FEATURE_ENABLE_SONG_UPE
 		if ( G_pause_bit == ON ) // in grid scroll (paused) view
 		{
 			RESET_measure_locator(ON);
 		}
+#endif
 	}
 }
-#else
-void sequencer_command_STOP(){
-
-	sequencer_STOP( true );
-}
-#endif
 
 
 // Toggles the pause state of the sequencer

@@ -221,16 +221,18 @@ cyg_handle_t	UART1_IN_mbox_handle;
 unsigned char G_run_bit 		= OFF;
 unsigned char G_pause_bit 		= OFF;
 unsigned char G_track_page_chain_mod_bit = OFF;
+unsigned short G_on_the_measure_trackMutepattern = 0;
+unsigned char G_on_the_measure_trackMutepattern_pageNdx = 0;
+Trackstruct* G_on_the_measure_track[MATRIX_NROF_ROWS];
+
+unsigned char G_stop_bit		= OFF;
+
 #ifdef FEATURE_ENABLE_SONG_UPE
 unsigned char G_scroll_bit 		= OFF;
 unsigned char prev_G_pause_bit  = OFF;
 unsigned char prev_G_stop_bit 	= OFF;
-unsigned char G_stop_bit		= OFF;
 unsigned char force_stop_bit	= OFF;
 unsigned char G_align_bit		= OFF;
-unsigned short G_on_the_measure_trackMutepattern = 0;
-unsigned char G_on_the_measure_trackMutepattern_pageNdx = 0;
-Trackstruct* G_on_the_measure_track[MATRIX_NROF_ROWS];
 #endif
 // This indicates the global track record mode.
 unsigned char G_track_rec_bit = OFF;
@@ -534,16 +536,17 @@ Pagestruct* G_pgmch_pending_page = NULL;
 unsigned char G_dice_run_bit 		= OFF;
 #endif
 
+unsigned char 	G_save_song_pos = OFF;
+unsigned int	G_measure_locator = 0;
+
 #ifdef FEATURE_ENABLE_SONG_UPE
 // Allow MCH change w/o loosing track record status
 unsigned short G_prev_rec_page_pattern = 0;
 unsigned short G_prev_rec_page = 0;
 
-unsigned char 	G_save_song_pos = OFF;
 unsigned char 	G_repeats_delay = ON;
 unsigned char 	G_repeats_interval_idx = 0;
 unsigned int	Repeats_Intervals[] = { 0xFFFFFFFF, 64, 32, 24, 16, 8, 4 };
-unsigned int	G_measure_locator = 0;
 unsigned char	G_measure_indicator_value = 0; // 5 Measure Nibbles
 unsigned char	G_measure_indicator_part = 0; // 1 Measure - 1/5 Nibble
 unsigned char	G_silent = OFF;
