@@ -22,15 +22,25 @@ void key_clock_select( Pagestruct* target_page, unsigned short keyNdx ){
 			switch ( G_clock_source )	{
 
 				case INT:
+					G_run_bit = OFF;
+					sequencer_command_STOP();
+					MIDICLOCK_PASSTHROUGH = 0;
 					G_clock_source = OFF;
 					break;
 
 				case OFF:
+					G_run_bit = OFF;
 					G_clock_source = INT;
 					break;
 
 				case EXT:
 					G_clock_source = OFF;
+					G_run_bit = OFF;
+					sequencer_command_STOP();
+					if ( MIDICLOCK_PASSTHROUGH == 0 ){
+						// Switch the clock source
+						G_clock_source = INT;
+					}
 					break;
 
 			} // switch (G_clock_source)
@@ -74,7 +84,7 @@ void key_clock_select( Pagestruct* target_page, unsigned short keyNdx ){
 					#ifdef FEATURE_ENABLE_SONG_UPE
 					prev_G_stop_bit = (G_run_bit == ON);
 					#endif
-					G_run_bit = ON;
+					G_run_bit = OFF;
 					sequencer_command_STOP();
 					// Switch the clock source
 					G_clock_source = EXT;
@@ -84,6 +94,9 @@ void key_clock_select( Pagestruct* target_page, unsigned short keyNdx ){
 					break;
 
 				case EXT:
+
+					G_run_bit = OFF;
+					sequencer_command_STOP();
 					if ( !MIDICLOCK_PASSTHROUGH ){
 						G_clock_source = OFF;
 						break;
