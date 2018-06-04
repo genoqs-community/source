@@ -211,11 +211,16 @@
 			MODE_OBJECT_SELECTION = INTERACTIVE;
 		}
 
-		// Switch to ABLETON mode
-		if ( keyNdx == KEY_ZOOM_MAP ){
+//		// Switch to ABLETON mode
+//		if ( keyNdx == KEY_ZOOM_MAP ){
+//
+//			// G_zoom_level = zoomABLETON;
+//			// MODE_OBJECT_SELECTION = INTERACTIVE;
+//		}
 
-			// G_zoom_level = zoomABLETON;
-			// MODE_OBJECT_SELECTION = INTERACTIVE;
+		// MIDI CC routing and pass through enabled
+		if ( keyNdx == KEY_ZOOM_MAP ){
+			G_midi_map_controller_mode ^= 1;
 		}
 
 

@@ -395,6 +395,7 @@ unsigned char G_midi_bender_IN_UART[2][3] 		= { {0xff, 0xff, 0xff}, {0xff, 0xff,
 unsigned char G_midi_pressure_ndx				= 0;
 unsigned char G_midi_pressure_IN_UART[2][3] 	= { {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff} };
 
+unsigned char G_midi_map_controller_mode = OFF;
 
 // MIDI IN STUFF - used to buffer in data so we can print it.
 // Printing it directly will not work, it gets scrambled.

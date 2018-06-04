@@ -461,6 +461,10 @@
 	}
 
 
+	// MIDI CC routing and pass through enabled
+	if ( keyNdx == KEY_ZOOM_MAP ){
+		G_midi_map_controller_mode ^= 1;
+	}
 
 	///////////////////////////////////////////////////////////////////////////
 	// So far was the KEY_page base.. now come the finer nuances..
