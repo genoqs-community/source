@@ -582,6 +582,8 @@ extern unsigned char G_clock_source;
 extern unsigned int G_TIMER_REFILL;
 extern unsigned char G_zoom_level;
 
+extern unsigned char G_midi_map_controller_mode;
+
 // From init_memory.h
 extern Pagestruct* GRID_assistant_page;
 

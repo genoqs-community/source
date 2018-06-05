@@ -59,6 +59,8 @@ unsigned int 		G_scan_cycle = 0;
 unsigned char 	 	G_master_tempo 		= DEF_TEMPO; 	//120 default
 unsigned char		G_clock_source		= OFF;	// Can be any of OFF, INT(ernal), EXT(ernal)
 
+unsigned char G_midi_map_controller_mode = OFF;
+
 // G_master_blinker is used to control LED blinking activities
 unsigned char 		G_master_blinker		= 0;
 unsigned char 		G_master_blinker2		= 0; // Used for the one current ZOOM LED showing TEMPO
@@ -394,8 +396,6 @@ unsigned char G_midi_bender_ndx					= 0;
 unsigned char G_midi_bender_IN_UART[2][3] 		= { {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff} };
 unsigned char G_midi_pressure_ndx				= 0;
 unsigned char G_midi_pressure_IN_UART[2][3] 	= { {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff} };
-
-unsigned char G_midi_map_controller_mode = OFF;
 
 // MIDI IN STUFF - used to buffer in data so we can print it.
 // Printing it directly will not work, it gets scrambled.

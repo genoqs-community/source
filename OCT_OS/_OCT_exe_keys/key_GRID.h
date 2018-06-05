@@ -220,7 +220,7 @@
 
 		// MIDI CC routing and pass through enabled
 		if ( keyNdx == KEY_ZOOM_MAP ){
-			G_midi_map_controller_mode ^= 1;
+			G_midi_map_controller_mode = (G_midi_map_controller_mode == OFF) ? ON : OFF;
 		}
 
 

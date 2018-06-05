@@ -167,7 +167,8 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	targetGridPt->G_master_tempo = G_master_tempo; 	//120 default
 	targetGridPt->G_TIMER_REFILL = G_TIMER_REFILL;
 	targetGridPt->G_clock_source = G_clock_source;	// Can be any of OFF, INT(ernal), EXT(ernal)
-	targetGridPt->G_zoom_level = G_zoom_level;
+	// Because zoom level is not used, I will override it to set the CC controller mode - Synth knobs, etc. or MIDI controller.
+	targetGridPt->G_zoom_level = G_midi_map_controller_mode;
 	targetGridPt->GRID_scene = GRID_scene;		// Currently selected grid scene for play or storage
 	#ifdef FEATURE_ENABLE_SONG_UPE
 	targetGridPt->midiCh = GRID_p_set_midi_ch;
@@ -322,6 +323,8 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 
 	// Maintain current zoom level.
 	// G_zoom_level = sourceGridPt->G_zoom_level;
+	// Because zoom level is not used, I will override it to set the CC controller mode - Synth knobs, etc. or MIDI controller.
+	G_midi_map_controller_mode = sourceGridPt->G_zoom_level;
 
 	GRID_scene = sourceGridPt->GRID_scene;		// Currently selected grid scene for play or storage
 	GRID_switch_mode = sourceGridPt->GRID_switch_mode;

@@ -1597,7 +1597,7 @@ void sequencer_command_STOP(){
 	// SINGLE CLICK SCENARIO
 	else if (DOUBLE_CLICK_TARGET == 0) {
 
-		if ( G_save_song_pos = ON ) // the stop key was pressed rather than a function call
+		if ( G_save_song_pos == ON ) // the stop key was pressed rather than a function call
 		{
 			DOUBLE_CLICK_TARGET = KEY_STOP;
 			DOUBLE_CLICK_TIMER = ON;
