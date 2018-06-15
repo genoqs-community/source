@@ -49,7 +49,6 @@
 		
 	// EDIT master - EDIT is the ALL data trigger
 	MIR_write_dot( LED_EDIT_MASTER, MIR_GREEN );
-
 	
 
 

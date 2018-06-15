@@ -27,13 +27,13 @@
 		for (i=0; i < MATRIX_NROF_ROWS; i++) {
 			
 			// Enforce track visibility mechanism
-			if ( (( target_page->track_window << target_page->track_window_shift ) & (1 << i)) != 0 ){
+			if ( !row_in_track_window( target_page, i ) )
+				continue;
 
-				MIR_blink_trackpattern( Page_get_selection_trackpattern(target_page, i), i);						
-			
-				MIR_augment_trackpattern( 
-					Page_get_selectOff_trackpattern( target_page, i ), i, MIR_RED ); 
-			}
+			MIR_blink_trackpattern( Page_get_selection_trackpattern(target_page, i), i - shiftTrackRow);
+
+			MIR_augment_trackpattern(
+				Page_get_selectOff_trackpattern( target_page, i ), i - shiftTrackRow, MIR_RED );
 		}
 
 

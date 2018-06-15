@@ -26,6 +26,8 @@
 
 		// Find first the selected track
 		for (i=0; i<MATRIX_NROF_ROWS; i++) {
+			if ( !row_in_track_window( target_page, i ) )
+				continue;
 
 			if ( (target_page->trackSelection & (1<<i)) > 0 ) {
 				//  row is index of the first selected track
@@ -245,12 +247,12 @@ switch( G_zoom_level ){
 		// ROW III
 		//
 		switch( NEMO_selectedTrackAttribute ){
-			
+
 			case NEMO_ATTR_PITCH:
 			case NEMO_ATTR_VELOCITY:
 			case NEMO_ATTR_LENGTH:
 			case NEMO_ATTR_START:
-			
+
 			case NEMO_ATTR_AMOUNT:
 			case NEMO_ATTR_GROOVE:
 			case NEMO_ATTR_MIDICC:
@@ -364,6 +366,78 @@ switch( G_zoom_level ){
 		MIR_write_trackpattern( 1 << (15 - j ), 	NEMO_ROW_II, MIR_BLINK );		
 
 		break;
+		#ifdef FEATURE_ENABLE_DICE
+		// This is the dice mode, where we deal with only one track
+		case zoomDICE:
+
+			// ROW I
+			if( Dice_is_edit_tempo( target_dice ) ){
+				unsigned char dice_selected_clock = Dice_get_selected_clock_type( target_dice );
+				unsigned char attr_TEMPOMUL = Dice_get_TEMPOMUL( target_dice, dice_selected_clock );
+				unsigned char attr_TEMPOMUL_SKIP = Dice_get_TEMPOMUL_SKIP( target_dice, dice_selected_clock );
+
+				// Determine color of the display: red for multiplier, green for divisor
+				if ( attr_TEMPOMUL_SKIP == 0 ) {
+					if ( attr_TEMPOMUL == 25 ) {
+						MIR_point_numeric( 15, NEMO_ROW_I, MIR_GREEN );
+					}
+					else{
+						// Multiplier indicator, no divisor active
+						MIR_point_numeric( attr_TEMPOMUL, NEMO_ROW_I, MIR_RED );
+					}
+				}
+				else{
+					// Divisor indicator
+					MIR_point_numeric( attr_TEMPOMUL_SKIP + 1, NEMO_ROW_I, MIR_GREEN );
+				}
+			}else{
+				// Select the flow attribute
+				unsigned char dice_factor = Dice_get_factor(target_dice, target_dice->attr_STATUS);
+
+				if( dice_factor < 17 ){
+					MIR_fill_numeric ( 1, dice_factor, NEMO_ROW_I, MIR_GREEN );
+				}
+				else{
+					// Blink negative scale
+					MIR_fill_numeric ( 1, dice_factor - 16, NEMO_ROW_I, MIR_GREEN );
+					MIR_fill_numeric ( 1, dice_factor - 16, NEMO_ROW_I, MIR_RED );
+				}
+			}
+
+			// ROW II
+			// Dice flow attribute selector: VEL, PIT, LEN, STA, AMT, GRV, MCC
+			j = ( target_dice->attr_STATUS > NEMO_ATTR_START ) ? target_dice->attr_STATUS - 2 : target_dice->attr_STATUS - 1;
+
+			MIR_write_trackpattern( 0xF703, NEMO_ROW_II, MIR_GREEN );
+
+			// Show selected attribute - one only
+			MIR_write_trackpattern( ( 3 - ( target_dice->attr_MISC & 0x3) ) | 1 << (15 - j ), NEMO_ROW_II, MIR_RED );
+
+			unsigned int rowII_blink_mask = 0;
+			Trackstruct * dice_global_clock_track = Dice_get_global_clock_track();
+
+			SET_BIT( rowII_blink_mask, 15 - j );
+
+			if( target_dice->attr_TEMPOMUL > 1 || target_dice->attr_TEMPOMUL_SKIP & 0x0F ) {
+				// Track multiplier applied
+				SET_BIT( rowII_blink_mask, 0 );
+			}
+
+			if( ( dice_global_clock_track->attr_TEMPOMUL > 1 || dice_global_clock_track->attr_TEMPOMUL_SKIP & 0x0F ) && Dice_get_selected_clock_type( target_dice ) == DICE_GLOBAL_CLOCK ) {
+				// Global flow clock applied
+				SET_BIT( rowII_blink_mask, 1 );
+			}
+
+			MIR_write_trackpattern( rowII_blink_mask, NEMO_ROW_II, MIR_BLINK );
+
+			// Flow on ROW IV
+			j = target_dice->flow_shape[ target_dice->attr_STATUS ];
+
+			// Show the flow value in the bottom row.
+			MIR_write_trackpattern( 1 << ( 15 - j ), NEMO_ROW_IV, MIR_RED 	);
+			MIR_write_trackpattern( 1 << ( 15 -  j ), NEMO_ROW_IV, MIR_GREEN );
+			break;
+		#endif
 }
 
 

@@ -40,7 +40,6 @@
 	MIR_write_dot( 189, MIR_GREEN );
 	MIR_write_dot( 190, MIR_GREEN );
 
-
 	// MATRIX
 	// Shows in the top row the selected scale
 	show_OCTAVE_CIRCLE_scale_selection( GRID_assistant_page );
@@ -139,7 +138,23 @@
 			break;
 	}
 
+	// keyboard scale composition
+	if ( GRID_assistant_page->mixMode == INC ){
 
+		MIR_write_dot( KEY_MIX_MASTER, MIR_GREEN );
+
+	} else {
+
+		MIR_write_dot( KEY_MIX_MASTER, MIR_RED );
+
+	}
+	// If the editor is just being used
+	if ( EDIT_TIMER == ON ) {
+		GRID_assistant_page->trackSelection = 1<<9;
+		show (ELE_MATRIX, EDIT_ATTRIBUTE);
+		GRID_assistant_page->trackSelection = 0;
+		MIR_write_dot( LED_RETURN, MIR_GREEN );
+	}
 //	// MIX TARGET target indicator
 //	show( ELE_MIXTGT, GRID_assistant_page->mixTarget );
 	

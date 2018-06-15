@@ -31,9 +31,11 @@
 			if (	(Page_repository[i].page_clear != ON)
 				&&	( (i % 10) != 9 )
 				){
+				if( !row_in_page_window( i % 10 ) )
+					continue;
 
 				// Show it in GREEN
-				GRID_write_dot( i, MIR_GREEN );
+				GRID_write_dot( i - shiftPageRow, MIR_GREEN );
 			}
 		}
 

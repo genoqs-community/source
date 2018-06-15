@@ -51,6 +51,11 @@
 
 			// Show the GRID cursor
 			temp = cursor_to_dot( GRID_CURSOR );
+
+			if( row_in_track_window( target_page, row_of( temp ) ) ){
+				temp -= shiftTrackRow;
+			}
+
 			MIR_write_dot( temp, MIR_RED   );
 			MIR_write_dot( temp, MIR_GREEN );
 			MIR_write_dot( temp, MIR_BLINK );

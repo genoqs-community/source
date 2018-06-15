@@ -111,7 +111,6 @@
 	show (ELE_GLOBALS, TRANSPORT);
 	show (ELE_GLOBALS, BIG_KNOB);
 	show( ELE_GLOBALS, CLOCK );
-	
 
 	// Mix target indicator
 	show( ELE_MIXTGT, GRID_assistant_page->mixTarget );

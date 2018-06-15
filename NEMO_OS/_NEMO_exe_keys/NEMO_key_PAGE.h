@@ -38,10 +38,16 @@ void key_exec_PAGE( unsigned short keyNdx ){
 	unsigned short i, j, k, m = 0;
 
 	Trackstruct* current_track = 0;
-	unsigned short temp = 0;
+	unsigned int temp = 0;
 
 	// Work on the page under the grid cursor
 	Pagestruct* target_page = &Page_repository[GRID_CURSOR];
+
+	// x2 - Track row index shift
+	unsigned char shiftPageRow = page_get_window_shift();
+
+	// x2 - Track row window shift
+	unsigned char shiftTrackRow = track_get_window_shift( target_page );
 
 
 	//
@@ -86,7 +92,6 @@ void key_exec_PAGE( unsigned short keyNdx ){
 		&&	( target_page->OPS_mode != BIRDSEYE )
 		){
 
-
 		// If we are in PREVIEW mode, preview the track
 		if (	( target_page->editorMode == PREVIEW )
 			){
@@ -114,7 +119,10 @@ void key_exec_PAGE( unsigned short keyNdx ){
 		} // target_page->stepSelection != 0
 
 		else{
-
+			#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+			//backup PIT as ghost pitch on selection
+			target_page->Track[keyNdx-1]->attr_GST = target_page->Track[keyNdx-1]->attr_PIT;
+			#endif
 			// Toggle bit in trackSelection marking the track un/selected
 			target_page->trackSelection ^= 1 << (keyNdx-1);
 
@@ -232,8 +240,8 @@ void key_exec_PAGE( unsigned short keyNdx ){
 			&& 	(DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)
 			){
 
-			// This is a double click victim - Select all tracks - NEMO has 4
-			target_page->trackSelection = 0x0f;
+			// This is a double click victim - Select all tracks - NEMO has 4 x 2
+			target_page->trackSelection = 0xFF;
 			target_page->trackSelectionStored = target_page->trackSelection;
 
 			// Enter PASSIVE MODE
@@ -388,7 +396,6 @@ void key_exec_PAGE( unsigned short keyNdx ){
 		GRID_play_mode = GRID_MIX;
 		G_zoom_level = zoomGRID;
 	}
-
 
 	///////////////////////////////////////////////////////////////////////////
 	// So far was the KEY_page base.. now come the finer nuances..

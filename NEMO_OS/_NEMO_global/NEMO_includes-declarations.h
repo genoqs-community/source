@@ -43,16 +43,16 @@
 #include <cyg/hal/hal_io.h>
 #include <cyg/io/flash.h>
 
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/sts.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/types-general.h"
+#include HEADER(_OCT_global/sts.h)
+#include HEADER(_OCT_global/types-general.h)
 #include "../_NEMO_global/NEMO_defs_general.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_objects/Direction.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_objects/Runtime.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/function_signatures.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/variables-declarations.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/flash-block.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_interrupts/cpu-load.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_objects/Phrase.h"
+#include HEADER(_OCT_objects/Direction.h)
+#include HEADER(_OCT_objects/Runtime.h)
+#include HEADER(_OCT_global/function_signatures.h)
+#include HEADER(_OCT_global/variables-declarations.h)
+#include HEADER(_OCT_global/flash-block.h)
+#include HEADER(_OCT_interrupts/cpu-load.h)
+#include HEADER(_OCT_objects/Phrase.h)
 
 #endif /*INCLUDESDECLARATIONS_H_*/
 

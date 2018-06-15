@@ -44,7 +44,7 @@
 
 
 	DIAG[ keyNdx ] =
-		( DIAG[ keyNdx ] +1 ) % 4;
+		( DIAG[ keyNdx ] +1 ) % ( Page_repository[GRID_CURSOR].attr_STA + 1 );
 
 
 

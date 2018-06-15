@@ -22,12 +22,26 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-
+// Page/track matrix window shift
+extern unsigned char page_get_window_shift();
+extern unsigned char track_get_window_shift( Pagestruct* target_page );
 
 extern char* ptr_of_step_attr_value( 	Pagestruct* target_page,
 										unsigned char row,
 										unsigned char col,
 										unsigned char artibute );
+
+
+bool row_in_track_window( Pagestruct* target_page, unsigned char row ){
+
+	return CHECK_BIT( target_page->track_window, row );
+}
+
+bool row_in_page_window( unsigned char row ){
+
+	return CHECK_BIT( page_window, row );
+}
+
 
 
 // Writes a signed base-12 value into the given matrix row (Horizontal)
@@ -199,26 +213,27 @@ void GRID_write_mutepattern(	Pagestruct* target_page, unsigned char target_row )
 	// ON tracks
 	MIR_write_trackpattern(
 		mirror( ( ( target_page->trackMutepattern ^ 0x3FF )
-			& ( target_page->track_window << target_page->track_window_shift )), 16 )
+			& ( NEMO_MAX_WINDOW)), 16 )
 				<< 0, target_row, MIR_GREEN   );
 
 	// OFF tracks
 	MIR_write_trackpattern(
 		mirror( ( target_page->trackMutepattern
-			& ( target_page->track_window << target_page->track_window_shift )), 16 )
+			& ( NEMO_MAX_WINDOW )), 16 )
 				<< 0, target_row, MIR_RED   );
 
 	// SELECTED tracks
 	MIR_write_trackpattern(
 		mirror( ( target_page->trackSelection
-			& ( target_page->track_window << target_page->track_window_shift )), 16 )
+			& ( NEMO_MAX_WINDOW )), 16 )
 				<< 0, target_row, MIR_BLINK   );
 
 	// SOLO tracks
 	MIR_augment_trackpattern(
 		mirror( ( 	target_page->trackSolopattern
-			& ( target_page->track_window << target_page->track_window_shift )), 16 )
+			& ( NEMO_MAX_WINDOW )), 16 )
 				<< 0, target_row, MIR_RED   );
+
 }
 
 
@@ -291,6 +306,7 @@ void MIR_write_dot( 			unsigned int button_ndx,
 
 				// Write to MIR
 				MIR[side][row][color]  |= 1 << col;
+				break;
 		}
 	}
 
@@ -476,6 +492,9 @@ void MIR_write_lauflicht_track( unsigned char trackNdx, unsigned char rowNdx ) {
 	// Work on the page under the grid cursor
 	Pagestruct* target_page = &Page_repository[GRID_CURSOR];
 
+	// x2 - Track row window shift
+	unsigned char shiftTrackRow = track_get_window_shift(target_page);
+
 	// Write the locator to MIR for the target track
 	locator = target_page->Track[trackNdx]->attr_LOCATOR;
 
@@ -491,22 +510,28 @@ void MIR_write_lauflicht_track( unsigned char trackNdx, unsigned char rowNdx ) {
 		offset 	= 9;
 	}
 
+	// Nemo track_window display.
+	unsigned char row = rowNdx;
+	if ( row_in_track_window( target_page, row ) ) {
+		row -= shiftTrackRow;
+	}
+
 	// If there is only a RED bit set, turn it off.
-	if ( 	(( MIR[side][rowNdx][MIR_RED] & (1 << (locator - offset)) ) >  0)
-		&&	(( MIR[side][rowNdx][MIR_GREEN]   & (1 << (locator - offset)) ) == 0) )  {
+	if ( 	(( MIR[side][row][MIR_RED] & (1 << (locator - offset)) ) >  0)
+		&&	(( MIR[side][row][MIR_GREEN]   & (1 << (locator - offset)) ) == 0) )  {
 
 		// Turn off RED bit in MIR, and BLINK too since we're at it anyways..
-		MIR[side][rowNdx][MIR_RED] 	&= 0xff ^ (1 << (locator - offset));
-		MIR[side][rowNdx][MIR_BLINK] 	&= 0xff ^ (1 << (locator - offset));
+		MIR[side][row][MIR_RED] 	&= 0xff ^ (1 << (locator - offset));
+		MIR[side][row][MIR_BLINK] 	&= 0xff ^ (1 << (locator - offset));
 	}
 	else {
 
 		// This locator needs to be more prevalent and needs to be single RED
-		MIR[side][rowNdx][MIR_RED] 	|= (1 << (locator - offset));
+		MIR[side][row][MIR_RED] 	|= (1 << (locator - offset));
 
 		// Turn off all BLINK and GREEN bits in the MIR
-		MIR[side][rowNdx][MIR_BLINK] 	&= 0xff ^ (1 << (locator - offset));
-		MIR[side][rowNdx][MIR_GREEN] 	&= 0xff ^ (1 << (locator - offset));
+		MIR[side][row][MIR_BLINK] 	&= 0xff ^ (1 << (locator - offset));
+		MIR[side][row][MIR_GREEN] 	&= 0xff ^ (1 << (locator - offset));
 	}
 }
 
@@ -568,14 +593,24 @@ void MIR_write_lauflicht () {
 	// Work on the page under the grid cursor
 	Pagestruct* target_page = &Page_repository[GRID_CURSOR];
 
+	// x2 - Track row window shift
+	unsigned char shiftTrackRow = track_get_window_shift(target_page);
+
 	// Iterate through the tracks and write their locator to the MIR
 	for (i=0; i<MATRIX_NROF_ROWS; i++) {
+		if ( !row_in_track_window( target_page, i ) )
+			continue;
 
 		// Simplify and account for the natural offset of 1
 		locator = target_page->Track[i]->attr_LOCATOR;
 
 		// Don't bother at all with non-playing tracks
 		if ( locator == 0 )	continue;
+
+		unsigned char row = i;
+
+		row -= shiftTrackRow;
+
 
 		// Compute the MIR Side and the offset
 		if (locator < 9) {
@@ -590,17 +625,16 @@ void MIR_write_lauflicht () {
 		}
 
 		// Clear the blink and green bit at lauflicht position
-		MIR[side][i][MIR_GREEN]		&= ( 0xff ^ (1 << (locator - offset)) );
-		MIR[side][i][MIR_BLINK]		&= ( 0xff ^ (1 << (locator - offset)) );
+		MIR[side][row][MIR_GREEN]		&= ( 0xff ^ (1 << (locator - offset)) );
+		MIR[side][row][MIR_BLINK]		&= ( 0xff ^ (1 << (locator - offset)) );
 
 		// Set the red bit on top of what's there.
-		MIR[side][i][MIR_RED] 		|= (1 << (locator - offset));
+		MIR[side][row][MIR_RED] 		|= (1 << (locator - offset));
 
 		// If the track is sending MIDI CCs the lauflicht is orange, so add green!
 		if ( target_page->Track[i]->attr_MCC != MIDICC_NONE ){
-			MIR[side][i][MIR_GREEN] 	|= (1 << (locator - offset));
+			MIR[side][row][MIR_GREEN] 	|= (1 << (locator - offset));
 		}
-
 	} // Row iterator
 
 }
@@ -676,7 +710,27 @@ void MIR_fill_numeric (	unsigned char start,
 	}
 }
 
+// Writes a bar on the target row, with offset start
+void MIR_fill_offset_numeric (	unsigned char start,
+								signed char length,
+								unsigned char target_row,
+								char color) {
 
+	unsigned char end = start + length;
+
+	unsigned char i = 0;
+
+	if ( end <= start )
+	{
+		end = start + 1;
+		start = end + length;
+	}
+
+	for ( i=start; i < end; i++ ) {
+
+		MIR_point_numeric (i, target_row, color);
+	}
+}
 
 // Show the start value of step as horizontal bar. The other way to show it is vertical - in map mode
 void MIR_show_startbar_H( unsigned char number, unsigned char target_row ){
@@ -984,6 +1038,100 @@ void MIR_write_length_H( unsigned char length, unsigned char target_row ) {
 	}
 }
 
+/**
+ * Represent bar subdiv length 0-7 (1/1 - 1/128)
+ * display units per length
+ * @param length
+ * @param target_row
+ */
+void MIR_write_subdiv_LEN( unsigned char length, unsigned char target_row ) {
+	unsigned char bitpattern		= 0;
+
+	//Aligned Right
+	bitpattern = ( 0x0FF >> ( 8 - length ) << 1 );
+	if( length > 5 ) {
+		MIR[RHS][target_row][MIR_GREEN] |= bitpattern;
+		MIR[RHS][target_row][MIR_RED] |= bitpattern  & ( 0x0FF ^ ( 1 << length ) );
+	} else {
+		MIR[RHS][target_row][MIR_GREEN] |= bitpattern & ( 0x0FF ^ ( 1 << length ) );
+		MIR[RHS][target_row][MIR_RED] |= bitpattern ;
+	}
+	MIR[RHS][target_row][MIR_BLINK] |= ( 1 << length );
+}
+
+/**
+ * Represent bar subdiv STA i.i 16/4 = 4 slices alternate
+ * @param pos
+ * @param length
+ * @param target_row
+ */
+void MIR_write_subdiv_STA( unsigned char pos, unsigned char length, unsigned char target_row ) {
+	unsigned char bitpattern		= 0;
+	if(length > 4)
+		length ++;
+	//unsigned char subdiv_length = (16 / (1 << length % 5));
+	unsigned char subdiv_length = max(1,(16 / (1 << length)));
+	unsigned char i;
+	// Left side:
+	unsigned char HS_div = 8/(subdiv_length);
+
+	if(	HS_div == 0 && length == 0) {
+			MIR[LHS][target_row][MIR_GREEN] |= 0xFF;
+			MIR[RHS][target_row][MIR_GREEN] |= 0xFF;
+	}
+
+	for(i=0; i< HS_div; i++ ) {
+
+		bitpattern = (0xFF >> (8-(8/HS_div )) << i*(8/HS_div ));
+
+		if(i % 2 == 0) {
+			if(pos >7 || pos != i*subdiv_length) {
+
+				MIR[LHS][target_row][MIR_RED] |= bitpattern;
+				MIR[LHS][target_row][MIR_GREEN] |= bitpattern;
+
+			} else {
+
+				MIR[LHS][target_row][MIR_GREEN] |= bitpattern;
+
+			}
+
+			if(pos <7 || pos != (i+HS_div)*subdiv_length) {
+
+				MIR[RHS][target_row][MIR_GREEN] |= bitpattern;
+				MIR[RHS][target_row][MIR_RED] |= bitpattern;;
+
+			} else {
+
+				MIR[RHS][target_row][MIR_GREEN] |= bitpattern;
+
+			}
+
+		} else {
+			if(pos >7 || pos != i*subdiv_length){
+
+				MIR[LHS][target_row][MIR_RED] |= bitpattern;
+
+			} else {
+
+				MIR[LHS][target_row][MIR_GREEN] |= bitpattern;
+
+			}
+
+			if(pos <7 || pos != (i+HS_div)*subdiv_length) {
+
+				MIR[RHS][target_row][MIR_RED] |= bitpattern;
+
+			} else {
+
+				MIR[RHS][target_row][MIR_GREEN] |= bitpattern;
+
+			}
+
+		}
+
+	}
+}
 
 // ..using the following representation:
 // GREEN Bar shows how many full 1/16ths the step length is (1/16 equiv. to 24TTC ticks)
@@ -2405,7 +2553,7 @@ void display_stepLEN_multiplier( Stepstruct* target_step ){
 void display_Track_TEMPOMUL( Trackstruct* target_track ){
 
 	// Show the track's tempo multiplier value as defined in book p.257
-	switch( target_track->attr_TEMPOMUL ){
+	switch( target_track->attr_TEMPOMUL & 0x0F ){
 
 		case 0:
 			// This is the PAUSE state
@@ -2608,6 +2756,3 @@ unsigned char page_needs_align( Pagestruct* target_page ){
 
 	return result;
 }
-
-
-

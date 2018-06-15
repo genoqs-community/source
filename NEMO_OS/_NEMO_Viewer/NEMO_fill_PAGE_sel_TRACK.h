@@ -133,5 +133,15 @@
 				MIR_write_dot( LED_RECORD, MIR_RED 		);
 				MIR_write_dot( LED_RECORD, MIR_BLINK 	);
 			}
+			#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+			// x2 - Toggle transpose abs pitch mode
+			if (	( target_page->pitch_abs == TRUE )	){
 
+				MIR_write_dot( LED_SCALE_SEL, MIR_GREEN 	);
 
+			} else {
+
+				MIR_write_dot( LED_SCALE_SEL, MIR_RED 	);
+
+			}
+			#endif

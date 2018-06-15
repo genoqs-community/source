@@ -154,7 +154,22 @@
 		}
 	}
 		
+	// MIX MASTER KEY
+	// Toggles the scale keyboard input
+	if ( keyNdx == KEY_MIX_MASTER ){
+
+		// EDIT MASTER showing the scale edit mode
+		switch( GRID_assistant_page->mixMode ){
 	
+			case INC:
+				GRID_assistant_page->mixMode = DEC;
+				break;
+
+			case DEC:
+				GRID_assistant_page->mixMode = INC;
+				break;
+		}
+	}
 	// ESC
 	// Lock the SCALE into the machine and exit the SCALE mode
 	if ( keyNdx == KEY_RETURN ){

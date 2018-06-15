@@ -45,7 +45,6 @@
 		show( ELE_MIX_INDICATOR, RED   );
 		show( ELE_MIX_INDICATOR, GREEN );
 
-
 		// TRACK SELECTORS
 		show ( ELE_TRACK_SELECTORS, GRID_BANK_PLAYMODES );
 
@@ -85,19 +84,20 @@
 		// Caution!! There is also some extra code in the ELE_MATRIX / GRID section.
 		show( ELE_TRACK_MUTATORS, GRID_SET_SWITCHMODE );
 
-
 		// Show cursor Marcel style
 		if ( is_pressed_key( KEY_ZOOM_PAGE ) ){
 
 			MIR_write_dot( KEY_ZOOM_PAGE, MIR_GREEN );
 
 			// Show the GRID cursor
-			temp = cursor_to_dot( GRID_CURSOR );
+			if( !row_in_page_window( GRID_CURSOR % 10 ) )
+				break;
+			temp = cursor_to_dot( GRID_CURSOR ) - shiftPageRow;
+
 			MIR_write_dot( temp, MIR_RED   );
 			MIR_write_dot( temp, MIR_GREEN );
 			MIR_write_dot( temp, MIR_BLINK );
 		}
-
 
 		// MIX TARGET INDICATOR
 		show( ELE_MIXTGT, GRID_assistant_page->mixTarget );
@@ -331,16 +331,22 @@
 
 
 	// EDIT MASTER
-	switch( GRID_editmode ){
+	switch( CHECK_BIT( GRID_editmode, 0 ) ){
 
 		case ON:
 			show( ELE_EDIT_MASTER, RED   );
-			show( ELE_EDIT_MASTER, GREEN );
+			if( !CHECK_BIT( GRID_editmode, 1 ) ) {
+				show( ELE_EDIT_MASTER, GREEN );
+			}
 			MIR_write_dot( LED_EDIT_MASTER, MIR_BLINK );
 			break;
 
 		case OFF:
-			show( ELE_EDIT_MASTER, GREEN   );
+			if( !CHECK_BIT( GRID_editmode, 1 ) ) {
+				show( ELE_EDIT_MASTER, GREEN );
+			}else {
+				show( ELE_EDIT_MASTER, RED );
+			}
 			break;
 	}
 

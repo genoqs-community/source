@@ -30,7 +30,10 @@ void rot_exe_MIX( unsigned char rotNdx, unsigned char direction, Pagestruct* tar
 	signed int max = 0;
 	unsigned char trackNdx = 0;
 	unsigned int i=0, j=0, k=0;
-	
+
+	// x2 - Track row window shift
+	unsigned char shiftTrackRow = track_get_window_shift( target_page );
+
 	// Mixer block rotary passed
 	if (	(rotNdx >= 11) 
 		&& 	(rotNdx <= 20) 
@@ -43,7 +46,7 @@ void rot_exe_MIX( unsigned char rotNdx, unsigned char direction, Pagestruct* tar
 		start_MIX_TIMER();
 
 		// Normalized index
-		trackNdx = rotNdx-11;
+		trackNdx = shiftTrackRow + rotNdx - 11;
 
 		// Keep the index for some other processing (in viewer)
 		target_page->mixingTrack = trackNdx;
@@ -116,14 +119,14 @@ void rot_exe_MIX( unsigned char rotNdx, unsigned char direction, Pagestruct* tar
 			case MIXTGT_USR2:
 			case MIXTGT_USR3:
 			case MIXTGT_USR4:
-							
 				// Operate on the GRID assistant page
 				GRID_assistant_page->mixTarget = target_page->mixTarget;
-				target_page = GRID_assistant_page;	
+				target_page = GRID_assistant_page;
 
 				// Edit the parameters of the CC map
 				if ( G_zoom_level == zoomMIXMAP ){
-					
+					shiftTrackRow = track_get_window_shift( GRID_assistant_page );
+					trackNdx = shiftTrackRow + rotNdx - 11;
 					// This applies to all other modes
 					switch( target_page->CC_MIXMAP_attribute ) {
 

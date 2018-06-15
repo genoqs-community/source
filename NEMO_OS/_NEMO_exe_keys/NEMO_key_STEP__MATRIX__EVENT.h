@@ -73,8 +73,8 @@
 				// Transform the keypress into to the Octopus model
 				temp = ( keyNdx / 11 ) - 1;
 				switch( temp ){
-					case 0:		temp = 1;	break;	// PIT
-					case 1:		temp = 0;	break;	// VEL
+					case 0:		temp = 0;	break;	// PIT
+					case 1:		temp = 1;	break;	// VEL
 					case 2:		temp = 2;	break;	// LEN
 					case 3:		temp = 3;	break;	// STA
 					case 5:		temp = 6;	break;	// AMT
@@ -96,7 +96,7 @@
 					&&	( Step_get_status( target_page->Step[ target_page->stepSelectionSingleRow ]
 									  				        [ target_page->stepSelectionSingleCol ],
 									 	   STEPSTAT_EVENT ) == ON )
-					&& 	( NEMO_step_VER != VER_RANGE )
+					&& 	( NEMO_step_VER < VER_RANGE )
 					){
 	
 					Step_set_status( target_page->Step[ target_page->stepSelectionSingleRow ]

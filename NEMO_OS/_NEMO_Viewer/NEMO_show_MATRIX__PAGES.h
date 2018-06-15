@@ -22,20 +22,24 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-
+	if( row_in_page_window( dot_of_page( target_page->pageNdx % 10 ) ) ){
 
 		// Show the selected page as orange dot blinking
-		MIR_write_dot (dot_of_page(target_page->pageNdx), MIR_RED);
-		MIR_write_dot (dot_of_page(target_page->pageNdx), MIR_GREEN);
-		MIR_write_dot (dot_of_page(target_page->pageNdx), MIR_BLINK);
+		MIR_write_dot (dot_of_page(target_page->pageNdx)-shiftPageRow, MIR_RED);
+		MIR_write_dot (dot_of_page(target_page->pageNdx)-shiftPageRow, MIR_GREEN);
+		MIR_write_dot (dot_of_page(target_page->pageNdx)-shiftPageRow, MIR_BLINK);
 
 		// Show all non-empty pages in red (they are not playing)
 		for (i=0; i<MAX_NROF_PAGES; i++) {
+
+			if( !row_in_page_window( i % 10 ) )
+				continue;
+
 			if (Page_repository[i].page_clear == OFF) {
-				MIR_write_dot (dot_of_page(i), MIR_RED);
+				MIR_write_dot (dot_of_page(i)-shiftPageRow, MIR_RED);
 			}
 		}
-
+	}
 		// Show a playing row as blink orange
 
 

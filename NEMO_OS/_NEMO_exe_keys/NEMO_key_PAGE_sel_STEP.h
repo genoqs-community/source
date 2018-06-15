@@ -54,10 +54,35 @@
 
 
 	// STEP mode switch
-	//
-	if (keyNdx == KEY_ZOOM_STEP) {
-		if (target_page->stepSelection == 1) {
+	if (	( keyNdx == KEY_ZOOM_STEP )
+		&&	( target_page->stepSelection == 1 ) ) {
+		//
+		// D O U B L E - C L I C K  C O N S T R U C T
+		// DOUBLE CLICK SCENARIO
+		if ((DOUBLE_CLICK_TARGET == keyNdx)
+				&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
+
+			// Double click code
+			// ...
+			// Zoom into the selected step
 			G_zoom_level = zoomSTEP;
+
+		} // end of double click scenario
+
+
+		// SINGLE CLICK SCENARIO
+		else if (DOUBLE_CLICK_TARGET == 0) {
+
+				DOUBLE_CLICK_TARGET = keyNdx;
+				DOUBLE_CLICK_TIMER = ON;
+				// Start the Double click Alarm
+				cyg_alarm_initialize(
+						doubleClickAlarm_hdl,
+						cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+						DOUBLE_CLICK_ALARM_TIME );
+
+			// Single click code
+			// ...
 		}
 	}
 
@@ -232,7 +257,7 @@
 				col = target_page->stepSelectionSingleCol;
 
 				// Copy step data from buffer to pointer
-				Step_copy( STEP_COPY_BUFFER, target_page->Step[row][col]);
+				Step_copy( STEP_COPY_BUFFER, target_page->Step[row][col], false );
 
 				// Unselect the step
 				Step_set_status( target_page->Step[row][col], STEPSTAT_SELECT, OFF );

@@ -35,8 +35,8 @@ extern void rot_exe_MIX( unsigned char rotNdx, unsigned char direction, Pagestru
 void rot_exec_GRID( 	Pagestruct* target_page, 
 						unsigned char rotNdx, 
 						unsigned char direction ){
-							
-	
+
+
 	// Act according to rot index
 	switch( rotNdx ){
 	
@@ -64,9 +64,6 @@ void rot_exec_GRID( 	Pagestruct* target_page,
 			if ( GRID_play_mode == GRID_EDIT ){
 
 				start_EDIT_TIMER();
-				
-				// Store the rot index in the mixing track attribute - spaghetti warning!
-				target_page->mixingTrack = rotNdx;
 				
 				// Apply global page modifications
 				rot_exec_PAGE_global( target_page, rotNdx, direction );

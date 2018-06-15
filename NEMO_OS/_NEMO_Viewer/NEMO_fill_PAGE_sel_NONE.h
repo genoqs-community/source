@@ -91,11 +91,13 @@
 			else{
 				show( ELE_MATRIX, GRID );
 
-					// Show the GRID cursor
-					temp = cursor_to_dot( GRID_CURSOR );
-					MIR_write_dot( temp, MIR_RED   );
-					MIR_write_dot( temp, MIR_GREEN );
-					MIR_write_dot( temp, MIR_BLINK );
+				// Show the GRID cursor
+				if( !row_in_page_window( GRID_CURSOR % 10 ) )
+					break;
+				temp = cursor_to_dot( GRID_CURSOR ) - shiftPageRow;
+				MIR_write_dot( temp, MIR_RED   );
+				MIR_write_dot( temp, MIR_GREEN );
+				MIR_write_dot( temp, MIR_BLINK );
 			}
 
 			// no break, Fallthrough intended
@@ -108,9 +110,12 @@
 
 			// Show the hyped tracks
 			for ( i=0; i < MATRIX_NROF_ROWS; i++ ){
+				if( !row_in_track_window( target_page, i ) )
+					continue;
+
 				// Track has a valid hyper step address
 				if ( (target_page->Track[i]->hyper >> 4) != 0x0F ){
-					j |= (1<<i);
+					j |= ( 1 << ( i - shiftTrackRow ) );
 				}
 			}
 			// Show hyped pattern
@@ -147,6 +152,12 @@
 			// Show the current step selection set
 			if ( is_pressed_key( KEY_SELECT_MASTER )
 				){
+
+				MIR_write_dot( LED_MIXTGT_USR1, MIR_GREEN   );
+				MIR_write_dot( LED_MIXTGT_USR2, MIR_GREEN   );
+				MIR_write_dot( LED_MIXTGT_USR3, MIR_GREEN   );
+				MIR_write_dot( LED_MIXTGT_USR4, MIR_GREEN   );
+
 				switch( target_page->stepSELpattern_ndx ){
 
 					case 0:	MIR_write_dot( LED_MIXTGT_USR1, MIR_GREEN 	);

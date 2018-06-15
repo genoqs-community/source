@@ -35,9 +35,10 @@
 				&&	( GRID_p_selection[j] != NULL )
 				// &&	( GRID_p_clock_presel[j]->page_clear != ON )
 				){
-
+				if( !row_in_page_window( j ) )
+					continue;
 				// Show the preselection of the page that is active in the bank
-				GRID_write_mutepattern( GRID_p_selection[j], j );
+				GRID_write_mutepattern( GRID_p_selection[j], j - shiftPageRow );
 			}
 		}
 

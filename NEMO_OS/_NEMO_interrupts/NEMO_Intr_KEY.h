@@ -120,17 +120,17 @@ void readKeys_thread (cyg_addrword_t index){
 				
 			// MAP
 			case zoomMAP:
-				#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_interrupts/Intr_KEY_MAP.h"
+				#include HEADER(_OCT_interrupts/Intr_KEY_MAP.h)
 				break;
 
 			// TRACK
 			case zoomTRACK:			
-				#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_interrupts/Intr_KEY_TRACK.h"
+				#include HEADER(_OCT_interrupts/Intr_KEY_TRACK.h)
 				break;
 
 			// MIXMAP
 			case zoomMIXMAP:
-				#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_interrupts/Intr_KEY_MIXMAP.h"
+				#include HEADER(_OCT_interrupts/Intr_KEY_MIXMAP.h)
 				break;
 
 			// PAGE

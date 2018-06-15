@@ -3,6 +3,7 @@
 	<name>NEMO_OS</name>
 	<comment></comment>
 	<projects>
+		<project>OCT_OS</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
@@ -133,11 +134,10 @@
 		<nature>org.eclipse.cdt.make.core.makeNature</nature>
 		<nature>org.eclipse.cdt.make.core.ScannerConfigNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>__OCT_OS_v1.60_baseline</name>
-			<type>2</type>
-			<location>/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60</location>
-		</link>
-	</linkedResources>
+	<variableList>
+		<variable>
+			<name>OCT_OS</name>
+			<value>$%7BPARENT-1-PROJECT_LOC%7D/OCT_OS</value>
+		</variable>
+	</variableList>
 </projectDescription>

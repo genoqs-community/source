@@ -22,7 +22,6 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-
 		// ROW I - value entry, depending on selected attribute
 		if ( (( keyNdx - NEMO_ROW_I ) % 11) == 0) {
 
@@ -61,6 +60,32 @@
 			col = (( keyNdx - NEMO_ROW_III ) / 11) - 1 ;
 
 			switch( col ){
+				#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+				case 0:
+					// D O U B L E - C L I C K
+					if ((DOUBLE_CLICK_TARGET == keyNdx)
+							&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
+
+						// Double click code:
+						// Switch between standard chord UI and chord octave layered UI.
+						NEMO_step_VER = NEMO_step_VER >= VER_CHORD_OCTAVE_FIRST ? VER_CHORD : VER_CHORD_OCTAVE_FIRST;
+					}
+					// SINGLE CLICK
+					else if (DOUBLE_CLICK_TARGET == 0) {
+
+						DOUBLE_CLICK_TARGET = keyNdx;
+						DOUBLE_CLICK_TIMER = ON;
+						// Start the Double click Alarm
+						cyg_alarm_initialize(
+							doubleClickAlarm_hdl,
+							cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+							DOUBLE_CLICK_ALARM_TIME );
+
+						// Cycle octaves in chord octave layered UI otherwise no op.
+						NEMO_step_VER = NEMO_step_VER >= VER_CHORD_OCTAVE_FIRST ? max( VER_CHORD_OCTAVE_FIRST, ( NEMO_step_VER + 1 ) % ( VER_CHORD_OCTAVE_THIRD + 1 ) ) : NEMO_step_VER;
+					}
+					break;
+				#endif
 				// VER Selection
 				case 7:		NEMO_step_VER = VER_VALUE;								break;
 				case 11:	NEMO_step_VER = VER_EVENT;								break;

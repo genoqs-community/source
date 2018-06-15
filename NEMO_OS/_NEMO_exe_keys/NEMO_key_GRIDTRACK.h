@@ -81,7 +81,7 @@
 		
 			// TRACK SELECTORS - select the CC attribute under investigation
 			else if ((keyNdx >= 1) && (keyNdx <= 10)) {
-				
+
 				// CC_MIXMAP mode selected
 				switch( keyNdx ) {
 		
@@ -101,7 +101,6 @@
 		}
 		// SELECTORS
 		else if ((keyNdx >0) && (keyNdx <= 10)) {
-	
 			// Toggle the playmodes for the GRID bank.
 			GRID_bank_playmodes ^= 1 << (keyNdx-1);
 		}
@@ -129,7 +128,7 @@
 		// MATRIX
 		// operate on the virtual track selectors..
 		if ( (keyNdx >= 11) && (keyNdx <= 185) ){
-			
+
 			switch( keyNdx ){
 				
 				// These don't belong to the matrix. Only accidentally in the range, do nothing.
@@ -138,7 +137,7 @@
 				case 109: 	case 120: 	case 131: 	case 142:
 				case 153: 	case 164: 	case 175: 	break;
 								
-				default:			
+				default:
 					#include "NEMO_key_GRIDTRACK_matrix.h"			
 					break;	
 	

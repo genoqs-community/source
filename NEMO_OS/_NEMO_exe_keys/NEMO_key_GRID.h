@@ -64,20 +64,19 @@
 				break;
 
 
-				// Dump page contents via sysex - EXC is export contents
-				case KEY_ALIGN:
-					if ( 	( G_run_bit == OFF )
-						){
+			// Dump page contents via sysex - EXC is export contents
+			case KEY_ALIGN:
+				if ( 	( G_run_bit == OFF )
+					){
 
-						// Enter zoomSYSEX - mode where to do sysex dumps
-						G_zoom_level = zoomSYSEX;
-						return;
-					}
-					break;
+					// Enter zoomSYSEX - mode where to do sysex dumps
+					G_zoom_level = zoomSYSEX;
+					return;
+				}
+				break;
 
 		} // switch( keyNdx )
 	}
-
 
 
 
@@ -110,7 +109,6 @@
 		// SELECTORS
 		// Toggle the playmodes for the GRID bank.
 		if ((keyNdx >0) && (keyNdx <= 10)) {
-
 			GRID_bank_playmodes ^= 1 << (keyNdx-1);
 		}
 
@@ -292,7 +290,6 @@
 
 
 				default:
-
 					// Compute the grid coordinates from the key index
 					temp = row_of(keyNdx) + (10 * column_of (keyNdx));
 
@@ -326,7 +323,6 @@
 						// Page selectors, act as always..
 						// ..select the page for play in preselection or zoom into it (doubleclick)
 						default:
-
 							// D O U B L E - C L I C K  C O N S T R U C T
 							// DOUBLE CLICK SCENARIO
 							if (	( DOUBLE_CLICK_TARGET == keyNdx )
@@ -341,7 +337,7 @@
 								// Restore the page playing status from before
 								// Toggle the page playing status --> classic toggle behavior
 								// Note that this is effectively reversing the queue status
-								if ( GRID_editmode == OFF ){
+								if ( CHECK_BIT( GRID_editmode, 0 ) == OFF ){
 									switch ( is_selected_in_GRID( target_page ) ) {
 										case ON:
 											// d_iag_printf( "7 target_page:%d ON, again\n", target_page->pageNdx );
@@ -403,7 +399,7 @@
 								target_page = &Page_repository[ GRID_CURSOR ];
 
 								// Account for the edit mode in GRID
-								if ( GRID_editmode == ON ){
+								if ( CHECK_BIT( GRID_editmode, 0 ) == ON ){
 
 									// Move cursor or zoom into page
 									if ( is_pressed_key( KEY_ZOOM_PAGE )){
@@ -1094,7 +1090,7 @@
 		//
 		// OCTAVE CIRCLE
 		//
-//		# include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_exe_keys/key_OCT_CIRCLE_xpose_PAGE.h"
+//		# include HEADER(_OCT_exe_keys/key_OCT_CIRCLE_xpose_PAGE.h)
 
 
 		//
@@ -1153,23 +1149,30 @@
 
 				case KEY_CLEAR:
 					// Select all tracks in cursor page
-					target_page->trackSelection = 0x00F;
+					target_page->trackSelection = 0x3FF;
 
 					// Clear selected tracks in page - only applies to step status
 					Page_CLEAR_selected_tracks( target_page );
 
-
 					for ( i=0; i < MATRIX_NROF_ROWS; i++ ){
 
 						// Re-assign the track initial pitches to the tracks in the page
-						target_page->Track[row]->attr_PIT = TRACK_DEFAULT_PITCH[i];
+						target_page->Track[i]->attr_PIT = TRACK_DEFAULT_PITCH[i];
 
 						// Reset track directions to normal
-						target_page->Track[row]->attr_DIR = TRACK_DEF_DIRECTION;
+						target_page->Track[i]->attr_DIR = TRACK_DEF_DIRECTION;
 					}
 
 					// Unselect all tracks in cursor page
-					target_page->trackSelection = OFF;
+					target_page->trackSelection 		= OFF;
+					target_page->trackMutepattern		= OFF;
+					target_page->trackMutepatternStored = OFF;
+					target_page->trackSolopattern		= OFF;
+
+					// Remove page from grid selections
+					GRID_p_selection[ target_page->pageNdx % 10 ] = NULL;
+					GRID_p_preselection[ target_page->pageNdx % 10 ] = NULL;
+					GRID_p_clock_presel[ target_page->pageNdx % 10 ] = NULL;
 
 					// Mark page as cleared
 					target_page->page_clear = ON;
@@ -1193,7 +1196,7 @@
 					// Randomize emtpty pages but remix non-empty ones
 
 					// Select all tracks in cursor page
-					target_page->trackSelection = 0x00F;
+					target_page->trackSelection = NEMO_MAX_WINDOW;
 
 					switch( target_page->page_clear ){
 
@@ -1253,7 +1256,6 @@
 			GRID_status = GRID_DEFAULT;
 		}
 
-
 		// PAGE Zoom key not available in PERFORM mode as we would not
 		// know which page we are about to enter!!
 		if (keyNdx == KEY_ZOOM_PAGE) {
@@ -1281,12 +1283,58 @@
 
 
 	// EDIT MASTER KEY
-	// Toggles the editmode for GRID
-	if (	( keyNdx == KEY_EDIT_MASTER )
-		){
 
-		GRID_editmode ^=1 ;
+#ifdef FEATURE_ENABLE_DICE
+	// Enter zoomDICE - mode to performance dice
+	if ( keyNdx == KEY_ZOOM_GRID ) {
+		// D O U B L E - C L I C K  C O N S T R U C T
+		// DOUBLE CLICK SCENARIO
+		if (	( DOUBLE_CLICK_TARGET == keyNdx )
+			&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+			G_zoom_level = zoomDICE;
+		}
+		// SINGLE CLICK SCENARIO
+		else if (DOUBLE_CLICK_TARGET == 0) {
+
+				DOUBLE_CLICK_TARGET = keyNdx;
+				DOUBLE_CLICK_TIMER = ON;
+				// Start the Double click Alarm
+				cyg_alarm_initialize(
+						doubleClickAlarm_hdl,
+						cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+						DOUBLE_CLICK_ALARM_TIME );
+
+			// Single click code
+			// ...
+			// nothing to do
+		}
 	}
+#endif
+	if (	( keyNdx == KEY_EDIT_MASTER ) ){
+		// D O U B L E - C L I C K  C O N S T R U C T
+		// DOUBLE CLICK SCENARIO
+		if (	( DOUBLE_CLICK_TARGET == keyNdx )
+			&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+			TOGGLE_BIT( GRID_editmode, 0 );
+			TOGGLE_BIT( GRID_editmode, 1 );
+		}
+		// SINGLE CLICK SCENARIO
+		else if (DOUBLE_CLICK_TARGET == 0) {
+
+				DOUBLE_CLICK_TARGET = keyNdx;
+				DOUBLE_CLICK_TIMER = ON;
+				// Start the Double click Alarm
+				cyg_alarm_initialize(
+						doubleClickAlarm_hdl,
+						cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+						DOUBLE_CLICK_ALARM_TIME );
+
+			// Single click code
+			// Toggles the editmode for GRID
+			TOGGLE_BIT( GRID_editmode, 0 );
+		}
+	}
+
 
 
 

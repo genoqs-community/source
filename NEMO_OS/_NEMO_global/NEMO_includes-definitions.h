@@ -28,41 +28,43 @@
 
 
 //#include "../_OCT_global/variables.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/variables.h"
+#include HEADER(_OCT_global/variables.h)
 
 //#include "../_OCT_global/tools_general.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/tools_general.h"
+#include HEADER(_OCT_global/tools_general.h)
 
 // #include "../_OCT_objects/Panel.h"
 // #include "../_OCT_objects/Step.h"
 // #include "../_OCT_objects/Track.h"
 // #include "../_OCT_objects/Page.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_objects/Panel.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_objects/Step.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_objects/Track.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_objects/Page.h"
-
+#include HEADER(_OCT_objects/Panel.h)
+#include HEADER(_OCT_objects/Step.h)
+#include HEADER(_OCT_objects/Track.h)
+#include HEADER(_OCT_objects/Page.h)
+#ifdef FEATURE_ENABLE_DICE
+#include HEADER(_OCT_objects/Dice.h)
+#endif
 // #include "../_OCT_objects/MIDI_queue.h"
 // #include "../_OCT_objects/NOTE_ON_queue.h"
 // #include "../_OCT_objects/Grid.h"
 // #include "../_OCT_objects/Ableton.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_objects/MIDI_queue.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_objects/NOTE_ON_queue.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_objects/Grid.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_objects/Ableton.h"
+#include HEADER(_OCT_objects/MIDI_queue.h)
+#include HEADER(_OCT_objects/NOTE_ON_queue.h)
+#include HEADER(_OCT_objects/Grid.h)
+#include HEADER(_OCT_objects/Ableton.h)
 
 // #include "../_OCT_init/Init_memory.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_init/Init_memory.h"
+#include HEADER(_OCT_init/Init_memory.h)
 
 
 // #include "../_OCT_Viewer/show__master.h"
 #include "../_NEMO_Viewer/NEMO_show__master.h"
 
 // #include "../_OCT_Player/play__master.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_Player/play__master.h"
+#include HEADER(_OCT_Player/play__master.h)
 
 // #include "../_OCT_Player/MIDI_IN_interpreter.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_Player/MIDI_IN_interpreter.h"
+#include HEADER(_OCT_Player/MIDI_IN_interpreter.h)
 
 // #include "../_OCT_interrupts/Intr_KEY.h"
 // #include "../_OCT_interrupts/Intr_ROTARY.h"
@@ -72,9 +74,9 @@
 // #include "../_OCT_interrupts/Intr_TMR.h"
 // #include "../_OCT_interrupts/Intr_IN_UARTs.h"
 // #include "../_OCT_exe_keys/key_clock_select.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_interrupts/Intr_TMR.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_interrupts/Intr_IN_UARTs.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_exe_keys/key_clock_select.h"
+#include HEADER(_OCT_interrupts/Intr_TMR.h)
+#include HEADER(_OCT_interrupts/Intr_IN_UARTs.h)
+#include HEADER(_OCT_exe_keys/key_clock_select.h)
 
 // #include "../_OCT_exe_keys/key__master.h"
 // #include "../_OCT_exe_rots/rot__master.h"
@@ -85,10 +87,10 @@
 // #include "../_OCT_init/OS_infrastructure.h"
 // #include "../_OCT_global/sysex_functions.h"
 // #include "../_OCT_global/flash_functions.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/alarm_handlers.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_init/OS_infrastructure.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/sysex_functions.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/flash_functions.h"
+#include HEADER(_OCT_global/alarm_handlers.h)
+#include HEADER(_OCT_init/OS_infrastructure.h)
+#include HEADER(_OCT_global/sysex_functions.h)
+#include HEADER(_OCT_global/flash_functions.h)
 
 
 #endif /*INCLUDESDEFINITIONS_H_*/

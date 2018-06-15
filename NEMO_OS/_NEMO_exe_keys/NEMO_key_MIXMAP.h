@@ -36,11 +36,16 @@
 	// Learning is going on, toggle learn and REC bit..
 	if ((keyNdx >= 1) && (keyNdx <= 10)) {
 
+		// When in CC map mode, point to the global page.
+		if ( target_page->mixTarget < 6 ){
+			target_page = GRID_assistant_page;
+		}
+
 		if (	( target_page->REC_bit == ON )
 			){
 
 			// Toggle bit in trackSelection marking the track un/selected
-			CCMAP_learner = keyNdx-1;
+			CCMAP_learner = keyNdx + shiftTrackRow - 1;
 		}
 		else{
 
@@ -52,10 +57,10 @@
 			// CC_MIXMAP mode selected
 			if (target_page->mixTarget < 6) {
 
-				if ( GRID_MAP0_status == ON ){
+				//if ( GRID_MAP0_status == ON ){
 
 					target_page = GRID_assistant_page;
-				}
+				//}
 
 				switch( keyNdx ) {
 					case 7:
@@ -318,13 +323,13 @@
 					case NEMO_ATTR_START:
 						target_ptr = &target_page->Track[row]->STA_factor;
 						// Set the new value of the STA factor.
-						*target_ptr = normalize( col, 0, TRACK_MAX_STAFACTOR );
+						*target_ptr = normalize( col + 1, 0, TRACK_MAX_STAFACTOR );
 						break;
 
 					case NEMO_ATTR_LENGTH:
 						target_ptr = &target_page->Track[row]->LEN_factor;
 						// Set the new value of the LEN factor - on the same port.
-						*target_ptr = normalize( col, 0, TRACK_MAX_LENFACTOR );
+						*target_ptr = normalize( col + 1, 0, TRACK_MAX_LENFACTOR );
 						break;
 
 					case NEMO_ATTR_DIRECTION:

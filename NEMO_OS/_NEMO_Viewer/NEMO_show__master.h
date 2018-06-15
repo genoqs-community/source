@@ -31,13 +31,15 @@
  */
 #include "../_NEMO_Viewer/NEMO_show_OCTAVE_CIRCLE_functions.h"
 #include "../_NEMO_Viewer/NEMO_show_GLOBALS_scale_master.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_Viewer/show_SCALE_SELECTOR_scale_selection_function.h"
+
+#include HEADER(_OCT_Viewer/show_SCALE_SELECTOR_scale_selection_function.h)
 
 extern void show_chord_in_line( Stepstruct* target_step, unsigned char offset );
 extern unsigned char is_selected_in_GRID( Pagestruct* target_page );
 extern char* ptr_of_track_attr_value( 	Pagestruct* target_page,
 								unsigned char track_ndx,
 								unsigned char attr_ndx );
+
 
 // This is the core routine to refresh the page - 
 // so it can be used also after interrupts have been disabled
@@ -202,6 +204,9 @@ void MIR_write_GRID() {
 // The MIR filler functions
 #include "../_NEMO_Viewer/NEMO_filler_functions.h"
 
+// General show functions
+#include "../_NEMO_Viewer/NEMO_show_functions.h"
+
 // The main show function
 #include "../_NEMO_Viewer/NEMO_show_show.h"
 
@@ -210,7 +215,4 @@ void MIR_write_GRID() {
 
 // Hardware driver code
 #include "../_NEMO_Viewer/NEMO_show_hwdriver.h"
-
-// General show functions
-#include "../_NEMO_Viewer/NEMO_show_functions.h"
 
