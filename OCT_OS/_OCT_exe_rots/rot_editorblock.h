@@ -251,12 +251,10 @@ void rot_exe_EDIT( 	unsigned char rotNdx,
 				if ((1<<i) & (target_page->trackSelection)) {
 
 					target_page->Track[i]->event_offset[ATTR_MIDICH] = 0;
-					#ifdef FEATURE_ENABLE_SONG_UPE
 					if ( G_prev_rec_page == target_page->pageNdx )
 					{
 						Page_setTrackRecPattern( target_page, G_prev_rec_page_pattern );
 					}
-					#endif
 					modify_parameter 
 						(&target_page->Track[i]->attr_MCH, 
 						 	TRACK_MIN_MIDICH, TRACK_MAX_MIDICH, direction, OFF, FIXED);

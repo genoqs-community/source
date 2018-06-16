@@ -171,6 +171,7 @@
 			case LEGATO:	length = def_TIMESTAMP_MAX;		break;
 			default:		length = start_offset + length;	break;
 		}
+		// diag_printf("len:%d\n", length);
 		MIDI_OFF_build_new ( midiCH, pitch, length );
 
 

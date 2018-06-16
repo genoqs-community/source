@@ -14,8 +14,8 @@ STRIP = $(TOOLPREFIX)/arm-elf-strip
 # -----------------------------------------------------------------------
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TOGGLE DEBUG - '-g' flag will corrupt the Octopus memory bank overflow
-#CFLAGS = -Wall -O2 #-finline-functions
-CFLAGS = -g -O0
+CFLAGS = -Wall -O2 #-finline-functions
+#CFLAGS = -g -O0
 
 # Source files used in the system.
 SOURCES = 	nemo.c \
@@ -33,15 +33,15 @@ OBJECTS = $(SOURCES:.c=.o)
 all:	nemo.elf
 
 nemo.elf: $(SOURCES)
-#	$(CC) $(CFLAGS) -o nemo.elf -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
-	$(CC) $(CFLAGS) -o nemo.elf_DEBUG_DONT_DEPLOY -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
+	$(CC) $(CFLAGS) -o nemo.elf -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
+#	$(CC) $(CFLAGS) -o nemo.elf_DEBUG_DONT_DEPLOY -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
 # comment this line to produce a symbol table ELF for the step debugger -- do not upload to Nemo!!!
 
 	
-#	$(STRIP) nemo.elf
+	$(STRIP) nemo.elf
 
 clean:	
-#	rm -f nemo.elf $(OBJECTS)
+	rm -f nemo.elf $(OBJECTS)
 
 
 

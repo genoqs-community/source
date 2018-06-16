@@ -645,7 +645,9 @@ void Track_record_CC( 	Pagestruct* 	target_page,
  	// Play the CC straight through
  	// Note that the CC may have been re-channelled in the meantime.
 
- 	MIDI_CC_new( outputMidiBus * 16 + outputMidiChan, controller_number, controller_value, 0 );
+	if ( G_midi_map_controller_mode == ON ){
+		MIDI_CC_new( outputMidiBus * 16 + outputMidiChan, controller_number, controller_value, 0 );
+	}
 
  	// Play MIDI queue elements which are due just before current timestamp, including the above..
  	play_MIDI_queue( G_MIDI_timestamp );
@@ -851,8 +853,10 @@ void midi_bender_execute( 	unsigned char inputMidiBus,				// Range = [0, 1].
 	// Play the bender value straight through
 	// Note that the bender value may have been re-channelled in the meantime.
 
-	unsigned int benderVal = (((unsigned int) data_byte_2) << 7) | (data_byte_1 & 0x7F);
-	MIDI_CC_new( outputMidiBus * 16 + outputMidiChan, MIDI_BENDER, benderVal, 0 );
+	if ( G_midi_map_controller_mode == ON ){
+		unsigned int benderVal = (((unsigned int) data_byte_2) << 7) | (data_byte_1 & 0x7F);
+		MIDI_CC_new( outputMidiBus * 16 + outputMidiChan, MIDI_BENDER, benderVal, 0 );
+	}
 
 	// Play MIDI queue elements which are due just before current timestamp, including the above..
 	play_MIDI_queue( G_MIDI_timestamp );
@@ -992,7 +996,9 @@ void midi_pressure_execute( 	unsigned char inputMidiBus,				// Range = [0, 1].
 	// Play the pressure value straight through
 	// Note that the pressure value may have been re-channelled in the meantime.
 
-	MIDI_CC_new( outputMidiBus * 16 + outputMidiChan, MIDI_PRESSURE, controller_value, 0 );
+	if ( G_midi_map_controller_mode == ON ){
+		MIDI_CC_new( outputMidiBus * 16 + outputMidiChan, MIDI_PRESSURE, controller_value, 0 );
+	}
 
 	// Play MIDI queue elements which are due just before current timestamp, including the above..
 	play_MIDI_queue( G_MIDI_timestamp );

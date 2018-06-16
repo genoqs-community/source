@@ -89,6 +89,7 @@ void MIDI_send( 	unsigned char type,
 	// Assume target_UART to be 0, may change as we go.
 	unsigned char target_UART = 0;
 
+	//diag_printf("t:%d\n", type);
 	// UART selection depends on the type of MIDI message. Note does differently
 	// ..than MIDI CLOCK for example.	
 	switch( type ){
@@ -146,8 +147,9 @@ void MIDI_send( 	unsigned char type,
 	
 			case 0:
 				// MIDI OUT 1 and 2 message
-				i = cyg_mbox_tryput( UART0_OUT_mbox_handle, &G_out_MIDI[ G_out_MIDI_ndx ] );
+				// MIDI B has priority
 				j = cyg_mbox_tryput( UART1_OUT_mbox_handle, &G_out_MIDI[ G_out_MIDI_ndx ] );
+				i = cyg_mbox_tryput( UART0_OUT_mbox_handle, &G_out_MIDI[ G_out_MIDI_ndx ] );
 				break;				
 
 			case 1:

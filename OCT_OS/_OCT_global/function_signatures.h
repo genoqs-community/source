@@ -56,9 +56,13 @@ extern	void 			copy_ctrl_track_to_step( Pagestruct* page, Trackstruct* track, St
 extern  void 			ctrl_event_set_target_page( Pagestruct* target_page );
 extern	void 			quick_assign_control_track ( Pagestruct* target_page, unsigned char trackIdx );
 extern	void 			make_control_track ( Pagestruct* target_page, unsigned char trackIdx );
-extern	void 			align_measure_locators();
-extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
 #endif
+
+extern unsigned int selected_page_cluster_right_neighbor( Pagestruct* temp_page, unsigned char pageNdx );
+extern void apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track );
+extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
+extern	void 			align_measure_locators();
+
 extern 	void 			sequencer_RESET( unsigned char force_stop );
 
 extern unsigned int 	computeKeyNdx(			unsigned char reg,

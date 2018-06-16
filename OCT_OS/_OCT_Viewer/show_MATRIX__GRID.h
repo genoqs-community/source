@@ -29,12 +29,10 @@
 
 			// GRID_CURSOR shown by blinking 
 			GRID_write_dot (GRID_CURSOR, MIR_BLINK);
-			#ifdef FEATURE_ENABLE_SONG_UPE
 			// blink page cluster selection
 			if ( GRID_p_selection_cluster == ON ) {
 				page_cluster_selection( GRID_CURSOR );
 			}
-			#endif
 			if ( Page_repository[GRID_CURSOR].page_clear == ON ){	
 				// If on empty page then light position orange
 				GRID_write_dot (GRID_CURSOR, MIR_GREEN);
@@ -163,6 +161,7 @@
 		MIR_write_dot( LED_MIX_MASTER, MIR_GREEN );
 		MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
 	}
+	#endif
 
 	// Show the current grid set track if a note is set
 	if ( GRID_p_set_note_offsets[current_GRID_set] != 255 )
@@ -192,7 +191,7 @@
 	{
 		MIR_write_pitch_H( GRID_p_set_note_offsets[current_GRID_set], 9 );
 	}
-	#endif
+
 
 
 

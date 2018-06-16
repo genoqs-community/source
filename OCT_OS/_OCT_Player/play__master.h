@@ -175,8 +175,8 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 	// Counter variable
 	unsigned int i=0;
-	#ifdef FEATURE_ENABLE_SONG_UPE
 	unsigned int j=0;
+	#ifdef FEATURE_ENABLE_SONG_UPE
 	unsigned int row=0;
 	Trackstruct* target_track = NULL;
 	unsigned int measure = (G_measure_indicator_value * 5) + G_measure_indicator_part;
@@ -210,6 +210,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		if (G_delay < 16) return;
 	}
 	#endif
+
 	// Play MIDI queue elements which are due at current timestamp
 	play_MIDI_queue( G_MIDI_timestamp );
 
@@ -235,15 +236,9 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 		// Advance the global locator - normal speed master
 		advance_global_locator();
-		#ifdef FEATURE_ENABLE_SONG_UPE
+
 		// on the measure
 		if ( G_global_locator == 1 ) {
-
-			// drum machine scene change
-			if ( GRID_p_set_note_presel != 255) {
-				MIDI_send(	MIDI_NOTE, GRID_p_set_midi_ch, GRID_p_set_note_offsets[GRID_p_set_note_presel], 127 );
-				GRID_p_set_note_presel = 255;
-			}
 
 			for ( i=0; i < GRID_NROF_BANKS; i++ ){
 
@@ -252,27 +247,44 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 					// on the measure page mute
 					if ( G_on_the_measure_trackMutepattern != 0 && selected_page_cluster_right_neighbor( GRID_p_selection[i], G_on_the_measure_trackMutepattern_pageNdx ) ) {
+
 						for ( j=0; j < MATRIX_NROF_ROWS; j++ ){
+
 							if ( G_on_the_measure_track[j] != NULL ){
+
 								apply_page_cluster_track_mute_toggle( GRID_p_selection[i], G_on_the_measure_track[j] );
 							}
 						}
 					}
+				}
 
-					for ( row=0; row < MATRIX_NROF_ROWS; row ++ ){
-						target_track = GRID_p_selection[i]->Track[row];
+			#ifdef FEATURE_ENABLE_SONG_UPE
 
-						// control track
-						if ( Track_get_MISC(target_track, CONTROL_BIT ) ) {
-							// skip because we call this on the bank change
-							if ( target_track->ctrl_offset != 0 ){
-								send_track_program_change( target_track, GRID_p_selection[i] );
-							}
-							target_track->ctrl_offset++;
+
+				for ( row=0; row < MATRIX_NROF_ROWS; row ++ ){
+					target_track = GRID_p_selection[i]->Track[row];
+
+					// control track
+					if ( Track_get_MISC(target_track, CONTROL_BIT ) ) {
+						// skip because we call this on the bank change
+						if ( target_track->ctrl_offset != 0 ){
+							send_track_program_change( target_track, GRID_p_selection[i] );
 						}
+						target_track->ctrl_offset++;
 					}
 				}
+			#endif
 			}
+
+			#ifdef FEATURE_ENABLE_SONG_UPE
+			if (!G_align_bit){
+				// Advance measure locator for pause measure scrolling
+				if ( G_measure_indicator_part++ != 255 && G_measure_indicator_part % 5 == 0 ) {
+					G_measure_indicator_part = 0;
+					G_measure_indicator_value++;
+				}
+			}
+			#endif
 
 			// reset the on the measure mute pattern
 			if ( G_on_the_measure_trackMutepattern != 0 ){
@@ -283,15 +295,13 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 				G_on_the_measure_trackMutepattern_pageNdx = 0;
 			}
 
-			if (!G_align_bit){
-				// Advance measure locator for pause measure scrolling
-				if ( G_measure_indicator_part++ != 255 && G_measure_indicator_part % 5 == 0 ) {
-					G_measure_indicator_part = 0;
-					G_measure_indicator_value++;
-				}
+			// drum machine scene change
+			if ( GRID_p_set_note_presel != 255) {
+				MIDI_send(	MIDI_NOTE, GRID_p_set_midi_ch, GRID_p_set_note_offsets[(int) GRID_p_set_note_presel], 127 );
+				GRID_p_set_note_presel = 255;
 			}
 		}
-		#endif
+
 		// PAGE PRESELECTION
 		// Preselect pages as appropriate in every bank ..supports variable page lengths.
 		for( i=0; i < GRID_NROF_BANKS; i++ ){

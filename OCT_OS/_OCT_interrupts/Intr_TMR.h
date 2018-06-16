@@ -113,7 +113,7 @@ unsigned int kickSequencerThread( void )
 	// kick the sequencer twice, and we have twice the amount of timer ticks available, which averages to
 	// G_TIMER_REFILL * 2. The timerDoneTicks value however more closely follows any tempo changes.
 
-	if ( G_clock_source == EXT ) {
+	if ( G_clock_source == EXT) {
 		timerStartTicks = 0xFFFFFFFF;
 		timerAvailTicks = timerDoneTicks;
 		kickCt = 2;

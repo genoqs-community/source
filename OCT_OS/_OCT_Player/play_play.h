@@ -930,6 +930,10 @@ unsigned int play_row_MCC( 	Pagestruct* target_page,
 		if ( value == MIDICC_NONE ){
 			return MIDICC_NONE;
 		}
+		// We are currently recording CC MIDI IN so don't play the CC back out at the same time
+		else if ( G_track_rec_bit == ON && G_midi_map_controller_mode == OFF ){
+			return MIDICC_NONE;
+		}
 
 
 		// Depending on the column that is played - play now or enqueue for later
@@ -959,6 +963,7 @@ unsigned int play_row_MCC( 	Pagestruct* target_page,
 						break;
 
 					default:
+
 // d_iag_printf( "CURRENT: ctr:%d ch:%d value:%d\n", controller, midiCH, value );
 						MIDI_send(	MIDI_CC,
 									midiCH,

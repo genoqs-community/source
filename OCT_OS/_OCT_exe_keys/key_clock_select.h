@@ -17,29 +17,30 @@ void key_clock_select( Pagestruct* target_page, unsigned short keyNdx ){
 	
 			// Double click code
 			// ...
-			// Toggle the clock source between INT and EXT
+
+			// Toggle the clock source
 			switch ( G_clock_source )	{
 
-				case OFF:
 				case INT:
-					// Stop the sequencer properly, but fool it into not sending out ALL NOTES OFF
-					#ifdef FEATURE_ENABLE_SONG_UPE
-					prev_G_stop_bit = (G_run_bit == ON);
-					#endif
-					G_run_bit = ON;
+					G_run_bit = OFF;
 					sequencer_command_STOP();
-					// Switch the clock source
-					G_clock_source = EXT;
-					// Make sure the CLOCK LED is lit
-					G_master_blinker = ON;
-					break;
-	
-				case EXT:
-					// Toggle MIDICLOCK_PASSTHROUGH
-					MIDICLOCK_PASSTHROUGH ^= 1;
-
-					// Switch the clock source
+					MIDICLOCK_PASSTHROUGH = 0;
 					G_clock_source = OFF;
+					break;
+
+				case OFF:
+					G_run_bit = OFF;
+					G_clock_source = INT;
+					break;
+
+				case EXT:
+					G_clock_source = OFF;
+					G_run_bit = OFF;
+					sequencer_command_STOP();
+					if ( MIDICLOCK_PASSTHROUGH == 0 ){
+						// Switch the clock source
+						G_clock_source = INT;
+					}
 					break;
 
 			} // switch (G_clock_source)
@@ -71,20 +72,38 @@ void key_clock_select( Pagestruct* target_page, unsigned short keyNdx ){
 			// Single click code
 			// ...
 			
-			// Toggle the clock source
+			// Toggle the clock source between INT and EXT
 			switch ( G_clock_source )	{
 
-				case INT:
-					G_clock_source = OFF;
-					break;
-			
 				case OFF:
-					G_clock_source = INT;
+					G_clock_source = EXT;
+					MIDICLOCK_PASSTHROUGH = 0;
+					break;
+				case INT:
+					// Stop the sequencer properly, but fool it into not sending out ALL NOTES OFF
+					#ifdef FEATURE_ENABLE_SONG_UPE
+					prev_G_stop_bit = (G_run_bit == ON);
+					#endif
+					G_run_bit = OFF;
+					sequencer_command_STOP();
+					// Switch the clock source
+					G_clock_source = EXT;
+					MIDICLOCK_PASSTHROUGH = 1;
+					// Make sure the CLOCK LED is lit
+					G_master_blinker = ON;
 					break;
 
 				case EXT:
-					// Toggle MIDICLOCK_PASSTHROUGH
-					MIDICLOCK_PASSTHROUGH ^= 1;
+
+					G_run_bit = OFF;
+					sequencer_command_STOP();
+					if ( !MIDICLOCK_PASSTHROUGH ){
+						G_clock_source = OFF;
+						break;
+					}
+
+					// Switch the clock source
+					G_clock_source = INT;
 					break;
 					
 			} // switch (G_clock_source)

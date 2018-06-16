@@ -213,7 +213,8 @@ typedef struct {
 	card8 		G_master_tempo; 	//120 default
 	card8		G_clock_source;		// Can be any of OFF, INT(ernal), EXT(ernal)
 	card32 		G_TIMER_REFILL;
-	card8 		G_zoom_level;
+
+	card8 		G_zoom_level; 		// Overridden as G_midi_map_controller_mode
 	card8		GRID_scene;			// Currently selected grid scene for play or storage
 	card8		GRID_switch_mode;
 	card16 		GRID_bank_triggermode[GRID_NROF_BANKS];

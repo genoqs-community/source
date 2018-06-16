@@ -59,6 +59,8 @@ unsigned int 		G_scan_cycle = 0;
 unsigned char 	 	G_master_tempo 		= DEF_TEMPO; 	//120 default
 unsigned char		G_clock_source		= OFF;	// Can be any of OFF, INT(ernal), EXT(ernal)
 
+unsigned char G_midi_map_controller_mode = OFF;
+
 // G_master_blinker is used to control LED blinking activities
 unsigned char 		G_master_blinker		= 0;
 unsigned char 		G_master_blinker2		= 0; // Used for the one current ZOOM LED showing TEMPO
@@ -220,17 +222,19 @@ cyg_handle_t	UART1_IN_mbox_handle;
 // This indicates globally whether Octopus is running or not, or in Step record mode
 unsigned char G_run_bit 		= OFF;
 unsigned char G_pause_bit 		= OFF;
-#ifdef FEATURE_ENABLE_SONG_UPE
-unsigned char G_scroll_bit 		= OFF;
-unsigned char prev_G_pause_bit  = OFF;
-unsigned char prev_G_stop_bit 	= OFF;
-unsigned char G_stop_bit		= OFF;
-unsigned char force_stop_bit	= OFF;
-unsigned char G_align_bit		= OFF;
 unsigned char G_track_page_chain_mod_bit = OFF;
 unsigned short G_on_the_measure_trackMutepattern = 0;
 unsigned char G_on_the_measure_trackMutepattern_pageNdx = 0;
 Trackstruct* G_on_the_measure_track[MATRIX_NROF_ROWS];
+
+unsigned char G_stop_bit		= OFF;
+
+#ifdef FEATURE_ENABLE_SONG_UPE
+unsigned char G_scroll_bit 		= OFF;
+unsigned char prev_G_pause_bit  = OFF;
+unsigned char prev_G_stop_bit 	= OFF;
+unsigned char force_stop_bit	= OFF;
+unsigned char G_align_bit		= OFF;
 #endif
 // This indicates the global track record mode.
 unsigned char G_track_rec_bit = OFF;
@@ -393,7 +397,6 @@ unsigned char G_midi_bender_IN_UART[2][3] 		= { {0xff, 0xff, 0xff}, {0xff, 0xff,
 unsigned char G_midi_pressure_ndx				= 0;
 unsigned char G_midi_pressure_IN_UART[2][3] 	= { {0xff, 0xff, 0xff}, {0xff, 0xff, 0xff} };
 
-
 // MIDI IN STUFF - used to buffer in data so we can print it.
 // Printing it directly will not work, it gets scrambled.
 unsigned char G_midi_in[3];
@@ -534,16 +537,16 @@ Pagestruct* G_pgmch_pending_page = NULL;
 unsigned char G_dice_run_bit 		= OFF;
 #endif
 
-#ifdef FEATURE_ENABLE_SONG_UPE
+unsigned char 	G_save_song_pos = OFF;
+unsigned int	G_measure_locator = 0;
 // Allow MCH change w/o loosing track record status
 unsigned short G_prev_rec_page_pattern = 0;
 unsigned short G_prev_rec_page = 0;
 
-unsigned char 	G_save_song_pos = OFF;
+#ifdef FEATURE_ENABLE_SONG_UPE
 unsigned char 	G_repeats_delay = ON;
 unsigned char 	G_repeats_interval_idx = 0;
 unsigned int	Repeats_Intervals[] = { 0xFFFFFFFF, 64, 32, 24, 16, 8, 4 };
-unsigned int	G_measure_locator = 0;
 unsigned char	G_measure_indicator_value = 0; // 5 Measure Nibbles
 unsigned char	G_measure_indicator_part = 0; // 1 Measure - 1/5 Nibble
 unsigned char	G_silent = OFF;

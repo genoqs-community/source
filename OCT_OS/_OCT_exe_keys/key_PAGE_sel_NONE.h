@@ -426,7 +426,6 @@
 			// Start with the pressed track.
 			current_track = target_page->Track[ keyNdx-187 ];
 
-			#ifdef FEATURE_ENABLE_SONG_UPE
 			if ( G_track_page_chain_mod_bit == ON ){
 				apply_page_cluster_track_mute_toggle( target_page, current_track );
 			}
@@ -437,39 +436,35 @@
 			}
 			else
 			{
-				apply_page_track_mute_toggle( target_page, current_track, &target_page->trackMutepattern );
-				target_page->trackMutepatternStored = target_page->trackMutepattern;			
+
+				target_page->trackMutepatternStored = target_page->trackMutepattern;
+
+				// Depending on the way we choose the track base..
+				switch( target_page->CHAINS_PLAY_HEAD ){
+
+					case TRUE:
+						// Act as toggle on the full chain
+						// How long is the chain?
+						temp = cardinality_of_chain( current_track );
+
+						// Loop through the chain of the selected track and mute all chain tracks
+						for ( i=0; i < temp; i++ ){
+
+							target_page->trackMutepattern ^= ( 1 << row_of_track( target_page, current_track ));
+							current_track = current_track->chain_data[NEXT];
+						}
+						break;
+
+					// Act only on the individual track
+					case FALSE:
+						target_page->trackMutepattern ^=
+							( 1 << row_of_track( target_page, current_track ));
+						break;
+				}
+
+				// Update the stored variable
+				target_page->trackMutepatternStored = target_page->trackMutepattern;
 			}
-			#else
-			apply_page_track_mute_toggle( target_page, current_track, &target_page->trackMutepattern );
-			target_page->trackMutepatternStored = target_page->trackMutepattern;
-			
-			// Depending on the way we choose the track base..
-			switch( target_page->CHAINS_PLAY_HEAD ){
-
-				case TRUE:
-					// Act as toggle on the full chain
-					// How long is the chain?
-					temp = cardinality_of_chain( current_track );
-
-					// Loop through the chain of the selected track and mute all chain tracks
-					for ( i=0; i < temp; i++ ){
-
-						target_page->trackMutepattern ^= ( 1 << row_of_track( target_page, current_track ));
-						current_track = current_track->chain_data[NEXT];
-					}
-					break;
-
-				// Act only on the individual track
-				case FALSE:
-					target_page->trackMutepattern ^=
-						( 1 << row_of_track( target_page, current_track ));
-					break;
-			}
-			
-			// Update the stored variable
-			target_page->trackMutepatternStored = target_page->trackMutepattern;
-			#endif
 			
 
 			// D O U B L E - C L I C K
@@ -549,7 +544,6 @@
 		target_page->SCL_align ^= ON;
 	}
 
-	#ifdef FEATURE_ENABLE_SONG_UPE
 	if ( keyNdx == KEY_SCALE_MOD )
 	{
 		if ( G_track_page_chain_mod_bit == OFF ){
@@ -562,7 +556,6 @@
 			G_track_page_chain_mod_bit = OFF;
 		}
 	}
-	#endif
 
 	// In page preview mode
 	// In preview mode enter the step velocity, like in MAP preview mode

@@ -22,7 +22,6 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-#ifdef FEATURE_ENABLE_SONG_UPE
 // Indicates a page cluster selection by blinking
 void page_cluster_selection( unsigned char grid_cursor ){
 
@@ -48,7 +47,6 @@ void page_cluster_selection( unsigned char grid_cursor ){
 		next_ndx = this_ndx + 10;
 	}
 }
-#endif
 
 // Utility function to the one below
 void fill_length_bits( unsigned char index, unsigned char row, unsigned char col, unsigned char length ){

@@ -40,6 +40,7 @@
 			quick_assign_control_track(&Page_repository[pressed], ctrl_event_assign_target_page(&Page_repository[pressed]));
 		}
 	}
+	#endif
 
 
 	// GRID PAGE CLUSTER SELECTIONS
@@ -85,6 +86,7 @@
 
 		if ( PREV_GRID_CURSOR + 10 == GRID_CURSOR && is_pressed_key(keyNdx - 11) ) {
 
+			#ifdef FEATURE_ENABLE_SONG_UPE
 			// --------------------------------------------------------------------------------
 			// Control Track Reference Page Selection
 			//
@@ -93,6 +95,7 @@
 				MIX_TRACK->attr_MCH = 9 - (PREV_GRID_CURSOR % 10);
 			}
 			// --------------------------------------------------------------------------------
+			#endif
 
 			previous_page = &Page_repository[ PREV_GRID_CURSOR ];
 
@@ -131,7 +134,6 @@
 		PREV_GRID_CURSOR = GRID_CURSOR;
 	}
 	// -- END GRID PAGE CLUSTER SELECTIONS
-	#endif
 
 
 
@@ -209,11 +211,16 @@
 			MODE_OBJECT_SELECTION = INTERACTIVE;
 		}
 
-		// Switch to ABLETON mode
-		if ( keyNdx == KEY_ZOOM_MAP ){
+//		// Switch to ABLETON mode
+//		if ( keyNdx == KEY_ZOOM_MAP ){
+//
+//			// G_zoom_level = zoomABLETON;
+//			// MODE_OBJECT_SELECTION = INTERACTIVE;
+//		}
 
-			// G_zoom_level = zoomABLETON;
-			// MODE_OBJECT_SELECTION = INTERACTIVE;
+		// MIDI CC routing and pass through enabled
+		if ( keyNdx == KEY_ZOOM_MAP ){
+			G_midi_map_controller_mode = (G_midi_map_controller_mode == OFF) ? ON : OFF;
 		}
 
 
@@ -517,7 +524,6 @@
 		if (	(keyNdx >= 187)
 			&& 	(keyNdx <= 195)
 			){
-			#ifdef FEATURE_ENABLE_SONG_UPE
 			// page cluster selection -- disable everything else
 			if ( GRID_p_selection_cluster == ON ) {
 
@@ -543,7 +549,6 @@
 
 				break; // disable all other MUT keys
 			}
-			#endif
 
 // Old-school - toggling the page mutepatterns
 //			// Make sure there is a page playing in the bank pressed
@@ -1398,12 +1403,6 @@
 
 		switch( keyNdx ){
 			#ifdef FEATURE_ENABLE_SONG_UPE
-			case KEY_STOP:
-				G_stop_bit = ON;
-				unsigned char pause = G_pause_bit;
-				sequencer_command_STOP();
-				G_pause_bit = pause;
-				break;
 
 			case KEY_PAUSE:
 				if ( G_pause_bit == OFF ){
@@ -1416,7 +1415,10 @@
 				break;
 			#else
 			case KEY_STOP:
+				G_stop_bit = ON;
+				unsigned char pause = G_pause_bit;
 				sequencer_command_STOP();
+				G_pause_bit = pause;
 				break;
 
 			case KEY_PAUSE:
@@ -1427,6 +1429,17 @@
 			case KEY_PLAY2:
 			case KEY_PLAY4:
 				sequencer_command_PLAY();
+				break;
+		}
+	}
+	else
+	{
+		switch( keyNdx ){
+			case KEY_STOP:
+				G_stop_bit = ON;
+				unsigned char pause = G_pause_bit;
+				sequencer_command_STOP();
+				G_pause_bit = pause;
 				break;
 		}
 	}

@@ -263,19 +263,6 @@ void init_interrupts(){
 	// d_iag_printf("start(): interrupt UART0-IN unmasked\n");
 
 
-	// TIMER INTERRUPT - Timer1 with prio 1
-	cyg_interrupt_unmask(	CYGNUM_HAL_INTERRUPT_TIMER1);
-  	cyg_interrupt_create(	CYGNUM_HAL_INTERRUPT_TIMER1,
-		       				1,
-		       				0,
-		       				Timer1_ISR,
-		       				Timer1_DSR,
-		       				&handle_timer1_isr,
-		       				&isr);
-  	cyg_interrupt_attach(	 handle_timer1_isr );
-  	// d_iag_printf("start(): interrupt timer1 created\n");
-
-
 	// ROTARY INTERRUPT - rotary on Ext1 with prio 20
 	cyg_interrupt_unmask(	CYGNUM_HAL_INTERRUPT_EXT1);
   	cyg_interrupt_create(	CYGNUM_HAL_INTERRUPT_EXT1,
@@ -287,6 +274,18 @@ void init_interrupts(){
 		       				&isr3);
   	cyg_interrupt_attach(	 handle_ext1_isr );
   	// d_iag_printf("start(): interrupt ext1 created\n");
+
+  	// MIDI IN 2 has priority over MIDI IN 1
+ 	// UART1 IN INTERRUPT - MIDI IN 2
+	cyg_interrupt_unmask(	CYGNUM_HAL_INTERRUPT_UART1_RX);
+  	cyg_interrupt_create(	CYGNUM_HAL_INTERRUPT_UART1_RX,
+		       				50,
+							20,
+		       				UART1_IN_ISR,
+		       				UART1_IN_DSR,
+		       				&handle_UART1_IN_isr,
+		       				&isr6);
+  	cyg_interrupt_attach(	 handle_UART1_IN_isr);
 
 
  	// UART0 IN INTERRUPT - MIDI IN 1
@@ -302,16 +301,18 @@ void init_interrupts(){
   	// d_iag_printf("start(): interrupt ext2 created\n");
 
 
- 	// UART1 IN INTERRUPT - MIDI IN 2
-	cyg_interrupt_unmask(	CYGNUM_HAL_INTERRUPT_UART1_RX);
-  	cyg_interrupt_create(	CYGNUM_HAL_INTERRUPT_UART1_RX,
-		       				50,
-							20,
-		       				UART1_IN_ISR,
-		       				UART1_IN_DSR,
-		       				&handle_UART1_IN_isr,
-		       				&isr6);
-  	cyg_interrupt_attach(	 handle_UART1_IN_isr);
+  	// MIDI has priority over sequencer tasks so that slave time pulse is before notes
+	// TIMER INTERRUPT - Timer1 with prio 1
+	cyg_interrupt_unmask(	CYGNUM_HAL_INTERRUPT_TIMER1);
+  	cyg_interrupt_create(	CYGNUM_HAL_INTERRUPT_TIMER1,
+		       				1,
+		       				0,
+		       				Timer1_ISR,
+		       				Timer1_DSR,
+		       				&handle_timer1_isr,
+		       				&isr);
+  	cyg_interrupt_attach(	 handle_timer1_isr );
+  	// d_iag_printf("start(): interrupt timer1 created\n");
 
 
 	// Set the Timer refill for default tempo;
