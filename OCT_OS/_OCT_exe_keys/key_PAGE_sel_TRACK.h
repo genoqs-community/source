@@ -50,7 +50,7 @@
 		tap_step( target_page );
 
 	} // TAP KEY
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	#ifdef FEATURE_ENABLE_KB_TRANSPOSE
 	// Toggle transpose abs pitch mode
 	if (	( keyNdx == KEY_SCALE_SEL )
 		&&	( target_page->trackSelection != 0 )	){

@@ -32,15 +32,14 @@
 	// OCTAVE CIRCLE
 	//
 // There is no octave circle in NEMO
-//	# include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_exe_keys/key_OCT_CIRCLE_xpose_PAGE.h"
+//	# include HEADER(_OCT_exe_keys/key_OCT_CIRCLE_xpose_PAGE.h)
 
 
 
 	// SELECTORS
 	if ((keyNdx >0) && (keyNdx <= 10)) {
-
 		// Toggle the playmodes for the GRID bank.
-		GRID_bank_playmodes ^= 1 << (keyNdx-1);
+		GRID_bank_playmodes ^= 1 << (shiftPageRow + keyNdx - 1);
 	}
 
 
@@ -79,7 +78,7 @@
 			default:
 
 				// Compute the page index into the page repository first
-				i = row_of(keyNdx) + (10 * column_of (keyNdx));
+				i = row_of(shiftPageRow + keyNdx) + (10 * column_of (keyNdx));
 
 				// Decide what to do
 				switch( i ){
@@ -142,7 +141,7 @@
 
 			case KEY_CLEAR:
 				// Select all tracks in cursor page
-				Page_repository[GRID_CURSOR].trackSelection = 0x00F;
+				Page_repository[GRID_CURSOR].trackSelection = NEMO_MAX_WINDOW;
 
 				// Clear selected tracks in page
 				Page_CLEAR_selected_tracks( &Page_repository[GRID_CURSOR] );
@@ -185,7 +184,7 @@
 			case KEY_RMX:
 
 				// Select all tracks in cursor page
-				Page_repository[GRID_CURSOR].trackSelection = 0x00F;
+				Page_repository[GRID_CURSOR].trackSelection = NEMO_MAX_WINDOW;
 
 				switch( target_page->page_clear ){
 
@@ -219,7 +218,7 @@
 				}
 
 				// Select all tracks in cursor page
-				Page_repository[GRID_CURSOR].trackSelection = 0x00F;
+				Page_repository[GRID_CURSOR].trackSelection = NEMO_MAX_WINDOW;
 
 				// Flatten all selected tracks in page - step status
 				Page_FLT_selected_tracks( &Page_repository[GRID_CURSOR] );

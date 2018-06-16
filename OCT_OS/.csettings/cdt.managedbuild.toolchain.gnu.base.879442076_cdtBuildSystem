@@ -21,6 +21,9 @@
 							<listOptionValue builtIn="false" value="/home/genoqs/Desktop/software/ecos/gnutools/arm-elf/lib"/>
 							<listOptionValue builtIn="false" value="/home/genoqs/Desktop/software/ecos/gnutools/arm-elf/lib/gcc-lib/arm-elf/3.2.1/include"/>
 						</option>
+						<option id="gnu.c.compiler.option.preprocessor.def.symbols.481889143" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+							<listOptionValue builtIn="false" value="FEATURE_ENABLE_DICE=1"/>
+						</option>
 						<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1722452107" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 					</tool>
 					<tool id="cdt.managedbuild.tool.gnu.c.linker.base.707738280" name="GCC C Linker" superClass="cdt.managedbuild.tool.gnu.c.linker.base"/>

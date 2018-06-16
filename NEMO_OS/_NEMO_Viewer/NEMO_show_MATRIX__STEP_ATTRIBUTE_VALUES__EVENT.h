@@ -52,9 +52,8 @@
 
 				// The data is in Octopus format, so transform to NEMO:
 				switch( temp ){
-
-					case 0: 	temp = 1;	break;	// VEL
-					case 1: 	temp = 0;	break;	// PIT
+					case 0: 	temp = 0;	break;	// PIT
+					case 1: 	temp = 1;	break;	// VEL
 					case 2: 	temp = 2;	break;	// LEN
 					case 3: 	temp = 3;	break;	// STA
 					case 4: 	temp = 11;	break;	// POS

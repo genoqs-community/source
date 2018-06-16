@@ -30,6 +30,10 @@ extern unsigned char row_of_track( 				Pagestruct* target_page,
 extern unsigned int is_pressed_steprange();
 extern void show_preview_stepLEN( unsigned int index, unsigned char row, unsigned char col, unsigned char length );
 
+extern unsigned char page_get_window_shift();
+extern unsigned char track_get_window_shift( Pagestruct* target_page );
+
+extern bool page_is_chain_follow( Pagestruct* target_page );
 //
 // SHOW - Contains the workhorse code for MIR refill. Puts the content into the target display element (ELE)
 //
@@ -47,12 +51,17 @@ void show (unsigned int target, unsigned int content) {
 	short track_togglepattern = 0;
 	short track_eventpattern = 0;
 	short track_skippattern = 0;
-
+	#ifdef FEATURE_ENABLE_DICE
+	Trackstruct* target_dice = Dice_get();
+	#endif
 	Pagestruct* temp_page = NULL;
 	Trackstruct* current_track = NULL;
 
 	Pagestruct* target_page = &Page_repository[GRID_CURSOR];
 
+	// x2 Wilson - Track row window shift
+	unsigned char shiftTrackRow	 = track_get_window_shift(target_page);
+	unsigned char shiftPageRow	 = page_get_window_shift();
 	switch (target) {
 
 		//
@@ -76,6 +85,7 @@ void show (unsigned int target, unsigned int content) {
 					break;
 				case BLINK:
 					MIR_write_dot (LED_MIX_MASTER, MIR_BLINK);
+					break;
 				case OFF:
 					break;
 			}
@@ -95,6 +105,7 @@ void show (unsigned int target, unsigned int content) {
 					break;
 				case BLINK:
 					MIR_write_dot (LED_MIX_INDICATOR, MIR_BLINK);
+					break;
 				case OFF:
 					break;
 			}
@@ -107,8 +118,6 @@ void show (unsigned int target, unsigned int content) {
 
 			// Depending on the zoom mode:
 			switch( G_zoom_level ){
-
-				case zoomPAGE:
 				case zoomMIXMAP:
 
 					i = target_page->mixTarget;
@@ -131,6 +140,8 @@ void show (unsigned int target, unsigned int content) {
 
 				case zoomGRIDTRACK:
 				case zoomGRID:
+				#ifdef FEATURE_ENABLE_DICE
+				case zoomDICE:
 					i = GRID_assistant_page->mixTarget;
 
 					if ( content == OPTIONS ) {
@@ -142,7 +153,9 @@ void show (unsigned int target, unsigned int content) {
 						MIR_write_dot( LED_MIXTGT_USR4, MIR_GREEN );
 						MIR_write_dot( LED_MIXTGT_USR5, MIR_GREEN );
 					}
+				#endif
 					break;
+
 			}
 
 
@@ -193,6 +206,7 @@ void show (unsigned int target, unsigned int content) {
 					break;
 				case BLINK:
 					MIR_write_dot (LED_EDIT_INDICATOR, MIR_BLINK);
+					break;
 				case OFF:
 					break;
 			}
@@ -257,6 +271,11 @@ void show (unsigned int target, unsigned int content) {
 		// M A T R I X
 		//
 		case ELE_MATRIX:
+			switch( G_zoom_level ){
+				case zoomSCALE:
+					target_page = GRID_assistant_page;
+					break;
+			}
 			#include "../_NEMO_Viewer/NEMO_show_MATRIX.h"
 			break;
 

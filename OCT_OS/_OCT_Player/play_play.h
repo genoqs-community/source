@@ -247,29 +247,19 @@ unsigned int scaleToTrackClock( 	unsigned int start_offset,
 	unsigned char clock_multiplier 	= 0;
 	unsigned char clock_divisor		= 0;
 
-	unsigned char attr_TEMPOMUL = target_track->attr_TEMPOMUL;
-	unsigned char attr_TEMPOMUL_SKIP = target_track->attr_TEMPOMUL_SKIP;
-
-	#ifdef FEATURE_ENABLE_DICE
-	unsigned char row = row_of_track( target_page, target_track );
-	DiceOffsetClock dice_clock = dice_apply_clock_offset( target_page, row );
-	attr_TEMPOMUL = dice_clock.attr_TEMPOMUL;
-	attr_TEMPOMUL_SKIP = dice_clock.attr_TEMPOMUL_SKIP;
-	#endif
-
 	// EXTRACT THE TRACK CLOCK DATA
 	// Check the clock multiplier / divisor and extract values
-	switch( attr_TEMPOMUL_SKIP & 0x0F ){
+	switch( target_track->attr_TEMPOMUL_SKIP & 0x0F ){
 
 		// No divisor, only a multiplier value
 		case 0:
 			// Fill in the multiplier from the track
-			clock_multiplier = attr_TEMPOMUL;
+			clock_multiplier = target_track->attr_TEMPOMUL;
 			break;
 
 		default:
 			// Fill in with the real divisor value
-			clock_divisor = (attr_TEMPOMUL_SKIP & 0x0F) + 1;
+			clock_divisor = (target_track->attr_TEMPOMUL_SKIP & 0x0F) + 1;
 			break;
 	}
 
@@ -460,20 +450,16 @@ void play_row_ON( 	Pagestruct* 	target_page,
 	}
 
 	#ifdef FEATURE_ENABLE_DICE
-	DiceOffsetClock dice_clock = dice_apply_clock_offset( target_page, phys_row );
-	attr_TEMPOMUL = dice_clock.attr_TEMPOMUL;
-	attr_TEMPOMUL_SKIP = dice_clock.attr_TEMPOMUL_SKIP;
-
 	#ifdef NEMO
-	dice_pitch_offset = dice_attr_flow_offset( target_page, NEMO_ATTR_PITCH, locator );
-	dice_velocity_offset 	= dice_attr_flow_offset( target_page, NEMO_ATTR_VELOCITY, locator );
-	dice_length_offset		= dice_attr_flow_offset( target_page, NEMO_ATTR_LENGTH, locator );
-	dice_start_offset	 	= dice_attr_flow_offset( target_page, NEMO_ATTR_START, locator );
+	dice_pitch_offset = dice_attr_flow_offset( target_page, NEMO_ATTR_PITCH, phys_row );
+	dice_velocity_offset 	= dice_attr_flow_offset( target_page, NEMO_ATTR_VELOCITY, phys_row );
+	dice_length_offset		= dice_attr_flow_offset( target_page, NEMO_ATTR_LENGTH, phys_row );
+	dice_start_offset	 	= dice_attr_flow_offset( target_page, NEMO_ATTR_START, phys_row );
 	#else
-	dice_pitch_offset = dice_attr_flow_offset( target_page, ATTR_PITCH, locator );
-	dice_velocity_offset 	= dice_attr_flow_offset( target_page, ATTR_VELOCITY, locator );
-	dice_length_offset		= dice_attr_flow_offset( target_page, ATTR_LENGTH, locator );
-	dice_start_offset	 	= dice_attr_flow_offset( target_page, ATTR_START, locator );
+	dice_pitch_offset = dice_attr_flow_offset( target_page, ATTR_PITCH, phys_row );
+	dice_velocity_offset 	= dice_attr_flow_offset( target_page, ATTR_VELOCITY, phys_row );
+	dice_length_offset		= dice_attr_flow_offset( target_page, ATTR_LENGTH, phys_row );
+	dice_start_offset	 	= dice_attr_flow_offset( target_page, ATTR_START, phys_row );
 	#endif
 	#endif
 
@@ -866,7 +852,7 @@ unsigned int play_row_MCC( 	Pagestruct* target_page,
 
 	signed char dice_midicc_offset = 0;
 	#ifdef FEATURE_ENABLE_DICE
-	dice_midicc_offset = dice_attr_flow_offset( target_page, ATTR_MIDICC, locator );
+	dice_midicc_offset = dice_attr_flow_offset( target_page, ATTR_MIDICC, phys_row );
 	#endif
 	// MCC data - if the bit on the current track is set play it
 	if ( ( MCCpattern & (1 << phys_row) ) ){
@@ -1253,7 +1239,36 @@ Trackstruct* TTC_trigger_track( 	Pagestruct* target_page,
 
 	// Adjust the track tempomul if it is required
 	if ( G_TTC_abs_value == 1 ){
+		#ifdef FEATURE_ENABLE_DICE
+		unsigned char dice_tempo_change = CHECK_BIT( target_track->attr_STATUS, DICE_G_TEMPO_CHANGE );
+
+		if( Dice_is_grid_row_diced( row_of( target_page->pageNdx ) ) ) {
+
+			if (	( target_track == track_tempo_ptr  )
+				&& 	( !dice_tempo_change )
+				){
+				adjust_tempomul( target_page, target_track );
+				dice_tempo_change = dice_clock_offset( target_page ) != 0;
+			}
+
+			if( dice_tempo_change ) {
+				// Apply Dice transformation
+				dice_apply_clock_offset( target_page, target_track );
+				track_tempo_page = target_page;
+				track_tempo_ptr = target_track;
+				track_tempo_mul = target_track->attr_TEMPOMUL;
+				track_tempo_div = target_track->attr_TEMPOMUL_SKIP;
+				CLEAR_BIT( target_track->attr_STATUS, DICE_G_TEMPO_CHANGE );
+				adjust_tempomul( target_page, target_track );
+			}
+		} else {
+			adjust_tempomul( target_page, target_track );
+			// Store track tempo
+			dice_pack_track_tempo( target_track );
+		}
+		#else
 		adjust_tempomul( target_page, target_track );
+		#endif
 	}
 
 	#ifdef FEATURE_ENABLE_SONG_UPE
@@ -1464,17 +1479,6 @@ void PLAYER_play_track( Pagestruct* target_page, unsigned char row ){
 	}
 	// -----------------------------------------------------------------------------
 
-
-	unsigned char attr_TEMPOMUL = target_track->attr_TEMPOMUL;
-	unsigned char attr_TEMPOMUL_SKIP = target_track->attr_TEMPOMUL_SKIP;
-	bool has_adjust_tempomul = ( G_TTC_abs_value == 1 && track_tempo_ptr );
-
-	#ifdef FEATURE_ENABLE_DICE
-	DiceOffsetClock dice_clock = dice_apply_clock_offset( target_page, row );
-	attr_TEMPOMUL = dice_clock.attr_TEMPOMUL;
-	attr_TEMPOMUL_SKIP = dice_clock.attr_TEMPOMUL_SKIP;
-	#endif
-
 	switch( target_track->attr_TEMPOMUL_SKIP >> 4 ){
 
 		// Play the track - no skipping, or was skipped and now time to play it
@@ -1528,7 +1532,7 @@ void PLAYER_play_track( Pagestruct* target_page, unsigned char row ){
 					// or until there is a track switch due to a chain (origin != target)
 
 
-					for ( i=0; i < attr_TEMPOMUL; i++ ){
+					for ( i=0; i < target_track->attr_TEMPOMUL; i++ ){
 
 						// Trigger the Track on TTC values
 						if (	( target_track == origin_track )
@@ -1541,12 +1545,8 @@ void PLAYER_play_track( Pagestruct* target_page, unsigned char row ){
 					// Pick up operation in the potentially next track (e.g. in chains)
 					// The first click is already done, do the rest..
 					if ( target_track != origin_track ){
-						#ifdef FEATURE_ENABLE_DICE
-						attr_TEMPOMUL = dice_apply_clock_offset( target_page, row_of_track( target_page, target_track ) ).attr_TEMPOMUL;
-						#else
-						attr_TEMPOMUL = target_track->attr_TEMPOMUL;
-						#endif						
-						for ( i=0; i < attr_TEMPOMUL-1; i++ ){
+
+						for ( i=0; i < target_track->attr_TEMPOMUL-1; i++ ){
 
 							// Trigger the Track on TTC values - as long as it doesn't become NULL
 							if ( target_track != NULL ){
@@ -1559,25 +1559,14 @@ void PLAYER_play_track( Pagestruct* target_page, unsigned char row ){
 
 			} // Switch on G_master_tempoMUL
 
-			attr_TEMPOMUL = target_track->attr_TEMPOMUL;
-			attr_TEMPOMUL_SKIP = target_track->attr_TEMPOMUL_SKIP;
-
-			if( has_adjust_tempomul ){
-				// Tempo updated recalculate skip
-				#ifdef FEATURE_ENABLE_DICE
-				attr_TEMPOMUL_SKIP = dice_apply_clock_offset( target_page, row ).attr_TEMPOMUL_SKIP;
-				#else
-				attr_TEMPOMUL_SKIP = target_track->attr_TEMPOMUL_SKIP;
-				#endif
-			}
 
 			// Refill the upper nibble of the skipper indicator (which is counting the skips)
-			if ( 	( ( attr_TEMPOMUL_SKIP & 0x0F) != 0 )
+			if ( 	( ( target_track->attr_TEMPOMUL_SKIP & 0x0F) != 0 )
 				){
 
 				target_track->attr_TEMPOMUL_SKIP =
 						(target_track->attr_TEMPOMUL_SKIP & 0x0F)
-					|	((attr_TEMPOMUL_SKIP & 0x0F) << 4) ;
+					|	((target_track->attr_TEMPOMUL_SKIP & 0x0F) << 4);
 			}
 
 			break;

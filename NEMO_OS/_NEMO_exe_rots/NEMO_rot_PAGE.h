@@ -33,7 +33,7 @@ void rot_exec_PAGE_global( 	Pagestruct* target_page,
 							unsigned char direction ){
 
 	start_EDIT_TIMER();
-				
+
 	// Store the rot index in the mixing track attribute - spaghetti warning!
 	target_page->mixingTrack = rotNdx;
 
@@ -90,6 +90,9 @@ void rot_exec_MIXMAP( 	Pagestruct* target_page,
 
 	unsigned char row = 0;
 
+	// x2 - Track row window shift
+	unsigned char shiftTrackRow = track_get_window_shift( target_page );
+
 	// BIG KNOB
 	if ( rotNdx == 0 ){
 	
@@ -112,7 +115,7 @@ void rot_exec_MIXMAP( 	Pagestruct* target_page,
 		){
 
 		// Identify the row of the MIX encoder
-		row = rotNdx - 11;
+		row = shiftTrackRow + rotNdx - 11;
 
 		// Check if track is chain head..
 		if ( target_page->Track[row]->chain_data[HEAD] != target_page->Track[row] ){
@@ -140,6 +143,9 @@ void rot_exec_PAGE_local_EDIT( 	Pagestruct* target_page,
 	unsigned char row=0;
 	unsigned char col=0;
 	unsigned int i = 0;
+
+	// x2 - Track row window shift
+	unsigned char shiftTrackRow = track_get_window_shift( target_page );
 
 	// Operate on selected steps
 	if ( target_page->stepSelection != 0 ){
@@ -194,7 +200,7 @@ void rot_exec_PAGE_local_EDIT( 	Pagestruct* target_page,
 					){
 
 					// Compute the key coordinates
-					row = row_of( 		G_pressed_keys[i] );
+					row = row_of( 		shift_key_track_row( target_page, G_pressed_keys[i], shiftTrackRow ) );
 					col = column_of(	G_pressed_keys[i] );
 					
 					// d_iag_printf( "%d row:%d col:%d  ", pressed_keys[i], row, col );
@@ -286,7 +292,7 @@ void rot_exec_PAGE_local_EDIT( 	Pagestruct* target_page,
 		// start_MIX2EDIT_TIMER();
 
 		// Normalize i value
-		i = rotNdx - 1;
+		i = shiftTrackRow + rotNdx - 1;
 
 		switch ( target_page->attr_mix2edit ){
 
@@ -328,7 +334,7 @@ void rot_exec_PAGE_local_EDIT( 	Pagestruct* target_page,
 		// No track selected and EDITOR is in Controller Mode -> send MIDI CC data
 
 		// Normalize i value
-		i = rotNdx - 1;
+		i = shiftTrackRow + rotNdx - 1;
 
 		// Check before sending data that a valid CC is assigned (tmoravan)
 		if ( ( 	target_page->Track[i]->attr_MCC ) != MIDICC_NONE ){
@@ -421,7 +427,12 @@ void rot_exec_PAGE_local( 	Pagestruct* target_page,
 		// ..but un-selections may be accessed by the MIXER!! :-) (for steps only)
 		if (   (target_page->trackSelection != 0)
 			){
+			//The exception is setting the keyboard transpose midi channel for selected tracks
+			if( (rotNdx == MIXTGT_EXP )) {
 
+				rot_exe_MIX2EDIT( rotNdx, direction, target_page );
+
+			}
 			return;
 		}
 		// Modify the steps that are not selected - like the editor would!

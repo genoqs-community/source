@@ -81,11 +81,13 @@
 
 		// Select change track selection
 		case BIRDSEYE:
-			// Blink the currently selected track
 			i = my_bit2ndx( target_page->trackSelection ) + 1;
-			MIR_write_dot( i, MIR_RED   );
-			MIR_write_dot( i, MIR_GREEN );
-			MIR_write_dot( i, MIR_BLINK );
+			if( !row_in_track_window( target_page, i - 1 ) )
+				break;
+			// Blink the currently selected track
+			MIR_write_dot( i - shiftTrackRow, MIR_RED   );
+			MIR_write_dot( i - shiftTrackRow, MIR_GREEN );
+			MIR_write_dot( i - shiftTrackRow, MIR_BLINK );
 
 			// MATRIX
 			// Requested by Tom - to see the step status in birdsview
@@ -103,6 +105,9 @@
 
 			// If track is not muted show lauflicht
 			for (i=0; i<MATRIX_NROF_ROWS; i++) {
+				if ( !row_in_track_window( target_page, i ) )
+					continue;
+
 				if ( (target_page->trackSelection & (1<<i)) > 0 ) {
 					//  row is index of the first selected track
 					row = i;

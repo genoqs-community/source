@@ -158,7 +158,7 @@
 
 			default:
 				// All other cases
-				length 	= ( ( temp + EFF_pool_LEN ) /  attr_TEMPOMUL ) * j;
+				length 	= ( ( temp + EFF_pool_LEN ) / attr_TEMPOMUL ) * j;
 				break;
 		}
 

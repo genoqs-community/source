@@ -136,6 +136,7 @@ unsigned int ndx_to_note( unsigned char ndx ){
 
 
 
+#ifndef FEATURE_ENABLE_CHORD_OCTAVE
 // Sets the chord-up of a step to the given value
 void set_chord_up( 	Stepstruct* target_step,
 					unsigned char bit_offset,
@@ -202,8 +203,6 @@ unsigned char get_chord_up( Stepstruct* target_step, unsigned char bit_offset ){
 
 
 
-
-
 // Shows the chord notes in the upper line. Needs 12 bits for the offset bitpattern
 void show_chord_in_line( Stepstruct* target_step, unsigned char offset ){
 
@@ -238,7 +237,7 @@ void show_chord_in_line( Stepstruct* target_step, unsigned char offset ){
 		} // Bit in the pattern was found
 	}
 }
-
+#endif
 
 
 
@@ -745,4 +744,247 @@ unsigned int mirror ( unsigned int input, unsigned char length) {
 
 
 
+#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+// Helper return the selected chord octave
+unsigned char get_current_chord_octave() {
 
+	unsigned char chord_octave = 0;
+
+	switch ( NEMO_step_VER ) {
+		case VER_CHORD_OCTAVE_FIRST:
+			chord_octave = CHORD_OCTAVE_FIRST;
+			break;
+
+		case VER_CHORD_OCTAVE_SECOND:
+			chord_octave = CHORD_OCTAVE_SECOND;
+			break;
+		case VER_CHORD_OCTAVE_THIRD:
+			chord_octave = CHORD_OCTAVE_THIRD;
+			break;
+	}
+
+	return chord_octave;
+}
+
+
+// Get chord bit pattern projected onto a single octave
+unsigned int get_chord_projected( Stepstruct* target_step ) {
+
+	return ( target_step->chord_data & 0x7FF ) | ( target_step->chord_up & 0xFFF ) | ( ( target_step->chord_up & 0xFFF0000 ) >> 16 );
+}
+
+
+// Get cardinality of chord octave constituents
+unsigned char get_chord_cardinality( Stepstruct* target_step, unsigned char octave_mask ) {
+
+	switch ( octave_mask ) {
+		case CHORD_OCTAVE_FIRST:
+			return my_bit_cardinality( target_step->chord_data & 0x7FF );
+		case CHORD_OCTAVE_SECOND:
+			return my_bit_cardinality( target_step->chord_up & 0xFFF );
+		case CHORD_OCTAVE_THIRD:
+			return my_bit_cardinality( target_step->chord_up & 0xFFF0000 );
+		case CHORD_OCTAVE_FIRST | CHORD_OCTAVE_SECOND:
+			return my_bit_cardinality( ( target_step->chord_data & 0x7FF ) | ( ( target_step->chord_up & 0xFFF ) << 11 ) );
+		case CHORD_OCTAVE_FIRST | CHORD_OCTAVE_THIRD:
+			return my_bit_cardinality( ( target_step->chord_data & 0x7FF ) | ( target_step->chord_up & 0xFFF0000 ) );
+		case CHORD_OCTAVE_SECOND | CHORD_OCTAVE_THIRD:
+			return my_bit_cardinality( target_step->chord_up & 0xFFF0FFF );
+		case CHORD_OCTAVE_ALL:
+			return my_bit_cardinality( target_step->chord_data & 0x7FF ) + my_bit_cardinality( target_step->chord_up & 0xFFF0FFF );
+	}
+
+	return 0;
+}
+
+
+// Get the chord octave(s) mask for the step at the given note index
+unsigned char get_chord_octave_mask( Stepstruct* target_step, unsigned char note_offset ) {
+
+	unsigned int note_flag	= 0;
+	unsigned int chord_data = target_step->chord_data & 0x7FF;
+	unsigned int chord_up = target_step->chord_up & 0xFFF0FFF;
+
+	unsigned char octave_mask = 0;
+
+	note_flag = 1 << ( note_offset - 1 );
+	if ( ( note_flag & chord_data ) ) {
+		SET_MASK( octave_mask, CHORD_OCTAVE_FIRST );
+	}
+
+	note_flag = 1 << note_offset;
+	if ( note_flag & ( chord_up & 0xFFF ) ) {
+		SET_MASK( octave_mask, CHORD_OCTAVE_SECOND );
+	}
+
+	chord_up >>= 16;
+	if ( note_flag & chord_up ) {
+		SET_MASK( octave_mask, CHORD_OCTAVE_THIRD );
+	}
+
+	return octave_mask;
+}
+
+
+// Get the first chord octave(s) matching given mask
+unsigned char get_chord_octave_first( unsigned char octave_mask ) {
+
+	unsigned char octave = 0;
+
+	if ( CHECK_MASK( octave_mask, CHORD_OCTAVE_FIRST ) ) {
+		octave = CHORD_OCTAVE_FIRST;
+	} else if ( CHECK_MASK( octave_mask, CHORD_OCTAVE_SECOND ) ) {
+		octave = CHORD_OCTAVE_SECOND;
+	} else if ( CHECK_MASK( octave_mask, CHORD_OCTAVE_THIRD ) ) {
+		octave = CHORD_OCTAVE_THIRD;
+	}
+
+	return octave;
+}
+
+
+// Get the status of the chord octave mask applied to the current octave
+unsigned char get_chord_octave_status( unsigned char octave_mask, unsigned char octave ) {
+
+	unsigned char status = 0;
+	unsigned char other_mask = octave_mask;
+
+	CLEAR_MASK( other_mask, octave );
+
+	if ( CHECK_MASK( octave_mask, CHORD_OCTAVE_ALL ) ) {
+		status = CHORD_OCTAVE_STATUS_ALL;
+	} else {
+		if ( CHECK_MASK( octave_mask, octave ) ) {
+			status = CHORD_OCTAVE_STATUS_CURRENT;
+		}
+
+		if( other_mask ) {
+			SET_MASK( status, CHORD_OCTAVE_STATUS_OTHER );
+		}
+	}
+
+	return status;
+}
+
+
+// Check if step contains a given note in a given octave
+bool is_set_chord_octave( Stepstruct* target_step, unsigned char note_offset, unsigned char chord_octave_mask ) {
+
+	return CHECK_MASK( get_chord_octave_mask( target_step, note_offset ), chord_octave_mask );
+}
+
+
+// Check if step contains any aux chord note data
+bool is_step_chord( Stepstruct* target_step ) {
+
+	return ( target_step->chord_data & 0x7FF ) || ( target_step->chord_up & 0xFFF0FFF );
+}
+
+
+// Show step chord note data for given note offset and viewing octave layer (CHORD_OCTAVE_FIRST, CHORD_OCTAVE_SECOND or CHORD_OCTAVE_THIRD)
+// ORANGE = Note set only in currently viewed Octave
+// GREEN  = Note set in currently viewed Octave AND also in another Octave(s)
+// RED    = Note NOT set in current Octave, but IS set in one of the another Octave(s)
+// SHINE  = Note set in ALL 3 Octaves (full stack)
+void show_chord_octave( Stepstruct* target_step, unsigned char note_offset, unsigned char chord_octave ) {
+
+	unsigned char i	= 0;
+	unsigned char note_ndx = 0;
+	unsigned char octave_mask = 0;
+	unsigned char root_note = ndx_to_note( note_offset );
+
+	MIR_write_dot( root_note, MIR_BLINK );
+
+	if( is_step_chord( target_step ) ) {
+		for ( i = 0; i < 12; i++ ) {
+			octave_mask = get_chord_octave_mask( target_step, i );
+
+			if ( i == 0 ) {
+				octave_mask |= CHORD_OCTAVE_FIRST;
+			} else if ( !octave_mask ) {
+				continue;
+			}
+
+			note_ndx = ndx_to_note( ( note_offset + i ) % 12 );
+
+			switch ( get_chord_octave_status( octave_mask, chord_octave ) ) {
+
+				case CHORD_OCTAVE_STATUS_CURRENT:
+					MIR_write_dot( note_ndx, MIR_GREEN );
+					MIR_write_dot( note_ndx, MIR_RED );
+					break;
+
+				case ( CHORD_OCTAVE_STATUS_CURRENT | CHORD_OCTAVE_STATUS_OTHER ):
+					MIR_write_dot( note_ndx, MIR_GREEN );
+					break;
+
+				case CHORD_OCTAVE_STATUS_OTHER:
+					MIR_write_dot( note_ndx, MIR_RED );
+					break;
+
+				case CHORD_OCTAVE_STATUS_ALL:
+					if( i == 0 ) {
+						// Full stack on root
+						MIR_write_dot( note_ndx, MIR_SHINE_RED );
+					} else {
+						// Full stack on aux
+						MIR_write_dot( note_ndx, MIR_SHINE_GREEN );
+					}
+					break;
+			}
+		}
+	} else {
+		if( chord_octave == CHORD_OCTAVE_FIRST ) {
+			MIR_write_dot( root_note, MIR_GREEN );
+		}
+		MIR_write_dot( root_note, MIR_RED );
+	}
+}
+
+
+// Show step chord note data for given note offset and viewing octave layer (CHORD_OCTAVE_FIRST, CHORD_OCTAVE_SECOND or CHORD_OCTAVE_THIRD)
+// ORANGE = Note in first octave
+// GREEN  = Note in first octave
+// RED    = Note in third octave
+void show_chord_octave_first( Stepstruct* target_step, unsigned char note_offset ) {
+
+	unsigned char i	= 0;
+	unsigned char note_ndx = 0;
+	unsigned char octave_mask = 0;
+	unsigned char root_note = ndx_to_note( note_offset );
+
+	MIR_write_dot( root_note, MIR_GREEN );
+	MIR_write_dot( root_note, MIR_RED );
+	MIR_write_dot( root_note, MIR_BLINK );
+
+	if( is_step_chord( target_step ) ) {
+		for ( i = 1; i < 12; i++ ) {
+			octave_mask = get_chord_octave_mask( target_step, i );
+
+			if ( i == 0 ) {
+				octave_mask |= CHORD_OCTAVE_FIRST;
+			} else if ( !octave_mask ) {
+				continue;
+			}
+
+			note_ndx = ndx_to_note( ( note_offset + i ) % 12 );
+
+			switch ( get_chord_octave_first( octave_mask ) ) {
+
+				case CHORD_OCTAVE_FIRST:
+					MIR_write_dot( note_ndx, MIR_GREEN );
+					MIR_write_dot( note_ndx, MIR_RED );
+					break;
+
+				case ( CHORD_OCTAVE_SECOND ):
+					MIR_write_dot( note_ndx, MIR_GREEN );
+					break;
+
+				case CHORD_OCTAVE_THIRD:
+					MIR_write_dot( note_ndx, MIR_RED );
+					break;
+			}
+		}
+	}
+}
+#endif

@@ -83,9 +83,7 @@ Pagestruct* PAGE_assistant_page = &Page_repository[99];
 
 // Array of play mode pages - for indexes, see below
 Pagestruct* PLAY_MODE_page[9];
-#ifdef FEATURE_ENABLE_DICE
-unsigned char SEL_DICE_BANK;
-#endif
+
 // Later on, we do the following assignment:
 //	PLAY_MODE_page[8] = &Page_repository[89];
 //	PLAY_MODE_page[7] = &Page_repository[79];
@@ -436,8 +434,7 @@ void Octopus_memory_CLR(){
 	Grid_init();
 
 	#ifdef FEATURE_ENABLE_DICE
-	SEL_DICE_BANK = 0;
-	Dice_init();
+	Dice_init( DICE_bank );
 	#endif
 
 	MIR_init();
@@ -500,8 +497,7 @@ void Octopus_memory_init(){
 
 	#ifdef FEATURE_ENABLE_DICE
 	// Init Dice performance mode
-	SEL_DICE_BANK	= 0;
-	Dice_init();
+	Dice_init( DICE_bank );
 	#endif
 	// ABLETON page init
 //	ABLETON_init( &ABLETON_client );
@@ -770,7 +766,7 @@ void PAGE_init (Pagestruct* target_page, pageid_t pageId, booln firstInitBo ){
 // #else
 	target_page->CHAINS_PLAY_HEAD = FALSE;
 // #endif
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	#ifdef FEATURE_ENABLE_KB_TRANSPOSE
 	target_page->pitch_abs = FALSE;
 	#endif
 }

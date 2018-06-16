@@ -420,13 +420,16 @@
 #define		DICE_PAGE				159
 
 // This defines the dice attrMISC flags
-// This defines the dice attrMISC flags
-#define		DICE_TRACK_CLOCK		1 // Track Dice multiplier / divider clock flag [*******x]
-#define		DICE_GLOBAL_CLOCK		2 // Track Dice multiplier / divider clock flag [******x*]
+#define		DICE_CLOCK				0 // Track Dice multiplier / divider clock flag [*******x]
+#define		DICE_CLOCK_FLR			1 // Track Dice multiplier / divider clock flag [******x*]
+#define		DICE_CHAIN_FOLLOW		2 // Chained tracks chain next at the end of dice loop
 
 // This defines dice bank editorMode
-#define		DICE_QUANT				1 // Quantise user to dice grid
-#define		DICE_ALIGN				2 // Align dice pages to global
+#define		DICE_QUANT				0 // Quantise user to dice grid
+#define		DICE_ALIGN				1 // Align dice pages to global
+
+#define		DICE_G_TEMPO_CHANGE		0 // Flag DCK tempo change
+
 #endif
 // MIDI EVENTS: There can be at most this many events in the MIDI QUEUE.
 // Make sure this is not below 10 or so, otherwise something bad may happen.. :-(
@@ -503,6 +506,6 @@
 #define		PGM_CLST_CLR			1
 #define		PGM_CLST_CPY			2
 
-#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
+#ifdef FEATURE_ENABLE_KB_TRANSPOSE
 #define		GST_TOGGLE				0
 #endif

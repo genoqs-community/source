@@ -126,7 +126,7 @@
 			if ( my_bit_cardinality( target_page->trackSelection ) == 1 ){
 				show( ELE_CHORD_SELECTOR, CHORD_SIZE_TRACK );
 			}
-			#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+			#ifdef FEATURE_ENABLE_KB_TRANSPOSE
 			// Toggle transpose abs pitch mode
 			if (	( target_page->pitch_abs == TRUE )	){
 

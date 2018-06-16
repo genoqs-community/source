@@ -368,20 +368,21 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 							|	( target_page->Step[row][col+1]->event_data & 0xF0 );
 */
 
-					case NEMO_ATTR_PITCH:
+					case ATTR_PITCH:
 						// Shift the chord data separately
 						thisStepPt->chord_data 	= nextStepPt->chord_data;
 						thisStepPt->chord_up 	= nextStepPt->chord_up;
 
 						// Shift the phrase data
 						// thisStepPt->phrase_num 	= nextStepPt->phrase_num;
-						// thisStepPt->phrase_data = nextStepPt->phrase_data;
+						thisStepPt->phrase_data = nextStepPt->phrase_data;
 
 						// Shift the hyperTrack_ndx: needs both Step and Track update
 						thisStepPt->hyperTrack_ndx = nextStepPt->hyperTrack_ndx;
-						target_page->Track[thisStepPt->hyperTrack_ndx]->hyper =
-							(row << 4) | col;
-
+						if ( thisStepPt->hyperTrack_ndx < MATRIX_NROF_ROWS ){
+							target_page->Track[thisStepPt->hyperTrack_ndx]->hyper =
+								(row << 4) | col;
+						}
 						// Make sure we only shift the stepLenMul in event_data, no event attr
 						thisStepPt->event_data =
 							 	( thisStepPt->event_data & 0x0F )
@@ -417,12 +418,13 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 
 					// Shift the phrase data
 					// thisStepPt->phrase_num 	=	buffer_phrase_num;
-					// thisStepPt->phrase_data =	buffer_phrase_data;
+					thisStepPt->phrase_data =	buffer_phrase_data;
 
 					// Shift the hypertrack data
 					thisStepPt->hyperTrack_ndx = buffer_hyperTrackNdx;
-					target_page->Track[thisStepPt->hyperTrack_ndx]->hyper = (row << 4) | col;
-
+					if ( thisStepPt->hyperTrack_ndx < MATRIX_NROF_ROWS ){
+						target_page->Track[thisStepPt->hyperTrack_ndx]->hyper = (row << 4) | col;
+					}
 					// target_page->Step[row][col]->event_data = buffer_event_data;
 					// Make sure we only shift the stepLenMul in event_data, no event attr
 					thisStepPt->event_data =
@@ -489,13 +491,14 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 						thisStepPt->chord_data 	=	nextStepPt->chord_data;
 						thisStepPt->chord_up 	=	nextStepPt->chord_up;
 
-						// thisStepPt->phrase_num 	=	nextStepPt->phrase_num;
-						// thisStepPt->phrase_data =	nextStepPt->phrase_data;
+						//thisStepPt->phrase_num =	nextStepPt->phrase_num;
+						thisStepPt->phrase_data =	nextStepPt->phrase_data;
 
 						thisStepPt->hyperTrack_ndx = nextStepPt->hyperTrack_ndx;
-						target_page->Track[thisStepPt->hyperTrack_ndx]->hyper =
-							(row << 4) | col;
-
+						if ( thisStepPt->hyperTrack_ndx < MATRIX_NROF_ROWS ){
+							target_page->Track[thisStepPt->hyperTrack_ndx]->hyper =
+								(row << 4) | col;
+						}
 						// target_page->Step[row][col]->event_data =
 						// target_page->Step[row][col-1]->event_data;
 						// Make sure we only shift the stepLenMul in event_data, no event attr
@@ -532,12 +535,13 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 
 					// Shift the phrase data - obsolote - done in another place.
 					// target_page->Step[row][0]->phrase_num 	= buffer_phrase_num;
-					// target_page->Step[row][0]->phrase_data 	= buffer_phrase_data;
+					target_page->Step[row][0]->phrase_data 	= buffer_phrase_data;
 
 					target_page->Step[row][0]->hyperTrack_ndx = buffer_hyperTrackNdx;
-					target_page->Track[thisStepPt->hyperTrack_ndx]->hyper =
-						(row << 4) | col;
-
+					if ( thisStepPt->hyperTrack_ndx < MATRIX_NROF_ROWS ){
+						target_page->Track[thisStepPt->hyperTrack_ndx]->hyper =
+							(row << 4) | col;
+					}
 					// target_page->Step[row][0]->event_data 	= buffer_event_data;
 					// Make sure we only shift the stepLenMul in event_data, no event attr
 					target_page->Step[row][0]->event_data =
@@ -748,5 +752,3 @@ void modify_selectedTrackAttribute_FACTOR( 	Pagestruct* target_page,
 
 		} // switch on selected track attribute
 }
-
-

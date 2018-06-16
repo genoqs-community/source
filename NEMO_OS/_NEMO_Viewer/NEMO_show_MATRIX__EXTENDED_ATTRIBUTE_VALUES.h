@@ -26,6 +26,8 @@
 
 	for (i=0; i<MATRIX_NROF_ROWS; i++) {
 
+		if( !row_in_track_window( target_page, i ) )
+			continue;
 
 		// If the track is in the active selection
 		if ( 	( (target_page->trackSelection & (1<<i)) != 0 )
@@ -72,7 +74,7 @@
 					break;
 
 				case NEMO_ATTR_POSITION:
-					MIR_write_trackpattern (Page_get_trackpattern(target_page, i), 0, MIR_GREEN);						
+					MIR_write_trackpattern (Page_get_trackpattern(target_page, i), 0, MIR_GREEN);
 					// Show step skips
 					show (ELE_MATRIX, STEP_SKIPS);
 					break;
@@ -183,7 +185,66 @@
 							0,	MIR_BLINK );
 					}
 					break;
+#ifdef FEATURE_ENABLE_KB_TRANSPOSE
+				case NEMO_ATTR_MIDITCH:
+					if ( 	target_page->Track[i]->attr_STATUS
+							+ target_page->Track[i]->event_offset[ATTR_MIDITCH] == 0 ){
 
+						MIR_point_numeric(
+							target_page->Track[i]->attr_STATUS+1
+							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
+							0,	MIR_RED );
+						MIR_point_numeric(
+							target_page->Track[i]->attr_STATUS+1
+							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
+							0,	MIR_BLINK );
+					}
+
+					else if ( 	target_page->Track[i]->attr_STATUS
+							+ target_page->Track[i]->event_offset[ATTR_MIDITCH] <= 16 ){
+
+						MIR_point_numeric(
+							target_page->Track[i]->attr_STATUS
+							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
+							0,	MIR_GREEN );
+					}
+
+					else if ( 	target_page->Track[i]->attr_STATUS
+							+ target_page->Track[i]->event_offset[ATTR_MIDITCH] <= 32 ){
+
+						MIR_point_numeric(
+							target_page->Track[i]->attr_STATUS-16
+							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
+							0,	MIR_RED );
+					}
+
+					else if ( 	target_page->Track[i]->attr_STATUS
+							+ target_page->Track[i]->event_offset[ATTR_MIDITCH] <= 48 ){
+
+						MIR_point_numeric(
+							target_page->Track[i]->attr_STATUS-32
+							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
+							i,	MIR_GREEN );
+						MIR_point_numeric(
+							target_page->Track[i]->attr_STATUS-32
+							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
+							0,	MIR_BLINK );
+					}
+
+					else if ( 	target_page->Track[i]->attr_STATUS
+							+ target_page->Track[i]->event_offset[ATTR_MIDITCH] <= 64 ){
+
+						MIR_point_numeric(
+							target_page->Track[i]->attr_STATUS-32
+							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
+							i,	MIR_RED );
+						MIR_point_numeric(
+							target_page->Track[i]->attr_STATUS-32
+							+ target_page->Track[i]->event_offset[ATTR_MIDITCH],
+							i,	MIR_BLINK );
+					}
+					break;
+#endif
 				case NEMO_ATTR_PGMCH:
 					if ( target_page->Track[i]->program_change == TRACK_DEF_PROGRAMCHANGE ){
 						// Track is set to not send PGMCH, show PGMCH_NONE flag
@@ -222,10 +283,12 @@
 				temp = target_page->editAttribute;
 			}
 
+			if( !row_in_track_window( target_page, i ) )
+				break;
 			// Clear the displayed track contents
-			MIR_write_trackpattern( 0, i, MIR_RED   );
-			MIR_write_trackpattern( 0, i, MIR_GREEN );
-			MIR_write_trackpattern( 0, i, MIR_BLINK );
+			MIR_write_trackpattern( 0, i - shiftTrackRow, MIR_RED   );
+			MIR_write_trackpattern( 0, i - shiftTrackRow, MIR_GREEN );
+			MIR_write_trackpattern( 0, i - shiftTrackRow, MIR_BLINK );
 
 			switch( target_page->mixTarget ){
 			
@@ -237,12 +300,12 @@
 
 						case NEMO_ATTR_VELOCITY:
 							MIR_write_numeric_H(
-								target_page->Track[i]->attr_VEL, 	i);
+								target_page->Track[i]->attr_VEL, 	i - shiftTrackRow);
 							break;
 
 						case NEMO_ATTR_PITCH:
 							MIR_write_pitch_H(
-								target_page->Track[i]->attr_PIT, 		i);
+								target_page->Track[i]->attr_PIT, 		i - shiftTrackRow);
 							break;
 
 						case NEMO_ATTR_LENGTH:
@@ -251,12 +314,12 @@
 								1, 
 								target_page->Track[i]->LEN_factor
 								+ target_page->Track[i]->event_offset[NEMO_ATTR_LENGTH], 
-								i,	MIR_RED);
+								i - shiftTrackRow,	MIR_RED);
 							MIR_fill_numeric(	
 								1, 
 								target_page->Track[i]->LEN_factor
 								+ target_page->Track[i]->event_offset[NEMO_ATTR_LENGTH], 
-								i,	MIR_GREEN);
+								i - shiftTrackRow,	MIR_GREEN);
 							break;
 
 						case NEMO_ATTR_START:
@@ -264,17 +327,17 @@
 								1, 
 								target_page->Track[i]->STA_factor
 								+ target_page->Track[i]->event_offset[NEMO_ATTR_START], 
-								i,	MIR_RED);
+								i - shiftTrackRow,	MIR_RED);
 							MIR_fill_numeric(	
 								1, 
 								target_page->Track[i]->STA_factor
 								+ target_page->Track[i]->event_offset[NEMO_ATTR_START], 
-								i,	MIR_GREEN);
+								i - shiftTrackRow,	MIR_GREEN);
 							break;
 
 						case NEMO_ATTR_POSITION:
 							MIR_write_trackpattern (Page_get_trackpattern(target_page, i),
-							i, MIR_GREEN);
+							i - shiftTrackRow, MIR_GREEN);
 							// Show step skips
 							show (ELE_MATRIX, STEP_SKIPS);
 							break;
@@ -283,27 +346,27 @@
 							MIR_point_numeric(
 								target_page->Track[i]->attr_DIR
 								+ target_page->Track[i]->event_offset[NEMO_ATTR_DIRECTION], 	
-								i, 	MIR_RED);
+								i - shiftTrackRow, 	MIR_RED);
 							MIR_point_numeric(
 								target_page->Track[i]->attr_DIR
 								+ target_page->Track[i]->event_offset[NEMO_ATTR_DIRECTION], 
-								i, 	MIR_GREEN);
+								i - shiftTrackRow, 	MIR_GREEN);
 							break;
 
 						case NEMO_ATTR_AMOUNT:
 							MIR_write_numeric_H(
 								target_page->Track[i]->attr_AMT
-								+ target_page->Track[i]->event_offset[NEMO_ATTR_AMOUNT], 	i);
+								+ target_page->Track[i]->event_offset[NEMO_ATTR_AMOUNT], 	i - shiftTrackRow);
 							break;
 
 						case NEMO_ATTR_GROOVE:
 							MIR_fill_numeric(
 								1, 
 								target_page->Track[i]->attr_GRV,	
-								i,	MIR_RED);
+								i - shiftTrackRow,	MIR_RED);
 							MIR_fill_numeric(
 								1, target_page->Track[i]->attr_GRV,	
-								i,	MIR_GREEN);
+								i - shiftTrackRow,	MIR_GREEN);
 							break;;
 
 						case NEMO_ATTR_MIDICC:
@@ -311,24 +374,24 @@
 										== MIDICC_NONE ){
 				
 								// Track is set to not send MIDICC, show MIDICC_NONE flag
-								MIR_write_trackpattern ( 0x0f, i, MIR_GREEN);
+								MIR_write_trackpattern ( 0x0f, i - shiftTrackRow, MIR_GREEN);
 							}
 							else if ( (	target_page->Track[i]->attr_MCC ) == MIDICC_BENDER 
 								){
 									
 								// Signal the bender as selected
-								MIR_write_trackpattern ( 0x01, i, MIR_RED);	
+								MIR_write_trackpattern ( 0x01, i - shiftTrackRow, MIR_RED);
 							}
 							else if ( (	target_page->Track[i]->attr_MCC ) == MIDICC_PRESSURE 
 								){
 									
 								// Signal the pressure as selected
-								MIR_write_trackpattern ( 0x03, i, MIR_RED);	
+								MIR_write_trackpattern ( 0x03, i - shiftTrackRow, MIR_RED);
 							}
 							else {
 								// MIDICC has a valid value 
 								MIR_write_numeric_H(
-									target_page->Track[i]->attr_MCC, 	i);
+									target_page->Track[i]->attr_MCC, 	i - shiftTrackRow);
 							}
 							break;
 
@@ -339,7 +402,7 @@
 								MIR_point_numeric(
 									target_page->Track[i]->attr_MCH
 									+ target_page->Track[i]->event_offset[NEMO_ATTR_MIDICH], 	
-									i,	MIR_GREEN );
+									i - shiftTrackRow,	MIR_GREEN );
 							}
 							
 							else if ( 	target_page->Track[i]->attr_MCH
@@ -348,7 +411,7 @@
 								MIR_point_numeric(
 									target_page->Track[i]->attr_MCH-16
 									+ target_page->Track[i]->event_offset[NEMO_ATTR_MIDICH], 	
-									i,	MIR_RED );
+									i - shiftTrackRow,	MIR_RED );
 							}
 							
 							else if ( 	target_page->Track[i]->attr_MCH
@@ -357,11 +420,11 @@
 								MIR_point_numeric(
 									target_page->Track[i]->attr_MCH-32
 									+ target_page->Track[i]->event_offset[NEMO_ATTR_MIDICH], 	
-									i,	MIR_GREEN );
+									i - shiftTrackRow,	MIR_GREEN );
 								MIR_point_numeric(
 									target_page->Track[i]->attr_MCH-32
 									+ target_page->Track[i]->event_offset[NEMO_ATTR_MIDICH], 	
-									i,	MIR_BLINK );
+									i - shiftTrackRow,	MIR_BLINK );
 							}
 							
 							else if ( 	target_page->Track[i]->attr_MCH
@@ -370,11 +433,11 @@
 								MIR_point_numeric(
 									target_page->Track[i]->attr_MCH-32
 									+ target_page->Track[i]->event_offset[NEMO_ATTR_MIDICH], 	
-									i,	MIR_RED );
+									i - shiftTrackRow,	MIR_RED );
 								MIR_point_numeric(
 									target_page->Track[i]->attr_MCH-32
 									+ target_page->Track[i]->event_offset[NEMO_ATTR_MIDICH], 	
-									i,	MIR_BLINK );
+									i - shiftTrackRow,	MIR_BLINK );
 							}
 							break;
 					}			
@@ -395,24 +458,24 @@
 					}
 					// Show the available attributes of the CC_MIXMAP
 					show( ELE_TRACK_SELECTORS, CC_MIXMAP_ATTRIBUTES );
-					MIR_write_numeric_H( temp_page->CC_MIXMAP [target_page->mixTarget][i][CC_MIXMAP_AMT], i );
+					MIR_write_numeric_H( temp_page->CC_MIXMAP [target_page->mixTarget][i][CC_MIXMAP_AMT], i - shiftTrackRow );
 					break;
 
 				// These dont show anything for now
 				case MIXTGT_VOL:
-					MIR_write_numeric_H( target_page->MIXAMT_VOL[i], i );
+					MIR_write_numeric_H( target_page->MIXAMT_VOL[i], i - shiftTrackRow );
 					break;
 					
 				case MIXTGT_PAN:
-					MIR_write_numeric_H( target_page->MIXAMT_PAN[i], i );
+					MIR_write_numeric_H( target_page->MIXAMT_PAN[i], i - shiftTrackRow );
 					break;
 					
 				case MIXTGT_MOD:
-					MIR_write_numeric_H( target_page->MIXAMT_MOD[i], i );
+					MIR_write_numeric_H( target_page->MIXAMT_MOD[i], i - shiftTrackRow );
 					break;
 					
 				case MIXTGT_EXP:
-					MIR_write_numeric_H( target_page->MIXAMT_EXP[i], i );
+					MIR_write_numeric_H( target_page->MIXAMT_EXP[i], i - shiftTrackRow );
 					break;
 			}
 		

@@ -411,6 +411,11 @@ void key_exec_STEP( unsigned int keyNdx ){
 				#include "NEMO_key_STEP__MATRIX__RANGE.h"
 				break;
 			case VER_CHORD:
+			#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+			case VER_CHORD_OCTAVE_FIRST:
+			case VER_CHORD_OCTAVE_SECOND:
+			case VER_CHORD_OCTAVE_THIRD:
+			#endif
 				#include "NEMO_key_STEP__MATRIX__CHORD.h"
 				break;
 		}
@@ -771,7 +776,7 @@ void key_exec_STEP( unsigned int keyNdx ){
 		// Copy step data from buffer to pointer
 		if ( STEP_COPY_BUFFER != NULL ){
 
-			Step_copy( STEP_COPY_BUFFER, target_page->Step[row][col]);
+			Step_copy( STEP_COPY_BUFFER, target_page->Step[row][col], false );
 	#ifdef COPY_BUFFER_FRESH
 			STEP_COPY_BUFFER = NULL;
 	#endif

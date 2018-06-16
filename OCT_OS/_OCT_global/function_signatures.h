@@ -232,3 +232,8 @@ extern void 			show_chord_octave( Stepstruct* target_step, unsigned char note_of
 extern void 			show_chord_octave_first( Stepstruct* target_step, unsigned char note_offset );
 extern unsigned char 	get_current_chord_octave();
 #endif
+
+#ifdef FEATURE_ENABLE_DICE
+extern Trackstruct* 	throw_dice( Pagestruct* target_page );
+extern signed int 		dice_attr_flow_offset( Pagestruct * target_page, unsigned char attr, const card8 locator );
+#endif

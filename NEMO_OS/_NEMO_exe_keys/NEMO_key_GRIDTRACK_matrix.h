@@ -44,7 +44,7 @@
 			// Repeated Single click code - to neutralize previous press
 			// Do not react on invalid presses
 			temp = column_of( keyNdx );
-			if (	( temp > 3 )
+			if (	( temp > 7 )
 //				||	( temp < 6 )
 				||	( GRID_p_selection[ row_of( keyNdx ) ] == NULL )
 				){
@@ -53,13 +53,18 @@
 
 			// ..true Double click code:
 			// Select the VIEWER page pertaining to the track.
-			target_page = &Page_repository[ GRID_p_selection[ row_of(keyNdx) ]->pageNdx ];
+			target_page = &Page_repository[ GRID_p_selection[ row_of(keyNdx)  ]->pageNdx ];
 			// Move the cursor for the grid
 			GRID_CURSOR = target_page->pageNdx;
 
 			// Put the track into the track selection
 //			target_page->trackSelection ^= mirror( 1 << (column_of( keyNdx ) ), 10 );
-			target_page->trackSelection ^= ( 1 << (column_of( keyNdx ) ) );
+			target_page->trackSelection ^= ( 1 << temp );
+
+			// Shift Track x2 to selection
+			if( !row_in_track_window( target_page, temp ) ) {
+				track_shift_window( target_page );
+			}
 
 			// Zoom into the target_page (implicitly) and the track there
 			G_zoom_level = zoomTRACK;
@@ -84,7 +89,7 @@
 
 			// Do not react on invalid presses
 			temp = column_of( keyNdx );
-			if (	( temp > 3 )
+			if (	( temp > 7 )
 				// ||	( temp < 6 )
 				||	( GRID_p_selection[ row_of( keyNdx ) ] == NULL )
 				){

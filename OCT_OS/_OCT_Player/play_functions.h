@@ -927,6 +927,62 @@ unsigned char get_track_flow_factor( const unsigned char attribute, const unsign
 }
 
 #ifdef FEATURE_ENABLE_DICE
+
+// Flag DCK tempo change
+void dice_flag_tempo_change( Pagestruct* target_page ) {
+
+	Trackstruct* target_track = NULL;
+	unsigned char row = 0;
+
+	for ( row = 0; row < MATRIX_NROF_ROWS; row++ ) {
+		target_track = target_page->Track[row];
+
+		/// DCK tempo change flag
+		SET_BIT( target_track->attr_STATUS, DICE_G_TEMPO_CHANGE );
+	}
+}
+
+
+// Reset the upper nibble of attr_TEMPOMUL_SKIP
+void dice_reset_tempo_skip_counter( Pagestruct* target_page ) {
+
+	Trackstruct* target_track = NULL;
+	unsigned char row = 0;
+
+	for ( row = 0; row < MATRIX_NROF_ROWS; row++ ){
+		target_track = target_page->Track[row];
+
+		// Reset the track clock divisor skipper status (higher nibble)
+		target_track->attr_TEMPOMUL_SKIP &= 0x0F;
+	}
+}
+
+
+// Store the value of attr_TEMPOMUL | attr_TEMPOMUL_SKIP 0x0F
+void dice_pack_track_tempo( Trackstruct* target_track ) {
+
+	target_track->attr_pack_TEMPO = ( target_track->attr_TEMPOMUL == 25 ? 14 : target_track->attr_TEMPOMUL ) | ( ( target_track->attr_TEMPOMUL_SKIP & 0x0F ) << 4 );
+}
+
+
+// Restore the values of attr_TEMPOMUL | attr_TEMPOMUL_SKIP 0x0F
+void dice_unpack_tempo( Pagestruct* target_page ) {
+
+	Trackstruct* target_track = NULL;
+	unsigned char row = 0;
+	unsigned char attr_TEMPOMUL = 0;
+
+	for ( row = 0; row < MATRIX_NROF_ROWS; row++ ){
+		target_track = target_page->Track[row];
+		if ( target_track->attr_pack_TEMPO ) {
+			attr_TEMPOMUL = target_track->attr_pack_TEMPO & 0x0F;
+			target_track->attr_TEMPOMUL = attr_TEMPOMUL == 14 ? 25 : attr_TEMPOMUL;
+			target_track->attr_TEMPOMUL_SKIP = target_track->attr_pack_TEMPO >> 4;
+		}
+	}
+}
+
+
 // Dice synchronized attribute changes
 void dice_synchronize() {
 
@@ -934,14 +990,12 @@ void dice_synchronize() {
 		return;
 	}
 
-	unsigned char col = 0;
-	unsigned char offset = 0;
-	unsigned char j;
-	unsigned char k;
-
 	Trackstruct* target_dice = throw_dice( NULL );
+
 	if( target_dice ) {
-		unsigned char dice_selected_clock = Dice_get_selected_clock_type( target_dice );
+
+		unsigned char col = 0;
+		unsigned char offset = 0;
 		unsigned char dice_length = TRACK_MAX_LENGTH / ( 1 << target_dice->attr_LEN );
 
 		if( dice_synced_attr != ATTR_MISC && Dice_is_quantizer( target_dice ) ) {
@@ -955,41 +1009,49 @@ void dice_synchronize() {
 
 		switch( dice_synced_attr ) {
 
-		case ATTR_MISC:
-			j = G_global_locator;
-			k = G_TTC_abs_value;
-
-			for ( i = 0; i < GRID_NROF_BANKS; i++ ){
-				// If the page is currently playing
-				if ( Dice_is_grid_row_diced( target_dice, i ) && GRID_p_selection[i] != NULL ){
-
-					set_page_locators( 	target_dice->attr_STA + GRID_p_selection[i], j % ( target_dice->attr_STA + dice_length ), k );
-				}
-			}
-		break;
-
-		case ATTR_LOCATOR:
+		case ATTR_DICE_TOGGLE:
+			// DICE TOGGLE ON/OFF
 			i = dice_synced_value - 1;
-			if( Dice_is_grid_row_diced( target_dice, i ) ) {
-				j = G_global_locator;
-				k = G_TTC_abs_value;
-
-				// Resync previously diced grid row
-				// If the page is currently playing
-				if ( GRID_p_selection[i] != NULL ){
-
-					set_page_locators( GRID_p_selection[i], j, k );
+			if ( GRID_p_selection[i] != NULL ) {
+				if(  Dice_is_grid_row_diced( i ) )  {
+					set_page_locators( GRID_p_selection[i], G_global_locator, G_TTC_abs_value );
+					dice_reset_tempo_skip_counter( GRID_p_selection[i] );
+					// Restore page tracks tempo
+					dice_unpack_tempo( GRID_p_selection[i] );
+				} else {
+					dice_flag_tempo_change( GRID_p_selection[i] );
 				}
 			}
+
 			DICE_bank->trackSelection ^= 1 << i;
 
 			// Toggle run bit (active when track selection ).
 			G_dice_run_bit = ( DICE_bank->trackSelection == 0 ) ? OFF : ON;
-			break;
 
-		case ATTR_LENGTH:
+			if( target_dice && Dice_get_MISC( target_dice, DICE_CLOCK_FLR ) ) {
+				// Resync dice global clock to sequencer locator / TTC
+				set_track_locators( DICE_bank, Dice_get_global_clock_track(), G_global_locator, G_TTC_abs_value );
+			}
+		break;
+
+		case ATTR_DICE_ALIGN:
+			// ENGAGE ALIGN
+			for ( i = 0; i < GRID_NROF_BANKS; i++ ) {
+				if ( Dice_is_grid_row_diced( i ) && GRID_p_selection[i] != NULL ){
+					set_page_locators( 	target_dice->attr_STA + GRID_p_selection[i], G_global_locator % ( target_dice->attr_STA + dice_length ), G_TTC_abs_value );
+				}
+			}
+
+			if( target_dice && Dice_get_MISC( target_dice, DICE_CLOCK_FLR ) ) {
+				// Resync dice global clock to sequencer locator / TTC
+				set_track_locators( DICE_bank, Dice_get_global_clock_track(), G_global_locator, G_TTC_abs_value );
+			}
+		break;
+
+		case ATTR_DICE_LENGTH:
+			// DICE LENGTH
 			col = dice_synced_value;
-			if( col > 8 && col < 14 ){
+			if( col > 8 && col < 14 ) {
 				target_dice->attr_LEN = col - 9;
 				target_dice->attr_TEMPOMUL = 0;
 			}
@@ -998,7 +1060,8 @@ void dice_synchronize() {
 			target_dice->attr_STA = ROUNDUP( target_dice->attr_STA - ( offset - 1 ), offset );
 			break;
 
-		case ATTR_START:
+		case ATTR_DICE_START:
+			// DICE SLICE SELECT
 			col = dice_synced_value;
 			offset = max( 1, 1 << ( 4 - (  (target_dice->attr_LEN - 1 ) + 1 ) ) );
 			target_dice->attr_STA = ROUNDUP( col - ( offset - 1 ), offset );
@@ -1006,34 +1069,30 @@ void dice_synchronize() {
 			break;
 
 		case ATTR_DICE_BANK:
-			SEL_DICE_BANK = dice_synced_value;
+			DICE_bank->mixTarget = dice_synced_value;
 			break;
 
-		case NEMO_ATTR_G_master_tempoMUL:
-			if( Dice_is_edit_tempo( target_dice ) ) {
-				Dice_set_TEMPOMUL( target_dice, dice_synced_value, dice_selected_clock );
-				Dice_set_TEMPOMUL_SKIP( target_dice, 0, dice_selected_clock );
-			}
+		case ATTR_DICE_FLR:
+			// Resync dice global clock to sequencer locator / TTC
+			set_track_locators( DICE_bank, Dice_get_global_clock_track(), G_global_locator, G_TTC_abs_value );
+			Dice_set_MISC( target_dice, dice_synced_value );
 			break;
-
-		case NEMO_ATTR_G_master_tempoMUL_SKIP:
-			if( Dice_is_edit_tempo( target_dice ) ) {
-				Dice_set_TEMPOMUL( target_dice, 1, dice_selected_clock );
-				Dice_set_TEMPOMUL_SKIP( target_dice, dice_synced_value, dice_selected_clock );
+		case ATTR_DICE_TEMPO_CHANGE:
+			Dice_set_TEMPOMUL( target_dice, dice_synced_value );
+			for ( i=0; i < GRID_NROF_BANKS; i++ ) {
+				if ( Dice_is_grid_row_diced( i ) && GRID_p_selection[i] != NULL ) {
+					dice_flag_tempo_change( GRID_p_selection[i] );
+				}
 			}
 			break;
 		}
 
 		if( CHECK_BIT( DICE_bank->editorMode, DICE_ALIGN ) ) {
 			// Resync dice page locators
-			j = G_global_locator;
-			k = G_TTC_abs_value;
 			dice_length = TRACK_MAX_LENGTH / ( 1 << target_dice->attr_LEN );
 			for ( i=0; i < GRID_NROF_BANKS; i++ ) {
-				// If the page is currently playing
-				if ( Dice_is_grid_row_diced( target_dice, i ) && GRID_p_selection[i] != NULL ) {
-
-					set_page_locators( 	target_dice->attr_STA + GRID_p_selection[i], j % ( target_dice->attr_STA + dice_length ), k );
+				if ( Dice_is_grid_row_diced( i ) && GRID_p_selection[i] != NULL ) {
+					set_page_locators( 	target_dice->attr_STA + GRID_p_selection[i], G_global_locator % ( target_dice->attr_STA + dice_length ), G_TTC_abs_value );
 				}
 			}
 			CLEAR_BIT( DICE_bank->editorMode, DICE_ALIGN );
@@ -1081,113 +1140,132 @@ bool dice_is_page_locator_skipped( Pagestruct* target_page, const unsigned char 
 
 
 // Get Dice clock offset
-const unsigned char dice_clock_offset( Pagestruct * target_page, unsigned char row, unsigned char clock_type ) {
-
-	unsigned char clock_offset = 0;
+signed char dice_clock_offset( Pagestruct * target_page ) {
 
 	Trackstruct* target_dice = throw_dice( target_page );
-	if( ( target_page != DICE_bank ) ) {
-		switch( clock_type ) {
-		case ATTR_G_master_tempoMUL:
-			return Dice_get_TEMPOMUL( target_dice, DICE_TRACK_CLOCK );
-		case ATTR_G_master_tempoMUL_SKIP:
-			return Dice_get_TEMPOMUL_SKIP( target_dice, DICE_TRACK_CLOCK );
-		default:
-			return 0;
-		}
+	signed char clock_offset = 0;
+
+	if( target_page != DICE_bank ) {
+		clock_offset = Dice_get_TEMPOMUL( target_dice ) - DICE_DEF_TEMPO_NUDGE;
 	}
 
 	return clock_offset;
 }
 
-// Apply clock offset to to track tempoMUL and tempoMUL_SKIP
-const DiceOffsetClock dice_apply_clock_offset( Pagestruct * target_page, unsigned char row ) {
+signed char dice_track_speed_pos_T[11][4] = {
+        // 1, 2, 3, 4, 5, 6, 7, 8, 16 (15, 25)
+        {2, 4, 8, 16},
+        {4, 8,16, 16},
+        {6,12,12, 12},
+        {8,16,16, 16},
+        {5, 5,10, 10},
+        {6, 6,12, 12},
+        {7, 7,14, 14},
+        {8, 8,16, 16},
+        {16,16,16,16},
+        {3, 6, 12,12},
+        {15, 3, 6,12}
+};
 
-	Trackstruct* target_track = target_page->Track[row];
+signed char dice_track_speed_neg_mul_T[11][4] = {
+        // 1, 2, 3, 4, 5, 6, 7, 8, 16 (15, 25)
+        {-2,-4, -8,-16},
+        {1, -2, -4, -8},
+        {15,25, -3, -6},
+        {2,  1, -2, -4},
+        {5, -5,-10,-10},
+        {3, 15, 25, -3},
+        {7, -7,-14,-14},
+        {4,  2,  1, -2},
+        {8,  4,  2,  1},
+        {25,-3,-6,-12},
+        {-3,-6,-12,-12}
 
-	DiceOffsetClock dice_clock;
-	if( target_track ) {
-		dice_clock.attr_TEMPOMUL = target_track->attr_TEMPOMUL;
-		dice_clock.attr_TEMPOMUL_SKIP = target_track->attr_TEMPOMUL_SKIP;
-	}
+};
+
+signed char dice_track_speed_neg_div_T[8][4] = {
+        // 2, 3, 4, 5, 6, 7, 8, 16
+        {-1, -2, -4, -8},
+        {-25,-15,-3, -6},
+        { 2, -1, -2, -4},
+        { 5, -5,-10,-10},
+        { 3, -25,-15,-3},
+        { 7, -7,-14,-14},
+        { 4,  2, -1, -2},
+		{ 8,  4,  2, -1}
+
+};
+
+#define DICE_TEMPOMUL_LOOKUP( speed ) (unsigned char) ( speed < 15 ? speed - 1 : speed == 16 ? 8 : speed == 15 ? 9 : 10 )
+#define DICE_TEMPOMUL_SKIP_LOOKUP( speed ) (unsigned char) ( speed == 15 ? 7 : speed )
+
+// Apply clock offset to track tempoMUL and tempoMUL_SKIP
+void dice_apply_clock_offset( Pagestruct * target_page, Trackstruct* target_track ) {
+
+	unsigned char attr_TEMPOMUL = target_track->attr_pack_TEMPO & 0x0F;
+	attr_TEMPOMUL = attr_TEMPOMUL == 14 ? 25 : attr_TEMPOMUL;
+	unsigned char attr_TEMPOMUL_SKIP = target_track->attr_pack_TEMPO >> 4;
 
 	Trackstruct* target_dice = throw_dice( target_page );
 	if( target_dice && target_page != DICE_bank ) {
-		unsigned char dice_multiplier_offset = 0;
-		unsigned char dice_divisor_offset = 0;
-		signed char dice_clock_delta = 0;
-		Trackstruct* target_track = target_page->Track[row];
+		signed char clock_offset = dice_clock_offset( target_page );
 
-		switch( target_track->attr_TEMPOMUL_SKIP & 0x0F ) {
+		if ( clock_offset == 0 ) {
+			target_track->attr_TEMPOMUL = attr_TEMPOMUL;
+			target_track->attr_TEMPOMUL_SKIP = attr_TEMPOMUL_SKIP;
+		} else {
 
-			case 0:
-				if( target_track->attr_TEMPOMUL != 15 ) {
-					dice_divisor_offset = dice_clock_offset( target_page, row, ATTR_G_master_tempoMUL_SKIP );
-					if( dice_divisor_offset > 0 ) {
-						dice_clock_delta = target_track->attr_TEMPOMUL - dice_divisor_offset;
+			switch( attr_TEMPOMUL_SKIP ) {
 
-						if( dice_clock_delta > 0 ) {
-							dice_clock.attr_TEMPOMUL = dice_clock_delta;
+				case 0:
+					if( clock_offset < 0 ) {
+						clock_offset = abs( clock_offset );
+
+						signed char clock_delta = dice_track_speed_neg_mul_T[DICE_SPEED_LOOKUP( attr_TEMPOMUL )][clock_offset - 1];
+						if ( clock_delta > 0 ) {
+							target_track->attr_TEMPOMUL = clock_delta;
 						} else {
-							dice_clock_delta = dice_clock_delta != 0 ? dice_clock_delta : -1;
-							dice_clock.attr_TEMPOMUL = 1;
-							dice_clock.attr_TEMPOMUL_SKIP =
-									( target_track->attr_TEMPOMUL_SKIP & 0xF0 )
-								|	( min( 1 - ( dice_clock_delta + 1 ), 14 ) );
-
+							target_track->attr_TEMPOMUL = 1;
+							target_track->attr_TEMPOMUL_SKIP = abs( clock_delta ) - 1;
 						}
 					} else {
-						dice_multiplier_offset = max( 0, dice_clock_offset( target_page, row, ATTR_G_master_tempoMUL ) - 1 );
-						dice_clock.attr_TEMPOMUL = min( target_track->attr_TEMPOMUL + dice_multiplier_offset, 14 );
+						target_track->attr_TEMPOMUL = dice_track_speed_pos_T[DICE_SPEED_LOOKUP( attr_TEMPOMUL )][clock_offset - 1];
 					}
-				}
-				break;
+					break;
 
-			default:
-				if( target_track->attr_TEMPOMUL != 25 ) {
-
-					dice_multiplier_offset = max( 0, dice_clock_offset( target_page, row, ATTR_G_master_tempoMUL ) - 1 );
-					if( dice_multiplier_offset > 0 ) {
-
-						dice_clock_delta = ( target_track->attr_TEMPOMUL_SKIP & 0x0F ) - dice_multiplier_offset;
-
-						if( dice_clock_delta > 0 ) {
-							dice_clock.attr_TEMPOMUL_SKIP =
-									( target_track->attr_TEMPOMUL_SKIP & 0xF0 )
-									|	( min( dice_clock_delta, 14 ) );
+				default:
+					if( clock_offset > 0 ) {
+						signed char clock_delta = dice_track_speed_neg_div_T[DICE_TEMPOMUL_SKIP_LOOKUP(attr_TEMPOMUL_SKIP) - 1][clock_offset - 1];
+						if( clock_delta > 0 ) {
+							target_track->attr_TEMPOMUL_SKIP = clock_delta;
 						} else {
-							dice_clock_delta = dice_clock_delta != 0 ? dice_clock_delta : -1;
-							dice_clock.attr_TEMPOMUL_SKIP = 0;
-							dice_clock.attr_TEMPOMUL = min( 1 - ( dice_clock_delta + 1 ), 14 );
+							target_track->attr_TEMPOMUL_SKIP = 0;
+							target_track->attr_TEMPOMUL = abs( clock_delta );
 						}
 					} else {
-						dice_divisor_offset = dice_clock_offset( target_page, row, ATTR_G_master_tempoMUL_SKIP );
-						dice_clock.attr_TEMPOMUL_SKIP =
-								( target_track->attr_TEMPOMUL_SKIP & 0xF0 )
-							|	( min( dice_divisor_offset + ( target_track->attr_TEMPOMUL_SKIP & 0x0F ), 14 ) );
+						target_track->attr_TEMPOMUL_SKIP = (dice_track_speed_pos_T[DICE_TEMPOMUL_SKIP_LOOKUP(attr_TEMPOMUL_SKIP)][abs( clock_offset ) - 1]) - 1;
 					}
-				}
-				break;
+					break;
+			}
 		}
 	}
-
-	return dice_clock;
 }
 
 
 
 // Get Dice attribute flow offset
-signed int dice_attr_flow_offset( Pagestruct * target_page, const unsigned char attribute, const card8 track_locator ) {
+signed int dice_attr_flow_offset( Pagestruct * target_page, const unsigned char attribute, const unsigned char row ) {
 
 	signed int dice_offset = 0;
 
 	Trackstruct* target_dice = throw_dice( target_page );
 
 	if( target_page != DICE_bank && target_dice ) {
-		bool is_dice_global_clock = Dice_get_MISC( target_dice, DICE_GLOBAL_CLOCK );
+		Trackstruct* target_track = target_page->Track[row];
+		bool is_dice_global_clock = Dice_get_MISC( target_dice, DICE_CLOCK_FLR );
 
 		// Select scaled locator (global / track)
-		unsigned char locator = is_dice_global_clock ? max( 1, Dice_get_global_clock_track()->attr_LOCATOR ) : track_locator;
+		unsigned char locator = is_dice_global_clock ? Dice_get_global_clock_track()->attr_LOCATOR : target_track->attr_LOCATOR;
 
 		// Calculate dice note pitch offset.
 		unsigned char dice_span = is_dice_global_clock ? TRACK_MAX_LENGTH : 1 << ( 4 - target_dice->attr_LEN );

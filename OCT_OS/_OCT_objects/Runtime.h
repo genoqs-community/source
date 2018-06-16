@@ -267,6 +267,11 @@ typedef struct trackstruct {
 	unsigned char attr_TEMPOMUL;
 	unsigned char attr_TEMPOMUL_SKIP;
 
+	#ifdef FEATURE_ENABLE_DICE
+	// Runtime store tempo value nibbles attr_TEMPOMUL | attr_TEMPOMUL_SKIP & 0x0F
+	unsigned char attr_pack_TEMPO;
+	#endif
+
 	// A value of 0 means none is active, the rest is 1-128
 	unsigned char program_change;
 	unsigned char bank_change;
@@ -315,7 +320,7 @@ typedef struct trackstruct {
 
 	// Holds the shapeindex of the flows per attribute
 	unsigned char flow_shape[10];
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	#ifdef FEATURE_ENABLE_KB_TRANSPOSE
 	unsigned char attr_EMISC;			//ephemeral misc
 	unsigned char attr_GST; 			//PIT ghost (on track select) attribute
 	// attr_STATUS is transpose in channel
@@ -482,7 +487,7 @@ typedef struct pagestruct{
 
 	// Store of the step selection patterns in the page. 16 bits per track.
 	unsigned short stepSELpattern[5][ MATRIX_NROF_ROWS ];
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	#ifdef FEATURE_ENABLE_KB_TRANSPOSE
 	// Transpose pitch absolute mode toggle
 	unsigned char pitch_abs;
 	#endif
@@ -491,7 +496,6 @@ typedef struct pagestruct{
 } Pagestruct;
 
 #ifdef FEATURE_ENABLE_DICE
-extern unsigned char 	SEL_DICE_BANK;
 extern Pagestruct* 		DICE_bank;
 #endif
 

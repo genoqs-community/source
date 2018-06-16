@@ -51,8 +51,11 @@ void Track_soft_init( Trackstruct* target_track ){
 	target_track->attr_CCAMT		= 0;
 	target_track->attr_TEMPOMUL			= 1;
 	target_track->attr_TEMPOMUL_SKIP 	= 0;
+	#ifdef FEATURE_ENABLE_DICE
+	target_track->attr_pack_TEMPO = 1;
+	#endif
 	target_track->attr_MISC      	= (1 << 2);		// sets the chord bit
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	#ifdef FEATURE_ENABLE_KB_TRANSPOSE
 	target_track->attr_EMISC		= 0;
 	target_track->attr_STATUS		= TRACK_DEF_MIDITCH;
 	target_track->attr_GST 			= TRACK_DEF_PITCH;
@@ -157,7 +160,7 @@ void Track_hard_init( Trackstruct* target_track, trackid_t trackId ){
 	target_track->chain_data[PLAY] = target_track;
 
 	// Initialization sequence
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	#ifdef FEATURE_ENABLE_KB_TRANSPOSE
 	target_track->attr_STATUS 		= TRACK_DEF_MIDITCH;
 	#else
 	target_track->attr_STATUS 		= OFF;

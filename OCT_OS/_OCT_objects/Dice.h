@@ -29,7 +29,6 @@
 
 #include "../_OCT_objects/Runtime.h"
 
-unsigned char DICE_BANK;
 unsigned char dice_synced_attr = 0;
 unsigned char dice_synced_value = 0;
 
@@ -42,22 +41,22 @@ typedef struct DiceFlowAttributes {
 } DiceFlowAttributes;
 
 
-// Updated track clock applied dice offset
-typedef struct DiceOffsetClock {
-	unsigned char attr_TEMPOMUL;
-	unsigned char attr_TEMPOMUL_SKIP;
-} DiceOffsetClock;
-
-
 // Used to clear the dice soft factors, used at runtime
-void Dice_init() {
+void Dice_init( Pagestruct*	DICE_bank ) {
 
 	unsigned char i;
-
+	// DICE Bank selection
+	DICE_bank->mixTarget	 		= 0;
 	DICE_bank->trackSelection 		= 0;
 	DICE_bank->trackSelectionStored	= 0;
 	DICE_bank->trackSolopattern		= 0;
 	DICE_bank->REC_bit				= OFF;
+
+	// DICE selected edit attribute
+	DICE_bank->mixAttribute			= NEMO_ATTR_PITCH;
+
+	// scaleStatus value 255 id page as DICE
+	DICE_bank->scaleStatus			= 255;
 
 	// Init Dice bank sessions
 	for ( i=0; i < MAX_NROF_DICE; i++ ) {
@@ -65,9 +64,8 @@ void Dice_init() {
 		target_dice->attr_LEN 			= i + 1;
 		target_dice->attr_STA 			= 0;
 
-		// Dice flow TEMPOMUL / TEMPOMUL_SKIP
-		target_dice->attr_TEMPOMUL		= 1;
-		target_dice->attr_TEMPOMUL_SKIP = 0;
+		// Dice flow DCK
+		target_dice->attr_TEMPOMUL		= 5;
 
 		// NEMO_selectedDiceAttribute
 		target_dice->attr_STATUS 		= NEMO_ATTR_PITCH;
@@ -158,28 +156,19 @@ void Dice_copy( Trackstruct* source_dice, Trackstruct* target_dice ) {
 
 // Get the currently selected Dice
 Trackstruct * Dice_get() {
-	return DICE_bank->Track[SEL_DICE_BANK];
+	return DICE_bank->Track[DICE_bank->mixTarget];
 }
 
 // Gets the data into the MISC attribute, according to given flag
 unsigned char Dice_get_MISC( Trackstruct* target_dice, unsigned char target_flag ) {
 
-	switch( target_flag ) {
-
-		case DICE_TRACK_CLOCK:
-		case DICE_GLOBAL_CLOCK:
-		case DICE_GLOBAL_CLOCK | DICE_TRACK_CLOCK:
-			return CHECK_MASK(target_dice->attr_MISC, target_flag);
-	}
-
-	return OFF;
+	return CHECK_BIT( target_dice->attr_MISC, target_flag - 1 );
 }
 
 
 // Sets the data into the MISC attribute, according to given flag
 void Dice_set_MISC( Trackstruct* target_dice,
-					 unsigned char target_flag,
-					 unsigned char in_value ) {
+					 const unsigned char target_flag ) {
 
 	// Toggle set clock bits.
 	unsigned char holdout_mask;
@@ -187,11 +176,18 @@ void Dice_set_MISC( Trackstruct* target_dice,
 
 	switch( target_flag ) {
 
-		case DICE_GLOBAL_CLOCK | DICE_TRACK_CLOCK:
-		target_mask = holdout_mask = target_dice->attr_MISC;
+		case DICE_CLOCK_FLR:
+		case DICE_CLOCK:
+			target_mask = holdout_mask = target_dice->attr_MISC;
 
-		CLEAR_MASK( holdout_mask, target_flag ); APPLY_MASK( target_mask, in_value ); TOGGLE_MASK( target_mask, in_value );
-		target_dice->attr_MISC = SET_MASK( target_mask, holdout_mask );
+			CLEAR_MASK( holdout_mask, 0x3 );
+			APPLY_MASK( target_mask, 1 << ( target_flag - 1 ) );
+			TOGGLE_MASK( target_mask, 1 << ( target_flag - 1 ) );
+			target_dice->attr_MISC = SET_MASK( target_mask, holdout_mask );
+		break;
+
+		case DICE_CHAIN_FOLLOW:
+			TOGGLE_BIT( target_dice->attr_MISC, target_flag - 1 );
 		break;
 	}
 }
@@ -208,57 +204,21 @@ Trackstruct * Dice_get_global_clock_track() {
 // Gets the selected clock type
 unsigned char Dice_get_selected_clock_type( Trackstruct* target_dice ) {
 
-	return Dice_get_MISC( target_dice, DICE_TRACK_CLOCK ) ? DICE_TRACK_CLOCK : DICE_GLOBAL_CLOCK;
-}
-
-
-// Get a pointer to selected dice TEMPOMUL helper
-unsigned char * Dice_get_TEMPOMUL_ptr( Trackstruct* target_dice, unsigned char clock ) {
-
-	return clock == DICE_TRACK_CLOCK ?  &target_dice->attr_TEMPOMUL : &Dice_get_global_clock_track( DICE_bank )->attr_TEMPOMUL;
+	return Dice_get_MISC( target_dice, DICE_CLOCK_FLR ) ? DICE_CLOCK_FLR : DICE_CLOCK;
 }
 
 
 // Get value of dice TEMPOMUL
-unsigned char Dice_get_TEMPOMUL( Trackstruct* target_dice, unsigned char clock ) {
+unsigned char Dice_get_TEMPOMUL( Trackstruct* target_dice ) {
 
-	unsigned char * TEMPOMUL_ptr = Dice_get_TEMPOMUL_ptr( target_dice, clock );
-	return TEMPOMUL_ptr ? *TEMPOMUL_ptr : 0;
+	return target_dice->attr_TEMPOMUL;
 }
 
 
-// Set value of dice TEMPOMUL
-void Dice_set_TEMPOMUL( Trackstruct* target_dice, const unsigned char value, unsigned char clock ) {
+// Set value of dice TEMPOMUL (neg 1 - 4, zero 5, pos 6 - 10)
+void Dice_set_TEMPOMUL( Trackstruct* target_dice, const unsigned char value ) {
 
-	unsigned char * TEMPOMUL_ptr = Dice_get_TEMPOMUL_ptr( target_dice, clock );
-	if( TEMPOMUL_ptr ) {
-		*TEMPOMUL_ptr = value;
-	}
-}
-
-
-// Get a pointer to selected dice TEMPOMUL_SKIP helper
-unsigned char * Dice_get_TEMPOMUL_SKIP_ptr( Trackstruct* target_dice, unsigned char clock ) {
-
-	return clock == DICE_TRACK_CLOCK ? &target_dice->attr_TEMPOMUL_SKIP : &Dice_get_global_clock_track( DICE_bank )->attr_TEMPOMUL_SKIP;
-}
-
-
-// Get value of dice TEMPOMUL_SKIP
-unsigned char Dice_get_TEMPOMUL_SKIP( Trackstruct* target_dice, unsigned char clock ) {
-
-	unsigned char * TEMPOMUL_SKIP_ptr = Dice_get_TEMPOMUL_SKIP_ptr( target_dice, clock );
-	return TEMPOMUL_SKIP_ptr ? *TEMPOMUL_SKIP_ptr : 0;
-}
-
-
-// Set value of dice TEMPOMUL_SKIP
-void Dice_set_TEMPOMUL_SKIP( Trackstruct* target_dice, const unsigned char value, unsigned char clock ) {
-
-	unsigned char * TEMPOMUL_SKIP_ptr = Dice_get_TEMPOMUL_SKIP_ptr( target_dice, clock );
-	if( TEMPOMUL_SKIP_ptr ) {
-		*TEMPOMUL_SKIP_ptr = value;
-	}
+	target_dice->attr_TEMPOMUL = value;
 }
 
 
@@ -499,19 +459,19 @@ signed char Dice_get_flow_attribute_value( const unsigned char attribute, const 
 	#ifdef NEMO
 	switch( attribute ) {
 		case NEMO_ATTR_PITCH:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->attr_PIT; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->attr_PIT; break;
 		case NEMO_ATTR_VELOCITY:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->attr_VEL; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->attr_VEL; break;
 		case NEMO_ATTR_LENGTH:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->attr_LEN; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->attr_LEN; break;
 		case NEMO_ATTR_START:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->attr_STA; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->attr_STA; break;
 		case NEMO_ATTR_AMOUNT:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->attr_AMT; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->attr_AMT; break;
 		case NEMO_ATTR_GROOVE:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->phrase_num; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->phrase_num; break;
 		case NEMO_ATTR_MIDICC:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->attr_MCC; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->attr_MCC; break;
 	}
 
 	#else
@@ -519,19 +479,19 @@ signed char Dice_get_flow_attribute_value( const unsigned char attribute, const 
 	switch( attribute ) {
 
 		case ATTR_PITCH:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->attr_PIT; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->attr_PIT; break;
 		case ATTR_VELOCITY:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->attr_VEL; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->attr_VEL; break;
 		case ATTR_LENGTH:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->attr_LEN; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->attr_LEN; break;
 		case ATTR_START:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->attr_STA; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->attr_STA; break;
 		case ATTR_AMOUNT:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->attr_AMT; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->attr_AMT; break;
 		case ATTR_GROOVE:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->phrase_num; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->phrase_num; break;
 		case ATTR_MIDICC:
-			flow_value = DICE_bank->Step[SEL_DICE_BANK][col]->attr_MCC; break;
+			flow_value = DICE_bank->Step[DICE_bank->mixTarget][col]->attr_MCC; break;
 	}
 	#endif
 	return flow_value;
@@ -549,15 +509,8 @@ bool Dice_is_flow_attribute_flat( const unsigned char attribute ) {
 }
 
 
-// Is Dice tempo selected
-bool Dice_is_edit_tempo( Trackstruct* target_dice ) {
-
-	return target_dice->attr_MISC & 0x3;
-}
-
-
 // Is grid row diced
-bool Dice_is_grid_row_diced( Trackstruct* target_dice, unsigned char row ) {
+bool Dice_is_grid_row_diced( const unsigned char row ) {
 
 	return CHECK_BIT( DICE_bank->trackSelection, row );
 }

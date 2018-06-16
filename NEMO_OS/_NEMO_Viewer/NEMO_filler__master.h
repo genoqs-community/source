@@ -32,6 +32,8 @@
 
 extern void MIR_write_tempo( unsigned char tempo, unsigned char row );
 
+extern bool page_is_chain_follow( Pagestruct* target_page );
+
 
 // Transforms a grid cursor postion into a MIR index
 unsigned char cursor_to_dot( unsigned char in_cursor ){
@@ -82,9 +84,15 @@ void VIEWER_fill_MIR() {
 	unsigned int col = 0;
 	unsigned int temp = 0;
 	unsigned char color = 0;
-	
+
 	// Work on the page under the grid cursor
 	Pagestruct* target_page = &Page_repository[ GRID_CURSOR ];
+	#ifdef FEATURE_ENABLE_DICE
+	Trackstruct* target_dice = Dice_get();
+	#endif
+	// x2 - Track row window shift
+	unsigned char shiftTrackRow = track_get_window_shift( target_page );;
+	unsigned char shiftPageRow	= page_get_window_shift();
 
 	// ZOOM LEVEL
 	show( ELE_ZOOMLEVEL, G_zoom_level );
@@ -147,6 +155,11 @@ void VIEWER_fill_MIR() {
 			#include "NEMO_filler_SCALE.h"
 			break;
 
+		#ifdef FEATURE_ENABLE_DICE
+		case zoomDICE:
+			#include "NEMO_filler_DICE.h"
+			break;
+		#endif
 	} // switch ( target_page->zoomlevel );
 
 } // void VIEWER_fill_MIR()

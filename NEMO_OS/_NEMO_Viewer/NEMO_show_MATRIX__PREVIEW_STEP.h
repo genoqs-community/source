@@ -18,11 +18,11 @@
 	if ( my_pressed_step == 0 ) break;
 
 	// Compute coordinates of the pressed step
-	row = row_of( my_pressed_step );
+	row = row_of( my_pressed_step ) + shiftTrackRow;
 	col = column_of( my_pressed_step );
 
 	// Show the step length in the matrix
-	show_preview_stepLEN( my_pressed_step, row, col, target_page->Step[row][col]->attr_LEN );
+	show_preview_stepLEN( my_pressed_step, row - shiftTrackRow, col, target_page->Step[row][col]->attr_LEN );
 
 	// Show the step VEL and PIT in the circles
 	show_velocity_in_circle(	normalize(		target_page->Track[row]->attr_VEL

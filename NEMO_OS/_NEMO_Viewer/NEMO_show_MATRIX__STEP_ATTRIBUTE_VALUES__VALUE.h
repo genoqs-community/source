@@ -51,7 +51,7 @@
 				break;
 
 			case ( NEMO_ATTR_START ):
-				MIR_show_startbar_H (target_page->Step[row][col]->attr_STA, NEMO_ROW_I );
+				MIR_show_startbar_H (target_page->Step[row][col]->attr_STA, NEMO_ROW_I);
 				j = 3;
 				break;
 

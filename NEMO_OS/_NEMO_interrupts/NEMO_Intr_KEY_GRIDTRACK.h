@@ -30,7 +30,7 @@
 	
 	// Button pressed in range of virtual selectors
 	if (	(	( my_pressed_key > 0  ) 
-			&&	( my_pressed_key < 48 ) )
+			&&	( my_pressed_key < 89 ) )
 		){
 
 		// This is the traditional way of select and operate

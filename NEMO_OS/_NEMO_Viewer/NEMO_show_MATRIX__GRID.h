@@ -22,37 +22,41 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
+
+
 	switch( GRID_play_mode ){
 
 		case GRID_EDIT:
-
+			if( !row_in_page_window( GRID_CURSOR % 10 ) )
+				break;
 			// GRID_CURSOR shown by blinking 
-			GRID_write_dot (GRID_CURSOR, MIR_BLINK);
+			GRID_write_dot (GRID_CURSOR - shiftPageRow, MIR_BLINK);
 
 			if ( Page_repository[GRID_CURSOR].page_clear == ON ){	
 				// If on empty page then light position orange
-				GRID_write_dot (GRID_CURSOR, MIR_GREEN);
-				GRID_write_dot (GRID_CURSOR, MIR_RED);
+				GRID_write_dot (GRID_CURSOR - shiftPageRow, MIR_GREEN);
+				GRID_write_dot (GRID_CURSOR - shiftPageRow, MIR_RED);
 			} 
 
 			// NON-EMPTY PAGES shown GREEN or RED
 			for (i=0; i < MAX_NROF_PAGES; i++) {
 				
+				if( !row_in_page_window( i % 10 ) )
+					continue;
 				// Page has contents and is not one of the row zero
 				if (	(Page_repository[i].page_clear != ON)
 					&&	( (i % 10) != 9 )
 					){
-
 					// Page PLAYING - i.e. selected in GRID
 					if ( is_selected_in_GRID( &Page_repository[i] ) ){
 						
 						// Show it in GREEN
-						GRID_write_dot( i, MIR_GREEN );
+						GRID_write_dot( i - shiftPageRow, MIR_GREEN );
 					}
 					else {
 						
 						// Show it in RED - page is IDLE
-						GRID_write_dot( i, MIR_RED );
+						GRID_write_dot( i - shiftPageRow, MIR_RED );
 					}
 				} // page_clear != ON
 			} // page iterator
@@ -66,30 +70,35 @@
 			// GRID_CURSOR shown by blinking 
 //					GRID_write_dot (GRID_CURSOR, MIR_BLINK);
 
+			// NOTE: GRID SET shiftPageRow skipped.
 			// GRID SETS: Show the non-empty GRID sets by red lights.
 			for ( i=0; i < GRID_NROF_SETS; i++ ){
+
+				temp = 9 + i * 10;
 
 				// Check the respective GRID set for content and currency
 				if ( 	( get_content_GRID_set( i ) )
 					&&	( current_GRID_set != i )
 					){
 					
-					GRID_write_dot( 9 + i*10, MIR_RED );
+					GRID_write_dot( temp, MIR_RED );
 				}
 			}
 
-			GRID_write_dot( 9 + current_GRID_set*10, MIR_GREEN 	);
+			temp = 9 + current_GRID_set * 10;
+
+			GRID_write_dot( temp, MIR_GREEN 	);
 
 			// Check if changes have been made to set
 			if ( !is_actual_GRID( current_GRID_set ) ){
 
-				GRID_write_dot( 9 + current_GRID_set*10, MIR_RED );			
+				GRID_write_dot( temp, MIR_RED );
 			}
 
 			// Blink the current GRID set - but not when called from page BIRDSEYE
 			if ( G_zoom_level != zoomPAGE ){
 
-				GRID_write_dot( 9 + current_GRID_set*10, MIR_BLINK 	);
+				GRID_write_dot( temp, MIR_BLINK 	);
 			}
 
 
@@ -102,16 +111,24 @@
 					&&	( (i % 10) != 9 )
 					){
 
+					if( !row_in_page_window( i % 10 ) )
+						continue;
+
 					// Page PLAYING - i.e. selected in GRID
 					if ( is_selected_in_GRID( &Page_repository[i] ) ){			
 
 						// Show it in GREEN
-						GRID_write_dot( i, MIR_GREEN );
-						// GRID_write_dot( i, MIR_BLINK );								
+						GRID_write_dot( i - shiftPageRow, MIR_GREEN );
+						if (	( G_run_bit == ON )
+							&&	( Page_repository[i].attr_STA == 0 )
+							&&	( ( GRID_bank_playmodes & ( 1 << (i % 10) ) ) != 0 ) ){
+							// Indicate clustered page is page looping indefinitely
+							GRID_write_dot( i - shiftPageRow, MIR_BLINK );
+						}
 					}
 					else {
 						// Show it in GREEN
-						GRID_write_dot( i, MIR_RED );
+						GRID_write_dot( i - shiftPageRow, MIR_RED );
 					}
 				} // page_clear != ON
 			} // page iterator
@@ -125,9 +142,12 @@
 					&&	( GRID_p_clock_presel[j]->page_clear != ON )
 					){
 
+					if( !row_in_page_window( GRID_p_clock_presel[j]->pageNdx % 10 ) )
+						continue;
+
 					// Show the preselection orange
-					GRID_write_dot( GRID_p_clock_presel[j]->pageNdx, MIR_RED );
-					GRID_write_dot( GRID_p_clock_presel[j]->pageNdx, MIR_GREEN );	
+					GRID_write_dot( GRID_p_clock_presel[j]->pageNdx - shiftPageRow, MIR_RED );
+					GRID_write_dot( GRID_p_clock_presel[j]->pageNdx - shiftPageRow, MIR_GREEN );
 				}
 			}
 

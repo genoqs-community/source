@@ -168,7 +168,7 @@
 				target_page->trackSelection = 0;
 				return;
 			}
-			#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+			#ifdef FEATURE_ENABLE_KB_TRANSPOSE
 			//backup PIT as ghost pitch on selection
 			target_page->Track[keyNdx-1]->attr_GST = target_page->Track[keyNdx-1]->attr_PIT;
 			#endif

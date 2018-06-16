@@ -422,7 +422,7 @@ unsigned char jump_skipped_trigger_position(	Pagestruct* target_page,
 					break;
 					#endif
 				}
-				k++;
+				++k;
 			}
 		}
 
@@ -781,6 +781,24 @@ Trackstruct* advance_track_locator( 	Pagestruct* target_page,
 
 	// Cover case of TTC coming from 0 in chain shifting..
 	target_track->TTC = 1;
+
+	#ifdef FEATURE_ENABLE_DICE
+	Trackstruct* target_dice = throw_dice( target_page );
+	if( target_dice && new_pos == 0 ) {
+		if( !Dice_get_MISC( target_dice, DICE_CHAIN_FOLLOW ) ) {
+		  // Goto dice start (no chain follow)
+		  new_pos = get_next_trackposition( target_page, target_track );
+
+		  // SKIP of the track, nothing to do
+		  if ( new_pos == 0 ) {
+		    return NULL;
+		  } else {
+		    // Assign the new locator value to the track
+		    target_track->attr_LOCATOR = new_pos;
+		  }
+		}
+	}
+	#endif
 
 	// A new pos of 0 is the most interesting case.
 	// There can be various reasons for this: Track WRAP, track SKIP, or chain SWITCH

@@ -355,9 +355,9 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 	}
 
 	#ifdef FEATURE_ENABLE_DICE
-	// Advance DICE global clock (DICE_GLOBAL_CLOCK)
+	// Advance DICE global clock (DICE_CLOCK_FLR)
 	Trackstruct* target_dice = throw_dice(NULL);
-	if( target_dice && Dice_get_MISC( target_dice, DICE_GLOBAL_CLOCK ) ) {
+	if( target_dice && Dice_get_MISC( target_dice, DICE_CLOCK_FLR ) ) {
 
 		PLAYER_play_track( DICE_bank, row_of_track( DICE_bank, Dice_get_global_clock_track() ) );
 	}

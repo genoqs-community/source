@@ -2,9 +2,9 @@
 
 #define 	SW_VERSION_MAJOR				 0	// Max 10 - Hundreds
 #define		SW_VERSION_MINOR				 0	// Max 10 - Tens
-#define		SW_VERSION_RELEASE				 4	// Max 10 - Ones
+#define		SW_VERSION_RELEASE				 5	// Max 10 - Ones
 
-#define		SW_VERSION_INTERNAL				 64	// Max 127 - Row 0 number
+#define		SW_VERSION_INTERNAL				 1	// Max 127 - Row 0 number
 
 // SWITCH between 'MIDI' and 'USB' modes of the MIDI 2 Port
 #define		OCTDEF_UART2_MODE	 			MIDI
@@ -17,15 +17,14 @@
 
 #ifdef CE_OS_ADDON_BUILD
 
+#define 	FEATURE_ENABLE_DICE				TRUE
 #ifdef NEMO
 // NEMO FEATURE ENABLE
-//#define 	FEATURE_ENABLE_DICE				TRUE
-
+//#define 	FEATURE_ENABLE_KB_TRANSPOSE		TRUE
 #else
 // OCTOPUS FEATURE ENABLE
-#define 	FEATURE_ENABLE_SONG_UPE			TRUE
-//#define 	FEATURE_ENABLE_KEYB_TRANSPOSE   TRUE
-
+//#define 	FEATURE_ENABLE_SONG_UPE			TRUE
+//#define 	FEATURE_ENABLE_KB_TRANSPOSE		TRUE
 #endif
 
 #endif
@@ -41,6 +40,7 @@
  *  0.0.5.00		FINAL VERSION of 0.0.5
  *
  *  0.0.4.64	- 	Cases : 1.62x (64-68)
+ *							Nemo x2 (48)
  *
  *  0.0.4.63	- 	Cases : 1.62x (62-63)
  *  						Nemo x2 (41-47)

@@ -49,12 +49,6 @@ extern 	void 			shiftAttributeMap( 		Pagestruct* target_page,
 extern unsigned char 	row_of_track( Pagestruct* target_page, Trackstruct* target_track );
 extern void 			NEMO_Page_RMX_track( Pagestruct* target_page, unsigned char row );
 
-#ifdef FEATURE_ENABLE_DICE
-extern Trackstruct* throw_dice( 				Pagestruct* target_page );
-
-extern signed int dice_attr_flow_offset( Pagestruct * target_page, unsigned char attr, const card8 locator );
-#endif
-
 void Page_clear( Pagestruct* pagePt )
 {
 	int row;

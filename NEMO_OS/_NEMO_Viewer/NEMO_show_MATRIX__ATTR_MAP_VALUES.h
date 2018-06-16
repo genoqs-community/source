@@ -23,13 +23,15 @@
 //
 
 
-		// Display for each step the value of selected attribute
+	// Display for each step the value of selected attribute
 
-		// Get row of the selected track
-		row = my_bit2ndx( target_page->trackSelection );
+	// Get row of the selected track
+	row = my_bit2ndx( target_page->trackSelection );
 
-		// Get the selected attribute
-		attribute = my_bit2ndx( target_page->trackAttributeSelection );
+	// Get the selected attribute
+	attribute = my_bit2ndx( target_page->trackAttributeSelection );
+
+	if( row_in_track_window( target_page, row ) ){
 
 		// Display type depends on the attribute itself
 		switch( attribute ){
@@ -40,7 +42,7 @@
 				// Interval mapping taking place - centerline is 4, range -49 +49
 				MIR_write_numeric_V_zeroline_VEL( 	4, 
 												//	-49, 49, 
-													row, attribute );
+													row - shiftTrackRow, attribute );
 
 				// Show the VEL_factor of the current track
 				MIR_write_factor_C( 
@@ -61,7 +63,7 @@
 				// Interval mapping taking place - centerline is 4, range -49 +49
 				MIR_write_numeric_V_zeroline_PIT( 	4, 
 												//	-49, 49, 
-													row );
+													row - shiftTrackRow );
 
 				// Show the PIT_factor of the current track
 				MIR_write_factor_C( 
@@ -127,11 +129,13 @@
 					
 				// Show the current triggers in the selected trigger set
 				for (i=0; i < MATRIX_NROF_ROWS; i++){
-					
+					if ( !row_in_track_window( target_page, i ) )
+						continue;
+
 					MIR_point_numeric( 
 						direction_repository[ target_page->Track[row]->attr_DIR]
 						.trigger_set[ current_trigger_set ].trigger[i], 
-						MATRIX_NROF_ROWS - (i+1), MIR_RED );
+						MATRIX_NROF_ROWS - ((i - shiftTrackRow)+1), MIR_RED );
 				}
 				
 				// Show the "certainty next" parameter of the selected trigger set
@@ -151,7 +155,7 @@
 				// Interval mapping taking place - centerline is 4, range -49 +49
 				MIR_write_numeric_V_zeroline_VEL( 	4, 
 												// -49, 49, 
-													row, attribute );
+													row - shiftTrackRow, attribute );
 
 				// Show the VEL_factor of the current track
 				MIR_write_factor_C( 
@@ -188,12 +192,12 @@
 					case MIDICC_BENDER:
 						MIR_write_numeric_V_zeroline_MCC_BENDER( 	4, 
 																// -63, 64, 
-																	row );
+																	row - shiftTrackRow );
 						break;
 
 					default:
 						// Interval mapping taking place 
-						MIR_write_numeric_V_MCC( target_page, row );		
+						MIR_write_numeric_V_MCC( target_page, row );
 						break;
 				}
 
@@ -207,6 +211,7 @@
 				MIR_write_dot( LED_SCALE_MYSEL, MIR_RED );
 				break;	
 		}
+	}
 
 
 

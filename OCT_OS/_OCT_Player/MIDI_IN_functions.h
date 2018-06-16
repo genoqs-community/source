@@ -1067,7 +1067,7 @@ void modify_scale_composition( 	Pagestruct* target_page,
 	}
 }
 
-#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+#ifdef FEATURE_ENABLE_KB_TRANSPOSE
 // Transpose pitch assignment
 // Offset track base pitch on incoming transpose channel attr_STATUS
 // Restore pitch when key velocity is strong

@@ -850,11 +850,13 @@ void PersistentV2_TrackAndStepImport( Pagestruct* targetPagePt, card32 source_ro
 	targetTrackPt->attr_CCAMT = sourceTrackPt->attr_CCAMT;
 	targetTrackPt->attr_TEMPOMUL = sourceTrackPt->attr_TEMPOMUL;
 	targetTrackPt->attr_TEMPOMUL_SKIP = sourceTrackPt->attr_TEMPOMUL_SKIP;
+	#ifdef FEATURE_ENABLE_DICE
+	targetTrackPt->attr_pack_TEMPO = ( targetTrackPt->attr_TEMPOMUL == 25 ? 14 : targetTrackPt->attr_TEMPOMUL ) | ( targetTrackPt->attr_TEMPOMUL_SKIP << 4 );
+	#endif
 	targetTrackPt->CC_resolution = sourceTrackPt->CC_resolution;
 	targetTrackPt->hyper = sourceTrackPt->hyper;
 	targetTrackPt->gatePosition = 0; // Runtime data member.
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
-	//ghost note (transpose)
+	#ifdef FEATURE_ENABLE_KB_TRANSPOSE
 	targetTrackPt->attr_GST = sourceTrackPt->attr_PIT;
 	#endif
 	// Attribute offset ranges

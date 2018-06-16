@@ -26,18 +26,23 @@
 
 			// Blink the TRACK SELECTION
 			for (i=0; i<MATRIX_NROF_ROWS; i++) {
+				if( !row_in_track_window( target_page, i ) )
+					continue;
+
 				if (target_page->trackSelection & (1<<i)) {
 					if (Page_get_trackpattern(target_page, i) == 0) {
 						// If the track is empty, light everything in red
 						// MIR_augment_trackpattern( 0xffff, i, MIR_RED );
 					}
 					else {
+						track_togglepattern = 	Page_get_trackpattern( target_page, i );
 						// If track muted, light it in red 
 						if ( (target_page->trackMutepattern & (1<<i)) != 0) {
-							MIR_write_trackpattern (Page_get_trackpattern(target_page, i), i, MIR_RED);
+						
+							MIR_write_trackpattern (track_togglepattern, i - shiftTrackRow, MIR_RED);
 						}
 						else {
-							MIR_write_trackpattern (Page_get_trackpattern(target_page, i), i, MIR_RED);
+							MIR_write_trackpattern (track_togglepattern, i - shiftTrackRow, MIR_RED);
 						}
 					}
 				}

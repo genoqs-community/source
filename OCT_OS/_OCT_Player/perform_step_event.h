@@ -89,9 +89,9 @@ void perform_step_event( 	Stepstruct* in_step,
 
 	#ifdef FEATURE_ENABLE_DICE
 	#ifdef NEMO
-	dice_amount_offset = dice_attr_flow_offset( target_page, NEMO_ATTR_AMOUNT, locator );
+	dice_amount_offset = dice_attr_flow_offset( target_page, NEMO_ATTR_AMOUNT, in_row );
 	#else
-	dice_amount_offset = dice_attr_flow_offset( target_page, ATTR_AMOUNT, locator );
+	dice_amount_offset = dice_attr_flow_offset( target_page, ATTR_AMOUNT, in_row );
 	#endif
 	#endif
 

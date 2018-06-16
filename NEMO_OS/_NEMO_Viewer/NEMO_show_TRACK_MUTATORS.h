@@ -28,6 +28,9 @@
 
 	// Differentiate between single and multi selection
 	for (i=0; i<MATRIX_NROF_ROWS; i++){
+		if ( !row_in_track_window( target_page, i ) )
+			continue;
+
 		if ((target_page->trackSelection & (1<<i)) > 0) {
 			if ((target_page->trackSelection ^ (1<<i)) > 0) { 
 				// Multiple Track Selection
@@ -72,10 +75,11 @@
 			j = 0;
 
 			// Overwrite any other assumptions from above
-			i = GRID_mutepattern;			
+
+
 
 			// Write the pattern to the mutator column
-			MIR_write_buttool (RHS, i, MIR_RED);
+			MIR_write_buttool (RHS, GRID_mutepattern >> shiftPageRow, MIR_RED);
 			MIR_write_buttool (RHS, j, MIR_GREEN);
 
 			break;
@@ -84,14 +88,14 @@
 
 		case TRACK_MUTEPATTERN:
 
-			MIR_write_buttool (RHS, target_page->trackMutepattern, MIR_RED);	
+			MIR_write_buttool (RHS, target_page->trackMutepattern >> shiftTrackRow, MIR_RED);
 
 			break;
 			
 
 
 		case TRACK_SOLOPATTERN:
-			MIR_write_buttool (RHS, target_page->trackSolopattern, MIR_GREEN);
+			MIR_write_buttool (RHS, target_page->trackSolopattern >> shiftTrackRow, MIR_GREEN);
 			// MIR_write_buttool (RHS, target_page->trackSolopattern, MIR_BLINK);
 			break;
 		
@@ -107,6 +111,8 @@
 			
 				// If the track is muted turn off green light of toggle
 				for (i=0; i<MATRIX_NROF_ROWS; i++) {
+					if ( !row_in_track_window( target_page, i ) )
+						continue;
 					// Find the selected track
 					if ( (target_page->trackSelection & (1<<i)) > 0 ) {
 						//  row is index of the (first) selected track
@@ -182,6 +188,8 @@
 
 			// Compute the functions from the panel: Intersection of functions of all atributes
 			for (i=0; i<MATRIX_NROF_ROWS; i++) {
+				if ( !row_in_track_window( target_page, i ) )
+					continue;
 
 				// If the attribute is selected
 				if ((target_page->trackAttributeSelection & (1<<i)) != OFF) {	

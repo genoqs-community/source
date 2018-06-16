@@ -26,10 +26,10 @@
 		// Light red the skipped steps
 		for (i=0; i < MATRIX_NROF_ROWS; i++){
 
-			if ( (( target_page->track_window << target_page->track_window_shift ) & (1 << i)) != 0 ){
+			if ( !row_in_track_window( target_page, i ) )
+				continue;
 
-				MIR_augment_trackpattern( 
-					Page_get_skippattern( target_page, i ), i, MIR_RED );
-			}
+			MIR_augment_trackpattern(
+				Page_get_skippattern( target_page, i ), i - shiftTrackRow, MIR_RED );
 		}
 

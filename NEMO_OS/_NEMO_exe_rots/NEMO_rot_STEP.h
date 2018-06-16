@@ -175,7 +175,11 @@ void NEMO_rot_exec_STEP( 	Pagestruct* target_page, unsigned char rotNdx, unsigne
 
 
 				case VER_CHORD:
-
+				#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+				case VER_CHORD_OCTAVE_FIRST:
+				case VER_CHORD_OCTAVE_SECOND:
+				case VER_CHORD_OCTAVE_THIRD:
+				#endif
 					// Change the value of the selected attribute of the track
 					switch( NEMO_selectedStepAttribute ){
 
@@ -227,7 +231,7 @@ void NEMO_rot_exec_STEP( 	Pagestruct* target_page, unsigned char rotNdx, unsigne
 
 				case ROT_PIT:
 					// Switch to the value display
-					if ( NEMO_step_VER != VER_CHORD ){
+					if ( NEMO_step_VER < VER_CHORD ){
 						NEMO_step_VER = VER_VALUE;
 					}
 
@@ -261,7 +265,7 @@ void NEMO_rot_exec_STEP( 	Pagestruct* target_page, unsigned char rotNdx, unsigne
 
 				case ROT_STA:
 					// Switch to the value display
-					if ( NEMO_step_VER != VER_CHORD ){
+					if ( NEMO_step_VER < VER_CHORD ){
 						NEMO_step_VER = VER_VALUE;
 					}
 					modify_parameter(			&target_page->Step[row][col]->attr_STA,

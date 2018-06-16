@@ -26,6 +26,8 @@
 
 		// Find first the selected track
 		for (i=0; i<MATRIX_NROF_ROWS; i++) {
+			if ( !row_in_track_window( target_page, i ) )
+				continue;
 
 			if ( (target_page->trackSelection & (1<<i)) > 0 ) {
 				//  row is index of the first selected track
@@ -245,12 +247,12 @@ switch( G_zoom_level ){
 		// ROW III
 		//
 		switch( NEMO_selectedTrackAttribute ){
-			
+
 			case NEMO_ATTR_PITCH:
 			case NEMO_ATTR_VELOCITY:
 			case NEMO_ATTR_LENGTH:
 			case NEMO_ATTR_START:
-			
+
 			case NEMO_ATTR_AMOUNT:
 			case NEMO_ATTR_GROOVE:
 			case NEMO_ATTR_MIDICC:
@@ -364,6 +366,69 @@ switch( G_zoom_level ){
 		MIR_write_trackpattern( 1 << (15 - j ), 	NEMO_ROW_II, MIR_BLINK );		
 
 		break;
+		#ifdef FEATURE_ENABLE_DICE
+		// This is the DICE mode, where we deal with only one track
+		case zoomDICE:
+
+			// ROW I
+			switch( DICE_bank->mixAttribute ) {
+				case NEMO_ATTR_VELOCITY: case NEMO_ATTR_LENGTH: case NEMO_ATTR_START:
+					j = DICE_bank->mixAttribute - 1;
+					break;
+				case NEMO_ATTR_AMOUNT: case NEMO_ATTR_GROOVE: case NEMO_ATTR_MIDICC:
+					j = DICE_bank->mixAttribute - 2;
+					break;
+				case ATTR_DICE_FLR:
+				case ATTR_DICE_DCK:
+					j = DICE_bank->mixAttribute - 8;
+				break;
+
+			}
+
+			// Select the flow attribute
+			unsigned char dice_factor = Dice_get_factor(target_dice, target_dice->attr_STATUS);
+			switch( DICE_bank->mixAttribute ) {
+				case NEMO_ATTR_VELOCITY: case NEMO_ATTR_LENGTH: case NEMO_ATTR_START:
+				case NEMO_ATTR_AMOUNT: case NEMO_ATTR_GROOVE: case NEMO_ATTR_MIDICC:
+
+
+					if ( dice_factor < 17 ) {
+						MIR_fill_numeric ( 1, dice_factor, NEMO_ROW_I, MIR_GREEN );
+						MIR_fill_numeric ( 1, dice_factor, NEMO_ROW_I, MIR_RED );
+					} else {
+						// Blink negative scale
+						MIR_fill_numeric ( 1, dice_factor - 16, NEMO_ROW_I, MIR_RED );
+					}
+					break;
+				case ATTR_DICE_FLR:
+
+					break;
+				case ATTR_DICE_DCK:
+					MIR_show_dice_speed_nudge_bar_H ( Dice_get_TEMPOMUL( target_dice ) + 1, NEMO_ROW_I);
+					break;
+			}
+
+			// ROW II
+			// Dice flow attribute selector: VEL, PIT, LEN, STA, AMT, GRV, MCC, FLR, DCK
+			MIR_write_trackpattern( 0xF703, NEMO_ROW_II, MIR_GREEN );
+
+			// Show selected attribute - one only
+			MIR_write_trackpattern( ( ( target_dice->attr_MISC & 0x3) ) | 1 << (15 - j ), NEMO_ROW_II, MIR_RED );
+
+			unsigned int rowII_blink_mask = 0;
+
+			SET_BIT( rowII_blink_mask, 15 - j );
+
+			MIR_write_trackpattern( rowII_blink_mask, NEMO_ROW_II, MIR_BLINK );
+
+			// Flow on ROW IV
+			j = target_dice->flow_shape[ target_dice->attr_STATUS ];
+
+			// Show the flow value in the bottom row.
+			MIR_write_trackpattern( 1 << ( 15 - j ), NEMO_ROW_IV, MIR_RED 	);
+			MIR_write_trackpattern( 1 << ( 15 -  j ), NEMO_ROW_IV, MIR_GREEN );
+			break;
+		#endif
 }
 
 

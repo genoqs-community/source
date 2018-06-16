@@ -224,19 +224,14 @@
 							// Double click code:
 							// Break up original value in tens and ones.
 							i = target_page->Track[row]->attr_AMT / 10;
-							j = target_page->Track[row]->attr_AMT % 10;
 
-							if ( col < 12 ){
+							if ( col < 10 ){
 
 								// Compute new tens
 								i = 10 * (col + 1);
-								// Get new ones value, leave it as it is otherwise
-								if ( col < 9 ){
-									// j = col + 1;
-									j = 0;
-								}
+
 								// Write the final value into the attribute
-								target_page->Track[row]->attr_AMT = normalize( i + j, 0, 127 );
+								target_page->Track[row]->attr_AMT = normalize( i, 0, 100 );
 							}
 							else{
 								// Write the final value into the attribute
@@ -678,6 +673,7 @@
 									target_page->Track[row]->attr_TEMPOMUL 	= 1;
 									// Update the divisor and clear the buffer
 									target_page->Track[row]->attr_TEMPOMUL_SKIP	= j;
+									dice_pack_track_tempo( target_page->Track[row] );
 								} // current Track is not playing
 								else{
 									// Set the tempo multiplier of selected tracks
@@ -698,10 +694,6 @@
 								track_tempo_div = 0;
 								// Set the tempo multiplier of selected tracks
 								track_tempo_mul = j;
-								// Remember the track for the clock change
-								track_tempo_ptr = target_page->Track[row];
-								// Remember the track for the clock change
-								track_tempo_page = target_page;
 
 								// Needs handling like the multiplier, not like the divisor.. oh well.
 								// If the track is not playing, it is safe to adjust the multiplier immediately
@@ -710,6 +702,7 @@
 									target_page->Track[row]->attr_TEMPOMUL 		= j;
 									// Update the divisor
 									target_page->Track[row]->attr_TEMPOMUL_SKIP	= 0;
+									dice_pack_track_tempo( target_page->Track[row] );
 								} // current Track is not playing
 								// Track is playing so queue until the next global TTC1
 								else{

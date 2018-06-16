@@ -56,6 +56,21 @@ void rot_exe_SCALE( 	Pagestruct* target_page,
 											1 
 										);
 			break;
+		#ifdef FEATURE_ENABLE_KB_TRANSPOSE
+		case MIXTGT_EXP:
+			EDIT_TIMER = ON;
+
+			// Setup alarm for the EDIT TIMER
+			cyg_alarm_initialize(	alarm_hdl,
+									cyg_current_time() + TIMEOUT_VALUE,
+									0 );
+			target_page->Track[9]->event_offset[ATTR_MIDITCH] = 0;
+			target_page->editAttribute	= NEMO_ATTR_MIDICH;
+			modify_parameter
+				(&target_page->Track[9]->attr_MCH,
+					TRACK_MIN_MIDICH, TRACK_MAX_MIDICH, direction, ON, FIXED);
+			break;
+		#endif	
 	}
 
 }

@@ -539,7 +539,7 @@ void rot_exec_PAGE_local( 	Pagestruct* target_page,
 		// ..but un-selections may be accessed by the MIXER!! :-) (for steps only)
 		if (   (target_page->trackSelection != 0)
 			){
-			#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+			#ifdef FEATURE_ENABLE_KB_TRANSPOSE
 			//The exception is setting the keyboard transpose midi channel for selected tracks
 			if( (rotNdx == ROT_0)) {
 

@@ -41,6 +41,7 @@
 			show( ELE_MIX_MASTER, MIR_BLINK );
 		}
 
+
 		//
 		// TRACK_SELECTORS
 		//
@@ -59,6 +60,10 @@
 			case MIXTGT_USR3:
 			case MIXTGT_USR4:
 
+				// The CC maps are global, therefore only showing the global page
+				target_page = GRID_assistant_page;
+
+				shiftTrackRow = track_get_window_shift( target_page );
 
 				// Show the available attributes of the CC_MIXMAP
 				// ..if no track is selected for learning
@@ -79,8 +84,8 @@
 						}
 						else{
 							// Show the track selection - learning target blinking
-							MIR_write_buttool( LHS, 1 << CCMAP_learner, MIR_RED 	);
-							MIR_write_buttool( LHS, 1 << CCMAP_learner, MIR_BLINK 	);
+							MIR_write_buttool( LHS, 1 << ( CCMAP_learner - shiftTrackRow ), MIR_RED 	);
+							MIR_write_buttool( LHS, 1 << ( CCMAP_learner - shiftTrackRow ), MIR_BLINK 	);
 							// MIR_write_buttool( LHS, 1 << CCMAP_learner, MIR_GREEN 	);
 
 							// Show the recording bit

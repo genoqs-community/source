@@ -25,10 +25,12 @@
 
 /* OCTOPUS main.c file - containing the entry point to execution.
  */
+#define HEADER(FILE) <BASELINE_PATH/FILE>
 
+#define BASELINE_PATH /home/genoqs/workspace/OCT_OS
 
 #include "_NEMO_global/NEMO_includes.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/flash-block.h"
+#include HEADER(_OCT_global/flash-block.h)
 
 //
 // MAIN ENTRY POINT INTO THE EXECUTION
@@ -129,6 +131,12 @@ void cyg_user_start( void ){
 
 			// Inhibit data loading further below
 			G_flashload_flag = FALSE;
+
+			static card32 AlignedSysexStreamBuffer[ (FLASH_BLOCK_SIZE + 32) / sizeof(card32) ];
+
+			// Code keeper array points to a sysex_in buffer.
+			G_sysex_stream_keeper = (card8*) &AlignedSysexStreamBuffer;
+			G_sysex_stream_keeper_size = FLASH_BLOCK_SIZE;
 		}
 
 		else if ( is_pressed_key( KEY_RETURN ) ){
@@ -162,6 +170,12 @@ void cyg_user_start( void ){
 
 	MIDICLOCK_PASSTHROUGH = TRUE;
 
+	#ifdef FEATURE_ENABLE_DICE
+	// Flash recall mismatched DICE format call Dice_init
+	if ( DICE_bank->scaleStatus != 255 ) {
+		Dice_init( DICE_bank );
+	}
+	#endif
 
 	// Start with a fresh display
 	Page_requestRefresh();

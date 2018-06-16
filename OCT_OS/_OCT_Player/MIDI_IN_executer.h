@@ -61,7 +61,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  	switch( G_zoom_level ){
 
  	case zoomPAGE:
-#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+#ifdef FEATURE_ENABLE_KB_TRANSPOSE
  		// Keyboard Transpose
  		// Only work on the current page.
  		target_page = &Page_repository[GRID_CURSOR];
@@ -319,7 +319,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  	// This is where the incoming MIDI note will be sent to, unless re-channelled, below.
  	int outputMidiBus  = inputMidiBus; 		// Range [0, 1].
  	int outputMidiChan = inputMidiChan; 	// Range [1, 16].
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	#ifdef FEATURE_ENABLE_KB_TRANSPOSE
  	// Keyboard Transpose
 	if ( (G_run_bit == ON)
 		&& 	( inputMidiChan > 0 )

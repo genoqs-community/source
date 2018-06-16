@@ -26,10 +26,10 @@
 		// Shows the attributes of a selected and zoomed in STEP as bars
 		// Applies to one selected step.
 		row = target_page->stepSelectionSingleRow;
-		// col = target_page->stepSelectionSingleCol;
+		col = target_page->stepSelectionSingleCol;
 		// Extract the column of the selected step in the row.
 		// Since we are in step mode this is safe
-		col = 15 - (my_bit2ndx( Page_get_selection_trackpattern( target_page, row ) ) );
+		// col = 15 - (my_bit2ndx( Page_get_selection_trackpattern( target_page, row ) ) );
 
 		// ROW I-III
 		// Handled separately in each mode
@@ -61,6 +61,11 @@
 				break;
 
 			case VER_CHORD:
+			#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+			case VER_CHORD_OCTAVE_FIRST:
+			case VER_CHORD_OCTAVE_SECOND:
+			case VER_CHORD_OCTAVE_THIRD:
+			#endif
 				#include "NEMO_show_MATRIX__STEP_ATTRIBUTE_VALUES__CHORD.h"
 				// ROW I 	-
 				// ROW II 	-
@@ -69,29 +74,28 @@
 				break;
 	}
 
+	// ROW IV
+	// Same for all - show the status of the steps and act as step selector in track
+	// Shows the actual track pattern and augments the skipped steps and events
+	// These are the active steps - and the events
+	MIR_write_trackpattern(   Page_get_trackpattern( target_page, row )
+							| Page_get_event_trackpattern( target_page, row),
+							NEMO_ROW_IV,	MIR_GREEN );
 
-		// ROW IV
-		// Same for all - show the status of the steps and act as step selector in track
-		// Shows the actual track pattern and augments the skipped steps and events
-		// These are the active steps - and the events
-		MIR_write_trackpattern(   Page_get_trackpattern( target_page, row )
-								| Page_get_event_trackpattern( target_page, row ),
-								NEMO_ROW_IV,	MIR_GREEN );
+	// .. and here the event/chord mongers - are built into the above
+	MIR_write_trackpattern(   Page_get_chord_trackpattern( target_page, row)
+							| Page_get_event_trackpattern( target_page, row),
+							NEMO_ROW_IV, 	MIR_RED   );
+	MIR_augment_trackpattern( Page_get_skippattern(  target_page, row),
+							NEMO_ROW_IV, 	MIR_RED   );
 
-		// .. and here the event/chord mongers - are built into the above
-		MIR_write_trackpattern(   Page_get_chord_trackpattern( target_page, row )
-								| Page_get_event_trackpattern( target_page, row ),
-								NEMO_ROW_IV, 	MIR_RED   );
-		MIR_augment_trackpattern( Page_get_skippattern(  target_page, row ),
-								NEMO_ROW_IV, 	MIR_RED   );
-
-		// Blink the selected step
-		MIR_augment_trackpattern( Page_get_selection_trackpattern( target_page, row ),
-								NEMO_ROW_IV, 	MIR_BLINK );
-		if (Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == OFF ){
-			// Color it red if it is off anyway
-			MIR_write_dot( Page_dotIndex(
-								NEMO_ROW_IV, 	col ),  MIR_RED );
-		}
+	// Blink the selected step
+	MIR_augment_trackpattern( Page_get_selection_trackpattern( target_page, row),
+							NEMO_ROW_IV, 	MIR_BLINK );
+	if (Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == OFF ){
+		// Color it red if it is off anyway
+		MIR_write_dot( Page_dotIndex(
+							NEMO_ROW_IV, 	col ),  MIR_RED );
+	}
 
 
