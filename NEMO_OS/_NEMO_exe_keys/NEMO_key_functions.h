@@ -26,14 +26,7 @@
 
 #include HEADER(_OCT_exe_keys/key_tap_operation.h)
 #include HEADER(_OCT_exe_keys/key_chainer_operation.h)
-
-void selected_page_cluster_move( unsigned char grid_cursor, unsigned char prev_grid_cursor ){
-	// TODO: implement this -- placeholder for Nemo compilation
-}
-
-void selected_page_cluster_clear( unsigned char grid_cursor ){
-	// TODO: implement this -- placeholder for Nemo compilation
-}
+#include HEADER(_OCT_exe_keys/key_cluster_operation.h)
 
 // Projects a flowshape onto the attribute of a track
 void assign_flow_shape( 	unsigned char shapeNdx,
