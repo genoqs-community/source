@@ -1,7 +1,7 @@
 
 
-#define 	SW_VERSION_MAJOR				 5	// Max 10 - Hundreds
-#define		SW_VERSION_MINOR				 0	// Max 10 - Tens
+#define 	SW_VERSION_MAJOR				 0	// Max 10 - Hundreds
+#define		SW_VERSION_MINOR				 5	// Max 10 - Tens
 #define		SW_VERSION_RELEASE				 1	// Max 10 - Ones
 
 #define		SW_VERSION_INTERNAL				 1	// Max 127 - Row 0 number
