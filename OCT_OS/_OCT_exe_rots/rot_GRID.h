@@ -86,6 +86,7 @@ void rot_exec_GRID( 	Pagestruct* target_page,
 		case 10:
 			// Set the MIDI Channel for grid scene note events
 			modify_parameter(&GRID_p_set_midi_ch, TRACK_MIN_MIDICH, TRACK_MAX_MIDICH, direction, OFF, FIXED);
+			break;
 
 		// MIX encoders
 		case 11: case 12: case 13: case 14: case 15: 
