@@ -104,7 +104,7 @@
 				}
 				
 				// Leave room for the page toggle mode..
-				if (	( GRID_editmode == ON )
+				if (	( CHECK_BIT( GRID_editmode, 0 ) == ON )
 					){
 
 					// Switch to (or just keep) GRID edit mode

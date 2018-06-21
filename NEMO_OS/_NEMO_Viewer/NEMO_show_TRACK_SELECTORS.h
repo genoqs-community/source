@@ -29,8 +29,11 @@
 
 		// Differentiate between single and multi selection
 		for (i=0; i<MATRIX_NROF_ROWS; i++){
+			if ( !row_in_track_window( target_page, row ) )
+				continue;
+
 			if ((target_page->trackSelection & (1<<i)) > 0) {
-				if ((target_page->trackSelection ^ (1<<i)) > 0) { 
+				if ((target_page->trackSelection ^ (1<<i)) > 0) {
 					// Multiple Track Selection
 					j = TRACK_M;
 				}
@@ -40,15 +43,21 @@
 				}
 			}
 		}
-		
+
 		switch (content) {
 			
 			case GRID_BANK_PLAYMODES:
 				// Show the play modes of the individual banks: simple or chain
-				MIR_write_buttool( LHS, GRID_bank_playmodes & 0x1FF, 			MIR_GREEN );
-				MIR_write_buttool( LHS, (GRID_bank_playmodes ^ 0x3FF) & 0x1FF, 	MIR_RED );				
-				break;			
-			
+
+				MIR_write_buttool( LHS, ( GRID_bank_playmodes >> shiftPageRow) & 0x1FF, 			MIR_GREEN );
+				MIR_write_buttool( LHS, ((GRID_bank_playmodes >> shiftPageRow) ^ 0x3FF) & 0x1FF, 	MIR_RED );
+				break;
+			#ifdef FEATURE_ENABLE_DICE
+			case DICE_GRID_SELECTION:
+				MIR_write_buttool( LHS, ( DICE_bank->trackSelection >> shiftPageRow) & 0x1FF, 			MIR_GREEN );
+				MIR_write_buttool( LHS, ((DICE_bank->trackSelection >> shiftPageRow) ^ 0x3FF) & 0x1FF, 	MIR_RED );
+				break;
+			#endif
 //			case GRID_TRIGGERMODES:
 //				// Show the triggermodes of the individual Grid lines
 ////				MIR_write_buttool( LHS, GRID_bank_triggermodes & 0x1FF, 			MIR_RED );
@@ -76,23 +85,25 @@
 				i=0; 
 				j=0;
 				for ( row=0; row<MATRIX_NROF_ROWS; row++ ){
-					
+					if ( !row_in_track_window( target_page, row ) )
+						continue;
+
 					if( Track_get_MISC( target_page->Track[row], EFF_BIT ) == RECEIVE ){
 
 						// Mark bit in the RED pattern
-						i |= ( 1 << row );
+						i |= ( 1 << row >> shiftTrackRow);
 					}
 					else if( Track_get_MISC( target_page->Track[row], EFF_BIT ) == SEND ){
 
 						// Mark bit in the GREEN pattern
-						j |= ( 1 << row );
+						j |= ( 1 << row >> shiftTrackRow);
 					}
 					else if( Track_get_MISC( target_page->Track[row], EFF_BIT ) == RECEIVESEND ){
 
 						// Mark bit in the RED pattern
-						i |= ( 1 << row );
+						i |= ( 1 << row >> shiftTrackRow);
 						// Mark bit in the GREEN pattern
-						j |= ( 1 << row );
+						j |= ( 1 << row >> shiftTrackRow);
 					}
 				}
 
@@ -102,14 +113,14 @@
 				break;
 
 			case TRACK_REC_STATUS:
-			 	MIR_write_buttool (LHS, Page_getTrackRecPattern(target_page), MIR_BLINK);
-				MIR_write_buttool (LHS, Page_getTrackRecPattern(target_page), MIR_RED);	
+			 	MIR_write_buttool (LHS, Page_getTrackRecPattern(target_page) >> shiftTrackRow, MIR_BLINK);
+				MIR_write_buttool (LHS, Page_getTrackRecPattern(target_page) >> shiftTrackRow, MIR_RED);
 				break;
 
 			case TRACK_SELECTION:
-				MIR_write_buttool (LHS, target_page->trackSelection, MIR_RED);	
-				MIR_write_buttool (LHS, target_page->trackSelection, MIR_GREEN);
-				MIR_write_buttool (LHS, target_page->trackSelection, MIR_BLINK);				
+				MIR_write_buttool (LHS, target_page->trackSelection >> shiftTrackRow, MIR_RED);
+				MIR_write_buttool (LHS, target_page->trackSelection >> shiftTrackRow, MIR_GREEN);
+				MIR_write_buttool (LHS, target_page->trackSelection >> shiftTrackRow, MIR_BLINK);
 
 				// Add in green the rest of the chain from a selected track
 				// Add in red the head track for the selected track
@@ -122,7 +133,9 @@
 
 					// Compute the green pattern - all tracks in chain
 					for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
-							
+						if ( !row_in_track_window( target_page, row ) )
+							continue;
+
 						// If current track is not head, mark it as tail
 						if ( current_track != current_track->chain_data[HEAD] ){
 
@@ -134,11 +147,11 @@
 					}
 
 					// Write in green the chain pattern ( comes without the head )
-					MIR_write_buttool( 	LHS, j, MIR_GREEN );
+					MIR_write_buttool( 	LHS, j  >>  shiftTrackRow, MIR_GREEN );
 
 					// Add in red the missing head
 					MIR_write_buttool( 	LHS, 
-										1 << row_of_track( target_page, current_track->chain_data[HEAD] ), 
+										1 << row_of_track( target_page, current_track->chain_data[HEAD] ) >>  shiftTrackRow,
 										MIR_RED );
 				}
 
@@ -180,7 +193,7 @@
 					MIR_write_buttool (
 						LHS, 
 						1 << (target_page->Step [target_page->stepSelectionSingleRow]
-												[target_page->stepSelectionSingleCol]->event_data & 0x0F),
+												[target_page->stepSelectionSingleCol]->event_data & 0x0F) ,
 						MIR_BLINK );
 //					MIR_write_buttool (
 //						LHS, 
@@ -220,15 +233,15 @@
 
 
 			case MIX_ATTRIBUTE:
-				MIR_write_dot (target_page->mixAttribute, MIR_RED); 
-				MIR_write_dot (target_page->mixAttribute, MIR_GREEN); 
-				MIR_write_dot (target_page->mixAttribute, MIR_BLINK); 
+				MIR_write_dot (target_page->mixAttribute, MIR_RED);
+				MIR_write_dot (target_page->mixAttribute, MIR_GREEN);
+				MIR_write_dot (target_page->mixAttribute, MIR_BLINK);
 				break;
 
 			case MIX_ATTRIBUTE_SELECTED:
 				MIR_write_dot (target_page->mixAttribute, MIR_RED);
-				MIR_write_dot (target_page->mixAttribute, MIR_GREEN); 				
-				MIR_write_dot (target_page->mixAttribute, MIR_BLINK); 
+				MIR_write_dot (target_page->mixAttribute, MIR_GREEN);
+				MIR_write_dot (target_page->mixAttribute, MIR_BLINK);
 				break;
 
 			case EDIT_ATTRIBUTE:

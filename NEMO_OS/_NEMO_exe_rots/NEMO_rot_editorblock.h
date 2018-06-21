@@ -181,3 +181,56 @@ void rot_exe_EDIT( 	unsigned char rotNdx,
 
 }
 
+//Selected Tracks and Mix->edit(secondary) knob
+void rot_exe_MIX2EDIT	( 	unsigned char rotNdx,
+							unsigned char direction,
+							Pagestruct* target_page ) {
+#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	unsigned char i=0;
+// d_iag_printf( "rotNdx:%d dir:%d pgNdx:%d\n", rotNdx, direction, target_page->pageNdx );
+
+	unsigned char quickturn = 0;
+
+	// When only one track is selected, it is safe to use the quickturn
+	switch ( my_bit_cardinality( target_page->trackSelection ) ){
+		case 1:
+			quickturn = ON;
+			break;
+
+		default:
+			quickturn = OFF;
+			break;
+	}
+
+	// EDIT_TIMER handling
+	//
+	// Reset timer on every turn, so it doesnt run out
+	if (target_page->trackSelection != 0) {
+
+		EDIT_TIMER = ON;
+
+		// Setup alarm for the EDIT TIMER
+		cyg_alarm_initialize(	alarm_hdl,
+								cyg_current_time() + TIMEOUT_VALUE,
+								0 );
+
+		switch (rotNdx) {
+			// Transpose MIDICH
+			case MIXTGT_EXP:
+				target_page->editAttribute	= NEMO_ATTR_MIDITCH;
+				// For every track in selection modify the corresponding attribute
+				for (i=0; i< 10; i++) {
+					if ((1<<i) & (target_page->trackSelection)) {
+
+						target_page->Track[i]->event_offset[ATTR_MIDITCH] = 0;
+
+						modify_parameter
+							(&target_page->Track[i]->attr_STATUS,
+								TRACK_MIN_MIDITCH, TRACK_MAX_MIDITCH, direction, quickturn, FIXED);
+					}
+				}
+				break;
+		}
+	} // Case where some track is selected
+#endif
+}

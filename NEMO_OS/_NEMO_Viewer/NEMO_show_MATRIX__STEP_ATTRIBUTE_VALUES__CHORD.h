@@ -33,6 +33,30 @@
 			switch( NEMO_selectedStepAttribute ){
 
 				case ( NEMO_ATTR_PITCH ):
+					// Show the chord note stack assigned to the step
+					// << 1 due to some historics..
+					#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+					if ( NEMO_step_VER >= VER_CHORD_OCTAVE_FIRST ) {
+						unsigned char chord_octave = get_current_chord_octave();
+
+						// Show the chord octave layers
+						show_chord_octave(
+							target_page->Step[row][col],
+							( normalize( 	target_page->Track[row]->attr_PIT
+										+ target_page->Step[row][col]->attr_PIT,
+										0, 127 ) ) % 12,
+							chord_octave
+						);
+					} else {
+						// Show the chord octave positions orange, green and red
+						show_chord_octave_first(
+							target_page->Step[row][col],
+							( normalize( 	target_page->Track[row]->attr_PIT
+										+ target_page->Step[row][col]->attr_PIT,
+										0, 127 ) ) % 12
+						);
+					}
+					#else
 					// Show absolute pitch in orange
 					show_pitch_in_line(
 						normalize( 	target_page->Track[row]->attr_PIT
@@ -40,14 +64,13 @@
 									0, 127 ),
 						OFF );
 
-					// Show the chord note stack assigned to the step
-					// << 1 due to some historics..
 					show_chord_in_line(
 						target_page->Step[row][col],
 						( normalize( 	target_page->Track[row]->attr_PIT
 									+ target_page->Step[row][col]->attr_PIT,
 									0, 127 ) )%12
 						);
+					#endif
 					break;
 
 				case ( NEMO_ATTR_START ):
@@ -57,8 +80,11 @@
 
 				case ( NEMO_ATTR_AMOUNT ):
 					// Show the number of notes the step is playing
+					#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+					MIR_fill_numeric 	(	0, get_chord_cardinality( target_page->Step[row][col], CHORD_OCTAVE_ALL ) + 2, NEMO_ROW_I,	MIR_GREEN );
+					#else
 					MIR_fill_numeric 	(	0, (my_bit_cardinality( target_page->Step[row][col]->chord_data & 0x7FF )) +1 +1, NEMO_ROW_I,	MIR_GREEN);
-
+					#endif
 					// Show current step polyphony
 //					MIR_fill_numeric 	(	0, ((target_page->Step[row][col]->chord_up >> 29)) +1 +1, NEMO_ROW_I,	MIR_GREEN);
 					MIR_fill_numeric 	(	0, ((target_page->Step[row][col]->chord_up >> 29)) +1 +1, NEMO_ROW_I,	MIR_RED);
@@ -106,8 +132,32 @@
 
 		// VALUE-EVENT-RANGE
 		// Indicate VER status
+		#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+		switch( NEMO_step_VER ){
+			case VER_CHORD:
+				MIR_write_dot( LED_VER_CHORD, MIR_RED 	);
+				MIR_write_dot( LED_VER_CHORD, MIR_GREEN );
+			break;
+
+			case VER_CHORD_OCTAVE_FIRST:
+				MIR_write_dot( LED_VER_CHORD, MIR_RED 	);
+				MIR_write_dot( LED_VER_CHORD, MIR_GREEN );
+				MIR_write_dot( LED_VER_CHORD, MIR_BLINK );
+				break;
+
+			case VER_CHORD_OCTAVE_SECOND:
+				MIR_write_dot( LED_VER_CHORD, MIR_GREEN );
+				MIR_write_dot( LED_VER_CHORD, MIR_BLINK );
+				break;
+
+			case VER_CHORD_OCTAVE_THIRD:
+				MIR_write_dot( LED_VER_CHORD, MIR_RED );
+				MIR_write_dot( LED_VER_CHORD, MIR_BLINK );
+				break;
+		}
+		#else
 		MIR_write_dot( LED_VER_CHORD, MIR_RED 	);
 		MIR_write_dot( LED_VER_CHORD, MIR_GREEN );
-
+		#endif
 
 

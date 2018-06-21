@@ -24,16 +24,10 @@
 
 
 
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_exe_keys/key_tap_operation.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_exe_keys/key_chainer_operation.h"
+#include HEADER(_OCT_exe_keys/key_tap_operation.h)
+#include HEADER(_OCT_exe_keys/key_chainer_operation.h)
+#include HEADER(_OCT_exe_keys/key_cluster_operation.h)
 
-void selected_page_cluster_move( unsigned char grid_cursor, unsigned char prev_grid_cursor ){
-	// TODO: implement this -- placeholder for Nemo compilation
-}
-
-void selected_page_cluster_clear( unsigned char grid_cursor ){
-	// TODO: implement this -- placeholder for Nemo compilation
-}
 
 // Projects a flowshape onto the attribute of a track
 void assign_flow_shape( 	unsigned char shapeNdx,
@@ -107,6 +101,80 @@ void assign_flow_shape( 	unsigned char shapeNdx,
 }
 
 
+#ifdef FEATURE_ENABLE_DICE
+// Projects a flowshape onto the attribute of a track
+void assign_dice_flow_shape( unsigned char shapeNdx,
+							 unsigned char target_attribute,
+							 Pagestruct* target_page,
+							 unsigned char row ){
+
+	unsigned char col = 0;
+	signed char temp = 0;
+
+	// Offset to zero start of flow.
+	unsigned char offset = 0;
+
+	// Make the actual value assignment
+	for ( col=0; col < MATRIX_NROF_COLUMNS; col++ ){
+		// Store the base value
+		temp = NEMO_flow_shape[shapeNdx][col];
+
+		if( col == 0 )
+		{
+			// Offset to zero flow start.
+			offset = temp;
+		}
+
+		temp -= offset;
+
+		// Determine the needed transformation
+		switch( target_attribute ){
+
+			case NEMO_ATTR_PITCH:
+				target_page->Step[row][col]->attr_PIT = temp;
+				break;
+
+			case NEMO_ATTR_VELOCITY:
+				target_page->Step[row][col]->attr_VEL = temp;
+				break;
+
+			case NEMO_ATTR_LENGTH:
+				if ( temp == 0 ) {
+					temp = STEP_DEF_LENGTH;
+				}
+				else{
+					temp = normalize( temp / 3, STEP_MIN_LENGTH, STEP_MAX_LENGTH );
+				}
+				target_page->Step[row][col]->attr_LEN = temp;
+				break;
+			case NEMO_ATTR_START:
+				if ( temp == 0 ) {
+					temp = STEP_DEF_START;
+				}
+				else{
+					temp = normalize( temp / 11, STEP_MIN_START, STEP_MAX_START );
+				}
+				target_page->Step[row][col]->attr_STA = temp;
+				break;
+
+			case NEMO_ATTR_AMOUNT:
+				target_page->Step[row][col]->attr_AMT = temp;
+				break;
+
+			case NEMO_ATTR_GROOVE:
+				temp = temp / 15;
+				target_page->Step[row][col]->phrase_num = temp;
+				break;
+
+			case NEMO_ATTR_MIDICC:
+				// Make sure to understand the zeroes..
+				if ( temp == 0) temp = MIDICC_NONE;
+				target_page->Step[row][col]->attr_MCC = temp;
+				break;
+		}
+	}
+}
+#endif
 
 // Modifies the length of the previewed step in the matrix
 void adjust_preview_stepLEN( unsigned char col ){
@@ -362,8 +430,8 @@ void set_track_locators(	Pagestruct* target_page,
 				target_track = target_page->Track[row];
 			}
 
-			// Make Head track of chain the Play track
-			target_track->chain_data[PLAY] = target_track->chain_data[HEAD];
+			// (Disabled) - Make Head track of chain the Play track
+			//target_track->chain_data[PLAY] = target_track->chain_data[HEAD];
 
 			// Align play tracks to the given coordinates
 			if ( target_track->chain_data[PLAY] == target_track ){
@@ -484,6 +552,17 @@ unsigned char is_selected_in_GRID( Pagestruct* target_page ){
 
 
 //
+// Boolean: returns true if page is in active bank
+//
+unsigned char is_selected_in_active_bank( Pagestruct* target_page ) {
+
+	return is_selected_in_GRID( Page_leftmost_neighbour( target_page ) );
+}
+
+
+
+
+//
 // Select the target_page to be played by the grid.
 // Automatically unselect the rest of the bank. Bank is horizontal
 void grid_select( 	Pagestruct* target_page,
@@ -504,17 +583,14 @@ void grid_select( 	Pagestruct* target_page,
 	// Find the first page in the bank of the target page (from L to R)
 	j = target_page->pageNdx % 10;
 
-	// Trying out the new switch mode behavior
-	if ( GRID_p_selection[ j%10 ] != NULL ){
+	// Trying out the new switch mode behavior (EDIT_MASTER sync mode (red / blink red)
+	if ( CHECK_BIT( GRID_editmode, 1 ) == OFF ){
 		// React immediately to presses if the bank is playing
 		GRID_switch_mode = GRID_SWITCH_DIRECT;
 	}
 	else{
-		// Do not act like this during double-click
-		if ( DOUBLE_CLICK_TARGET == 0 ){
-			// Start playing bank only on the grid clock
-			GRID_switch_mode = GRID_SWITCH_OCLOCK;
-		}
+		// Start playing bank only on the grid clock
+		GRID_switch_mode = GRID_SWITCH_OCLOCK;
 	}
 
 // d_iag_printf( "1 switchmode:%d\n", GRID_switch_mode );
@@ -543,19 +619,20 @@ void grid_select( 	Pagestruct* target_page,
 					break;
 
 				case GRID_SWITCH_DIRECT:
+					if ( GRID_p_selection[ j%10 ] != NULL ){
+						// Copy the locator positions from the active page to the next one
+						for (i=0; i<MATRIX_NROF_ROWS; i++){
 
-					// Copy the locator positions from the active page to the next one
-					for (i=0; i<MATRIX_NROF_ROWS; i++){
+							// The track is playing in the page
+							if ( target_page->Track[i]->chain_data[HEAD] == target_page->Track[i] ){
 
-						// The track is playing in the page
-						if ( target_page->Track[i]->chain_data[HEAD] == target_page->Track[i] ){
-
-							target_page->Track[i]->attr_LOCATOR =
-								GRID_p_selection[ j%10 ]->Track[i]->attr_LOCATOR;
-							target_page->Track[i]->frame_ndx =
-								GRID_p_selection[ j%10 ]->Track[i]->frame_ndx;
-							target_page->Track[i]->TTC =
-								GRID_p_selection[ j%10 ]->Track[i]->TTC;
+								target_page->Track[i]->attr_LOCATOR =
+									GRID_p_selection[ j%10 ]->Track[i]->attr_LOCATOR;
+								target_page->Track[i]->frame_ndx =
+									GRID_p_selection[ j%10 ]->Track[i]->frame_ndx;
+								target_page->Track[i]->TTC =
+									GRID_p_selection[ j%10 ]->Track[i]->TTC;
+							}
 						}
 					}
 
@@ -670,6 +747,9 @@ void sequencer_START() {
 	// Recalc the timer refill value.
 	G_TIMER_REFILL_update();
 
+	// Raise the flag for timer refill
+	G_manualStartBo = TRUE;
+
 	// Turn the blinker on
 	G_master_blinker = ON;
 
@@ -779,7 +859,7 @@ void init_event_offsets( Pagestruct* target_page ){
 
 
 // Brings all sequencer locators into start position -> inlcuding rewinding all chains in page
-void sequencer_RESET(){
+void sequencer_RESET( unsigned char force_stop ){
 
 	unsigned char 	i 	= 0;
 
@@ -822,6 +902,38 @@ void sequencer_RESET(){
 		switch_gridbank( i );
 	}
 
+	if ( force_stop ) {
+		unsigned char j	= 0;
+
+		// Bring all chained banks to the first page in chain.
+		for ( i=0; i < GRID_NROF_BANKS; i++ ){
+
+			// Set the chain start in the clock preselection
+			if ( GRID_p_selection[ i ] != NULL ) {
+				compute_chain_startpoints( i );
+
+			} else {
+
+				// Find the first page with data
+				for (j=0; j < MATRIX_NROF_COLUMNS; j++) {
+					if ( Page_repository[ i + (10 * j) ].page_clear == OFF ) {
+						GRID_p_selection[ i ] = &Page_repository[ i + (10 * j) ];
+						GRID_p_clock_presel[ i ] = &Page_repository[ i + (10 * j) ];
+						break;
+					}
+				}
+			}
+
+			// Move the clock preselection into plain preselection
+			preselect_clock_presel( i );
+
+			GRID_p_preselection[ i ] = NULL;
+
+			// Switch the gridbank
+			switch_gridbank( i );
+		}
+	}
+
 	// Reset the running status bytes
 	G_running_status_byte_OUT_UART[0] = 0;
 	G_running_status_byte_OUT_UART[1] = 0;
@@ -860,7 +972,7 @@ void send_RESET_ALL_CONTROLLERS(){
 
 
 // STOPs the sequencer bringing it in start position
-void sequencer_STOP() {
+void sequencer_STOP( bool midi_send_stop ) {
 
 	// Remember the initial G_run_bit status to send all notes off accordingly.
 	unsigned char initial_G_run_bit = G_run_bit;
@@ -879,9 +991,10 @@ void sequencer_STOP() {
 				&&	MIDICLOCK_PASSTHROUGH == TRUE )
 		){
 
-		// Only active when the clock is active or machine is slave
-		MIDI_send( MIDI_CLOCK, MIDICLOCK_STOP, 0, 0 );
-
+		if ( midi_send_stop ) {
+			// Only active when the clock is active or machine is slave
+			MIDI_send( MIDI_CLOCK, MIDICLOCK_STOP, 0, 0 );
+		}
 		// If Stop was pressed in Stop state
 		if ( initial_G_run_bit == OFF ){
 
@@ -894,7 +1007,7 @@ void sequencer_STOP() {
 	}
 
 	// Reset the locators
-	sequencer_RESET();
+	sequencer_RESET( OFF );
 
 	// Reset the G_MIDI_timestamp;
 	G_MIDI_timestamp = 0;
@@ -907,7 +1020,7 @@ void sequencer_STOP() {
 // Just a wrapper to stay call-name consistent
 void sequencer_command_STOP(){
 
-	sequencer_STOP();
+	sequencer_STOP( true );
 }
 
 
@@ -964,8 +1077,8 @@ void sequencer_command_PLAY(){
 
 				// Sequencer is PAUSED
 				case ON:
-					// Stop the sequencer - clear anything left in the pipe to start fresh
-					sequencer_STOP();
+					// Stop the sequencer - clear anything left in the pipe to start fresh (do not send MIDICLOCK_STOP fallthrough to sequencer_START)
+					sequencer_STOP( false );
 
 					// no BREAK - fallthrough intended - recovering from pause state
 
@@ -1899,10 +2012,6 @@ void interpret_matrix_stepkey( 	unsigned char row,
 	// Absolute keyindex of the pressed button. Used to notice double click.
 	unsigned int j = ((col+1) * 11) + (row);
 
-	// Used to init step selection
-	unsigned char rowctr = 0;
-	unsigned char colctr = 0;
-
 // d_iag_printf( "inter0 trackpattern:%d\n", Page_get_trackpattern( target_page, row ) );
 // my_print_bits( Page_get_trackpattern( target_page, row ) );
 
@@ -1943,35 +2052,7 @@ void interpret_matrix_stepkey( 	unsigned char row,
 					&& 	( DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY )
 					){
 
-					// Un-SELECT all potentially selected steps in page
-					if (target_page->stepSelection != 0) {
-
-						for (rowctr=0; rowctr<MATRIX_NROF_ROWS; rowctr++){
-							for (colctr=0; colctr<MATRIX_NROF_COLUMNS; colctr++){
-
-								Step_set_status( target_page->Step[rowctr][colctr], STEPSTAT_SELECT, OFF );
-							}
-						}
-						// Reset the counter of selected steps
-						target_page->stepSelection = 0;
-						target_page->stepAttributeSelection = OFF;
-					}
-
-					// Select the current step formally
-					Step_set_status( target_step, STEPSTAT_SELECT, ON );
-
-					// Update the step selection counter in page
-					target_page->stepSelection = 1;
-
-					// Remember STEP COORDINATES
-					target_page->stepSelectionSingleRow = row;
-					target_page->stepSelectionSingleCol = col;
-
-					// d_iag_printf( "zooming into step row:%d col:%d ts:%d\n",
-					//		row, col, target_page->trackSelection );
-
-					// Zoom into the step: Switch the mode
-					G_zoom_level = zoomSTEP;
+					Step_zoom( target_page, row, col );
 				}
 
 				// Start thinking about double clicking
@@ -2071,35 +2152,7 @@ void interpret_matrix_stepkey( 	unsigned char row,
 					&& 	( DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY )
 					){
 
-					// Un-SELECT all potentially selected steps in page
-					if (target_page->stepSelection != 0) {
-
-						for (rowctr=0; rowctr<MATRIX_NROF_ROWS; rowctr++){
-							for (colctr=0; colctr<MATRIX_NROF_COLUMNS; colctr++){
-
-								Step_set_status( target_page->Step[rowctr][colctr], STEPSTAT_SELECT, OFF );
-							}
-						}
-						// Reset the counter of selected steps
-						target_page->stepSelection = 0;
-						target_page->stepAttributeSelection = OFF;
-					}
-
-					// Select the current step formally
-					Step_set_status( target_step, STEPSTAT_SELECT, ON );
-
-					// Update the step selection counter in page
-					target_page->stepSelection = 1;
-
-					// Remember STEP COORDINATES
-					target_page->stepSelectionSingleRow = row;
-					target_page->stepSelectionSingleCol = col;
-
-					// d_iag_printf( "zooming into step row:%d col:%d ts:%d\n",
-					//		row, col, target_page->trackSelection );
-
-					// Zoom into the step: Switch the mode
-					G_zoom_level = zoomSTEP;
+					Step_zoom( target_page, row, col );
 				}
 
 				// Start thinking about double clicking
@@ -2186,13 +2239,13 @@ void PAGE_toggle_solo(){
 
 				if ( GRID_switch_mode == GRID_SWITCH_DIRECT ){
 
-					// Clear grid selection and preselection accordingly
-					GRID_p_preselection[i] 		= NULL;
-					GRID_p_selection[i] 		= NULL;
-
 					// Stop playing right now!
 					stop_playing_page( GRID_p_selection[i], G_TTC_abs_value );
 					set_track_locators( GRID_p_selection[i], NULL, 0, 0 );
+
+					// Clear grid selection and preselection accordingly
+					GRID_p_preselection[i] 		= NULL;
+					GRID_p_selection[i] 		= NULL;
 				}
 			}
 		}
@@ -2526,8 +2579,168 @@ void sort_tracks_by_ATR( Pagestruct* target_page, unsigned char target_attribute
 }
 
 
+// Select all armed tracks with associated chained tracks as track selection
+unsigned short page_get_armed_chain_selection( Pagestruct* target_page ) {
+
+	unsigned char track_rec_pattern = Page_getTrackRecPattern(target_page);
+	unsigned char i = 0, offset = 0, temp = 0;
+	unsigned short track_selection = 0;
+	Trackstruct* current_track = NULL;
+
+	while( track_rec_pattern )
+	{
+		// Recording track index
+		temp = my_bit2ndx( track_rec_pattern );
+
+		// Starting track is the currently recording one
+		current_track = target_page->Track[temp + offset];
+
+		for ( i = 0; i < MATRIX_NROF_ROWS; i++ ){
+			// Place current track into the selection
+			track_selection |=
+				( 1 << row_of_track( target_page, current_track ) );
+
+			// Move the track pointer along the chain
+			current_track = current_track->chain_data[NEXT];
+
+			// End of chain
+			if( i && current_track == target_page->Track[temp] ) {
+				break;
+			}
+		}
+
+		offset += temp + 1;
+		track_rec_pattern >>= temp + 1;
+	}
+
+	return track_selection;
+}
 
 
+void page_toggle_chain_follow( Pagestruct* target_page ){
+
+	TOGGLE_BIT( target_page->track_window_shift, FOLLOW_CHAIN );
+}
 
 
+bool page_is_chain_follow( Pagestruct* target_page ){
 
+	return CHECK_BIT( target_page->track_window_shift, FOLLOW_CHAIN );
+}
+
+
+// x2 - toggle grid matrix grid rows 1-4 & 5-8
+void page_shift_window(){
+
+	page_window = CHECK_MASK( page_window, NEMO_WINDOW ) ? NEMO_WINDOW << NEMO_NROF_ROWSHIFT : NEMO_WINDOW;
+}
+
+
+void track_shift_window( Pagestruct* target_page ){
+
+	target_page->track_window = CHECK_MASK( target_page->track_window, NEMO_WINDOW ) ? NEMO_WINDOW << NEMO_NROF_ROWSHIFT : NEMO_WINDOW;
+}
+
+
+void track_shift_window_track_selection( Pagestruct* target_page ){
+
+	if( !CHECK_MASK( target_page->track_window, target_page->trackSelection ) ){
+		target_page->trackSelection = CHECK_MASK( target_page->track_window, NEMO_WINDOW ) ? target_page->trackSelection >> NEMO_NROF_ROWSHIFT : target_page->trackSelection << NEMO_NROF_ROWSHIFT;
+	}
+}
+
+
+unsigned char page_get_window_shift(){
+
+	return CHECK_MASK( page_window, NEMO_WINDOW << NEMO_NROF_ROWSHIFT ) * NEMO_NROF_ROWSHIFT;
+}
+
+
+unsigned char track_get_window_shift( Pagestruct* target_page ){
+
+	return CHECK_MASK( target_page->track_window, NEMO_WINDOW << NEMO_NROF_ROWSHIFT ) * NEMO_NROF_ROWSHIFT;
+}
+
+
+// x2 - shift page level key
+unsigned char shift_key_page_row( unsigned char keyNdx, unsigned char offset ){
+	if (	( keyNdx > 0 && keyNdx <= 10 )
+		|| 	( keyNdx >= 11 && keyNdx <= 185 )
+		||	( ( is_pressed_keyrange( 11, 185 ) == FALSE)
+		&& 	( keyNdx >= 187 && keyNdx <= 196 ) ) ) {
+			switch (keyNdx) {
+				// These don't belong to the matrix. Only accidentally in the range, do nothing.
+				case 21: 	case 32: 	case 43: 	case 54:
+				case 65: 	case 76:	case 87: 	case 98:
+				case 109: 	case 120: 	case 131: 	case 142:
+				case 153: 	case 164: 	case 175: 	break;
+					break;
+			default:
+					keyNdx += offset;
+					break;
+			}
+	}
+	return keyNdx;
+}
+
+
+// x2 - shift track level key
+unsigned char shift_key_track_row( Pagestruct* target_page, unsigned char keyNdx, unsigned char offset ){
+	if (	( ( keyNdx >0 && keyNdx <= 10 )
+		|| 	  ( keyNdx >= 11 && keyNdx <= 185 )
+		||	  ( target_page->trackSelection == 0
+		&& 	  ( keyNdx >= 187 && keyNdx <= 196 ) ) )
+		&&     target_page->OPS_mode != BIRDSEYE ) {
+			switch (keyNdx) {
+				// These don't belong to the matrix. Only accidentally in the range, do nothing.
+				case 21: 	case 32: 	case 43: 	case 54:
+				case 65: 	case 76:	case 87: 	case 98:
+				case 109: 	case 120: 	case 131: 	case 142:
+				case 153: 	case 164: 	case 175: 	break;
+					break;
+			default:
+					keyNdx += offset;
+					break;
+			}
+	}
+	return keyNdx;
+}
+
+#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+// Sets the the chord octave(s) mask of a step to the given octave
+// chord_data 11 bits chord_data (excludes root)
+// chord_up and chord_up up 12 bits (includes root upper octaves)
+void toggle_chord_octave( Stepstruct* target_step, unsigned char note_offset, unsigned char chord_octave_mask ) {
+
+	if( CHECK_MASK( chord_octave_mask, CHORD_OCTAVE_FIRST ) ) {
+		TOGGLE_BIT( target_step->chord_data, note_offset - 1 );
+	}
+
+	if( CHECK_MASK( chord_octave_mask, CHORD_OCTAVE_SECOND ) ) {
+		TOGGLE_BIT( target_step->chord_up, note_offset );
+	}
+
+	if( CHECK_MASK( chord_octave_mask, CHORD_OCTAVE_THIRD ) ) {
+		TOGGLE_BIT( target_step->chord_up, note_offset + 16 );
+	}
+}
+
+
+// Sets the the chord octave(s) mask of a step to the given octave
+// chord_data 11 bits chord_data (excludes root)
+// chord_up and chord_up up 12 bits (includes root upper octaves)
+void set_chord_octave( Stepstruct* target_step, unsigned char note_offset, unsigned char chord_octave_mask, unsigned char value ) {
+
+	if( CHECK_MASK( chord_octave_mask, CHORD_OCTAVE_FIRST ) ) {
+		value == ON ? SET_BIT( target_step->chord_data, note_offset - 1 ) : CLEAR_BIT( target_step->chord_data, note_offset - 1 );
+	}
+
+	if( CHECK_MASK( chord_octave_mask, CHORD_OCTAVE_SECOND ) ) {
+		value == ON ? SET_BIT( target_step->chord_up, note_offset ) : CLEAR_BIT( target_step->chord_up, note_offset );
+	}
+
+	if( CHECK_MASK( chord_octave_mask, CHORD_OCTAVE_THIRD ) ) {
+		value == ON ? SET_BIT( target_step->chord_up, note_offset + 16 ) : CLEAR_BIT( target_step->chord_up, note_offset + 16 );
+	}
+}
+#endif

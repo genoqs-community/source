@@ -27,15 +27,16 @@
 		row = target_page->stepSelectionSingleRow;
 		col = target_page->stepSelectionSingleCol;
 
-		if (Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == ON ){
-//		if (Step_get_status( VIEWER_step, STEPSTAT_TOGGLE ) == ON ){
+		if( row_in_track_window( target_page, row ) ){
+			if (Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == ON ){
+	//		if (Step_get_status( VIEWER_step, STEPSTAT_TOGGLE ) == ON ){
 
-			MIR_write_dot( Page_dotIndex( row, col ),  MIR_GREEN );
+				MIR_write_dot( Page_dotIndex( row, col ) - shiftTrackRow,  MIR_GREEN );
+			}
+			else {
+				MIR_write_dot( Page_dotIndex( row, col ) - shiftTrackRow,  MIR_RED );
+			}
+			MIR_write_dot( Page_dotIndex( row, col ) - shiftTrackRow,  MIR_BLINK);
 		}
-		else {
-			MIR_write_dot( Page_dotIndex( row, col ),  MIR_RED );
-		}
-		MIR_write_dot( Page_dotIndex( row, col ),  MIR_BLINK);
-		
 
 

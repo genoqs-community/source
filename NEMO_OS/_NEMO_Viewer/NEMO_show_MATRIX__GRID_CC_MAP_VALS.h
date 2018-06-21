@@ -28,6 +28,9 @@
 			// Per track: Mix Attribute Value
 			for (i=0; i<MATRIX_NROF_ROWS; i++) {
 				
+				if( !row_in_track_window( target_page, i ) )
+					continue;
+
 				j = GRID_assistant_page->CC_MIXMAP[ GRID_assistant_page->mixTarget ][ i ][ GRID_assistant_page->CC_MIXMAP_attribute];
 
 				// Account for the different display needs of the attributes
@@ -36,33 +39,33 @@
 					case CC_MIXMAP_MCC:
 						if ( j == (unsigned char) MIDICC_NONE ){					
 							// Track is set to not send MIDICC, show MIDICC_NONE flag
-							MIR_write_trackpattern ( 0x0f, i, MIR_GREEN);
+							MIR_write_trackpattern ( 0x0f, i - shiftTrackRow, MIR_GREEN);
 						}
 						else {
 							// MIDICC has a valid value 
-							MIR_write_numeric_H ( j, i );
+							MIR_write_numeric_H ( j, i - shiftTrackRow );
 						}
 						break;
 						
 					case CC_MIXMAP_MCH:							
 						if ( j <= 16 ){
-							MIR_point_numeric( j, 		i, MIR_GREEN);
+							MIR_point_numeric( j, 		i - shiftTrackRow, MIR_GREEN);
 						}
 						else if ( j <= 32 ){
-							MIR_point_numeric( j-16,	i,	MIR_RED);
+							MIR_point_numeric( j-16,	i - shiftTrackRow,	MIR_RED);
 						}
 						else if ( j <= 48 ){
-							MIR_point_numeric( j-32,	i,	MIR_GREEN);
-							MIR_point_numeric( j-32,	i,	MIR_BLINK);
+							MIR_point_numeric( j-32,	i - shiftTrackRow,	MIR_GREEN);
+							MIR_point_numeric( j-32,	i - shiftTrackRow,	MIR_BLINK);
 						}
 						else if ( j <= 64 ){
-							MIR_point_numeric( j-48,	i,	MIR_RED);
-							MIR_point_numeric( j-48,	i,	MIR_BLINK);
+							MIR_point_numeric( j-48,	i - shiftTrackRow,	MIR_RED);
+							MIR_point_numeric( j-48,	i - shiftTrackRow,	MIR_BLINK);
 						}
 						break;
 						
 					case CC_MIXMAP_AMT:
-						MIR_write_numeric_H( j, i );								
+						MIR_write_numeric_H( j, i - shiftTrackRow );
 						break;
 				}
 			}

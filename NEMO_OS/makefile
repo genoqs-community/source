@@ -5,16 +5,17 @@
  INCLUDE_PATH 	= /opt/ecos_libs/E7T_eA_34_1_install/include
  PREFIX      	= /opt/ecos_libs/E7T_eA_34_1_install
  TOOLPREFIX 	= /home/genoqs/Desktop/software/ecos/gnutools/arm-elf/bin
- BASELINE_PATH	= /home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60
+ BASELINE_PATH	= /home/genoqs/workspace/OCT_OS
 
 CC    = $(TOOLPREFIX)/arm-elf-gcc
 STRIP = $(TOOLPREFIX)/arm-elf-strip
-
 # -----------------------------------------------------------------------
 # USE THE -O2 FOR FINAL VERSION! THIS GIVES US 2.6 MORE CPU PERFORMANCE
 # -----------------------------------------------------------------------
 
-CFLAGS = -Wall -O2
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TOGGLE DEBUG - '-g' flag will corrupt the Octopus memory bank overflow
+CFLAGS = -Wall -O2 #-finline-functions
+#CFLAGS = -g -O0
 
 # Source files used in the system.
 SOURCES = 	nemo.c \
@@ -33,6 +34,10 @@ all:	nemo.elf
 
 nemo.elf: $(SOURCES)
 	$(CC) $(CFLAGS) -o nemo.elf -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
+#	$(CC) $(CFLAGS) -o nemo.elf_DEBUG_DONT_DEPLOY -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
+# comment this line to produce a symbol table ELF for the step debugger -- do not upload to Nemo!!!
+
+	
 	$(STRIP) nemo.elf
 
 clean:	

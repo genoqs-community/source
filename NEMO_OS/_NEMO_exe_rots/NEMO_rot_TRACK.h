@@ -37,6 +37,9 @@ void rot_exec_TRACK( 	Pagestruct* target_page,
 	unsigned char row = 0;
 	unsigned char col = 0;
 
+	// x2 - Track row window shift
+	unsigned char shiftTrackRow = track_get_window_shift( target_page );
+
 	// EDIT TIMER - Reset on every turn	
 	if (EDIT_TIMER == ON) {
 		
@@ -122,7 +125,7 @@ void rot_exec_TRACK( 	Pagestruct* target_page,
 	if ((rotNdx >= 11) && (rotNdx <= 20)) {
 
 		// Jump to the track of the rotary by changing the track selection in page
-		target_page->trackSelection = ( 1 << (rotNdx - 11) );
+		target_page->trackSelection = ( 1 << (shiftTrackRow + rotNdx - 11) );
 
 	} // rotNdx between 11 and 20
 

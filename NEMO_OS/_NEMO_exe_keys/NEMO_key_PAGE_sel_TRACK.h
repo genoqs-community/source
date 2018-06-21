@@ -52,18 +52,24 @@
 
 	// This is the TAP KEY, provided a track is selected
 	if (	( keyNdx == KEY_ZOOM_STEP )
-		&&	( target_page->trackSelection != 0 )
 		&& 	( G_run_bit == ON )
-		&& 	( is_selected_in_GRID( target_page ) )
-		){
+		&& 	( target_page->trackSelection != 0 )
+		&&	( !is_pressed_key( KEY_SELECT_MASTER ) )
+		&& 	( is_selected_in_GRID( target_page ) ) ){
 
 		// Tap a step into the target page
 		tap_step( target_page );
 
 	} // TAP KEY
+	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	// x2 - Toggle transpose abs pitch mode
+	if (	( keyNdx == KEY_SCALE_SEL )
+		&&	( target_page->trackSelection != 0 )	){
 
+		target_page->pitch_abs ^= 1;
 
-
+	}
+	#endif
 	// TRACK "zoom" if single selection
 	if (keyNdx == KEY_ZOOM_TRACK) {
 
@@ -245,13 +251,13 @@
 				m = (TRACK_COPY_BUFFER >> 10);
 
 				// Leave only the track bitpattern (first 10 bits) in copy buffer
-				TRACK_COPY_BUFFER &= 0x00F;
+				TRACK_COPY_BUFFER &= NEMO_MAX_WINDOW;
 
 				// Get the initial cardinality of track buffer
 				k = my_bit_cardinality( TRACK_COPY_BUFFER );
 
 				// Create artificial track selection in target page
-				target_page->trackSelection = ( 0x00F >> (10 - k) );
+				target_page->trackSelection = ( NEMO_MAX_WINDOW >> (10 - k) );
 
 				// d_iag_printf( "TCB initial:%d cardinality:%d\n", TRACK_COPY_BUFFER, k );
 				// my_print_bits( TRACK_COPY_BUFFER );
@@ -332,7 +338,7 @@
 		}
 
 		// Get the bit cardinality of track selection in copy buffer
-		k = my_bit_cardinality( TRACK_COPY_BUFFER & 0x00F );
+		k = my_bit_cardinality( TRACK_COPY_BUFFER & NEMO_MAX_WINDOW );
 
 		// Get the source page index
 		j = TRACK_COPY_BUFFER >> 10;
@@ -356,11 +362,11 @@
 					for (i=0; i < k; i++) {
 
 						// Copy first buffer track into first target track
-						Track_copy( &Page_repository[j], 	my_bit2ndx( TRACK_COPY_BUFFER & 0x00F ),
+						Track_copy( &Page_repository[j], 	my_bit2ndx( TRACK_COPY_BUFFER & NEMO_MAX_WINDOW ),
 									target_page, 			my_bit2ndx( target_page->trackSelection ) );
 
 						// Clear the bits of the processed tracks in the TRACK_COPY_BUFFER
-						TRACK_COPY_BUFFER ^= (1 << my_bit2ndx( TRACK_COPY_BUFFER & 0x00F ));
+						TRACK_COPY_BUFFER ^= (1 << my_bit2ndx( TRACK_COPY_BUFFER & NEMO_MAX_WINDOW ));
 						target_page->trackSelection ^= (1 << my_bit2ndx( target_page->trackSelection ));
 					}
 				}

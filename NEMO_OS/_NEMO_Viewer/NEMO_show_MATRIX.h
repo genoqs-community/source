@@ -40,7 +40,11 @@
 		case SYSEX:
 			#include "NEMO_show_MATRIX__SYSEX.h"
 			break;
-
+		#ifdef FEATURE_ENABLE_DICE
+		case DICE:
+			#include "NEMO_show_MATRIX__DICE.h"
+			break;
+		#endif
 		case GRID:
 			#include "NEMO_show_MATRIX__GRID.h"
 			break;

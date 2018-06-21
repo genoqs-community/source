@@ -35,6 +35,9 @@
 #include "NEMO_rot_editorblock.h"
 #include "NEMO_rot_DIAG.h"	
 #include "NEMO_rot_GRID.h"
+#ifdef FEATURE_ENABLE_DICE
+#include "NEMO_rot_DICE.h"
+#endif
 #include "NEMO_rot_GRIDTRACK.h"
 #include "NEMO_rot_PAGE.h"
 #include "NEMO_rot_TRACK.h"
@@ -112,7 +115,11 @@ void executeRot( unsigned int in_rotNdx ){
 		case zoomGRID:
 			rot_exec_GRID( target_page, rotNdx, direction );			
 			break;
-
+		#ifdef FEATURE_ENABLE_DICE
+		case zoomDICE:
+			rot_exec_DICE( rotNdx, direction );
+			break;
+		#endif
 		case zoomGRIDTRACK:
 			rot_exec_GRIDTRACK( target_page, rotNdx, direction );
 			break;	
@@ -138,7 +145,7 @@ void executeRot( unsigned int in_rotNdx ){
 			break;
 
 		case zoomSCALE:
-			// rot_exe_SCALE( GRID_assistant_page, rotNdx, direction );
+			rot_exe_SCALE( GRID_assistant_page, rotNdx, direction );
 			break;
 	}
 		

@@ -51,12 +51,19 @@
 				}
 
 				// Copy step data from buffer to pointer
-				Step_copy( STEP_COPY_BUFFER, target_page->Step[row][col]);
+				Step_copy( STEP_COPY_BUFFER, target_page->Step[row][col], false );
 
 #ifdef COPY_BUFFER_FRESH
 				STEP_COPY_BUFFER = NULL;
 #endif
 				break;
+
+		case KEY_ZOOM_STEP:
+			if ( page_preview_step != NULL ){
+
+				Step_zoom( target_page, row, col );
+			}
+			break;
 		}
 	}
 
@@ -100,10 +107,7 @@
 
 
 	// Make sure we don't let this superimpose on step copy/paste
-	if (	(		(target_page->editorMode == PREVIEW)
-				|| 	(target_page->editorMode == PREVIEW_PERFORM) )
-		&& 	( page_preview_step == NULL )
-		){
+	if (	( page_preview_step == NULL ) ){
 
 		// Go directly to the stored step selection
 		// STEP SELECTION PATTERN INDEX
@@ -216,6 +220,37 @@
 	}
 
 
+	// Toggle chain follow UI mode
+	if( keyNdx == KEY_ZOOM_STEP ) {
+		// D O U B L E - C L I C K  C O N S T R U C T
+		// DOUBLE CLICK SCENARIO
+		if (	( DOUBLE_CLICK_TARGET == keyNdx )
+			&& 	( DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+
+			// Double click code
+			// ...
+
+			page_toggle_chain_follow( target_page );
+
+		} // end of double click scenario
+
+
+		// SINGLE CLICK SCENARIO
+		else if (DOUBLE_CLICK_TARGET == 0) {
+
+				DOUBLE_CLICK_TARGET = keyNdx;
+				DOUBLE_CLICK_TIMER = ON;
+				// Start the Double click Alarm
+				cyg_alarm_initialize(
+						doubleClickAlarm_hdl,
+						cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+						DOUBLE_CLICK_ALARM_TIME );
+
+			// Single click code
+			// ...
+		}
+	}
+
 
 	//
 	// EDIT MASTER
@@ -308,7 +343,7 @@
 					){
 
 					// Compute the key coordinates
-					row = row_of( 		G_pressed_keys[i] );
+					row = row_of( 		shift_key_track_row( target_page, G_pressed_keys[i], shiftTrackRow ) );
 					col = column_of(	G_pressed_keys[i] );
 
 					// SKIP the STEP - after turning it off!
@@ -339,7 +374,7 @@
 		if ((DOUBLE_CLICK_TARGET == keyNdx)
 				&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
 			// This is a double click victim - Mute all tracks
-			target_page->trackMutepattern = 0x0f;
+			target_page->trackMutepattern = 0xFF;
 			target_page->trackMutepatternStored = target_page->trackMutepattern;
 		}
 
@@ -363,6 +398,7 @@
 	// TRACK_MUTATORS
 	//
 	if ((keyNdx >= 187) && (keyNdx <= 196)) {
+
 
 		// When in preview mode also show the TGL button for the preview step
 		if (	( ( target_page->editorMode == PREVIEW )
@@ -617,66 +653,82 @@
 			case KEY_PLAY1:
 			case KEY_PLAY2:
 			case KEY_PLAY4:
-
-				// Clear the recording track on PLAY1 while recording..
-				if (	( keyNdx == KEY_PLAY1 )
-					&&	( G_run_bit == ON )
-					){
-
-					// Find and clear the recording track in target_page
-					if ( Page_getTrackRecPattern(target_page) != 0 ){
-
-						// Add all tracks in recording chain to an artificial track selection
-						temp = my_bit2ndx( Page_getTrackRecPattern(target_page) );
-
-						// Starting track is the currently recording one
-						current_track = target_page->Track[temp];
-
-						// Iterate through the chain and place all tracks in artificial selection
-						for ( i = 0; i < MATRIX_NROF_ROWS; i++ ){
-
-							// Place current track into the selection
-							target_page->trackSelection |=
-								( 1 << row_of_track( target_page, current_track ) );
-
-							// Move the track pointer along the chain
-							current_track = current_track->chain_data[NEXT];
-						}
-
-						// Clear the achieved track selection
-						Page_CLEAR_selected_tracks( target_page );
-
-						// Forget the artificial track selection selection
-						target_page->trackSelection = 0;
-					}
-				}
-
 				// Make sure the sequencer is running
 				sequencer_command_PLAY();
-
 				break;
 		}
 	}
 
 
-	// ALIGN LAUFLICHT
-	if (	( keyNdx == KEY_ALIGN )
+	// Clear the recording track on PLAY1 while recording..
+	if (	( keyNdx == KEY_PLAY1 )
 		&&	( G_run_bit == ON )
 		){
 
-		// Align page to global locator - i.e. all tracks in page
+		// Find and clear the recording track in target_page
+		if ( 	( Page_getTrackRecPattern(target_page) != 0 )
+			&&	( SEQUENCER_JUST_STARTED == FALSE ) ) {
+			// D O U B L E - C L I C K  C O N S T R U C T
+			// DOUBLE CLICK SCENARIO
+			if ((DOUBLE_CLICK_TARGET == keyNdx)
+					&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
 
-		// Act like this only when we are not dealing with scales.
-		// and no track is selected
-		if ( 	// (target_page->scaleStatus == OFF)
-				// &&
-				(target_page->trackSelection == 0)
-			){
+				// Double click code
+				// ...
+				// Add all tracks in recording chain to an artificial track selection
+				target_page->trackSelection = page_get_armed_chain_selection( target_page );
+			} // end of double click scenario
 
-			// Aligns only the target_page to the global play data
-			set_page_locators( target_page, G_global_locator, G_TTC_abs_value );
-		}
+			// SINGLE CLICK SCENARIO
+			else if (DOUBLE_CLICK_TARGET == 0) {
 
-	} // KEY_ALIGN was pressed
+					DOUBLE_CLICK_TARGET = keyNdx;
+					DOUBLE_CLICK_TIMER = ON;
+					// Start the Double click Alarm
+					cyg_alarm_initialize(
+							doubleClickAlarm_hdl,
+							cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+							DOUBLE_CLICK_ALARM_TIME );
+
+				// Single click code
+				// ...
+				// Add the currently recording track to selection
+				target_page->trackSelection = Page_getTrackRecPattern(target_page);
+			}
+
+			// Clear the achieved track selection
+			Page_CLEAR_recording_tracks( target_page );
+
+			// Forget the artificial track selection selection
+			target_page->trackSelection = 0;
+		} else if ( SEQUENCER_JUST_STARTED == TRUE ) {
+			if( 	( G_track_rec_bit == ON )
+				&&	( is_selected_in_active_bank( target_page ) ) ) {
+				GRID_CURSOR = Page_leftmost_neighbour( target_page )->pageNdx;
+			}
+
+			if( page_is_chain_follow( target_page ) ) {
+				// Reset track window to top
+				Page_repository[GRID_CURSOR].track_window = NEMO_WINDOW;
+			}
+
+		// ALIGN LAUFLICHT
+		} else {
+
+				// Align page to global locator - i.e. all tracks in page
+
+				// Act like this only when we are not dealing with scales.
+				// and no track is selected
+				if ( 	// (target_page->scaleStatus == OFF)
+						// &&
+						(target_page->trackSelection == 0)
+					){
+
+					// Aligns only the target_page to the global play data
+					set_page_locators( target_page, G_global_locator, G_TTC_abs_value );
+				}
+
+			} // KEY_ALIGN was pressed
+	}
 
 

@@ -27,35 +27,35 @@
 		// MATRIX fields with track bitpatterns (Rows 0-9) of step toggle
 		for (i=0; i<MATRIX_NROF_ROWS; i++) {
 
-			if ( (( target_page->track_window << target_page->track_window_shift ) & (1 << i)) != 0 ){
+			if ( !row_in_track_window( target_page, i ) )
+				continue;
 
-				track_togglepattern = 	Page_get_trackpattern( target_page, i );
-				track_eventpattern 	=	Page_get_event_trackpattern( target_page, i );
-				track_skippattern	=	Page_get_skippattern( target_page, i );
+			track_togglepattern = 	Page_get_trackpattern( target_page, i );
+			track_eventpattern 	=	Page_get_event_trackpattern( target_page, i);
+			track_skippattern	=	Page_get_skippattern( target_page, i );
 
-				// These are the active steps - exempting the skipped steps
-				MIR_write_trackpattern  ( 	(	(  	track_togglepattern	| track_eventpattern )
-												^	track_skippattern
-											)
-											&	(  	track_togglepattern	| track_eventpattern )
-											,
-										i,
-										MIR_GREEN);
+			// These are the active steps - exempting the skipped steps
+			MIR_write_trackpattern  ( 	(	(  	track_togglepattern	| track_eventpattern )
+											^	track_skippattern
+										)
+										&	(  	track_togglepattern	| track_eventpattern )
+										,
+									i - shiftTrackRow,
+									MIR_GREEN);
 
-				// .. the ones containing chords..
-				//	MIR_write_trackpattern( Page_get_chord_trackpattern( target_page, i ), i, MIR_RED);
+			// .. the ones containing chords..
+			//	MIR_write_trackpattern( Page_get_chord_trackpattern( target_page, i ), i, MIR_RED);
 
-				// .. and here the event mongers - are built into the above
-				MIR_write_trackpattern(   Page_get_chord_trackpattern( target_page, i )
-										| track_eventpattern,
-										i,
-										MIR_RED   );
-				// MIR_write_trackpattern( Page_get_event_trackpattern( target_page, i ), i, MIR_GREEN );
+			// .. and here the event mongers - are built into the above
+			MIR_write_trackpattern(   Page_get_chord_trackpattern( target_page, i )
+									| track_eventpattern,
+									i - shiftTrackRow,
+									MIR_RED   );
+			// MIR_write_trackpattern( Page_get_event_trackpattern( target_page, i ), i, MIR_GREEN );
 
-				// HYPER: Show the hypersteps in RAINBOW_GREEN
-				MIR_write_trackpattern( Page_get_hyperpattern(target_page, i),
-										i,
-										MIR_SHINE_GREEN   );
-			}
+			// HYPER: Show the hypersteps in RAINBOW_GREEN
+			MIR_write_trackpattern( Page_get_hyperpattern(target_page, i),
+									i - shiftTrackRow,
+									MIR_SHINE_GREEN   );
 		}
 

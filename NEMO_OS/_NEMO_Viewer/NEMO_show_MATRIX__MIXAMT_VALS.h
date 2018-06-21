@@ -22,7 +22,7 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-			
+
 		// Depends on the selected mix target
 		switch( target_page->mixTarget ){
 			
@@ -47,15 +47,19 @@
 
 						// Clear the track
 						i = target_page->mixingTrack;
-						MIR_write_trackpattern( 0, i, MIR_RED   );
-						MIR_write_trackpattern( 0, i, MIR_GREEN );
-						MIR_write_trackpattern( 0, i, MIR_BLINK );
+
+						if( !row_in_track_window( target_page, i ) )
+							break;
+
+						MIR_write_trackpattern( 0, i - shiftTrackRow, MIR_RED   );
+						MIR_write_trackpattern( 0, i - shiftTrackRow, MIR_GREEN );
+						MIR_write_trackpattern( 0, i - shiftTrackRow, MIR_BLINK );
 
 						// Write attribute value in the mixing track
 						// j = target_page->Track[i]->attribute[target_page->mixAttribute];
 						j =	*(ptr_of_track_attr_value( target_page, i, target_page->mixAttribute ));
 
-						MIR_write_numeric_H( j, i );
+						MIR_write_numeric_H( j, i - shiftTrackRow );
 					}
 				}							
 				break;
@@ -67,17 +71,22 @@
 			case MIXTGT_USR2:
 			case MIXTGT_USR3:
 			case MIXTGT_USR4:
-			
+
 				// Operate on the GRID assistant page
 				GRID_assistant_page->mixTarget = target_page->mixTarget;
 				target_page = GRID_assistant_page;
 				
+				shiftTrackRow = track_get_window_shift(target_page);
+
 				// If mixMasterStatus wants to show values
 				if (target_page->mixMasterStatus == NEG) {
 					
 					// Per track: Mix Attribute Value
 					for (i=0; i < MATRIX_NROF_ROWS; i++) {
 						
+						if( !row_in_track_window( target_page, i ) )
+							continue;
+
 						// Buffer for the actual value
 						j = target_page->CC_MIXMAP[target_page->mixTarget][i][target_page->CC_MIXMAP_attribute];
 
@@ -87,33 +96,33 @@
 							case CC_MIXMAP_MCC:
 								if ( j == (unsigned char) MIDICC_NONE ){					
 									// Track is set to not send MIDICC, show MIDICC_NONE flag
-									MIR_write_trackpattern ( 0x0f, i, MIR_GREEN);
+									MIR_write_trackpattern ( 0x0f, i - shiftTrackRow, MIR_GREEN);
 								}
 								else {
 									// MIDICC has a valid value 
-									MIR_write_numeric_H ( j, i );
+									MIR_write_numeric_H ( j, i - shiftTrackRow );
 								}
 								break;
 								
 							case CC_MIXMAP_MCH:							
 								if ( j <= 16 ){
-									MIR_point_numeric( j, 		i, MIR_GREEN);
+									MIR_point_numeric( j, 		i - shiftTrackRow, MIR_GREEN);
 								}
 								else if ( j <= 32 ){
-									MIR_point_numeric( j-16,	i,	MIR_RED);
+									MIR_point_numeric( j-16,	i - shiftTrackRow,	MIR_RED);
 								}
 								else if ( j <= 48 ){
-									MIR_point_numeric( j-32,	i,	MIR_GREEN);
-									MIR_point_numeric( j-32,	i,	MIR_BLINK);
+									MIR_point_numeric( j-32,	i - shiftTrackRow,	MIR_GREEN);
+									MIR_point_numeric( j-32,	i - shiftTrackRow,	MIR_BLINK);
 								}
 								else if ( j <= 64 ){
-									MIR_point_numeric( j-48,	i,	MIR_RED);
-									MIR_point_numeric( j-48,	i,	MIR_BLINK);
+									MIR_point_numeric( j-48,	i - shiftTrackRow,	MIR_RED);
+									MIR_point_numeric( j-48,	i - shiftTrackRow,	MIR_BLINK);
 								}
 								break;
 								
 							case CC_MIXMAP_AMT:
-								MIR_write_numeric_H( j, i );								
+								MIR_write_numeric_H( j, i - shiftTrackRow);
 								break;
 						}
 					}
@@ -128,13 +137,17 @@
 
 					// Clear the track
 					i = target_page->mixingTrack;
-					MIR_write_trackpattern( 0, i, MIR_RED   );
-					MIR_write_trackpattern( 0, i, MIR_GREEN );
-					MIR_write_trackpattern( 0, i, MIR_BLINK );
+
+					if( !row_in_track_window( target_page, i ) )
+						break;
+
+					MIR_write_trackpattern( 0, i - shiftTrackRow, MIR_RED   );
+					MIR_write_trackpattern( 0, i - shiftTrackRow, MIR_GREEN );
+					MIR_write_trackpattern( 0, i - shiftTrackRow, MIR_BLINK );
 
 					// Write attribute value in the mixing track
 					j = temp_page->MIXAMT_USR[i];
-					MIR_write_numeric_H( j, i );
+					MIR_write_numeric_H( j, i - shiftTrackRow );
 				}
 				break;					
 		}					

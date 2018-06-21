@@ -39,7 +39,7 @@
 
 
 // SOFTWARE VERSION DISPLAYED
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/defs_version.h"
+#include HEADER(_OCT_global/defs_version.h)
 
 
 // TEMPO RANGE DEFINITION
@@ -71,16 +71,17 @@
 
 
 // INFRASTRUCTURE defines, mainly dealing with hardware issues
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/defs_infrastructure.h"
+#include HEADER(_OCT_global/defs_infrastructure.h)
 
 // FRONT PANEL DEFINES
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/defs_frontpanel.h"
+#include HEADER(_OCT_global/defs_frontpanel.h)
 
 // This regulates the amount of groove delay. Should not be greater than 4.
 #define 	OCTDEF_GROOVE_RESOLUTION 		OCTDEF_TIMER_TICKS_PER_16TH_AT4X / (OCTDEF_MIDI_TICKS_PER_QUARTERNOTE / 4)
 
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/defs_MIDI.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/defs_SYSEX.h"
+#include HEADER(_OCT_global/defs_MIDI.h)
+#include HEADER(_OCT_global/defs_SYSEX.h)
+
 
 // Standard Octopus matrix;
 #define 	MATRIX_NROF_COLUMNS				16
@@ -148,7 +149,7 @@
 #define		RECEIVESEND			3	// EFF flag - Track is sending and receiveing EFF pool data
 
 // FUNCTION RELATED DEFINES
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/defs_functions.h"
+#include HEADER(_OCT_global/defs_functions.h)
 
 
 // NUMBER OF PAGES
@@ -166,7 +167,7 @@
 
 
 // ATTRIBUTE VALUES
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_global/defs_attribute_values.h"
+#include HEADER(_OCT_global/defs_attribute_values.h)
 
 
 // Defines for the Zoomlevel
@@ -185,7 +186,9 @@
 #define 	zoomAMANDA				12	// Locked out mode
 #define		zoomABLETON				13	// Ableton controller mode
 #define 	zoomSCALE				14	// Used in NEMO to depict the scale
-
+#ifdef FEATURE_ENABLE_DICE
+#define 	zoomDICE				15
+#endif
 
 #define 	NOTHING					0
 #define 	MATRIX					1
@@ -213,6 +216,9 @@
 #define 	BIG_KNOB				120
 #define		CLOCK					13
 #define 	FOLLOW					14
+#ifdef FEATURE_ENABLE_DICE
+#define 	DICE					15
+#endif
 
 #define 	TRACK_SELECTION				13
 #define 	TRACK_MUTEPATTERN			130
@@ -296,7 +302,9 @@
 #define		GRID_TRIGGERMODES		30
 #define		GRID_SET_SWITCHMODE		44
 #define 	GRID_BANK_PLAYMODES		45
-
+#ifdef FEATURE_ENABLE_DICE
+#define 	DICE_GRID_SELECTION		46
+#endif
 
 // CHAIN MOODE DEFS
 //#define 	TEN_OF_ONE				0	// MODE 1: TEN OF ONE
@@ -427,6 +435,23 @@
 #define		FOLLOW_PAGE				2
 #define		FOLLOW_TRACK			3
 
+
+// This allows window switching when chain crosses x2 track window
+#define		FOLLOW_CHAIN			7
+
+#ifdef FEATURE_ENABLE_DICE
+// This defines the dice page repository location
+#define		DICE_PAGE				159
+
+// This defines the dice attrMISC flags
+#define		DICE_TRACK_CLOCK		1 // Track Dice multiplier / divider clock flag [*******x]
+#define		DICE_GLOBAL_CLOCK		2 // Track Dice multiplier / divider clock flag [******x*]
+
+// This defines dice bank editorMode
+#define		DICE_QUANT				1 // Quantise user to dice grid
+#define		DICE_ALIGN				2 // Align dice pages to global
+#endif
+
 // MIDI EVENTS: There can be at most this many events in the MIDI QUEUE.
 // Make sure this is not below 10 or so, otherwise something bad may happen.. :-(
 // #define 	 MIDI_NROF_EVENTS		2000
@@ -439,7 +464,6 @@
 #define		SEL_CLEAR				1
 
 // Used in the Track MISC attribute as flags
-#define 	CONTROL_BIT				0
 #define 	CHORD_BIT				2
 #define		EFF_BIT					7
 
@@ -467,8 +491,8 @@
 #define SYSEX_DUMP_SPEED_MIN 		10
 #define SYSEX_DUMP_SPEED_MAX 		100
 
-#define min(a, b)	(a)<(b)?(a):(b)
-#define max(a, b)	(a)>(b)?(a):(b)
+#define min(a, b)	((a)<(b)?(a):(b))
+#define max(a, b)	((a)>(b)?(a):(b))
 
 
 // NEMO panel stuff
@@ -483,6 +507,12 @@
 #define 	VER_EVENT				1
 #define 	VER_RANGE				2
 #define		VER_CHORD				3
+#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+#define		VER_CHORD_OCTAVE_FIRST	4
+#define		VER_CHORD_OCTAVE_SECOND	5
+#define		VER_CHORD_OCTAVE_THIRD	6
+#endif
+
 #define 	LED_VER_VALUE			90
 #define 	LED_VER_EVENT			134
 #define		LED_VER_RANGE			145
@@ -490,14 +520,24 @@
 
 #define 	HYPERSTEPS_PLAY_NOTES	TRUE
 
-#define		TRK_CTRL_PGTGL			1
-#define		TRK_CTRL_MUT_PGTGL		2
-#define		TRK_CTRL_EXT_PLAY		3
-#define		TRK_CTRL_EXT_STOP		4
-#define		TRK_CTRL_CLEAR			5
-#define		TRK_CTRL_MIX			6
-#define		TRK_CTRL_MOVE			7
-#define		TRK_CTRL_TEMPO			0
+#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+#define		CHORD_OCTAVE_FIRST		1	// Used in Step mode to display a chord 1st octave
+#define		CHORD_OCTAVE_SECOND		2	// Used in Step mode to display a chord 2nd octave
+#define		CHORD_OCTAVE_THIRD		4	// Used in Step mode to display a chord 3rd octave
+#define		CHORD_OCTAVE_ALL		0x7
+
+#define		CHORD_OCTAVE_STATUS_CURRENT	1
+#define		CHORD_OCTAVE_STATUS_OTHER	2
+#define		CHORD_OCTAVE_STATUS_ALL		4
+#endif
 
 #define		PGM_CLST_CLR			1
 #define		PGM_CLST_CPY			2
+// Wilson offset row grid/tracks in matrix
+#define		NEMO_NROF_ROWSHIFT		4
+#define		NEMO_WINDOW				0xF
+#define		NEMO_MAX_WINDOW			0xFF
+
+#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
+#define		GST_TOGGLE				1
+#endif

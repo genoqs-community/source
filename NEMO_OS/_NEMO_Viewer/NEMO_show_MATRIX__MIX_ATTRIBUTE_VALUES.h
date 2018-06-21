@@ -44,9 +44,12 @@
 					continue;
 				}
 	
+				if( !row_in_track_window( target_page, row ) )
+					continue;
+
 				// Display all track values
 				MIR_write_numeric_H 
-					(	target_page->Track[row]->attr_VEL, row	);
+					(	target_page->Track[row]->attr_VEL, row - shiftTrackRow	);
 			}
 			break;
 
@@ -65,6 +68,9 @@
 					continue;
 				}
 				
+				if( !row_in_track_window( target_page, row ) )
+					continue;
+
 				// Show the total pitch value, although change is done only to the track pitch
 					j = target_page->Track[row]->attr_PIT
 						+ target_page->Track[row]->scale_pitch_offset
@@ -75,7 +81,7 @@
 					;
 				
 				// Display it in the note representation
-				MIR_write_pitch_H( normalize ( j, TRACK_MIN_PITCH, TRACK_MAX_PITCH ), row );
+				MIR_write_pitch_H( normalize ( j, TRACK_MIN_PITCH, TRACK_MAX_PITCH ), row - shiftTrackRow );
 			}
 			break;
 		
@@ -94,9 +100,12 @@
 					continue;
 				}
 				
+				if( !row_in_track_window( target_page, row ) )
+					continue;
+
 				// Display all values
-				MIR_fill_numeric( 1, 	target_page->Track[row]->LEN_factor +1, row, MIR_RED );
-				MIR_fill_numeric( 1, 	target_page->Track[row]->LEN_factor +1, row, MIR_GREEN );
+				MIR_fill_numeric( 1, 	target_page->Track[row]->LEN_factor, row - shiftTrackRow, MIR_RED );
+				MIR_fill_numeric( 1, 	target_page->Track[row]->LEN_factor, row - shiftTrackRow, MIR_GREEN );
 			}
 			break;
 
@@ -115,8 +124,11 @@
 					continue;
 				}
 				
-				MIR_fill_numeric( 1, 	target_page->Track[row]->STA_factor +1, row, MIR_RED );
-				MIR_fill_numeric( 1, 	target_page->Track[row]->STA_factor +1, row, MIR_GREEN );
+				if( !row_in_track_window( target_page, row ) )
+					continue;
+
+				MIR_fill_numeric( 1, 	target_page->Track[row]->STA_factor, row - shiftTrackRow, MIR_RED );
+				MIR_fill_numeric( 1, 	target_page->Track[row]->STA_factor, row - shiftTrackRow, MIR_GREEN );
 			}					
 			break;
 			
@@ -133,19 +145,22 @@
 		case NEMO_ATTR_DIRECTION:
 			for (row=0; row<MATRIX_NROF_ROWS; row++) {
 
+				if( !row_in_track_window( target_page, row ) )
+					continue;
+
 				// Showing all directions since chaining does not apply and head value does not carry
 				MIR_point_numeric 
 					(	
 //						target_page->Track[row]->attribute[target_page->mixAttribute] 
 						*(ptr_of_track_attr_value( target_page, row, target_page->mixAttribute ))
-						+ target_page->Track[row]->event_offset[ATTR_DIRECTION], row, MIR_RED
+						+ target_page->Track[row]->event_offset[ATTR_DIRECTION], row - shiftTrackRow, MIR_RED
 					);
 
 				MIR_point_numeric 
 					(	
 //						target_page->Track[row]->attribute[target_page->mixAttribute] 
 						*(ptr_of_track_attr_value( target_page, row, target_page->mixAttribute ))
-						+ target_page->Track[row]->event_offset[ATTR_DIRECTION], row, MIR_GREEN
+						+ target_page->Track[row]->event_offset[ATTR_DIRECTION], row - shiftTrackRow, MIR_GREEN
 					);
 			}
 			break;
@@ -165,10 +180,13 @@
 					continue;
 				}
 
+				if( !row_in_track_window( target_page, row ) )
+					continue;
+
 				// Display all values
 				MIR_write_numeric_H 
 					(	target_page->Track[row]->attr_AMT 
-						+ target_page->Track[row]->event_offset[ATTR_AMOUNT], row);
+						+ target_page->Track[row]->event_offset[ATTR_AMOUNT], row - shiftTrackRow);
 			}
 			break;
 		
@@ -187,13 +205,16 @@
 					continue;
 				}
 				
+				if( !row_in_track_window( target_page, row ) )
+					continue;
+
 				// Show all values
 				MIR_fill_numeric (	1, 	
 								target_page->Track[row]->attr_GRV +1,
-								row, MIR_RED);
+								row - shiftTrackRow, MIR_RED);
 				MIR_fill_numeric (	1, 
 								target_page->Track[row]->attr_GRV +1, 
-								row, MIR_GREEN);
+								row - shiftTrackRow, MIR_GREEN);
 			}
 			break;
 		
@@ -212,23 +233,26 @@
 					continue;
 				}
 
+				if( !row_in_track_window( target_page, row ) )
+					continue;
+
 				// Show the MIDI_CC value
 				switch( target_page->Track[row]->attr_MCC ){
 				
 					case MIDICC_NONE:
-						MIR_write_trackpattern ( 0x0f, row, MIR_GREEN);
+						MIR_write_trackpattern ( 0x0f, row - shiftTrackRow, MIR_GREEN);
 						break;
 
 					case MIDICC_BENDER:
-						MIR_write_trackpattern ( 0x01, row, MIR_RED);	
+						MIR_write_trackpattern ( 0x01, row - shiftTrackRow, MIR_RED);
 						break;	
 
 					case MIDICC_PRESSURE:
-						MIR_write_trackpattern ( 0x03, row, MIR_RED);	
+						MIR_write_trackpattern ( 0x03, row - shiftTrackRow, MIR_RED);
 						break;
 
 					default:
-						MIR_write_numeric_H( target_page->Track[row]->attr_MCC, row);
+						MIR_write_numeric_H( target_page->Track[row]->attr_MCC, row - shiftTrackRow);
 						break;
 						
 				} // MIDI_CC value switch
@@ -250,6 +274,9 @@
 					continue;
 				}
 
+				if( !row_in_track_window( target_page, row ) )
+					continue;
+
 				// Display according to MIDI channel/port
 				switch( 	target_page->Track[row]->attr_MCH
 						+ 	target_page->Track[row]->event_offset[ATTR_MIDICH] ){
@@ -259,7 +286,7 @@
 					case  9: case 10: case 11: case 12: case 13: case 14: case 15: case 16:
 
 						MIR_point_numeric 
-							(	target_page->Track[row]->attr_MCH, row, MIR_GREEN );
+							(	target_page->Track[row]->attr_MCH, row - shiftTrackRow, MIR_GREEN );
 						break;
 
 					// MIDI OUT 2 REAL - channels in RED
@@ -267,7 +294,7 @@
 					case 25: case 26: case 27: case 28: case 29: case 30: case 31: case 32:
 
 						MIR_point_numeric 
-							(	target_page->Track[row]->attr_MCH - 16, row, MIR_RED );
+							(	target_page->Track[row]->attr_MCH - 16, row - shiftTrackRow, MIR_RED );
 						break;
 
 					// MIDI OUT 1 VIRTUAL - channels in GREEN BLINK
@@ -275,9 +302,9 @@
 					case 41: case 42: case 43: case 44: case 45: case 46: case 47: case 48:
 
 						MIR_point_numeric 
-							(	target_page->Track[row]->attr_MCH - 32, row, MIR_GREEN );
+							(	target_page->Track[row]->attr_MCH - 32, row - shiftTrackRow, MIR_GREEN );
 						MIR_point_numeric 
-							(	target_page->Track[row]->attr_MCH - 32, row, MIR_BLINK );
+							(	target_page->Track[row]->attr_MCH - 32, row - shiftTrackRow, MIR_BLINK );
 						break;
 
 					// MIDI OUT 2 VIRTUAL - channels in RED BLINK
@@ -285,9 +312,9 @@
 					case 57: case 58: case 59: case 60: case 61: case 62: case 63: case 64:
 
 						MIR_point_numeric 
-							(	target_page->Track[row]->attr_MCH - 48, row, MIR_RED );
+							(	target_page->Track[row]->attr_MCH - 48, row - shiftTrackRow, MIR_RED );
 						MIR_point_numeric 
-							(	target_page->Track[row]->attr_MCH - 48, row, MIR_BLINK );
+							(	target_page->Track[row]->attr_MCH - 48, row - shiftTrackRow, MIR_BLINK );
 						break;
 
 				} // MIDI channel switch
@@ -300,8 +327,11 @@
 	// Blink the values for trackSelection
 	for (i=0; i<MATRIX_NROF_ROWS; i++){
 
+		if( !row_in_track_window( target_page, i ) )
+			continue;
+
 		if ((1<<i) & (target_page->trackSelection)){
-			MIR_blink_track (i, 1, 16);
+			MIR_blink_track (i - shiftTrackRow, 1, 16);
 		}
 	}
 

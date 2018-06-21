@@ -42,11 +42,13 @@ extern void my_sysex_dump( unsigned char dump_type, unsigned char my_grid_cursor
 #include "../_NEMO_exe_keys/NEMO_key_OCT_CIRCLE_xpose_STEP.h"
 #include "../_NEMO_exe_keys/NEMO_key_OCT_CIRCLE_chord_STEP.h"
 #include "../_NEMO_exe_keys/NEMO_key_ScaleSelector_functions.h"
-
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_exe_keys/key_ScaleSelector_mini_functions.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_exe_keys/key_mixermap_matrixclick.h"
-#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_exe_keys/key_exe_chainselectors.h"
-// #include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_exe_keys/key_ABLETON.h"
+#ifdef FEATURE_ENABLE_DICE
+#include "../_NEMO_exe_keys/NEMO_key_DICE.h"
+#endif
+#include HEADER(_OCT_exe_keys/key_ScaleSelector_mini_functions.h)
+#include HEADER(_OCT_exe_keys/key_mixermap_matrixclick.h)
+#include HEADER(_OCT_exe_keys/key_exe_chainselectors.h)
+// #include HEADER(_OCT_exe_keys/key_ABLETON.h)
 
 
 // EXECUTE THE KEYPRESS RECEIVED
@@ -61,8 +63,15 @@ void executeKey( unsigned int keyNdx ){
 					temp=0
 					;
 
+
 	// Work on the page under the grid cursor
 	Pagestruct* target_page = &Page_repository[ GRID_CURSOR ];
+
+	// x2 - Track row index shift
+	unsigned char shiftPageRow = page_get_window_shift();
+
+	// x2 - Track row window shift
+	unsigned char shiftTrackRow = track_get_window_shift(target_page);
 
 	// Used to mute a whole chain
 //	Trackstruct* current_track = NULL;
@@ -80,7 +89,11 @@ void executeKey( unsigned int keyNdx ){
 	if ( keyNdx == KEY_RETURN ){
 
 		switch( G_zoom_level ){
-
+			#ifdef FEATURE_ENABLE_DICE
+			case zoomDICE:
+				G_zoom_level = zoomGRID;
+				break;
+			#endif
 			case zoomGRID:
 				// Enter machine lock state
 				if ( is_pressed_key( KEY_ZOOM_GRID ) ){
@@ -198,6 +211,12 @@ void executeKey( unsigned int keyNdx ){
 	switch (G_zoom_level) {
 
 		case zoomSYSEX:
+			// x2 - toggle page row window from (1-4) (5-8)
+			if ( keyNdx == KEY_ZOOM_STEP ) {
+				page_shift_window();
+				break;
+			}
+			keyNdx = shift_key_page_row( keyNdx, shiftPageRow );
 			#include "NEMO_key_SYSEX.h"
 			break;
 
@@ -206,18 +225,44 @@ void executeKey( unsigned int keyNdx ){
 			break;
 */
 		case zoomAMANDA:
-			#include "/home/genoqs/Desktop/Octopus-fork/OCT_OS_v1.60/_OCT_exe_keys/key_AMANDA.h"
+			#include HEADER(_OCT_exe_keys/key_AMANDA.h)
 			break;
 
 		case zoomDIAG:
 			#include "NEMO_key_DIAG.h"
 			break;
 
+		#ifdef FEATURE_ENABLE_DICE
+		case zoomDICE:
+			if( ( keyNdx < 11 ) || ( keyNdx > 185 ) )
+			{
+				// Toggle page row window from (1-4) (5-8)
+				if ( keyNdx == KEY_ZOOM_STEP ) {
+					page_shift_window();
+				}
+				keyNdx = shift_key_page_row( keyNdx, shiftPageRow );
+			}
+			key_exec_DICE( keyNdx );
+			break;
+		#endif
+
 		case zoomGRID:
+			// x2 - Shift page row window from (1-4) (5-8)
+			if ( keyNdx == KEY_ZOOM_STEP ) {
+				page_shift_window();
+			}
+			keyNdx = shift_key_page_row( keyNdx, shiftPageRow );
+
 			#include "NEMO_key_GRID.h"
 			break;
 
 		case zoomGRIDTRACK:
+			// x2 - Shift page row window from (1-4) (5-8)
+			if ( keyNdx == KEY_ZOOM_STEP ) {
+				page_shift_window();
+			}
+			keyNdx = shift_key_page_row( keyNdx, shiftPageRow );
+
 			#include "NEMO_key_GRIDTRACK.h"
 			break;
 
@@ -226,14 +271,68 @@ void executeKey( unsigned int keyNdx ){
 			break;
 
 		case zoomPAGE:
+			// x2 - Shift track row window from (1-4) (5-8)
+			if ( keyNdx == KEY_ZOOM_STEP ) {
+				if( ( target_page->OPS_mode == BIRDSEYE ) ) {
+					page_shift_window();
+				}else if(	( is_pressed_key( KEY_SELECT_MASTER ) )
+					||	( !( ( G_run_bit == ON )
+					&&	( target_page->trackSelection != 0 ) )
+					&&	( !( ( ( target_page->editorMode == PREVIEW )
+					||	( target_page->editorMode == PREVIEW_PERFORM ) )
+					&& 	is_pressed_steprange() ) ) ) ) {
+					track_shift_window( target_page );
+				}
+			}
+
+			keyNdx = shift_key_track_row( target_page, keyNdx, shiftTrackRow );
+
 			key_exec_PAGE( keyNdx );
 			break;
 
 		case zoomMIXMAP:
+			// x2 - Shift track row window from (1-4) (5-8)
+			if( ( target_page->mixTarget == MIXTGT_USR1 )
+			|| 	( target_page->mixTarget == MIXTGT_USR2 )
+			|| 	( target_page->mixTarget == MIXTGT_USR3 )
+			|| 	( target_page->mixTarget == MIXTGT_USR4 ) ) {
+
+				shiftTrackRow = track_get_window_shift( GRID_assistant_page );
+				if ( ( keyNdx == KEY_ZOOM_STEP ) ) {
+					track_shift_window( GRID_assistant_page );
+				}
+
+				if ( !( ( keyNdx > 0 && keyNdx <= 20 )
+				|| ( keyNdx >= 187 && keyNdx <= 195 ) )
+				&& ( !is_pressed_key( KEY_MIX_MASTER ) ) ) {
+					keyNdx = shift_key_track_row( GRID_assistant_page, keyNdx, shiftTrackRow );
+				}
+			}else {
+				if ( ( keyNdx == KEY_ZOOM_STEP ) ) {
+					track_shift_window( target_page );
+				}
+
+				if ( !( ( keyNdx > 0 && keyNdx <= 20 )
+				|| ( keyNdx >= 187 && keyNdx <= 195 ) )
+				&& ( !is_pressed_key( KEY_MIX_MASTER ) ) ) {
+					keyNdx = shift_key_track_row( target_page, keyNdx, shiftTrackRow );
+				}
+			}
+
 			#include "NEMO_key_MIXMAP.h"
 			break;
 
 		case zoomTRACK:
+			// x2 - Shift track row window from (1-4) (5-8)
+			if	( ( keyNdx == KEY_ZOOM_STEP )
+				&&	( target_page->stepSelection != 1 ) ) {
+				track_shift_window( target_page );
+				track_shift_window_track_selection( target_page );
+			}
+
+			if ( ( keyNdx >0 ) && ( keyNdx <= 10 ) ) {
+				keyNdx = shift_key_track_row( target_page, keyNdx, shiftTrackRow );
+			}
 			#include "NEMO_key_TRACK.h"
 			break;
 
@@ -244,6 +343,10 @@ void executeKey( unsigned int keyNdx ){
 
 
 		case zoomSTEP:
+			if( MODE_OBJECT_SELECTION == BIRDSEYE ){
+				keyNdx = shift_key_track_row( target_page, keyNdx, shiftTrackRow );
+			}
+
 			key_exec_STEP( keyNdx );
 			break;
 

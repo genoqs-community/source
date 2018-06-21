@@ -63,6 +63,17 @@ switch( content ) {
 			// PAGE available
 			MIR_write_dot (LED_ZOOM_PAGE, MIR_GREEN);				
 		}
+
+		// GRID mode available for selection
+		MIR_write_dot( LED_ZOOM_GRID, 		MIR_GREEN );
+
+		if ( shiftPageRow ) {
+			MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+		} else {
+			MIR_write_dot( LED_ZOOM_STEP, MIR_RED );
+			MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+		}
+
 		break;
 
 								
@@ -88,6 +99,14 @@ switch( content ) {
 		// Perform mode does not show which page we are about to enter!
 		if ( GRID_play_mode == GRID_EDIT ){		
 		}
+
+		if ( shiftPageRow ) {
+			MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+		} else {
+			MIR_write_dot( LED_ZOOM_STEP, MIR_RED );
+			MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+		}
+
 		break;
 	
 
@@ -163,19 +182,49 @@ switch( content ) {
 			}
 		}
 
-		// Indicate the track TAP function for the stelected track
-		if ( target_page->trackSelection != 0 ){
+		if( target_page->OPS_mode == BIRDSEYE ) {
 
-			MIR_write_dot( LED_ZOOM_STEP, MIR_RED );
+			if ( shiftPageRow ) {
+				MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+			} else {
+				MIR_write_dot( LED_ZOOM_STEP, MIR_RED );
+				MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+			}
+
+		} else {
+			// Indicate the track TAP function for the stelected track
+			if (	( ( ( G_run_bit == ON )
+				&&	( target_page->trackSelection != 0 ) )
+
+				// Indicate that STEP mode can be activated from perform mode single click
+				||	( ( ( target_page->editorMode == PREVIEW )
+				||	( target_page->editorMode == PREVIEW_PERFORM ) )
+				&&	( page_preview_step != NULL ) ) )
+				&&	!( is_pressed_key( KEY_SELECT_MASTER ) )
+			) {
+
+				MIR_write_dot( LED_ZOOM_STEP, MIR_RED );
+
+			// Indicate that STEP mode can be activated double click
+			} else if(	( target_page->stepSelection == 1 )
+			) {
+				MIR_write_dot( LED_ZOOM_STEP, MIR_RED );
+				MIR_write_dot( LED_ZOOM_STEP, MIR_BLINK );
+
+			} else {
+				if( shiftTrackRow ) {
+					MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+				} else {
+					MIR_write_dot( LED_ZOOM_STEP, MIR_RED );
+					MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+				}
+
+				if( page_is_chain_follow( target_page ) ) {
+					MIR_write_dot( LED_ZOOM_STEP, MIR_BLINK );
+				}
+			}
 		}
 
-		// Indicate that STEP mode can be activated
-		if (	(target_page->stepSelection == 1)
-			){
-
-			MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
-		}
-		
 		break;
 		
 
@@ -200,17 +249,24 @@ switch( content ) {
 			}
 		}
 
-		// Indicate the track TAP function for the stelected track
-		if ( target_page->trackSelection != 0 ){
-
-			MIR_write_dot( LED_ZOOM_STEP, MIR_RED );
-		}
-
-		// Indicate that STEP mode can be activated
-		if (	(target_page->stepSelection == 1)
-			){
-
-			MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+		if(		( target_page->mixTarget == MIXTGT_USR1 )
+			|| 	( target_page->mixTarget == MIXTGT_USR2 )
+			|| 	( target_page->mixTarget == MIXTGT_USR3 )
+			|| 	( target_page->mixTarget == MIXTGT_USR4 )
+		) {
+			if ( track_get_window_shift( GRID_assistant_page ) ){
+				MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+			} else {
+				MIR_write_dot( LED_ZOOM_STEP, MIR_RED );
+				MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+			}
+		} else {
+			if ( shiftTrackRow ){
+				MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+			} else {
+				MIR_write_dot( LED_ZOOM_STEP, MIR_RED );
+				MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+			}
 		}
 
 		break;
@@ -218,6 +274,14 @@ switch( content ) {
 
 
 	case zoomTRACK:
+
+		if ( shiftTrackRow ){
+			MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+		} else {
+			MIR_write_dot( LED_ZOOM_STEP, MIR_RED );
+			MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+		}
+
 		break;
 
 
@@ -269,6 +333,36 @@ switch( content ) {
 		MIR_write_dot( LED_ZOOM_STEP, 		MIR_RED   );
 		MIR_write_dot( LED_ZOOM_STEP, 		MIR_BLINK );
 		break;
+
+
+
+	case zoomSYSEX:
+
+		if ( shiftPageRow ) {
+			MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+		} else {
+			MIR_write_dot( LED_ZOOM_STEP, MIR_RED );
+			MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+		}
+
+		break;
+
+
+	#ifdef FEATURE_ENABLE_DICE
+	case zoomDICE:
+
+		// GRID mode available for selection
+		MIR_write_dot( LED_ZOOM_GRID, 		MIR_GREEN );
+
+		if ( shiftPageRow ) {
+			MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+		} else {
+			MIR_write_dot( LED_ZOOM_STEP, MIR_RED );
+			MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+		}
+
+		break;
+	#endif
 }
 
 
