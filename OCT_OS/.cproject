@@ -58,8 +58,8 @@
 				<parser enabled="false"/>
 			</scannerInfoProvider>
 		</profile>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.879442076;cdt.managedbuild.toolchain.gnu.base.879442076.1388687610;cdt.managedbuild.tool.gnu.cpp.compiler.base.1488600358;cdt.managedbuild.tool.gnu.cpp.compiler.input.839841510">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP"/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.879442076;cdt.managedbuild.toolchain.gnu.base.879442076.1388687610;cdt.managedbuild.tool.gnu.c.compiler.base.2110876416;cdt.managedbuild.tool.gnu.c.compiler.input.1722452107">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
 			<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 				<buildOutputProvider>
 					<openAction enabled="true" filePath=""/>
@@ -101,8 +101,8 @@
 				</scannerInfoProvider>
 			</profile>
 		</scannerConfigBuildInfo>
-		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.879442076;cdt.managedbuild.toolchain.gnu.base.879442076.1388687610;cdt.managedbuild.tool.gnu.c.compiler.base.2110876416;cdt.managedbuild.tool.gnu.c.compiler.input.1722452107">
-			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileC"/>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.879442076;cdt.managedbuild.toolchain.gnu.base.879442076.1388687610;cdt.managedbuild.tool.gnu.cpp.compiler.base.1488600358;cdt.managedbuild.tool.gnu.cpp.compiler.input.839841510">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="org.eclipse.cdt.managedbuilder.core.GCCManagedMakePerProjectProfileCPP"/>
 			<profile id="org.eclipse.cdt.make.core.GCCStandardMakePerProjectProfile">
 				<buildOutputProvider>
 					<openAction enabled="true" filePath=""/>
