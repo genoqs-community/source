@@ -1402,6 +1402,7 @@
 	if ( G_clock_source != EXT ){
 
 		switch( keyNdx ){
+
 			#ifdef FEATURE_ENABLE_SONG_UPE
 
 			case KEY_PAUSE:
@@ -1422,8 +1423,15 @@
 				break;
 
 			case KEY_PAUSE:
+				#ifdef FEATURE_SOLO_REC
+				// the sequencer is not paused and it is not running, i.e. stopped
+				if ( G_pause_bit == OFF && G_run_bit == OFF ){
+					G_zoom_level = zoomSOLOREC;
+				}
+				#endif
 				sequencer_command_PAUSE();
 				break;
+
 			#endif
 			case KEY_PLAY1:
 			case KEY_PLAY2:

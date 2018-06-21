@@ -188,11 +188,10 @@ unsigned int is_pressed_pagerange(){
 
 	// No key is pressed to begin with
 	if ( G_key_pressed == 0 ){
-
 		result = 0;
 	}
 	else {
-		
+
 		// Linear G_scan through the buttons in question: Selectors and Steps.
 		for( i=min; i <= max; i++ ){
 		
@@ -200,7 +199,7 @@ unsigned int is_pressed_pagerange(){
 			if (	( G_pressed_keys[i] >= min ) 
 				&&	( G_pressed_keys[i] <= max ) 
 				){
-				
+
 				// Store the result
 				result = G_pressed_keys[i];
 

@@ -140,6 +140,7 @@ extern void 	PhraseMultiTweakStart( booln editBo );
 extern void 	PhraseMultiTweakReset( void );
 extern void 	PhraseEditNumber( intn direction );
 extern void 	PhraseEditStepNumber( Stepstruct* stepPt, intn direction );
+extern void		PhraseEditGlobalStrum( intn direction );
 extern void 	PhraseEditStepType( Stepstruct* stepPt, intn direction );
 extern void 	PhraseEditStepFactor( Stepstruct* stepPt, intn direction );
 extern void 	PhraseEditVel( card8 phraseIx, card8 noteIx, intn direction );

@@ -61,6 +61,13 @@ unsigned char		G_clock_source		= OFF;	// Can be any of OFF, INT(ernal), EXT(erna
 
 unsigned char G_midi_map_controller_mode = OFF;
 
+// Fine tune acts like a band pass filter that opens wider starting equal distance between two steps.
+// Notes found within this band will be quantize-flipped so that the note is placed in the opposite direction.
+unsigned char G_quantize_fine_tune 			= 0; // Odd=switch polarity Even=drop polarized notes
+unsigned char G_quantize_note 				= 1; // 0=OFF, 1=1/64, 2=1/32, 3=1/16, 4=1/8, 5=1/4, 6=1/2, 7=1/1-Note
+signed char	  G_strum						= 9; // 9=OFF
+unsigned char G_slow_tempo					= OFF;
+
 // G_master_blinker is used to control LED blinking activities
 unsigned char 		G_master_blinker		= 0;
 unsigned char 		G_master_blinker2		= 0; // Used for the one current ZOOM LED showing TEMPO

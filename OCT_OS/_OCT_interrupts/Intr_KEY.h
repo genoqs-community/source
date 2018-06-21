@@ -148,6 +148,11 @@ void readKeys_thread (cyg_addrword_t index){
 				#include "Intr_KEY_GRID.h"
 				break;
 
+			// SOLOREC
+			case zoomSOLOREC:
+				#include "Intr_KEY_SOLOREC.h"
+				break;
+
 		} // switch G_zoom_level
 
 		// INTERACTIVE MODE CODE -- END

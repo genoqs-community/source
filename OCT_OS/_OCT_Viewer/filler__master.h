@@ -123,6 +123,10 @@ void VIEWER_fill_MIR() {
 			#include "filler_DIAG.h"
 			break;
 
+		case zoomSOLOREC:
+			#include "filler_SOLOREC.h"
+			break;
+
 	} // switch ( target_page->zoomlevel );
 
 } // void VIEWER_fill_MIR()

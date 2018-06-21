@@ -476,6 +476,17 @@ void PhraseMultiTweakReset( void )
 
 
 // Change the phrase number of a particular step
+void PhraseEditGlobalStrum( intn direction )
+{
+	modify_parameter( &G_strum, 0, STEP_MAX_GROOVE, direction, OFF, FIXED);
+
+	// Set the phrase timer. While the timer is ticking the phrase index will be shown in the circle.
+	PHRASE_TIMER = ON;
+	cyg_alarm_initialize(alarm_hdl, cyg_current_time() + TIMEOUT_VALUE, 0);
+}
+
+
+// Change the phrase number of a particular step
 void PhraseEditStepNumber( Stepstruct* stepPt, intn direction )
 {
 	// Ignore inactive steps.

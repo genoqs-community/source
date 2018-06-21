@@ -203,6 +203,11 @@
 #define		KEY_PLAY4				250
 #define		LED_PLAY4				250
 
+#define 	LED_QUANTIZE_LOW		252
+#define 	KEY_QUANTIZE_LOW		252
+#define 	LED_QUANTIZE_HIGH		258
+#define 	KEY_QUANTIZE_HIGH		258
+
 //	#define 	LED_MIDI_OFF				213
 // 	#define		KEY_MIDI_OFF				300 // ->This key will therefore never be registered
 

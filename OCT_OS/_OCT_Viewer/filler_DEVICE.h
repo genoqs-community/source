@@ -61,7 +61,7 @@
 
 				// Show the Software Version
 				MIR_write_numeric_C(
-					SW_VERSION_MAJOR*100 + SW_VERSION_MINOR*10 + SW_VERSION_RELEASE );		
+						SW_VERSION_MAJOR*100 + SW_VERSION_MINOR*10 + SW_VERSION_RELEASE );
 				MIR_write_numeric_H( SW_VERSION_INTERNAL, 9 );
 				break;
 				

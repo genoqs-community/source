@@ -35,6 +35,7 @@
 #include "rot_editorblock.h"
 #include "rot_DIAG.h"	
 #include "rot_GRID.h"
+#include "rot_SOLOREC.h"
 #include "rot_GRIDTRACK.h"
 #include "rot_PAGE.h"
 #include "rot_TRACK.h"
@@ -81,6 +82,10 @@ void executeRot( unsigned int in_rotNdx ){
 
 		case zoomGRID:
 			rot_exec_GRID( target_page, rotNdx, direction );			
+			break;
+
+		case zoomSOLOREC:
+			rot_exec_SOLOREC( target_page, rotNdx, direction );
 			break;
 
 		case zoomGRIDTRACK:

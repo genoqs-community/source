@@ -171,6 +171,9 @@
 #ifdef FEATURE_ENABLE_DICE
 #define		zoomDICE				14
 #endif
+#ifdef FEATURE_SOLO_REC
+#define		zoomSOLOREC				15
+#endif
 
 #define 	NOTHING					0
 #define 	MATRIX					1
