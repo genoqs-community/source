@@ -101,6 +101,21 @@ unsigned int is_pressed_rowzero(){
 }
 
 
+// Returns the row zero key index 1 - 16 or zero if key is not in row zero
+unsigned int is_key_rowzero(unsigned int keyNdx){
+
+	unsigned int i = 0;
+	unsigned int min = 20;
+	unsigned int max = 185;
+
+	for( i=min; i <= max; i+=11 ){
+		if (keyNdx == i){
+			return (keyNdx -9) / 11;
+		}
+	}
+	return 0;
+}
+
 
 
 // Check whether a step key is pressed in the matrix (when buttons are steps), and..

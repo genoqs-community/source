@@ -197,7 +197,11 @@ void Octopus_recall_flash()
 	target_page->trackAttributeSelection = OFF;
 
 	// Enter Page mode - although GRID would be more appropriate..
+#ifdef FEATURE_SOLO_REC
+	G_zoom_level = zoomGRID; // TODO: use persistent toggle bit from G_midi_map_controller_mode
+#else
 	G_zoom_level = zoomPAGE;
+#endif
 
 	// Release the MIDI SYSEX state
 	MIDI_RECEIVE_SYSEX = FALSE;

@@ -67,6 +67,10 @@ unsigned char G_quantize_fine_tune 			= 0; // Odd=switch polarity Even=drop pola
 unsigned char G_quantize_note 				= 1; // 0=OFF, 1=1/64, 2=1/32, 3=1/16, 4=1/8, 5=1/4, 6=1/2, 7=1/1-Note
 signed char	  G_strum						= 9; // 9=OFF
 unsigned char G_slow_tempo					= OFF;
+Pagestruct*	  G_solo_rec_page				= NULL;
+unsigned char G_solo_midi_ch				= 1;
+unsigned char G_solo_normalize_pitch		= OFF;
+unsigned char G_solo_normalize_len			= OFF;
 
 // G_master_blinker is used to control LED blinking activities
 unsigned char 		G_master_blinker		= 0;
@@ -299,6 +303,7 @@ unsigned char EDIT_TIMER 			= OFF;
 unsigned char MIX_TIMER				= OFF;
 unsigned char TEMPO_TIMER			= OFF; // used in nemo to display tempo
 unsigned char PHRASE_TIMER			= OFF; // Used to show phrase number in outer circle.
+unsigned char ROT_INDEX				= OFF;
 
 // Double click control
 unsigned char DOUBLE_CLICK_TIMER	= OFF;

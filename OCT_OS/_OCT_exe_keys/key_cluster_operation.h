@@ -23,6 +23,21 @@
 //
 
 
+
+// Only allow selection of right neighbor pages that are not connecting to an existing page cluster
+unsigned int selected_solo_rec_page( unsigned char grid_cursor, unsigned char dot ){
+	if ( Page_repository[grid_cursor].page_clear == ON && is_pressed_key(dot) &&
+	   ( dot < 20 || // first column
+			   ( G_solo_rec_page == NULL && Page_repository[grid_cursor - 10].page_clear == ON) ||
+				 G_solo_rec_page != NULL
+	   ) &&
+	   ( G_solo_rec_page == NULL || G_solo_rec_page->pageNdx == (grid_cursor - 10) )){
+
+		return 1;
+	}
+	return 0;
+}
+
 // apply a track mute toggle for a single page
 void apply_page_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track, unsigned short*	trackMutepattern ){
 
@@ -186,6 +201,44 @@ void selected_page_cluster_clear( unsigned char grid_cursor ){
 		Page_clear( &Page_repository[ this_ndx ] );
 		this_ndx += 10;
 	}
+}
+
+// Is the cursor a member of the target page cluster
+unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char target_page ){
+
+	// select all pages in cluster
+	Pagestruct* temp_page = &Page_repository[ grid_cursor ];
+
+	signed short 	prev_ndx = 0,
+					this_ndx = 0;
+
+	// Compute the index of the right neighbor
+	this_ndx = temp_page->pageNdx;
+	if (Page_repository[this_ndx].page_clear == ON) {
+		return 0;
+	}
+
+	prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
+
+	// track back to beginning of cluster selection
+	while ( 	(prev_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[prev_ndx].page_clear == OFF)
+	){
+		temp_page = &Page_repository[ prev_ndx ];
+		this_ndx = temp_page->pageNdx;
+		prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
+	}
+
+	// track forward to clear
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+		if ( Page_repository[ this_ndx ].pageNdx == target_page ){
+			return 1;
+		}
+		this_ndx += 10;
+	}
+	return 0;
 }
 
 // copies a selected page cluster

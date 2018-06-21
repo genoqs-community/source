@@ -23,13 +23,17 @@
 		MIR_write_dot( LED_TEMPO, MIR_BLINK );
 	}
 
-	// Grid controls
-	MIR_write_dot( LED_TGGL, MIR_RED ); // VEL
-	MIR_write_dot( LED_TGGL, MIR_GREEN );
-	MIR_write_dot( LED_CLEAR, MIR_RED ); // LEN / clr
-	MIR_write_dot( LED_CLEAR, MIR_GREEN );
-	MIR_write_dot( LED_FLT, MIR_RED ); // POS
-	MIR_write_dot( LED_FLT, MIR_GREEN );
+	if (G_solo_rec_page != NULL){
+		// Grid controls
+		MIR_write_dot( LED_TGGL, MIR_RED ); // VEL
+		MIR_write_dot( LED_TGGL, MIR_GREEN );
+
+		MIR_write_dot( LED_CLEAR, MIR_RED ); // LEN / clr
+		MIR_write_dot( LED_CLEAR, MIR_GREEN );
+
+		MIR_write_dot( LED_FLT, MIR_RED ); // POS
+	}
+
 	MIR_write_dot( LED_PASTE, MIR_RED ); // MCH
 	MIR_write_dot( LED_PASTE, MIR_GREEN );
 
@@ -102,11 +106,35 @@
 
 	// Show the GRID cursor
 	unsigned char temp = cursor_to_dot( GRID_CURSOR );
-	if ( Page_repository[GRID_CURSOR].page_clear == ON && is_pressed_key(temp) ){
+	unsigned int selRec = selected_solo_rec_page( GRID_CURSOR, temp );
+	if ( selRec  == ON ||
+	   ( G_solo_rec_page != NULL &&
+	     selected_page_cluster( GRID_CURSOR, G_solo_rec_page->pageNdx ) &&
+	     is_pressed_key( temp )
+	)){
+
+		if ( selRec == OFF && G_solo_rec_page != NULL ){
+			MIR_write_dot( LED_CLEAR, MIR_BLINK );
+		}
 
 		MIR_write_dot( temp, MIR_RED   );
 		MIR_write_dot( temp, MIR_GREEN );
 		MIR_write_dot( temp, MIR_BLINK );
+
+		unsigned int min = 20;
+		unsigned int max = 119;
+		unsigned int result = 0;
+
+		for( i=min; i <= max; i+=11 ){
+			result = (i - 9) / 11;
+			if ( result == 1 ){ // TODO
+				MIR_write_dot( i, MIR_RED );
+			}
+			else {
+				MIR_write_dot( i, MIR_GREEN );
+			}
+			MIR_write_dot( i, MIR_BLINK );
+		}
 	}
 //
 //
@@ -123,20 +151,34 @@
 	show ( ELE_OCTAVE_CIRCLE, G_global_locator_PICTURE );
 
 
-	if ( is_pressed_key(KEY_PASTE) )
+	if ( is_pressed_key(KEY_PASTE) || ( EDIT_TIMER == ON && ROT_INDEX == 10 ) )
 	{
-		if ( GRID_p_set_midi_ch <= 16 ){
+		if ( G_solo_midi_ch <= 16 ){
 
 			MIR_point_numeric(
-				GRID_p_set_midi_ch,
+				G_solo_midi_ch,
 				9,	MIR_GREEN);
 		}
 		else if ( GRID_p_set_midi_ch <= 32 ){
 
 			MIR_point_numeric(
-				GRID_p_set_midi_ch - 16,
+				G_solo_midi_ch - 16,
 				9,	MIR_RED);
 		}
+	}
+	else if ( ( G_solo_rec_page != NULL ) &&
+			( is_pressed_key(KEY_TGGL) || ( EDIT_TIMER == ON && ROT_INDEX == 1 ) ))
+	{
+		MIR_point_numeric(
+			G_solo_normalize_pitch,
+			0,	MIR_GREEN);
+	}
+	else if ( ( G_solo_rec_page != NULL ) &&
+			( is_pressed_key(KEY_CLEAR) || ( EDIT_TIMER == ON && ROT_INDEX == 3 ) ))
+	{
+		MIR_point_numeric(
+			G_solo_normalize_len,
+			2,	MIR_GREEN);
 	}
 //
 //	if ( is_pressed_rowzero() && GRID_p_set_note_offsets[current_GRID_set] != 255 )

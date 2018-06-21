@@ -41,7 +41,7 @@ void rot_exe_EDIT( 	unsigned char rotNdx,
 	// Reset timer on every turn, so it doesnt run out
 	if (target_page->trackSelection != 0) {
 
-		EDIT_TIMER = ON;				
+		EDIT_TIMER = ON;
 		// Setup alarm for the EDIT TIMER
 		cyg_alarm_initialize(	alarm_hdl, 
 								cyg_current_time() + TIMEOUT_VALUE,

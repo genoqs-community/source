@@ -333,6 +333,7 @@ void start_EDIT_TIMER(){
 	EDIT_TIMER 		= ON;
 	MIX_TIMER 		= OFF;
 	TEMPO_TIMER		= OFF;
+	ROT_INDEX		= OFF;
 
 	// Setup alarm for the EDIT TIMER
 	cyg_alarm_initialize(	alarm_hdl,

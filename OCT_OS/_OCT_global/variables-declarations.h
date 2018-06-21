@@ -36,6 +36,7 @@ extern unsigned char 	EDIT_TIMER;
 extern unsigned char 	MIX_TIMER;
 extern unsigned char 	TEMPO_TIMER;
 extern unsigned char 	PHRASE_TIMER;
+extern unsigned char	ROT_INDEX;
 
 extern cyg_handle_t		alarm_hdl;
 
