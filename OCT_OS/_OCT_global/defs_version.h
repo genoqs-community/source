@@ -2,13 +2,13 @@
 
 #define 	SW_VERSION_MAJOR				 5	// Max 10 - Hundreds
 #define		SW_VERSION_MINOR				 0	// Max 10 - Tens
-#define		SW_VERSION_RELEASE				 1	// Max 10 - Ones
+#define		SW_VERSION_RELEASE				 2	// Max 10 - Ones
 
-#define		SW_VERSION_INTERNAL				 1	// Max 127 - Row 0 number
+#define		SW_VERSION_INTERNAL				 2	// Max 127 - Row 0 number
 
 // SWITCH between 'MIDI' and 'USB' modes of the MIDI 2 Port
 #define		OCTDEF_UART2_MODE	 			MIDI
-//#define		OCTDEF_UART2_MODE	 			USB
+define		OCTDEF_UART2_MODE	 			USB
 // POWER-ON LOAD BEHAVIOR
 #define 	LOAD_ON_POWERON					TRUE
 
@@ -32,6 +32,7 @@
 
 // CORE BUILD FEATURE ENABLE
 #define 	FEATURE_ENABLE_CHORD_OCTAVE		TRUE
+#define		FEATURE_SOLO_REC				FALSE
 
 /*
  * Bug tracking spreadsheet
