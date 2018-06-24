@@ -1,10 +1,50 @@
 
 	if ( keyNdx == KEY_TEMPO ){
-		G_slow_tempo = G_slow_tempo == OFF ? ON : OFF;
+		G_slow_tempo ^= 1; // toggle
+	}
+
+	if ( G_solo_rec_page != NULL ){ // A record page cluster is selected
+
+		if ( keyNdx == KEY_PLAY1 ){
+			G_track_rec_bit = OFF;
+			G_run_bit = ON;
+		}
+
+		else if ( keyNdx == KEY_STOP ){
+			G_track_rec_bit = OFF;
+			G_run_bit = OFF;
+		}
+
+		else if ( keyNdx == KEY_RECORD ){
+			G_track_rec_bit = ON;
+			G_solo_has_rec = ON;
+			G_run_bit = ON;
+		}
+
+		else if ( keyNdx == KEY_CHAINER && G_run_bit == OFF ){
+			if ( G_solo_has_rec == ON ){
+				G_solo_edit_buffer_volatile ^= 1; // toggle
+				G_solo_has_rec = OFF;
+				MIX_TIMER = ON;
+				// Setup alarm for the MIX TIMER
+				cyg_alarm_initialize(	alarm_hdl,
+										cyg_current_time() + TIMEOUT_VALUE,
+										0 );
+			}
+		}
+
+		else if ( keyNdx == KEY_EDIT_MASTER && G_solo_edit_buffer_volatile == ON ){
+			G_solo_has_rec = ON; // XXX rm - only for UI testing
+			G_solo_edit_buffer_volatile ^= 1; // toggle
+		}
+
+		else if ( keyNdx == KEY_FOLLOW ){
+			G_solo_overdub ^= 1; // toggle
+		}
 	}
 
 	// Clear the record pages
-	else if (keyNdx == KEY_CLEAR){
+	if (keyNdx == KEY_CLEAR){
 		unsigned char temp = cursor_to_dot( GRID_CURSOR );
 		if ( G_solo_rec_page != NULL &&
 			 selected_page_cluster( GRID_CURSOR, G_solo_rec_page->pageNdx ) &&
@@ -15,6 +55,8 @@
 			G_solo_normalize_pitch = OFF;
 			G_solo_normalize_len = OFF;
 			G_solo_rec_page = NULL;
+			G_solo_has_rec = OFF;
+			G_solo_edit_buffer_volatile = OFF;
 		}
 	}
 

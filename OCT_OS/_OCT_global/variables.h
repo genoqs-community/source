@@ -71,6 +71,9 @@ Pagestruct*	  G_solo_rec_page				= NULL;
 unsigned char G_solo_midi_ch				= 1;
 unsigned char G_solo_normalize_pitch		= OFF;
 unsigned char G_solo_normalize_len			= OFF;
+unsigned char G_solo_has_rec				= OFF;
+unsigned char G_solo_edit_buffer_volatile	= OFF;
+unsigned char G_solo_overdub				= OFF;
 
 // G_master_blinker is used to control LED blinking activities
 unsigned char 		G_master_blinker		= 0;

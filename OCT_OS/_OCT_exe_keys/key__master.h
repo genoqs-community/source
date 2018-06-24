@@ -76,36 +76,14 @@ void executeKey( unsigned int keyNdx ){
 #endif
 
 	diag_printf("key: %d", keyNdx); // TODO
-	if ( G_run_bit == OFF && keyNdx == KEY_PAUSE && G_zoom_level == zoomSOLOREC ){
-
-		// D O U B L E - C L I C K
-		if ((DOUBLE_CLICK_TARGET == keyNdx)
-				&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
-
+	if ( G_zoom_level == zoomSOLOREC ){
+		if ( keyNdx == KEY_RETURN && G_run_bit == OFF ){
 			// TODO: save function
 			G_zoom_level = zoomGRID; // exit the Solo Recording view
+			return;
 		}
-
-		// SINGLE CLICK
-		else if (DOUBLE_CLICK_TARGET == 0) {
-
-			DOUBLE_CLICK_TARGET = keyNdx;
-			DOUBLE_CLICK_TIMER = ON;
-			// Start the Double click Alarm
-			cyg_alarm_initialize(
-					doubleClickAlarm_hdl,
-					cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
-					DOUBLE_CLICK_ALARM_TIME );
-
-			// no single click behavior
-		}
-		return;
 	}
-	else if ( keyNdx == KEY_RETURN ){
-		// TODO: save function
-		G_zoom_level = zoomGRID; // exit the Solo Recording view
-		return;
-	}
+
 
 	// Work on the page under the grid cursor
 	Pagestruct* target_page = &Page_repository[ GRID_CURSOR ];

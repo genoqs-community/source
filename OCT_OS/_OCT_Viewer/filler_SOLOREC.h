@@ -1,20 +1,50 @@
 
 	// TRANSPORT CONTROLS
-	MIR_write_dot( LED_RECORD, MIR_RED );
+	if ( G_solo_rec_page != NULL ){
+		MIR_write_dot( LED_RECORD, MIR_RED );
+		if ( G_run_bit == ON && G_track_rec_bit == ON ){
+			MIR_write_dot( LED_RECORD, MIR_GREEN );
+			MIR_write_dot( LED_RECORD, MIR_BLINK );
+		}
+	}
 
-	MIR_write_dot( LED_STOP, MIR_RED );
+	if ( G_run_bit == ON ){
+		MIR_write_dot( LED_STOP, MIR_RED );
+	}
 
-	MIR_write_dot( LED_PAUSE, MIR_RED );
-	MIR_write_dot( LED_PAUSE, MIR_GREEN );
+	if ( G_solo_has_rec == ON ){
+		if ( G_track_rec_bit == OFF ){
+			if ( G_run_bit == ON ){
+				MIR_write_dot( LED_PLAY1, MIR_GREEN );
+			}
+			else {
+				MIR_write_dot( LED_PLAY1, MIR_RED );
+			}
+		}
+		if ( G_solo_overdub == OFF ){
+			MIR_write_dot( LED_FOLLOW, MIR_RED );
+		}
+		else {
+			MIR_write_dot( LED_FOLLOW, MIR_GREEN );
+		}
 
-	MIR_write_dot( LED_PLAY1, MIR_RED );
+		if ( G_run_bit == OFF ){
+			MIR_write_dot( LED_CHAINER, MIR_RED );
+		}
+	}
 
-	MIR_write_dot( LED_FOLLOW, MIR_RED );
+	if ( G_solo_edit_buffer_volatile == ON ){
+		MIR_write_dot( LED_EDIT_MASTER, MIR_RED );
+		MIR_write_dot( LED_EDIT_MASTER, MIR_GREEN );
+		if ( MIX_TIMER == ON ){
+			MIR_write_dot( LED_EDIT_MASTER, MIR_BLINK );
+		}
+	}
 
-	MIR_write_dot( LED_CHAINER, MIR_RED );
-
-	// Strum
-	MIR_write_dot( LED_RETURN, MIR_GREEN );
+	// ESC
+	if ( G_run_bit == OFF ){
+		MIR_write_dot( LED_RETURN, MIR_GREEN );
+	}
 
 	// Slow tempo toggle
 	MIR_write_dot( LED_TEMPO, MIR_RED );
@@ -129,11 +159,11 @@
 			result = (i - 9) / 11;
 			if ( result == 1 ){ // TODO
 				MIR_write_dot( i, MIR_RED );
+				MIR_write_dot( i, MIR_BLINK );
 			}
 			else {
 				MIR_write_dot( i, MIR_GREEN );
 			}
-			MIR_write_dot( i, MIR_BLINK );
 		}
 	}
 //
