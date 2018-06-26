@@ -69,6 +69,14 @@ Trackstruct 		Track_repository	[MAX_NROF_TRACKS];
 
 // PAGES
 Pagestruct 			Page_repository		[MAX_NROF_PAGES];
+
+// REC NOTES
+Notestruct			Note_repository		[MAX_NROF_REC_MEASURES];
+
+// REC MEASURES
+Recstruct			Rec_repository		[16];
+
+
 #ifdef FEATURE_ENABLE_DICE
 // DICE performance modes
 Pagestruct*	DICE_bank		=	&Page_repository[DICE_PAGE];
@@ -431,6 +439,8 @@ void Octopus_memory_CLR(){
 
 	Track_repository_init();
 
+	Solorec_init();
+
 	Page_repository_init();
 
 	Grid_init();
@@ -547,7 +557,6 @@ void Track_repository_init(){
  		Track_hard_init( &Track_repository[i], i );
   	}
 }
-
 
 
 //

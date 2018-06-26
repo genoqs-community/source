@@ -36,6 +36,7 @@ void alarm_handler( cyg_handle_t alarm_handle, cyg_addrword_t data ){
 	EDIT_TIMER 	= OFF;
 	TEMPO_TIMER	= OFF;
 	PHRASE_TIMER = OFF;
+	ROT_INDEX	= OFF;
 
 	PhraseMultiTweakReset();
 

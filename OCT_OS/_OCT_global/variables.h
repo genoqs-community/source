@@ -74,6 +74,7 @@ unsigned char G_solo_normalize_len			= OFF;
 unsigned char G_solo_has_rec				= OFF;
 unsigned char G_solo_edit_buffer_volatile	= OFF;
 unsigned char G_solo_overdub				= OFF;
+unsigned char G_solo_rec_pressed_col		= OFF;
 
 // G_master_blinker is used to control LED blinking activities
 unsigned char 		G_master_blinker		= 0;

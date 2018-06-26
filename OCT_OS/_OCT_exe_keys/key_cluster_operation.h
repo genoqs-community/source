@@ -204,6 +204,7 @@ void selected_page_cluster_clear( unsigned char grid_cursor ){
 }
 
 // Is the cursor a member of the target page cluster
+// Returns the column of the grid cursor
 unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char target_page ){
 
 	// select all pages in cluster
@@ -234,7 +235,8 @@ unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char ta
 			(Page_repository[this_ndx].page_clear == OFF)
 	){
 		if ( Page_repository[ this_ndx ].pageNdx == target_page ){
-			return 1;
+
+			return column_of(grid_cursor);
 		}
 		this_ndx += 10;
 	}

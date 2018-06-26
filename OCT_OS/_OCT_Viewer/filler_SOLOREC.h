@@ -64,6 +64,11 @@
 		MIR_write_dot( LED_FLT, MIR_RED ); // POS
 	}
 
+	// Show the MODE - (Special) Grid Solo Zoom
+	MIR_write_dot( LED_ZOOM_GRID, MIR_RED );
+	MIR_write_dot( LED_ZOOM_GRID, MIR_GREEN );
+	MIR_write_dot( LED_ZOOM_GRID, MIR_BLINK );
+
 	MIR_write_dot( LED_PASTE, MIR_RED ); // MCH
 	MIR_write_dot( LED_PASTE, MIR_GREEN );
 
@@ -124,8 +129,14 @@
 	for (i=0; i < MAX_NROF_PAGES; i++) {
 		// Page has contents and is not one of the row zero
 		if (	(Page_repository[i].page_clear != ON)  &&	( (i % 10) != 9 )){
-			// Show it in RED
-			GRID_write_dot( i, MIR_RED );
+			// This is our Solo Recording cluster
+			if ( G_solo_rec_page != NULL && selected_page_cluster( i, G_solo_rec_page->pageNdx ) != OFF ){
+				GRID_write_dot( i, MIR_GREEN );
+			}
+			else {
+				// This is a muted page in the grid
+				GRID_write_dot( i, MIR_RED );
+			}
 		} // page_clear != ON
 	} // page iterator
 
@@ -139,7 +150,7 @@
 	unsigned int selRec = selected_solo_rec_page( GRID_CURSOR, temp );
 	if ( selRec  == ON ||
 	   ( G_solo_rec_page != NULL &&
-	     selected_page_cluster( GRID_CURSOR, G_solo_rec_page->pageNdx ) &&
+	     selected_page_cluster( GRID_CURSOR, G_solo_rec_page->pageNdx ) != OFF &&
 	     is_pressed_key( temp )
 	)){
 
@@ -155,9 +166,32 @@
 		unsigned int max = 119;
 		unsigned int result = 0;
 
+		// Show the row zero measure count for the pressed page
 		for( i=min; i <= max; i+=11 ){
 			result = (i - 9) / 11;
-			if ( result == 1 ){ // TODO
+
+			if ( G_solo_rec_page != NULL && Rec_repository[column_of(temp)].measure_count == result ){
+
+				MIR_write_dot( i, MIR_RED );
+			}
+			else {
+				MIR_write_dot( i, MIR_GREEN );
+			}
+		}
+	}
+	// Continue flashing the measure selection for a moment
+	else if ( ROT_INDEX == REC_MEASURES_IDX ){
+
+		unsigned int min = 20;
+		unsigned int max = 119;
+		unsigned int result = 0;
+
+		// Show the row zero measure count for the pressed page
+		for( i=min; i <= max; i+=11 ){
+			result = (i - 9) / 11;
+
+			if ( G_solo_rec_page != NULL && Rec_repository[G_solo_rec_pressed_col].measure_count == result ){
+
 				MIR_write_dot( i, MIR_RED );
 				MIR_write_dot( i, MIR_BLINK );
 			}
@@ -166,16 +200,6 @@
 			}
 		}
 	}
-//
-//
-//		// If on empty page then light position orange
-//		GRID_write_dot (GRID_CURSOR, MIR_GREEN);
-//		GRID_write_dot (GRID_CURSOR, MIR_RED);
-//	}
-//	else {
-//		// GRID_CURSOR shown by blinking
-//		GRID_write_dot (GRID_CURSOR, MIR_BLINK);
-//	}
 
 	// Show the packman at playtime - unless there is a scale selected
 	show ( ELE_OCTAVE_CIRCLE, G_global_locator_PICTURE );
@@ -210,9 +234,5 @@
 			G_solo_normalize_len,
 			2,	MIR_GREEN);
 	}
-//
-//	if ( is_pressed_rowzero() && GRID_p_set_note_offsets[current_GRID_set] != 255 )
-//	{
-//		MIR_write_pitch_H( GRID_p_set_note_offsets[current_GRID_set], 9 );
-//	}
+
 

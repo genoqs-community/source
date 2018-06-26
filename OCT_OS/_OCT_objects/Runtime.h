@@ -490,6 +490,31 @@ typedef struct pagestruct{
 
 } Pagestruct;
 
+
+// =====================================================================================
+// Runtime note recording struct
+// =====================================================================================
+
+typedef struct notestruct{
+
+	unsigned int 	chord_up;
+	unsigned short  chord_data;
+	  signed char	attr_VEL;
+	  signed char	attr_PIT;
+	unsigned char	attr_LEN;
+	unsigned char	attr_STA;
+
+} Notestruct;
+
+typedef struct recstruct{
+
+	Notestruct*		Note[MAX_NROF_REC_MEASURES];
+	unsigned char	measure_count;
+
+} Recstruct;
+
+
+
 #ifdef FEATURE_ENABLE_DICE
 extern unsigned char 	SEL_DICE_BANK;
 extern Pagestruct* 		DICE_bank;
@@ -503,6 +528,7 @@ extern Stepstruct 			Step_repository[MAX_NROF_STEPS];
 extern Trackstruct 			Track_repository[MAX_NROF_TRACKS];
 extern Pagestruct 			Page_repository[MAX_NROF_PAGES];
 extern Track_Direction 		direction_repository[];
+extern Recstruct			Rec_repository[16];
 
 
 
