@@ -4,7 +4,11 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 						unsigned char rotNdx,
 						unsigned char direction ){
 
-	if ( rotNdx == ROT_BIGKNOB )
+	if ( G_run_bit == ON ){
+		return; // Don't allow parameter modification while the machine is playing
+	}
+
+	if ( rotNdx == ROT_BIGKNOB && G_solo_has_rec == ON )
 	{
 		PhraseEditGlobalStrum( direction );
 	}
@@ -12,7 +16,11 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 	// Set the timer for the active editor
 	switch( rotNdx ){
 		// EDIT encoders
-		case 1: case 3: case 10:
+		case 1: case 3:
+		if ( G_solo_has_rec == OFF || G_run_bit == ON ){
+			break;
+		}
+		case 10:
 			EDIT_TIMER = ON;
 			ROT_INDEX = rotNdx;
 			// Setup alarm for the EDIT TIMER
@@ -26,12 +34,12 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 
 		// EDIT encoders
 		case 1:
-			if ( G_solo_rec_page != NULL ){
+			if ( G_solo_has_rec == ON && G_run_bit == OFF ){
 				modify_parameter(&G_solo_normalize_pitch, 0, 16, direction, OFF, FIXED);
 			}
 			break;
 		case 3:
-			if ( G_solo_rec_page != NULL ){
+			if ( G_solo_has_rec == ON && G_run_bit == OFF ){
 				modify_parameter(&G_solo_normalize_len, 0, 16, direction, OFF, FIXED);
 			}
 			break;

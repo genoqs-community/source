@@ -75,6 +75,10 @@ unsigned char G_solo_has_rec				= OFF;
 unsigned char G_solo_edit_buffer_volatile	= OFF;
 unsigned char G_solo_overdub				= OFF;
 unsigned char G_solo_rec_pressed_col		= OFF;
+unsigned char G_solo_pos_marker_in			= OFF;
+unsigned char G_solo_pos_marker_out			= OFF;
+unsigned char G_solo_rec_freeflow			= OFF;
+unsigned char G_solo_page_play_along[10];
 
 // G_master_blinker is used to control LED blinking activities
 unsigned char 		G_master_blinker		= 0;
@@ -547,6 +551,7 @@ unsigned char NEMO_CC_Sound_Control[ 32 ][ 4 ];
 unsigned char G_last_cursor = 0;	// Used as a return address for navigation
 unsigned char G_scale_ndx	= 1;	// Index of current scale. Has to be between 1 and 4 for NEMO!
 unsigned char G_last_zoom_level	= zoomPAGE; // remembers the previous zoom level
+unsigned int  G_measure_locator = 0;
 
 Pagestruct* G_pgmch_pending_page = NULL;
 #ifdef FEATURE_ENABLE_DICE
@@ -554,7 +559,6 @@ unsigned char G_dice_run_bit 		= OFF;
 #endif
 
 unsigned char 	G_save_song_pos = OFF;
-unsigned int	G_measure_locator = 0;
 // Allow MCH change w/o loosing track record status
 unsigned short G_prev_rec_page_pattern = 0;
 unsigned short G_prev_rec_page = 0;

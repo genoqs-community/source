@@ -230,7 +230,7 @@ unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char ta
 		prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
 	}
 
-	// track forward to clear
+	// track forward
 	while ( 	(this_ndx < MAX_NROF_PAGES) &&
 			(Page_repository[this_ndx].page_clear == OFF)
 	){

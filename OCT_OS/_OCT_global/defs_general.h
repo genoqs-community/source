@@ -94,6 +94,7 @@
 #define 	RHS								1
 
 // GLOBAL SYNTAX DEFINES
+#define		NOP								255
 #define 	OFF								0
 #define 	ON								1
 
@@ -147,6 +148,7 @@
 // Max number of solo recording measures
 #define MAX_NROF_REC_MEASURES	10 * 16  // all track for a full page cluster
 #define REC_MEASURES_IDX		22
+#define REC_MEASURES_SPLIT		23
 
 // TRACK
 #define MAX_NROF_TRACKS			10 * MAX_NROF_PAGES

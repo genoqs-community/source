@@ -75,7 +75,7 @@ void executeKey( unsigned int keyNdx ){
 	}
 #endif
 
-	diag_printf("key: %d", keyNdx); // TODO
+	diag_printf(" key: %d\n", keyNdx); // TODO
 	if ( G_zoom_level == zoomSOLOREC ){
 		if ( keyNdx == KEY_RETURN && G_run_bit == OFF ){
 			// TODO: save function

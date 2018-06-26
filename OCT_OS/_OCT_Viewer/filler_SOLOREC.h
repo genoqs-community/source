@@ -47,13 +47,16 @@
 	}
 
 	// Slow tempo toggle
-	MIR_write_dot( LED_TEMPO, MIR_RED );
-	if ( G_slow_tempo == ON ){
+	if ( G_slow_tempo != OFF ){
 		MIR_write_dot( LED_TEMPO, MIR_GREEN );
 		MIR_write_dot( LED_TEMPO, MIR_BLINK );
 	}
+	else
+	{
+		MIR_write_dot( LED_TEMPO, MIR_RED );
+	}
 
-	if (G_solo_rec_page != NULL){
+	if (G_solo_rec_page != NULL && G_solo_has_rec == ON && G_run_bit == OFF){
 		// Grid controls
 		MIR_write_dot( LED_TGGL, MIR_RED ); // VEL
 		MIR_write_dot( LED_TGGL, MIR_GREEN );
@@ -62,6 +65,13 @@
 		MIR_write_dot( LED_CLEAR, MIR_GREEN );
 
 		MIR_write_dot( LED_FLT, MIR_RED ); // POS
+		// The recording is playing and not recording so enable split markers using POS
+		if ( G_run_bit == ON && G_track_rec_bit == OFF ){
+			MIR_write_dot( LED_FLT, MIR_GREEN ); // POS
+			if ( ROT_INDEX == REC_MEASURES_SPLIT ){
+				MIR_write_dot( LED_FLT, MIR_BLINK ); // POS
+			}
+		}
 	}
 
 	// Show the MODE - (Special) Grid Solo Zoom
@@ -74,7 +84,7 @@
 
 	// Quantize value
 	// CHORD SECTION
-	if (G_quantize_note > 0){
+	if ( G_quantize_note > 0 && G_solo_has_rec == ON && G_run_bit == OFF ){
 		MIR_write_dot( (LED_QUANTIZE_LOW + G_quantize_note -1), MIR_RED );
 	}
 
@@ -90,7 +100,7 @@
 		MIR_write_dot( LED_ALIGN, MIR_RED );
 		show_strum_in_circle( G_strum );
 	}
-	else {
+	else if ( G_solo_has_rec == ON && G_run_bit == OFF) {
 		// Quantize fine tune value
 		// NUMERIC QUADRANT
 		switch (G_quantize_fine_tune) {
@@ -134,8 +144,15 @@
 				GRID_write_dot( i, MIR_GREEN );
 			}
 			else {
-				// This is a muted page in the grid
-				GRID_write_dot( i, MIR_RED );
+
+				if ( G_solo_page_play_along[i % 10] == i ){
+					GRID_write_dot( i, MIR_GREEN );
+					GRID_write_dot( i, MIR_BLINK );
+				}
+				else {
+					// This is a muted page in the grid
+					GRID_write_dot( i, MIR_RED );
+				}
 			}
 		} // page_clear != ON
 	} // page iterator

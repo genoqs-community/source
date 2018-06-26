@@ -240,6 +240,8 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		// on the measure
 		if ( G_global_locator == 1 ) {
 
+			G_measure_locator++;
+
 			for ( i=0; i < GRID_NROF_BANKS; i++ ){
 
 				// Skip the banks that are not currently active

@@ -21,5 +21,7 @@ void Solorec_init(){
 			target_rec->Note[j]->chord_data = 0;
 			target_rec->Note[j]->chord_up = 0;
 		}
+
+		G_solo_page_play_along[i] = 255;
 	 }
 }
