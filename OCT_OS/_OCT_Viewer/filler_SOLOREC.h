@@ -6,6 +6,18 @@
 			MIR_write_dot( LED_RECORD, MIR_GREEN );
 			MIR_write_dot( LED_RECORD, MIR_BLINK );
 		}
+
+		// Show the end of recording chord flash
+		if ( G_solo_rec_ending_flash == OFF ){
+			MIR_write_dot( LED_PLAY4, MIR_RED );
+		}
+		else if ( G_solo_rec_ending_flash == ON ){
+			MIR_write_dot( LED_PLAY4, MIR_GREEN );
+			MIR_write_dot( LED_PLAY4, MIR_RED );
+		}
+		else {
+			MIR_write_dot( LED_PLAY4, MIR_GREEN );
+		}
 	}
 
 	if ( G_run_bit == ON ){
@@ -28,11 +40,19 @@
 			MIR_write_dot( LED_FOLLOW, MIR_GREEN );
 		}
 
+		// Clear recording
 		if ( G_run_bit == OFF ){
 			MIR_write_dot( LED_CHAINER, MIR_RED );
 		}
 	}
 
+	// Free Flow recording
+	if ( G_solo_rec_freeflow == ON ){
+		MIR_write_dot( LED_CHAINMODE_4, MIR_RED   );
+		MIR_write_dot( LED_CHAINMODE_4, MIR_GREEN );
+	}
+
+	// Undo Edit buffer
 	if ( G_solo_edit_buffer_volatile == ON ){
 		MIR_write_dot( LED_EDIT_MASTER, MIR_RED );
 		MIR_write_dot( LED_EDIT_MASTER, MIR_GREEN );
@@ -56,14 +76,26 @@
 		MIR_write_dot( LED_TEMPO, MIR_RED );
 	}
 
-	if (G_solo_rec_page != NULL && G_solo_has_rec == ON && G_run_bit == OFF){
-		// Grid controls
-		MIR_write_dot( LED_TGGL, MIR_RED ); // VEL
-		MIR_write_dot( LED_TGGL, MIR_GREEN );
+	if (G_solo_rec_page != NULL && G_run_bit == OFF){
 
 		MIR_write_dot( LED_CLEAR, MIR_RED ); // LEN / clr
 		MIR_write_dot( LED_CLEAR, MIR_GREEN );
 
+		if ( G_solo_has_rec == ON ){
+
+			// Grid controls
+			MIR_write_dot( LED_TGGL, MIR_RED ); // VEL
+			MIR_write_dot( LED_TGGL, MIR_GREEN );
+
+			MIR_write_dot( LED_ZOOM_STEP, MIR_RED ); // STEP ZOOM for Legato note length toggle
+			if ( G_solo_rec_legato == ON ){
+				MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+			}
+		}
+	}
+
+	// POS recording split button
+	if (G_solo_rec_page != NULL && G_solo_has_rec == ON ){
 		MIR_write_dot( LED_FLT, MIR_RED ); // POS
 		// The recording is playing and not recording so enable split markers using POS
 		if ( G_run_bit == ON && G_track_rec_bit == OFF ){
@@ -84,7 +116,7 @@
 
 	// Quantize value
 	// CHORD SECTION
-	if ( G_quantize_note > 0 && G_solo_has_rec == ON && G_run_bit == OFF ){
+	if ( G_quantize_note > OFF && G_solo_has_rec == ON && G_run_bit == OFF ){
 		MIR_write_dot( (LED_QUANTIZE_LOW + G_quantize_note -1), MIR_RED );
 	}
 
@@ -165,7 +197,7 @@
 	// Show the GRID cursor
 	unsigned char temp = cursor_to_dot( GRID_CURSOR );
 	unsigned int selRec = selected_solo_rec_page( GRID_CURSOR, temp );
-	if ( selRec  == ON ||
+	if ( selRec == ON ||
 	   ( G_solo_rec_page != NULL &&
 	     selected_page_cluster( GRID_CURSOR, G_solo_rec_page->pageNdx ) != OFF &&
 	     is_pressed_key( temp )
@@ -174,25 +206,36 @@
 		if ( selRec == OFF && G_solo_rec_page != NULL ){
 			MIR_write_dot( LED_CLEAR, MIR_BLINK );
 		}
+		if ( G_solo_rec_page == NULL && G_solo_rec_freeflow == OFF ){
+			// No recording page has been chosen yet so show the Free Flow button flashing
+			// when an eligible grid page is pressed
+			MIR_write_dot( LED_CHAINMODE_4, MIR_RED   );
+			MIR_write_dot( LED_CHAINMODE_4, MIR_GREEN );
+			MIR_write_dot( LED_CHAINMODE_4, MIR_BLINK );
+		}
 
-		MIR_write_dot( temp, MIR_RED   );
-		MIR_write_dot( temp, MIR_GREEN );
-		MIR_write_dot( temp, MIR_BLINK );
+		// Show the pressed recording page or the page to the right that may become a recording page
+		if ( G_solo_rec_freeflow == OFF || selected_page_cluster( GRID_CURSOR, G_solo_rec_page->pageNdx ) != OFF ){
 
-		unsigned int min = 20;
-		unsigned int max = 119;
-		unsigned int result = 0;
+			MIR_write_dot( temp, MIR_RED   );
+			MIR_write_dot( temp, MIR_GREEN );
+			MIR_write_dot( temp, MIR_BLINK );
 
-		// Show the row zero measure count for the pressed page
-		for( i=min; i <= max; i+=11 ){
-			result = (i - 9) / 11;
+			unsigned int min = 20;
+			unsigned int max = 119;
+			unsigned int result = 0;
 
-			if ( G_solo_rec_page != NULL && Rec_repository[column_of(temp)].measure_count == result ){
+			// Show the row zero measure count for the pressed page
+			for( i=min; i <= max; i+=11 ){
+				result = (i - 9) / 11;
 
-				MIR_write_dot( i, MIR_RED );
-			}
-			else {
-				MIR_write_dot( i, MIR_GREEN );
+				if ( G_solo_rec_page != NULL && Rec_repository[column_of(temp)].measure_count == result ){
+
+					MIR_write_dot( i, MIR_RED );
+				}
+				else {
+					MIR_write_dot( i, MIR_GREEN );
+				}
 			}
 		}
 	}
