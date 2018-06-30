@@ -155,7 +155,13 @@
 
 				if ( Page_repository[pressed].page_clear == ON ){
 					Page_repository[pressed].page_clear = OFF;
+					/*
+					 * ########################################
+					 * A record page was created!
+					 * ########################################
+					 */
 					G_solo_rec_page = &Page_repository[pressed];
+					create_page_record_track_chain(G_solo_rec_page, rowZeroTrack);
 				}
 				Rec_repository[pressedCol].measure_count = rowZeroTrack;
 				G_solo_rec_pressed_col = pressedCol;

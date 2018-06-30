@@ -64,6 +64,7 @@ extern unsigned int 	selected_solo_rec_page( unsigned char grid_cursor, unsigned
 extern unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char target_page );
 extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
 extern	void 			align_measure_locators();
+extern  void 			create_page_record_track_chain(Pagestruct* target_page, unsigned int measures);
 
 extern 	void 			sequencer_RESET( unsigned char force_stop );
 

@@ -1148,6 +1148,11 @@ void align_measure_locators(){
 //	G_reset = ON;
 }
 
+void create_page_record_track_chain(Pagestruct* target_page, unsigned int measures){
+
+
+}
+
 void drivePageCursor(Pagestruct* target_page, unsigned int measures){
 	unsigned int n, i, res;
 
