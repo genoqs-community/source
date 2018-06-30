@@ -18,6 +18,13 @@
 			G_run_bit = ON;
 		}
 
+		else if ( keyNdx == KEY_PLAY4 ){ // values = OFF, ON, 1.2.3.
+			if ( ++G_solo_rec_ending_flash == QBIT )
+			{
+				G_solo_rec_ending_flash = OFF;
+			}
+		}
+
 		else if ( keyNdx == KEY_STOP ){
 			G_track_rec_bit = OFF;
 			G_run_bit = OFF;
@@ -51,6 +58,11 @@
 		else if ( keyNdx == KEY_FOLLOW ){
 			G_solo_overdub ^= 1; // toggle
 		}
+
+		// Legato
+		if ( keyNdx == KEY_ZOOM_STEP && G_run_bit == OFF &&  G_solo_has_rec == ON ){
+			G_solo_rec_legato ^= 1; // toggle
+		}
 	}
 
 	// Clear the record pages
@@ -67,6 +79,7 @@
 			G_solo_rec_page = NULL;
 			G_solo_has_rec = OFF;
 			G_solo_edit_buffer_volatile = OFF;
+			G_solo_rec_freeflow = OFF;
 			Solorec_init();
 		}
 	}
@@ -131,8 +144,15 @@
 			/*
 			 * A page with a measure count has been selected on this press
 			 */
+			if ( keyNdx == KEY_CHAINMODE_4 && G_solo_rec_page == NULL && Page_repository[pressed].page_clear == ON ){
+				G_solo_rec_freeflow = ON;
+				Page_repository[pressed].page_clear = OFF;
+				G_solo_rec_page = &Page_repository[pressed];
+				Rec_repository[pressedCol].measure_count = 1;
+			}
 			// A page is pressed first then step 1 through 10 of row zero to set the measure count
-			if ( rowZeroTrack != OFF && rowZeroTrack <= 10 ){
+			else if ( rowZeroTrack != OFF && rowZeroTrack <= 10 && G_solo_rec_freeflow == OFF ){
+
 				if ( Page_repository[pressed].page_clear == ON ){
 					Page_repository[pressed].page_clear = OFF;
 					G_solo_rec_page = &Page_repository[pressed];

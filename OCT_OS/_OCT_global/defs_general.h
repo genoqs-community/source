@@ -97,6 +97,7 @@
 #define		NOP								255
 #define 	OFF								0
 #define 	ON								1
+#define		QBIT							3
 
 #define 	INT								1	// used to denote internal clock source
 #define 	EXT								2	// used to denote external clock source.

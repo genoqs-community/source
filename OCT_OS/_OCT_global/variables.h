@@ -78,6 +78,8 @@ unsigned char G_solo_rec_pressed_col		= OFF;
 unsigned char G_solo_pos_marker_in			= OFF;
 unsigned char G_solo_pos_marker_out			= OFF;
 unsigned char G_solo_rec_freeflow			= OFF;
+unsigned char G_solo_rec_ending_flash		= OFF;
+unsigned char G_solo_rec_legato				= OFF;
 unsigned char G_solo_page_play_along[10];
 
 // G_master_blinker is used to control LED blinking activities
