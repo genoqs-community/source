@@ -139,8 +139,9 @@
 		unsigned char cursor = Page_repository[pressed].pageNdx;
 
 		// Activate a record page - set the measure count
-		if ( selected_solo_rec_page( cursor, cursor_to_dot( cursor ) ) == ON ||
-			 selected_page_cluster( cursor, G_solo_rec_page->pageNdx ) != OFF ){
+		if ( !G_solo_has_rec && // does not have a recording yet
+			 ( selected_solo_rec_page( cursor, cursor_to_dot( cursor ) ) == ON ||
+			   selected_page_cluster( cursor, G_solo_rec_page->pageNdx ) != OFF )){
 			/*
 			 * A page with a measure count has been selected on this press
 			 */
@@ -154,18 +155,19 @@
 			else if ( rowZeroTrack != OFF && rowZeroTrack <= 10 && G_solo_rec_freeflow == OFF ){
 
 				if ( Page_repository[pressed].page_clear == ON ){
-					Page_repository[pressed].page_clear = OFF;
 					/*
 					 * ########################################
 					 * A record page was created!
 					 * ########################################
 					 */
 					G_solo_rec_page = &Page_repository[pressed];
-					create_page_record_track_chain(G_solo_rec_page, rowZeroTrack);
 				}
+
 				Rec_repository[pressedCol].measure_count = rowZeroTrack;
 				G_solo_rec_pressed_col = pressedCol;
+				create_page_record_track_chain(G_solo_rec_page, rowZeroTrack);
 
+				// Snow the measure count for a few extra blinks
 				ROT_INDEX = REC_MEASURES_IDX;
 				// Setup alarm for the EDIT TIMER
 				cyg_alarm_initialize(	alarm_hdl,

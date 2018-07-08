@@ -1148,9 +1148,55 @@ void align_measure_locators(){
 //	G_reset = ON;
 }
 
+void exit_solo_recording()
+{
+	// Reset most of the global variables
+	G_quantize_fine_tune 		= 0;
+	G_quantize_note 			= 1;
+	G_strum						= 9; // 9=OFF
+	G_slow_tempo				= OFF;
+	G_solo_rec_page				= NULL;
+//	G_solo_midi_ch				= 1;
+	G_solo_normalize_pitch		= OFF;
+	G_solo_normalize_len		= OFF;
+	G_solo_has_rec				= OFF;
+	G_solo_edit_buffer_volatile	= OFF;
+	G_solo_overdub				= OFF;
+	G_solo_rec_pressed_col		= OFF;
+	G_solo_pos_marker_in		= OFF;
+	G_solo_pos_marker_out		= OFF;
+	G_solo_rec_freeflow			= OFF;
+//	G_solo_rec_ending_flash		= OFF;
+	G_solo_rec_legato			= OFF;
+//	G_solo_page_play_along[10];
+
+	G_zoom_level = zoomGRID; // exit the Solo Recording view
+}
+
 void create_page_record_track_chain(Pagestruct* target_page, unsigned int measures){
+	int n, m, row;
 
+	PAGE_init(target_page, target_page->pageNdx, false);
+	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
+		Track_hard_init( target_page->Track[row], target_page->Track[row]->trackId );
+	}
 
+	row = target_page->pageNdx % 10;
+
+	target_page->page_clear = OFF;
+	if ( GRID_p_selection[ row ] == NULL ){
+		GRID_p_selection[ row ] = target_page;
+		GRID_p_preselection[ row ] = target_page;
+		GRID_p_clock_presel[ row ] = target_page;
+	}
+
+	m = (10 - measures); // from the bottom up
+	for (n=9; n >= m; --n) { // each measure
+		target_page->trackSelection |= 1 << n;
+	}
+
+	chain_selected_tracks( target_page );
+	Page_setTrackRecPatternBit(target_page, (n+1));
 }
 
 void drivePageCursor(Pagestruct* target_page, unsigned int measures){

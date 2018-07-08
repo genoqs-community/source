@@ -78,8 +78,7 @@ void executeKey( unsigned int keyNdx ){
 	diag_printf(" key: %d\n", keyNdx); // TODO
 	if ( G_zoom_level == zoomSOLOREC ){
 		if ( keyNdx == KEY_RETURN && G_run_bit == OFF ){
-			// TODO: save function
-			G_zoom_level = zoomGRID; // exit the Solo Recording view
+			exit_solo_recording();
 			return;
 		}
 	}

@@ -26,6 +26,11 @@
 
 // Only allow selection of right neighbor pages that are not connecting to an existing page cluster
 unsigned int selected_solo_rec_page( unsigned char grid_cursor, unsigned char dot ){
+
+	if ( G_solo_has_rec ){
+		return 0; // new page chains cannot be added if there is a recording
+	}
+
 	if ( Page_repository[grid_cursor].page_clear == ON && is_pressed_key(dot) &&
 	   ( dot < 20 || // first column
 			   ( G_solo_rec_page == NULL && Page_repository[grid_cursor - 10].page_clear == ON) ||
