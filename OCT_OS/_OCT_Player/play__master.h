@@ -246,6 +246,8 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 			if ( G_solo_rec_measure_hold == ON ) {
 				// Send the ALL NOTES OFF message
 				send_ALL_NOTES_OFF();
+				G_measure_locator = OFF;
+				G_solo_rec_measure_pos = OFF;
 			}
 
 			G_measure_locator++;
@@ -313,6 +315,13 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 				GRID_p_set_note_presel = 255;
 			}
 		}
+
+		#ifdef FEATURE_SOLO_REC
+		// TODO
+		if ( G_solo_rec_measure_hold == ON ){
+			return; // XXX we're probably not playing the measure
+		}
+		#endif
 
 		// PAGE PRESELECTION
 		// Preselect pages as appropriate in every bank ..supports variable page lengths.
