@@ -254,7 +254,7 @@ void compute_chain_presel( unsigned char target_bank ){
 				#ifdef FEATURE_SOLO_REC
 				if ( G_zoom_level == zoomSOLOREC ){
 					if ( G_zoom_level == zoomSOLOREC &&
-						 G_solo_has_rec == TRUE &&
+						 G_solo_has_rec == FALSE &&
 						 G_track_rec_bit == ON && // TODO
 						 target_bank == G_solo_rec_bank ){
 

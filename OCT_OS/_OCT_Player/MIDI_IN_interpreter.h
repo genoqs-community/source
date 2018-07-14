@@ -243,7 +243,6 @@ void G_midi_interpret_NOTE_ON( unsigned char midi_byte, unsigned char UART_ndx )
 	// TODO: make function and handle CC
 	if ( G_solo_rec_page != NULL && G_track_rec_bit == ON && G_run_bit == ON && G_solo_rec_measure_hold == ON ) {
 		G_solo_rec_measure_hold = OFF;
-		G_solo_has_rec = ON;
 	}
 	#endif
 	// Store the byte in the circular array	- just so it can be printed out.

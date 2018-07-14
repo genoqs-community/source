@@ -116,10 +116,48 @@
 	MIR_write_dot( LED_PASTE, MIR_RED ); // MCH
 	MIR_write_dot( LED_PASTE, MIR_GREEN );
 
-	// Quantize value
-	// CHORD SECTION
-	if ( G_quantize_note > OFF && G_solo_has_rec == ON && G_run_bit == OFF ){
-		MIR_write_dot( (LED_QUANTIZE_LOW + G_quantize_note -1), MIR_RED );
+
+	// Flash the end of recording indicator using the CHORD LEDs
+	if ( G_run_bit == ON && G_solo_rec_ending_flash > OFF ){
+
+		if ( G_solo_rec_ending_flash == ON ){ // Flash the last measure
+
+			if ( G_solo_rec_measure_pos == G_solo_rec_measure_count && G_solo_rec_measure_count > 1 ){
+
+				for (i=LED_QUANTIZE_LOW; i <= LED_QUANTIZE_HIGH; i++) {
+					MIR_write_dot( i, MIR_RED );
+					MIR_write_dot( i, MIR_GREEN );
+					MIR_write_dot( i, MIR_BLINK );
+				}
+			}
+		}
+		else if ( G_solo_rec_ending_flash > ON ){ // 3 - 2 - 1 ... Flash the measure count down
+
+			if ( G_solo_rec_measure_pos >= G_solo_rec_measure_count - 3 && G_solo_rec_measure_count > 3 ){
+
+				for (i=LED_QUANTIZE_LOW; i <= LED_QUANTIZE_HIGH; i++) {
+					if ( G_solo_rec_measure_pos == G_solo_rec_measure_count - 2 ){
+						MIR_write_dot( i, MIR_RED );
+					}
+					else if ( G_solo_rec_measure_pos == G_solo_rec_measure_count - 1 ){
+						MIR_write_dot( i, MIR_GREEN );
+					}
+					else if ( G_solo_rec_measure_pos == G_solo_rec_measure_count ){
+						MIR_write_dot( i, MIR_RED );
+						MIR_write_dot( i, MIR_GREEN );
+					}
+					MIR_write_dot( i, MIR_BLINK );
+				}
+			}
+		}
+	}
+	else {
+
+		// Quantize value
+		// CHORD SECTION
+		if ( G_quantize_note > OFF && G_solo_has_rec == ON && G_run_bit == OFF ){
+			MIR_write_dot( (LED_QUANTIZE_LOW + G_quantize_note -1), MIR_RED );
+		}
 	}
 
 

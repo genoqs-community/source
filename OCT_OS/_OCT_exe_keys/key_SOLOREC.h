@@ -35,7 +35,6 @@
 				G_solo_rec_measure_hold = ON;
 			}
 			sequencer_command_PLAY();
-			G_solo_has_rec = ON; // TODO
 		}
 
 		else if ( keyNdx == KEY_CHAINER && G_run_bit == OFF ){
