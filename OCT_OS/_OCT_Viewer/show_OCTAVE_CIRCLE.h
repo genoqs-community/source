@@ -195,9 +195,92 @@
 				j = MIR_GREEN;
 			}
 
+			#ifdef FEATURE_SOLO_REC
+
+			if ( G_zoom_level == zoomSOLOREC ){
+				// This is the rotating picture..
+				switch ( G_global_locator ) {
+
+					// Fallthrough overall intended - to get the packman effect
+					case 16:		MIR_write_dot( LED_SCALE_CAD, 		j );
+					case 15:		MIR_write_dot( LED_NOTE_Cup, 		j );
+					case 14:		MIR_write_dot( LED_NOTE_B, 			j );
+					case 13:		MIR_write_dot( LED_NOTE_Ais, 		j );
+					case 12:		MIR_write_dot( LED_NOTE_A, 			j );
+					case 11:		MIR_write_dot( LED_NOTE_Gis, 		j );
+					case 10:		MIR_write_dot( LED_NOTE_G,			j );
+					case 9:			MIR_write_dot( LED_NOTE_Fis,		j );
+					case 8:			MIR_write_dot( LED_NOTE_F,			j );
+					case 7:			MIR_write_dot( LED_NOTE_E, 			j );
+					case 6:			MIR_write_dot( LED_NOTE_Dis, 		j );
+					case 5:			MIR_write_dot( LED_NOTE_D, 			j );
+					case 4:			MIR_write_dot( LED_NOTE_Cis, 		j );
+					case 3:			MIR_write_dot( LED_NOTE_C, 			j );
+					case 2:			MIR_write_dot( LED_SCALE_MOD, 		j );
+					case 1:			MIR_write_dot( LED_SCALE_SEL, 		j );
+					case 0:			// Show nothing
+						break;
+
+				} // switch (G_global_locator)
+			}
+			else {
+
+				// This is the rotating picture..
+				switch ( G_global_locator ) {
+
+					// Fallthrough overall intended - to get the packman effect
+					case 16:		MIR_write_dot( LED_NOTE_F, 		j );
+					case 15:		MIR_write_dot( LED_NOTE_E, 		j );
+					case 14:		MIR_write_dot( LED_NOTE_Dis, 	j );
+					case 13:		MIR_write_dot( LED_NOTE_D, 		j );
+					case 12:		MIR_write_dot( LED_NOTE_Cis, 	j );
+					case 11:		MIR_write_dot( LED_NOTE_C, 		j );
+					case 10:		MIR_write_dot( LED_SCALE_MOD,	j );
+					case 9:			MIR_write_dot( LED_SCALE_SEL,	j );
+					case 8:			MIR_write_dot( LED_SCALE_CAD,	j );
+					case 7:			MIR_write_dot( LED_NOTE_Cup, 	j );
+					case 6:			MIR_write_dot( LED_NOTE_B, 		j );
+					case 5:			MIR_write_dot( LED_NOTE_Ais, 	j );
+					case 4:			MIR_write_dot( LED_NOTE_A, 		j );
+					case 3:			MIR_write_dot( LED_NOTE_Gis, 	j );
+					case 2:			MIR_write_dot( LED_NOTE_G, 		j );
+					case 1:			MIR_write_dot( LED_NOTE_Fis, 	j );
+					case 0:			// Show nothing
+						break;
+
+				} // switch (G_global_locator)
+			}
+
+			// Solo Recording - Show pink when measure hold is released by first key press
+			if ( G_zoom_level == zoomSOLOREC && G_solo_rec_measure_hold == OFF && G_track_rec_bit == ON ){
+
+				switch ( G_global_locator ) {
+
+					case 16:		MIR_write_dot( LED_SCALE_CAD, 		MIR_GREEN );
+					case 15:		MIR_write_dot( LED_NOTE_Cup, 		MIR_GREEN );
+					case 14:		MIR_write_dot( LED_NOTE_B, 			MIR_GREEN );
+					case 13:		MIR_write_dot( LED_NOTE_Ais, 		MIR_GREEN );
+					case 12:		MIR_write_dot( LED_NOTE_A, 			MIR_GREEN );
+					case 11:		MIR_write_dot( LED_NOTE_Gis, 		MIR_GREEN );
+					case 10:		MIR_write_dot( LED_NOTE_G,			MIR_GREEN );
+					case 9:			MIR_write_dot( LED_NOTE_Fis,		MIR_GREEN );
+					case 8:			MIR_write_dot( LED_NOTE_F,			MIR_GREEN );
+					case 7:			MIR_write_dot( LED_NOTE_E, 			MIR_GREEN );
+					case 6:			MIR_write_dot( LED_NOTE_Dis, 		MIR_GREEN );
+					case 5:			MIR_write_dot( LED_NOTE_D, 			MIR_GREEN );
+					case 4:			MIR_write_dot( LED_NOTE_Cis, 		MIR_GREEN );
+					case 3:			MIR_write_dot( LED_NOTE_C, 			MIR_GREEN );
+					case 2:			MIR_write_dot( LED_SCALE_MOD, 		MIR_GREEN );
+					case 1:			MIR_write_dot( LED_SCALE_SEL, 		MIR_GREEN );
+					case 0:			// Show nothing
+						break;
+				}
+			}
+			#else
+
 			// This is the rotating picture..
 			switch ( G_global_locator ) {
-				
+
 				// Fallthrough overall intended - to get the packman effect
 				case 16:		MIR_write_dot( LED_NOTE_F, 		j );
 				case 15:		MIR_write_dot( LED_NOTE_E, 		j );
@@ -217,7 +300,10 @@
 				case 1:			MIR_write_dot( LED_NOTE_Fis, 	j );
 				case 0:			// Show nothing
 					break;
+
 			} // switch (G_global_locator)
+
+			#endif
 
 			break; 
 			

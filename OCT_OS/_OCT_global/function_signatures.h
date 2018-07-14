@@ -58,10 +58,12 @@ extern	void 			quick_assign_control_track ( Pagestruct* target_page, unsigned ch
 extern	void 			make_control_track ( Pagestruct* target_page, unsigned char trackIdx );
 #endif
 
-extern unsigned int selected_page_cluster_right_neighbor( Pagestruct* temp_page, unsigned char pageNdx );
-extern void apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track );
+extern unsigned int 	selected_page_cluster_right_neighbor( Pagestruct* temp_page, unsigned char pageNdx );
+extern void 			apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track );
 extern unsigned int 	selected_solo_rec_page( unsigned char grid_cursor, unsigned char dot );
-extern unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char target_page );
+extern unsigned char 	selected_page_cluster( unsigned char grid_cursor, unsigned char target_page );
+extern  void 			reset_page_cluster( Pagestruct* target_page );
+extern 	void 			stop_solo_rec();
 extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
 extern	void 			align_measure_locators();
 extern  void 			create_page_record_track_chain(Pagestruct* target_page, unsigned int measures);
@@ -208,6 +210,7 @@ extern void 			PAGE_init(Pagestruct* target_page, pageid_t pageId, booln firstIn
 
 extern void 			MIDI_init();
 extern void 			NOTE_IN_init();
+extern void 			send_ALL_NOTES_OFF();
 extern unsigned short 	extract_current_scale( Pagestruct* target_page );
 extern void 			grid_select( Pagestruct* target_page, unsigned char target_status );
 extern void 			extract_scale_and_lead( Pagestruct* target_page );

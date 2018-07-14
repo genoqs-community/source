@@ -248,6 +248,50 @@ unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char ta
 	return 0;
 }
 
+void stop_solo_rec(){
+
+	sequencer_STOP( true );
+	sequencer_RESET( true );
+	G_track_rec_bit = OFF;
+	G_measure_locator = OFF;
+	G_solo_pos_marker_in = OFF;
+	G_solo_pos_marker_out = OFF;
+	G_solo_rec_measure_pos = OFF;
+	// Reset the grid cursor for the recording page cluster
+	if ( G_solo_rec_page != NULL ){
+		reset_page_cluster( G_solo_rec_page );
+	}
+}
+
+void reset_page_cluster( Pagestruct* target_page ){
+
+	signed short 	prev_ndx = 0,
+					this_ndx = 0;
+
+	Pagestruct* temp_page = target_page;
+
+	this_ndx = target_page->pageNdx;
+	if (!Page_repository[this_ndx].page_clear == ON) {
+
+		prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
+
+		// track back to beginning of cluster selection
+		while ( 	(prev_ndx < MAX_NROF_PAGES) &&
+				(Page_repository[prev_ndx].page_clear == OFF)
+		){
+			temp_page = &Page_repository[ prev_ndx ];
+			this_ndx = temp_page->pageNdx;
+			prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
+		}
+	}
+
+	temp_page->repeats_left = temp_page->attr_STA; // reset page repeats
+
+	GRID_p_selection[ G_solo_rec_bank ] = temp_page;
+	GRID_p_preselection[ G_solo_rec_bank ] = temp_page;
+	GRID_p_clock_presel[ G_solo_rec_bank ] = temp_page;
+}
+
 // copies a selected page cluster
 void selected_page_cluster_copy( unsigned char grid_cursor, unsigned char prev_grid_cursor ){
 

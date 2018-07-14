@@ -211,6 +211,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 	}
 	#endif
 
+
 	// Play MIDI queue elements which are due at current timestamp
 	play_MIDI_queue( G_MIDI_timestamp );
 
@@ -240,7 +241,16 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		// on the measure
 		if ( G_global_locator == 1 ) {
 
+			#ifdef FEATURE_SOLO_REC
+			// Don't advance the grid locator if measure hold is on
+			if ( G_solo_rec_measure_hold == ON ) {
+				// Send the ALL NOTES OFF message
+				send_ALL_NOTES_OFF();
+			}
+
 			G_measure_locator++;
+			G_solo_rec_measure_pos++;
+			#endif
 
 			for ( i=0; i < GRID_NROF_BANKS; i++ ){
 
@@ -361,6 +371,14 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		// Skip the banks that are not currently active
 		if ( GRID_p_selection[i] != NULL ){
 
+			#ifdef FEATURE_SOLO_REC
+			// Solo Recording - Skip pages that are not selected to play along
+			if ( G_zoom_level == zoomSOLOREC &&
+			     G_solo_page_play_along[i] == NOP &&
+				(G_solo_rec_page->pageNdx % 10) != i ){ // Don't skip the solo record page cluster row
+				continue;
+			}
+			#endif
 			// Play the page selected in current GRID bank
 			PLAYER_play_page( GRID_p_selection[i], in_G_TTC_abs_value );
 		}

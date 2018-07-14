@@ -179,6 +179,7 @@ void compute_chain_presel( unsigned char target_bank ){
 
 				// Stop playing the old page if it was not empty..
 				if ( repeats_left == 0 ){
+
 					stop_playing_page( GRID_p_selection[target_bank],	G_TTC_abs_value );
 				}
 
@@ -207,6 +208,13 @@ void compute_chain_presel( unsigned char target_bank ){
 
 				// Select the neighbor as the next page
 				GRID_p_clock_presel[ target_bank ] = &Page_repository[next_ndx];
+
+				#ifdef FEATURE_SOLO_REC
+				if ( G_zoom_level == zoomSOLOREC && target_bank == G_solo_rec_bank ){
+
+					G_measure_locator = 1; // Reset the measure counter when the page changes
+				}
+				#endif
 
 			} // Right neighbor exists and has content
 
@@ -242,6 +250,22 @@ void compute_chain_presel( unsigned char target_bank ){
 
 				// Select the neighbor as the next page
 				GRID_p_clock_presel[ target_bank ] = &Page_repository[next_ndx];
+
+				#ifdef FEATURE_SOLO_REC
+				if ( G_zoom_level == zoomSOLOREC ){
+					if ( G_zoom_level == zoomSOLOREC &&
+						 G_solo_has_rec == TRUE &&
+						 G_track_rec_bit == ON && // TODO
+						 target_bank == G_solo_rec_bank ){
+
+						stop_solo_rec(); // We have reached the end of the recording so stop
+						return;
+					}
+					else {
+						G_measure_locator = 1; // Reset the measure counter when the page cluster ends
+					}
+				}
+				#endif
 
 			} // Right neighbor is not a suitable follow-on
 

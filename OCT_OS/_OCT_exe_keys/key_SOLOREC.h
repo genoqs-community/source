@@ -13,9 +13,9 @@
 
 	if ( G_solo_rec_page != NULL ){ // A record page cluster is selected
 
-		if ( keyNdx == KEY_PLAY1 ){
+		if ( keyNdx == KEY_PLAY1 && G_solo_has_rec == ON){
 			G_track_rec_bit = OFF;
-			G_run_bit = ON;
+			sequencer_command_PLAY();
 		}
 
 		else if ( keyNdx == KEY_PLAY4 ){ // values = OFF, ON, 1.2.3.
@@ -26,16 +26,16 @@
 		}
 
 		else if ( keyNdx == KEY_STOP ){
-			G_track_rec_bit = OFF;
-			G_run_bit = OFF;
-			G_solo_pos_marker_in = OFF;
-			G_solo_pos_marker_out = OFF;
+			stop_solo_rec();
 		}
 
 		else if ( keyNdx == KEY_RECORD ){
 			G_track_rec_bit = ON;
-			G_solo_has_rec = ON;
-			G_run_bit = ON;
+			if ( G_solo_has_rec == OFF ){
+				G_solo_rec_measure_hold = ON;
+			}
+			sequencer_command_PLAY();
+			G_solo_has_rec = ON; // TODO
 		}
 
 		else if ( keyNdx == KEY_CHAINER && G_run_bit == OFF ){
@@ -80,6 +80,7 @@
 			G_solo_has_rec = OFF;
 			G_solo_edit_buffer_volatile = OFF;
 			G_solo_rec_freeflow = OFF;
+			G_measure_locator = OFF;
 			Solorec_init();
 		}
 	}
@@ -163,9 +164,9 @@
 					G_solo_rec_page = &Page_repository[pressed];
 				}
 
-				Rec_repository[pressedCol].measure_count = rowZeroTrack;
 				G_solo_rec_pressed_col = pressedCol;
 				create_page_record_track_chain(G_solo_rec_page, rowZeroTrack);
+				Rec_repository[pressedCol].measure_count = rowZeroTrack;
 
 				// Snow the measure count for a few extra blinks
 				ROT_INDEX = REC_MEASURES_IDX;

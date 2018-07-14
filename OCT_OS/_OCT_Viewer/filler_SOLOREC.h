@@ -1,6 +1,8 @@
 
 	// TRANSPORT CONTROLS
 	if ( G_solo_rec_page != NULL ){
+
+		// Record button
 		MIR_write_dot( LED_RECORD, MIR_RED );
 		if ( G_run_bit == ON && G_track_rec_bit == ON ){
 			MIR_write_dot( LED_RECORD, MIR_GREEN );
@@ -167,13 +169,20 @@
 	}
 
 	// MATRIX
-	// show( ELE_MATRIX, GRID );
 	for (i=0; i < MAX_NROF_PAGES; i++) {
 		// Page has contents and is not one of the row zero
 		if (	(Page_repository[i].page_clear != ON)  &&	( (i % 10) != 9 )){
 			// This is our Solo Recording cluster
 			if ( G_solo_rec_page != NULL && selected_page_cluster( i, G_solo_rec_page->pageNdx ) != OFF ){
-				GRID_write_dot( i, MIR_GREEN );
+				// Page PLAYING - i.e. selected in GRID
+				if ( is_selected_in_GRID( &Page_repository[i] ) ){
+
+					// Show it in GREEN
+					GRID_write_dot( i, MIR_GREEN );
+				}
+				else {
+					GRID_write_dot( i, MIR_RED );
+				}
 			}
 			else {
 
@@ -229,12 +238,22 @@
 			for( i=min; i <= max; i+=11 ){
 				result = (i - 9) / 11;
 
-				if ( G_solo_rec_page != NULL && Rec_repository[column_of(temp)].measure_count == result ){
+				if ( G_solo_has_rec == TRUE ){ // has a recording
 
-					MIR_write_dot( i, MIR_RED );
+					if ( G_solo_rec_page != NULL && Rec_repository[column_of(temp)].measure_count >= result ){
+
+						MIR_write_dot( i, MIR_RED );
+					}
 				}
 				else {
-					MIR_write_dot( i, MIR_GREEN );
+
+					if ( G_solo_rec_page != NULL && Rec_repository[column_of(temp)].measure_count == result ){
+
+						MIR_write_dot( i, MIR_GREEN );
+					}
+					else if ( G_run_bit == OFF ) {
+						MIR_write_dot( i, MIR_RED );
+					}
 				}
 			}
 		}
@@ -252,11 +271,36 @@
 
 			if ( G_solo_rec_page != NULL && Rec_repository[G_solo_rec_pressed_col].measure_count == result ){
 
-				MIR_write_dot( i, MIR_RED );
+				MIR_write_dot( i, MIR_GREEN );
 				MIR_write_dot( i, MIR_BLINK );
 			}
 			else {
+				MIR_write_dot( i, MIR_RED );
+			}
+		}
+	}
+
+	// Show the row zero measure position
+	if ( G_run_bit == ON ){
+
+		// - and end of recording
+		// measure hold
+
+		unsigned int min = 20;
+		unsigned int max = 119;
+		unsigned int result = 0;
+
+		// Show the row zero measure count for the pressed page
+		for( i=min; i <= max; i+=11 ){
+			result = (i - 9) / 11;
+
+			if ( G_solo_rec_page != NULL && result == G_measure_locator ){ // Show current measure
+
 				MIR_write_dot( i, MIR_GREEN );
+				MIR_write_dot( i, MIR_BLINK );
+			}
+			else if ( result <= GRID_p_selection[G_solo_rec_bank]->attr_STA ) {
+				MIR_write_dot( i, MIR_RED );
 			}
 		}
 	}

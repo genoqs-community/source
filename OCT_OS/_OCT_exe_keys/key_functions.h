@@ -1170,11 +1170,21 @@ void exit_solo_recording()
 	G_solo_rec_legato			= OFF;
 //	G_solo_page_play_along[10];
 
+	G_measure_locator			= OFF;
+	G_solo_rec_measure_count	= OFF;
+	G_solo_rec_measure_hold		= OFF;
+	GRID_bank_playmodes = G_solo_rec_save_playmodes;
+	G_solo_rec_save_playmodes	= OFF;
 	G_zoom_level = zoomGRID; // exit the Solo Recording view
 }
 
 void create_page_record_track_chain(Pagestruct* target_page, unsigned int measures){
-	int n, m, row;
+	int n, m, row, col;
+
+	col = target_page->pageNdx / 10;
+
+	G_solo_rec_measure_count -= Rec_repository[col].measure_count;
+	G_solo_rec_measure_count += (unsigned short) measures;
 
 	PAGE_init(target_page, target_page->pageNdx, false);
 	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
@@ -1182,9 +1192,19 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 	}
 
 	row = target_page->pageNdx % 10;
+	G_solo_rec_bank = row;
 
 	target_page->page_clear = OFF;
+	target_page->attr_STA = measures;
+	// Only play the solo recording page cluster
+	if ( G_solo_rec_save_playmodes == OFF ){
+		G_solo_rec_save_playmodes = GRID_bank_playmodes;
+	}
+	GRID_bank_playmodes = 0;
+	GRID_bank_playmodes ^= 1 << row;
+
 	if ( GRID_p_selection[ row ] == NULL ){
+
 		GRID_p_selection[ row ] = target_page;
 		GRID_p_preselection[ row ] = target_page;
 		GRID_p_clock_presel[ row ] = target_page;
