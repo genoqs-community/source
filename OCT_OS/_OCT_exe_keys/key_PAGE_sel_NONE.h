@@ -544,7 +544,7 @@
 		target_page->SCL_align ^= ON;
 	}
 
-	if ( keyNdx == KEY_SCALE_MOD )
+	if ( keyNdx == LED_ZOOM_TRACK )
 	{
 		if ( G_track_page_chain_mod_bit == OFF ){
 			G_track_page_chain_mod_bit = ON;
