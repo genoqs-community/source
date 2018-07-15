@@ -75,6 +75,7 @@ void executeKey( unsigned int keyNdx ){
 	}
 #endif
 
+
 	// Work on the page under the grid cursor
 	Pagestruct* target_page = &Page_repository[ GRID_CURSOR ];
 

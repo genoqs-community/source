@@ -22,6 +22,7 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
+
 	#ifdef FEATURE_ENABLE_SONG_UPE
 	if (keyNdx == KEY_MUTE_MASTER){
 
@@ -44,11 +45,13 @@
 
 
 	// GRID PAGE CLUSTER SELECTIONS
-	if ( ( (keyNdx < 187)
+	if ( ( (keyNdx > 10 && keyNdx < 187)
 	) ) {
+
 
 		temp = row_of(keyNdx) + (10 * column_of (keyNdx));
 		GRID_CURSOR = temp;
+
 		//	diag_printf("prev: %d\n", PREV_GRID_CURSOR);
 		//	diag_printf("grid: %d\n", GRID_CURSOR);
 		//	diag_printf("ndx: %d\n", keyNdx);
@@ -56,8 +59,6 @@
 		//	diag_printf("press: %d\n", is_pressed_key(keyNdx - 11));
 		//	diag_printf("gress: %d\n", is_pressed_key(GRID_CURSOR));
 		//	diag_printf("---------------\n");
-
-
 
 		if ( GRID_p_selection_cluster == ON ) {
 
@@ -198,7 +199,6 @@
 	//
 	if ( GRID_play_mode == GRID_MIX ){
 
-
 //		d_iag_printf("   4 key_GRID- GRID_play_mode:%d GRID_editmode:%d\n",
 //				GRID_play_mode, GRID_editmode );
 
@@ -322,11 +322,14 @@
 			SET_BIT(MIX_TRACK->attr_MISC, TRK_CTRL_PGTGL);
 			MIX_TRACK = NULL;
 		}
+		#endif
+
+		#ifdef FEATURE_SOLO_REC
 		if ( keyNdx == 10 ){ // grid selection row 0 button
+
 			if ( GRID_p_set_note_offsets[current_GRID_set] == 255 )
 			{
-				GRID_p_set_note_offsets[current_GRID_set] = current_GRID_set;
-				GRID_p_set_note_presel = current_GRID_set;
+				GRID_p_set_note_offsets[current_GRID_set] = 0;
 			}
 			else
 			{
@@ -334,6 +337,7 @@
 			}
 		}
 		#endif
+
 		// MATRIX
 		// operate on the GRID set or switch to EDIT mode..
 		if ( (keyNdx >= 11) && (keyNdx <= 185) ) {
