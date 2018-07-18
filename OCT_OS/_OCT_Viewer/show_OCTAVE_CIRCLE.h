@@ -252,7 +252,7 @@
 			}
 
 			// Solo Recording - Show pink when measure hold is released by first key press
-			if ( G_zoom_level == zoomSOLOREC && G_solo_rec_measure_hold == OFF && G_track_rec_bit == ON ){
+			if ( G_zoom_level == zoomSOLOREC && SOLO_rec_measure_hold == OFF && G_track_rec_bit == ON ){
 
 				switch ( G_global_locator ) {
 

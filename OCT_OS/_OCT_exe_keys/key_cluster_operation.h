@@ -27,16 +27,16 @@
 // Only allow selection of right neighbor pages that are not connecting to an existing page cluster
 unsigned int selected_solo_rec_page( unsigned char grid_cursor, unsigned char dot ){
 
-	if ( G_solo_has_rec ){
+	if ( SOLO_has_rec ){
 		return 0; // new page chains cannot be added if there is a recording
 	}
 
 	if ( Page_repository[grid_cursor].page_clear == ON && is_pressed_key(dot) &&
 	   ( dot < 20 || // first column
-			   ( G_solo_rec_page == NULL && Page_repository[grid_cursor - 10].page_clear == ON) ||
-				 G_solo_rec_page != NULL
+			   ( SOLO_rec_page == NULL && Page_repository[grid_cursor - 10].page_clear == ON) ||
+				 SOLO_rec_page != NULL
 	   ) &&
-	   ( G_solo_rec_page == NULL || G_solo_rec_page->pageNdx == (grid_cursor - 10) )){
+	   ( SOLO_rec_page == NULL || SOLO_rec_page->pageNdx == (grid_cursor - 10) )){
 
 		return 1;
 	}
@@ -252,17 +252,17 @@ void stop_solo_rec(){
 
 	sequencer_STOP( true );
 	sequencer_RESET( true );
-	if ( G_solo_rec_measure_hold == OFF ){
-		G_solo_has_rec = ON;
+	if ( SOLO_rec_measure_hold == OFF ){
+		SOLO_has_rec = ON;
 	}
 	G_track_rec_bit = OFF;
 	G_measure_locator = OFF;
-	G_solo_pos_marker_in = OFF;
-	G_solo_pos_marker_out = OFF;
-	G_solo_rec_measure_pos = OFF;
+	SOLO_pos_marker_in = OFF;
+	SOLO_pos_marker_out = OFF;
+	SOLO_rec_measure_pos = OFF;
 	// Reset the grid cursor for the recording page cluster
-	if ( G_solo_rec_page != NULL ){
-		reset_page_cluster( G_solo_rec_page );
+	if ( SOLO_rec_page != NULL ){
+		reset_page_cluster( SOLO_rec_page );
 	}
 }
 
@@ -290,9 +290,9 @@ void reset_page_cluster( Pagestruct* target_page ){
 
 	temp_page->repeats_left = temp_page->attr_STA; // reset page repeats
 
-	GRID_p_selection[ G_solo_rec_bank ] = temp_page;
-	GRID_p_preselection[ G_solo_rec_bank ] = temp_page;
-	GRID_p_clock_presel[ G_solo_rec_bank ] = temp_page;
+	GRID_p_selection[ SOLO_rec_bank ] = temp_page;
+	GRID_p_preselection[ SOLO_rec_bank ] = temp_page;
+	GRID_p_clock_presel[ SOLO_rec_bank ] = temp_page;
 }
 
 // copies a selected page cluster

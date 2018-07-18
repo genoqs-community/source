@@ -8,7 +8,7 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 		return; // Don't allow parameter modification while the machine is playing
 	}
 
-	if ( rotNdx == ROT_BIGKNOB && G_solo_has_rec == ON )
+	if ( rotNdx == ROT_BIGKNOB && SOLO_has_rec == ON )
 	{
 		PhraseEditGlobalStrum( direction );
 	}
@@ -17,7 +17,7 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 	switch( rotNdx ){
 		// EDIT encoders
 		case 1: case 3:
-		if ( G_solo_has_rec == OFF || G_run_bit == ON ){
+		if ( SOLO_has_rec == OFF || G_run_bit == ON ){
 			break;
 		}
 		case 10:
@@ -34,18 +34,18 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 
 		// EDIT encoders
 		case 1:
-			if ( G_solo_has_rec == ON && G_run_bit == OFF ){
-				modify_parameter(&G_solo_normalize_pitch, 0, 16, direction, OFF, FIXED);
+			if ( SOLO_has_rec == ON && G_run_bit == OFF ){
+				modify_parameter(&SOLO_normalize_pitch, 0, 16, direction, OFF, FIXED);
 			}
 			break;
 		case 3:
-			if ( G_solo_has_rec == ON && G_run_bit == OFF ){
-				modify_parameter(&G_solo_normalize_len, 0, 16, direction, OFF, FIXED);
+			if ( SOLO_has_rec == ON && G_run_bit == OFF ){
+				modify_parameter(&SOLO_normalize_len, 0, 16, direction, OFF, FIXED);
 			}
 			break;
 		case 10:
 			// Set the MIDI Channel for solo recording
-			modify_parameter(&G_solo_midi_ch, TRACK_MIN_MIDICH, TRACK_MAX_MIDICH, direction, OFF, FIXED);
+			modify_parameter(&SOLO_midi_ch, TRACK_MIN_MIDICH, TRACK_MAX_MIDICH, direction, OFF, FIXED);
 			break;
 	}
 

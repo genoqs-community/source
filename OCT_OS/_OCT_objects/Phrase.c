@@ -478,7 +478,7 @@ void PhraseMultiTweakReset( void )
 // Change the phrase number of a particular step
 void PhraseEditGlobalStrum( intn direction )
 {
-	modify_parameter( &G_strum, 0, STEP_MAX_GROOVE, direction, OFF, FIXED);
+	modify_parameter( &SOLO_strum, 0, STEP_MAX_GROOVE, direction, OFF, FIXED);
 
 	// Set the phrase timer. While the timer is ticking the phrase index will be shown in the circle.
 	PHRASE_TIMER = ON;

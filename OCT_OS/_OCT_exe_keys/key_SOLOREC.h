@@ -1,27 +1,27 @@
 
 	if ( keyNdx == KEY_TEMPO ){
 
-		if ( G_slow_tempo != OFF ){ // slow tempo
-			G_master_tempo = G_slow_tempo;
-			G_slow_tempo = OFF;
+		if ( SOLO_slow_tempo != OFF ){ // slow tempo
+			G_master_tempo = SOLO_slow_tempo;
+			SOLO_slow_tempo = OFF;
 		}
 		else { // reset to original tempo
-			G_slow_tempo = G_master_tempo;
+			SOLO_slow_tempo = G_master_tempo;
 			G_master_tempo = 100;
 		}
 	}
 
-	if ( G_solo_rec_page != NULL ){ // A record page cluster is selected
+	if ( SOLO_rec_page != NULL ){ // A record page cluster is selected
 
-		if ( keyNdx == KEY_PLAY1 && G_solo_has_rec == ON){
+		if ( keyNdx == KEY_PLAY1 && SOLO_has_rec == ON){
 			G_track_rec_bit = OFF;
 			sequencer_command_PLAY();
 		}
 
 		else if ( keyNdx == KEY_PLAY4 ){ // values = OFF, ON, 1.2.3.
-			if ( ++G_solo_rec_ending_flash == QBIT )
+			if ( ++SOLO_rec_ending_flash == QBIT )
 			{
-				G_solo_rec_ending_flash = OFF;
+				SOLO_rec_ending_flash = OFF;
 			}
 		}
 
@@ -31,16 +31,16 @@
 
 		else if ( keyNdx == KEY_RECORD ){
 			G_track_rec_bit = ON;
-			if ( G_solo_has_rec == OFF ){
-				G_solo_rec_measure_hold = ON;
+			if ( SOLO_has_rec == OFF ){
+				SOLO_rec_measure_hold = ON;
 			}
 			sequencer_command_PLAY();
 		}
 
 		else if ( keyNdx == KEY_CHAINER && G_run_bit == OFF ){
-			if ( G_solo_has_rec == ON ){
-				G_solo_edit_buffer_volatile ^= 1; // toggle
-				G_solo_has_rec = OFF;
+			if ( SOLO_has_rec == ON ){
+				SOLO_edit_buffer_volatile ^= 1; // toggle
+				SOLO_has_rec = OFF;
 				MIX_TIMER = ON;
 				// Setup alarm for the MIX TIMER
 				cyg_alarm_initialize(	alarm_hdl,
@@ -49,36 +49,36 @@
 			}
 		}
 
-		else if ( keyNdx == KEY_EDIT_MASTER && G_solo_edit_buffer_volatile == ON ){
-			G_solo_has_rec = ON; // XXX rm - only for UI testing
-			G_solo_edit_buffer_volatile ^= 1; // toggle
+		else if ( keyNdx == KEY_EDIT_MASTER && SOLO_edit_buffer_volatile == ON ){
+			SOLO_has_rec = ON; // XXX rm - only for UI testing
+			SOLO_edit_buffer_volatile ^= 1; // toggle
 		}
 
 		else if ( keyNdx == KEY_FOLLOW ){
-			G_solo_overdub ^= 1; // toggle
+			SOLO_overdub ^= 1; // toggle
 		}
 
 		// Legato
-		if ( keyNdx == KEY_ZOOM_STEP && G_run_bit == OFF &&  G_solo_has_rec == ON ){
-			G_solo_rec_legato ^= 1; // toggle
+		if ( keyNdx == KEY_ZOOM_STEP && G_run_bit == OFF &&  SOLO_has_rec == ON ){
+			SOLO_rec_legato ^= 1; // toggle
 		}
 	}
 
 	// Clear the record pages
 	if (keyNdx == KEY_CLEAR && G_run_bit == OFF){
 		unsigned char temp = cursor_to_dot( GRID_CURSOR );
-		if ( G_solo_rec_page != NULL &&
-			 selected_page_cluster( GRID_CURSOR, G_solo_rec_page->pageNdx ) != OFF &&
+		if ( SOLO_rec_page != NULL &&
+			 selected_page_cluster( GRID_CURSOR, SOLO_rec_page->pageNdx ) != OFF &&
 			 is_pressed_key( temp )
 		){
 			// Clear the page cluster if it is currently selected
-			selected_page_cluster_clear(G_solo_rec_page->pageNdx);
-			G_solo_normalize_pitch = OFF;
-			G_solo_normalize_len = OFF;
-			G_solo_rec_page = NULL;
-			G_solo_has_rec = OFF;
-			G_solo_edit_buffer_volatile = OFF;
-			G_solo_rec_freeflow = OFF;
+			selected_page_cluster_clear(SOLO_rec_page->pageNdx);
+			SOLO_normalize_pitch = OFF;
+			SOLO_normalize_len = OFF;
+			SOLO_rec_page = NULL;
+			SOLO_has_rec = OFF;
+			SOLO_edit_buffer_volatile = OFF;
+			SOLO_rec_freeflow = OFF;
 			G_measure_locator = OFF;
 			Solorec_init();
 		}
@@ -86,19 +86,19 @@
 
 	else if (keyNdx == KEY_FLT){
 
-		if ( G_solo_has_rec == ON && G_run_bit == ON && G_track_rec_bit == OFF && G_solo_pos_marker_out == OFF ){
+		if ( SOLO_has_rec == ON && G_run_bit == ON && G_track_rec_bit == OFF && SOLO_pos_marker_out == OFF ){
 
-			if ( G_solo_pos_marker_in == OFF ){
-				G_solo_pos_marker_in = G_measure_locator;
+			if ( SOLO_pos_marker_in == OFF ){
+				SOLO_pos_marker_in = G_measure_locator;
 			}
 			else {
-				G_solo_pos_marker_out = G_measure_locator;
+				SOLO_pos_marker_out = G_measure_locator;
 				// XXX only for UI testing
 				// TODO: apply the pos splits
 				G_track_rec_bit = OFF;
 				G_run_bit = OFF;
-				G_solo_pos_marker_in = OFF; // XXX
-				G_solo_pos_marker_out = OFF;
+				SOLO_pos_marker_in = OFF; // XXX
+				SOLO_pos_marker_out = OFF;
 			}
 
 			ROT_INDEX = REC_MEASURES_SPLIT;
@@ -110,14 +110,14 @@
 	}
 
 	// Quantize chord buttons
-	else if (G_solo_has_rec == ON && G_run_bit == OFF && keyNdx >= KEY_QUANTIZE_LOW && keyNdx <= KEY_QUANTIZE_HIGH){
+	else if (SOLO_has_rec == ON && G_run_bit == OFF && keyNdx >= KEY_QUANTIZE_LOW && keyNdx <= KEY_QUANTIZE_HIGH){
 
-		if ((keyNdx - KEY_QUANTIZE_LOW + 1) == G_quantize_note){
+		if ((keyNdx - KEY_QUANTIZE_LOW + 1) == SOLO_quantize_note){
 			// turn quantize off if the same button is pressed twice
-			G_quantize_note = 0;
+			SOLO_quantize_note = 0;
 		}
 		else {
-			G_quantize_note = keyNdx - KEY_QUANTIZE_LOW + 1;
+			SOLO_quantize_note = keyNdx - KEY_QUANTIZE_LOW + 1;
 		}
 	}
 	else {
@@ -139,20 +139,20 @@
 		unsigned char cursor = Page_repository[pressed].pageNdx;
 
 		// Activate a record page - set the measure count
-		if ( !G_solo_has_rec && // does not have a recording yet
+		if ( !SOLO_has_rec && // does not have a recording yet
 			 ( selected_solo_rec_page( cursor, cursor_to_dot( cursor ) ) == ON ||
-			   selected_page_cluster( cursor, G_solo_rec_page->pageNdx ) != OFF )){
+			   selected_page_cluster( cursor, SOLO_rec_page->pageNdx ) != OFF )){
 			/*
 			 * A page with a measure count has been selected on this press
 			 */
-			if ( keyNdx == KEY_CHAINMODE_4 && G_solo_rec_page == NULL && Page_repository[pressed].page_clear == ON ){
-				G_solo_rec_freeflow = ON;
+			if ( keyNdx == KEY_CHAINMODE_4 && SOLO_rec_page == NULL && Page_repository[pressed].page_clear == ON ){
+				SOLO_rec_freeflow = ON;
 				Page_repository[pressed].page_clear = OFF;
-				G_solo_rec_page = &Page_repository[pressed];
+				SOLO_rec_page = &Page_repository[pressed];
 				Rec_repository[pressedCol].measure_count = 1;
 			}
 			// A page is pressed first then step 1 through 10 of row zero to set the measure count
-			else if ( rowZeroTrack != OFF && rowZeroTrack <= 10 && G_solo_rec_freeflow == OFF ){
+			else if ( rowZeroTrack != OFF && rowZeroTrack <= 10 && SOLO_rec_freeflow == OFF ){
 
 				if ( Page_repository[pressed].page_clear == ON ){
 					/*
@@ -160,11 +160,11 @@
 					 * A record page was created!
 					 * ########################################
 					 */
-					G_solo_rec_page = &Page_repository[pressed];
+					SOLO_rec_page = &Page_repository[pressed];
 				}
 
-				G_solo_rec_pressed_col = pressedCol;
-				create_page_record_track_chain(G_solo_rec_page, rowZeroTrack);
+				SOLO_rec_pressed_col = pressedCol;
+				create_page_record_track_chain(SOLO_rec_page, rowZeroTrack);
 				Rec_repository[pressedCol].measure_count = rowZeroTrack;
 
 				// Snow the measure count for a few extra blinks
@@ -177,25 +177,25 @@
 		}
 
 		// Toggle the play along status of existing pages in the grid
-		else if ( G_solo_rec_page != NULL && Page_repository[GRID_CURSOR].page_clear == OFF ){
+		else if ( SOLO_rec_page != NULL && Page_repository[GRID_CURSOR].page_clear == OFF ){
 
 			// no play along pages set for this row
 			// and - this row does not contain the solo recording page
-			if ((( G_solo_page_play_along[keyRow] == NOP && ( G_solo_rec_page->pageNdx % 10) != keyRow ))
+			if ((( SOLO_page_play_along[keyRow] == NOP && ( SOLO_rec_page->pageNdx % 10) != keyRow ))
 				|| // or
-					((( G_solo_page_play_along[keyRow] % 10) == keyRow ) && // a page in a play along row was pressed
-					( G_solo_page_play_along[keyRow] != GRID_CURSOR ) // and - this page was not already the play along page
+					((( SOLO_page_play_along[keyRow] % 10) == keyRow ) && // a page in a play along row was pressed
+					( SOLO_page_play_along[keyRow] != GRID_CURSOR ) // and - this page was not already the play along page
 				)){
-				G_solo_page_play_along[keyRow] = GRID_CURSOR;
+				SOLO_page_play_along[keyRow] = GRID_CURSOR;
 			}
 			else {
-				G_solo_page_play_along[keyRow] = NOP;
+				SOLO_page_play_along[keyRow] = NOP;
 			}
 		}
 
-		if (G_solo_has_rec == ON && G_run_bit == OFF){
+		if (SOLO_has_rec == ON && G_run_bit == OFF){
 			// Fine tune quantize
 			unsigned char xdx = BK_KEY_to_xdx( keyNdx );
-			G_quantize_fine_tune = G_quantize_fine_tune == xdx ? 0 : xdx;
+			SOLO_quantize_fine_tune = SOLO_quantize_fine_tune == xdx ? 0 : xdx;
 		}
 	}

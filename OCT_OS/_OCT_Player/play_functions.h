@@ -210,7 +210,7 @@ void compute_chain_presel( unsigned char target_bank ){
 				GRID_p_clock_presel[ target_bank ] = &Page_repository[next_ndx];
 
 				#ifdef FEATURE_SOLO_REC
-				if ( G_zoom_level == zoomSOLOREC && target_bank == G_solo_rec_bank ){
+				if ( G_zoom_level == zoomSOLOREC && target_bank == SOLO_rec_bank ){
 
 					G_measure_locator = 1; // Reset the measure counter when the page changes
 				}
@@ -254,9 +254,9 @@ void compute_chain_presel( unsigned char target_bank ){
 				#ifdef FEATURE_SOLO_REC
 				if ( G_zoom_level == zoomSOLOREC ){
 					if ( G_zoom_level == zoomSOLOREC &&
-						 G_solo_has_rec == FALSE &&
+						 SOLO_has_rec == FALSE &&
 						 G_track_rec_bit == ON && // TODO
-						 target_bank == G_solo_rec_bank ){
+						 target_bank == SOLO_rec_bank ){
 
 						stop_solo_rec(); // We have reached the end of the recording so stop
 						return;

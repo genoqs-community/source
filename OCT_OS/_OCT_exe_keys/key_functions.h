@@ -1151,30 +1151,30 @@ void align_measure_locators(){
 void exit_solo_recording()
 {
 	// Reset most of the global variables
-	G_quantize_fine_tune 		= 0;
-	G_quantize_note 			= 1;
-	G_strum						= 9; // 9=OFF
-	G_slow_tempo				= OFF;
-	G_solo_rec_page				= NULL;
-//	G_solo_midi_ch				= 1;
-	G_solo_normalize_pitch		= OFF;
-	G_solo_normalize_len		= OFF;
-	G_solo_has_rec				= OFF;
-	G_solo_edit_buffer_volatile	= OFF;
-	G_solo_overdub				= OFF;
-	G_solo_rec_pressed_col		= OFF;
-	G_solo_pos_marker_in		= OFF;
-	G_solo_pos_marker_out		= OFF;
-	G_solo_rec_freeflow			= OFF;
-//	G_solo_rec_ending_flash		= OFF;
-	G_solo_rec_legato			= OFF;
-//	G_solo_page_play_along[10];
+	SOLO_quantize_fine_tune 	= 0;
+	SOLO_quantize_note 			= 1;
+	SOLO_strum					= 9; // 9=OFF
+	SOLO_slow_tempo				= OFF;
+	SOLO_rec_page				= NULL;
+//	SOLO_midi_ch				= 1;
+	SOLO_normalize_pitch		= OFF;
+	SOLO_normalize_len			= OFF;
+	SOLO_has_rec				= OFF;
+	SOLO_edit_buffer_volatile	= OFF;
+	SOLO_overdub				= OFF;
+	SOLO_rec_pressed_col		= OFF;
+	SOLO_pos_marker_in			= OFF;
+	SOLO_pos_marker_out			= OFF;
+	SOLO_rec_freeflow			= OFF;
+//	SOLO_rec_ending_flash		= OFF;
+	SOLO_rec_legato				= OFF;
+//	SOLO_page_play_along[10];
 
 	G_measure_locator			= OFF;
-	G_solo_rec_measure_count	= OFF;
-	G_solo_rec_measure_hold		= OFF;
-	GRID_bank_playmodes = G_solo_rec_save_playmodes;
-	G_solo_rec_save_playmodes	= OFF;
+	SOLO_rec_measure_count		= OFF;
+	SOLO_rec_measure_hold		= OFF;
+	GRID_bank_playmodes = SOLO_rec_save_playmodes;
+	SOLO_rec_save_playmodes		= OFF;
 	G_zoom_level = zoomGRID; // exit the Solo Recording view
 }
 
@@ -1183,8 +1183,8 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 
 	col = target_page->pageNdx / 10;
 
-	G_solo_rec_measure_count -= Rec_repository[col].measure_count;
-	G_solo_rec_measure_count += (unsigned short) measures;
+	SOLO_rec_measure_count -= Rec_repository[col].measure_count;
+	SOLO_rec_measure_count += (unsigned short) measures;
 
 	PAGE_init(target_page, target_page->pageNdx, false);
 	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
@@ -1192,13 +1192,13 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 	}
 
 	row = target_page->pageNdx % 10;
-	G_solo_rec_bank = row;
+	SOLO_rec_bank = row;
 
 	target_page->page_clear = OFF;
 	target_page->attr_STA = measures;
 	// Only play the solo recording page cluster
-	if ( G_solo_rec_save_playmodes == OFF ){
-		G_solo_rec_save_playmodes = GRID_bank_playmodes;
+	if ( SOLO_rec_save_playmodes == OFF ){
+		SOLO_rec_save_playmodes = GRID_bank_playmodes;
 	}
 	GRID_bank_playmodes = 0;
 	GRID_bank_playmodes ^= 1 << row;

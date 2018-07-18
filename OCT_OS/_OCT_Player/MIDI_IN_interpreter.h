@@ -241,8 +241,8 @@ void G_midi_interpret_NOTE_ON( unsigned char midi_byte, unsigned char UART_ndx )
 	#ifdef FEATURE_SOLO_REC
 	// Solo Recording - handle the first note of the initial recording
 	// TODO: make function and handle CC
-	if ( G_solo_rec_page != NULL && G_track_rec_bit == ON && G_run_bit == ON && G_solo_rec_measure_hold == ON ) {
-		G_solo_rec_measure_hold = OFF;
+	if ( SOLO_rec_page != NULL && G_track_rec_bit == ON && G_run_bit == ON && SOLO_rec_measure_hold == ON ) {
+		SOLO_rec_measure_hold = OFF;
 	}
 	#endif
 	// Store the byte in the circular array	- just so it can be printed out.

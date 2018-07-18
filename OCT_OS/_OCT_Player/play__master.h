@@ -243,15 +243,15 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 			#ifdef FEATURE_SOLO_REC
 			// Don't advance the grid locator if measure hold is on
-			if ( G_solo_rec_measure_hold == ON ) {
+			if ( SOLO_rec_measure_hold == ON ) {
 				// Send the ALL NOTES OFF message
 				send_ALL_NOTES_OFF();
 				G_measure_locator = OFF;
-				G_solo_rec_measure_pos = OFF;
+				SOLO_rec_measure_pos = OFF;
 			}
 
 			G_measure_locator++;
-			G_solo_rec_measure_pos++;
+			SOLO_rec_measure_pos++;
 			#endif
 
 			for ( i=0; i < GRID_NROF_BANKS; i++ ){
@@ -321,7 +321,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 		#ifdef FEATURE_SOLO_REC
 		// TODO
-		if ( G_solo_rec_measure_hold == ON ){
+		if ( SOLO_rec_measure_hold == ON ){
 			return; // XXX we're probably not playing the measure
 		}
 		#endif
@@ -386,8 +386,8 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 			#ifdef FEATURE_SOLO_REC
 			// Solo Recording - Skip pages that are not selected to play along
 			if ( G_zoom_level == zoomSOLOREC &&
-			     G_solo_page_play_along[i] == NOP &&
-				(G_solo_rec_page->pageNdx % 10) != i ){ // Don't skip the solo record page cluster row
+			     SOLO_page_play_along[i] == NOP &&
+				(SOLO_rec_page->pageNdx % 10) != i ){ // Don't skip the solo record page cluster row
 				continue;
 			}
 			#endif
