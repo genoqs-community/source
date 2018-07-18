@@ -189,7 +189,7 @@
 
 	if ( is_pressed_rowzero() && GRID_p_set_note_offsets[current_GRID_set] != 255 )
 	{
-		MIR_write_pitch_H( GRID_p_set_note_offsets[current_GRID_set], 9 );
+		MIR_write_numeric_H( GRID_p_set_note_offsets[current_GRID_set], 9 );
 	}
 
 

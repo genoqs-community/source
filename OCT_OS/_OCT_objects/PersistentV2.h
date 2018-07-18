@@ -221,14 +221,12 @@ typedef struct {
 	card16 		GRID_CURSOR;
 	card16 		GRID_mixAttribute;
 	card8 		GRID_play_mode;
+	// First 9 bits used for grid bank play mode bit flags. Last 7 bits used for grid set MIDI channel
 	card16		GRID_bank_playmodes;		// either _SIMPLE or _CHAIN
 	card32 		GRID_set_switchmode;
 	card8 		current_GRID_set;
+	// Uses a bit mask for the first 8 bits for the pageNdx. The last 8 bits are for the Scene MIDI note pitch.
 	pageid_t 	GRID_p_id_set[GRID_NROF_SETS ][GRID_NROF_BANKS];
-	#ifdef FEATURE_ENABLE_SONG_UPE
-	card8		noteOffsets[GRID_NROF_SETS ];
-	card8		midiCh;
-	#endif
 	card8 		GRID_OPS_mode;
 	card8 		GRIDTRACK_OPS_mode;
 	card8 		stepDefaultAttrValue[STEP_NROF_ATTRIBUTES];
@@ -273,10 +271,6 @@ typedef struct {
 	pageid_t 	GRID_p_id_set[GRID_NROF_SETS ][GRID_NROF_BANKS];
 
 	card8		fillerVc[32];
-	#ifdef FEATURE_ENABLE_SONG_UPE
-	card8		noteOffsets[GRID_NROF_SETS ];
-	card8		midiCh;
-	#endif
 
 } ScenePersistentV2;
 

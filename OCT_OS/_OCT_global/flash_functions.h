@@ -188,25 +188,26 @@ void Octopus_recall_flash()
 	Pagestruct* target_page = NULL;
 
 	// Read all pages and grid from flash into memory.
-	Flash_read_all_pages();
+	if ( G_flashgridheadersonly_flag == FALSE ){
+		Flash_read_all_pages();
+	}
 	Flash_read_grid();
 
-	// Enter the page mode - copied from pressing ESC!
-	target_page = &Page_repository[ GRID_CURSOR];
-	target_page->trackSelection = OFF;
-	target_page->trackAttributeSelection = OFF;
+	if ( G_flashgridheadersonly_flag == FALSE ){
 
-	// Enter Page mode - although GRID would be more appropriate..
-#ifdef FEATURE_SOLO_REC
-	G_zoom_level = zoomGRID; // TODO: use persistent toggle bit from G_midi_map_controller_mode
-#else
-	G_zoom_level = zoomPAGE;
-#endif
+		// Enter the page mode - copied from pressing ESC!
+		target_page = &Page_repository[ GRID_CURSOR];
+		target_page->trackSelection = OFF;
+		target_page->trackAttributeSelection = OFF;
 
-	// Release the MIDI SYSEX state
-	MIDI_RECEIVE_SYSEX = FALSE;
-	MIDI_SYSEX_HEADER_SEEN = FALSE;
-	G_sysex_stream_keeper_index = 0;
+		// Enter Page mode - although GRID would be more appropriate..
+		G_zoom_level = (G_initZoom == TRUE) ? zoomGRID : zoomPAGE;
+
+		// Release the MIDI SYSEX state
+		MIDI_RECEIVE_SYSEX = FALSE;
+		MIDI_SYSEX_HEADER_SEEN = FALSE;
+		G_sysex_stream_keeper_index = 0;
+	}
 }
 
 

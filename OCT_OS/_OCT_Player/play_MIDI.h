@@ -147,9 +147,15 @@ void MIDI_send( 	unsigned char type,
 	
 			case 0:
 				// MIDI OUT 1 and 2 message
-				// MIDI B has priority
-				j = cyg_mbox_tryput( UART1_OUT_mbox_handle, &G_out_MIDI[ G_out_MIDI_ndx ] );
-				i = cyg_mbox_tryput( UART0_OUT_mbox_handle, &G_out_MIDI[ G_out_MIDI_ndx ] );
+				if ( G_MIDI_B_priority == FALSE ){
+					i = cyg_mbox_tryput( UART0_OUT_mbox_handle, &G_out_MIDI[ G_out_MIDI_ndx ] );
+					j = cyg_mbox_tryput( UART1_OUT_mbox_handle, &G_out_MIDI[ G_out_MIDI_ndx ] );
+				}
+				else {
+					// MIDI B has priority
+					j = cyg_mbox_tryput( UART1_OUT_mbox_handle, &G_out_MIDI[ G_out_MIDI_ndx ] );
+					i = cyg_mbox_tryput( UART0_OUT_mbox_handle, &G_out_MIDI[ G_out_MIDI_ndx ] );
+				}
 				break;				
 
 			case 1:

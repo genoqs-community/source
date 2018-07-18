@@ -275,29 +275,57 @@ void init_interrupts(){
   	cyg_interrupt_attach(	 handle_ext1_isr );
   	// d_iag_printf("start(): interrupt ext1 created\n");
 
-  	// MIDI IN 2 has priority over MIDI IN 1
- 	// UART1 IN INTERRUPT - MIDI IN 2
-	cyg_interrupt_unmask(	CYGNUM_HAL_INTERRUPT_UART1_RX);
-  	cyg_interrupt_create(	CYGNUM_HAL_INTERRUPT_UART1_RX,
-		       				50,
-							20,
-		       				UART1_IN_ISR,
-		       				UART1_IN_DSR,
-		       				&handle_UART1_IN_isr,
-		       				&isr6);
-  	cyg_interrupt_attach(	 handle_UART1_IN_isr);
+  	if ( G_MIDI_B_priority == FALSE ){
+
+  	  	// MIDI IN 2 has priority over MIDI IN 1
+  	 	// UART1 IN INTERRUPT - MIDI IN 2
+  		cyg_interrupt_unmask(	CYGNUM_HAL_INTERRUPT_UART1_RX);
+  	  	cyg_interrupt_create(	CYGNUM_HAL_INTERRUPT_UART1_RX,
+  			       				50,
+  								20,
+  			       				UART1_IN_ISR,
+  			       				UART1_IN_DSR,
+  			       				&handle_UART1_IN_isr,
+  			       				&isr6);
+  	  	cyg_interrupt_attach(	 handle_UART1_IN_isr);
 
 
- 	// UART0 IN INTERRUPT - MIDI IN 1
-	cyg_interrupt_unmask(	CYGNUM_HAL_INTERRUPT_UART0_RX);
-  	cyg_interrupt_create(	CYGNUM_HAL_INTERRUPT_UART0_RX,
-		       				10,
-							20,
-		       				UART0_IN_ISR,
-		       				UART0_IN_DSR,
-		       				&handle_UART0_IN_isr,
-		       				&isr5);
-  	cyg_interrupt_attach(	 handle_UART0_IN_isr );
+  	 	// UART0 IN INTERRUPT - MIDI IN 1
+  		cyg_interrupt_unmask(	CYGNUM_HAL_INTERRUPT_UART0_RX);
+  	  	cyg_interrupt_create(	CYGNUM_HAL_INTERRUPT_UART0_RX,
+  			       				10,
+  								20,
+  			       				UART0_IN_ISR,
+  			       				UART0_IN_DSR,
+  			       				&handle_UART0_IN_isr,
+  			       				&isr5);
+  	  	cyg_interrupt_attach(	 handle_UART0_IN_isr );
+  	}
+  	else {
+
+  	 	// UART0 IN INTERRUPT - MIDI IN 1
+  		cyg_interrupt_unmask(	CYGNUM_HAL_INTERRUPT_UART0_RX);
+  	  	cyg_interrupt_create(	CYGNUM_HAL_INTERRUPT_UART0_RX,
+  			       				10,
+  								20,
+  			       				UART0_IN_ISR,
+  			       				UART0_IN_DSR,
+  			       				&handle_UART0_IN_isr,
+  			       				&isr5);
+  	  	cyg_interrupt_attach(	 handle_UART0_IN_isr );
+
+  	  	// MIDI IN 2 has priority over MIDI IN 1
+  	 	// UART1 IN INTERRUPT - MIDI IN 2
+  		cyg_interrupt_unmask(	CYGNUM_HAL_INTERRUPT_UART1_RX);
+  	  	cyg_interrupt_create(	CYGNUM_HAL_INTERRUPT_UART1_RX,
+  			       				50,
+  								20,
+  			       				UART1_IN_ISR,
+  			       				UART1_IN_DSR,
+  			       				&handle_UART1_IN_isr,
+  			       				&isr6);
+  	  	cyg_interrupt_attach(	 handle_UART1_IN_isr);
+  	}
   	// d_iag_printf("start(): interrupt ext2 created\n");
 
 

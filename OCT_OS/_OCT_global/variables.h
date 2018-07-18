@@ -44,6 +44,7 @@
 // ************************
 
 unsigned char 		G_flashload_flag = LOAD_ON_POWERON;
+unsigned char		G_flashgridheadersonly_flag = FALSE;
 
 // SPAGHETTI from scan_keys
 unsigned int 		G_scan[3][26];
@@ -94,6 +95,9 @@ unsigned char 		G_master_blinker2		= 0; // Used for the one current ZOOM LED sho
 unsigned char		G_MIDI_load_monitor1	= MIR_GREEN;
 unsigned char 		G_MIDI_load_monitor2	= MIR_GREEN;
 unsigned char 		G_CPU_load_monitor		= MIR_GREEN;
+
+unsigned char		G_MIDI_B_priority		= FALSE;
+unsigned char		G_initZoom				= FALSE;
 
 // CPU load percentage, between 0-100%. We have overload at 100%.
 unsigned char  		G_cpu_load_perc = 0;

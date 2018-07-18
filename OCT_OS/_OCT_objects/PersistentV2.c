@@ -41,15 +41,10 @@ void PersistentV2_SceneExport( ScenePersistentV2* targetScenePt )
 	targetScenePt->sizeBt 		= sizeof(ScenePersistentV2);
 	targetScenePt->version 		= 2;
 	targetScenePt->sceneCheckSum = 0;
-	#ifdef FEATURE_ENABLE_SONG_UPE
-	targetScenePt->midiCh = GRID_p_set_midi_ch;
-	#endif
 
 	// Grid set repository - stores the actual grid sets
 	for ( setIx = 0; setIx < GRID_NROF_SETS; setIx++ ) {
-		#ifdef FEATURE_ENABLE_SONG_UPE
-		targetScenePt->noteOffsets[setIx] = GRID_p_set_note_offsets[setIx];
-		#endif
+
 		for ( bankIx = 0; bankIx < GRID_NROF_BANKS; bankIx++ ) {
 			pageid_t pageId = ~0;
 			if ( GRID_p_set[setIx][bankIx] != NULL ) {
@@ -116,15 +111,9 @@ void PersistentV2_SceneImport( const ScenePersistentV2* sourceScenePt )
 		return;
 	}
 
-	#ifdef FEATURE_ENABLE_SONG_UPE
-	GRID_p_set_midi_ch = sourceScenePt->midiCh;
-	#endif
-
 	// Grid set repository - stores the actual grid sets
 	for ( setIx = 0; setIx < GRID_NROF_SETS; setIx++ ) {
-		#ifdef FEATURE_ENABLE_SONG_UPE
-		GRID_p_set_note_offsets[setIx] = sourceScenePt->noteOffsets[setIx];
-		#endif
+
 		for ( bankIx = 0; bankIx < GRID_NROF_BANKS; bankIx++ ) {
 			GRID_p_set[setIx][bankIx] = NULL;
 			pageid_t pageId = sourceScenePt->GRID_p_id_set[setIx][bankIx];
@@ -168,23 +157,28 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	targetGridPt->G_TIMER_REFILL = G_TIMER_REFILL;
 	targetGridPt->G_clock_source = G_clock_source;	// Can be any of OFF, INT(ernal), EXT(ernal)
 	// Because zoom level is not used, I will override it to set the CC controller mode - Synth knobs, etc. or MIDI controller.
-	targetGridPt->G_zoom_level = G_midi_map_controller_mode;
+	targetGridPt->G_zoom_level |= G_midi_map_controller_mode & 0x1;
+	targetGridPt->G_zoom_level |= G_MIDI_B_priority << 1 & 0x2;
+	targetGridPt->G_zoom_level |= G_initZoom << 2 & 0x4;
 	targetGridPt->GRID_scene = GRID_scene;		// Currently selected grid scene for play or storage
-	#ifdef FEATURE_ENABLE_SONG_UPE
-	targetGridPt->midiCh = GRID_p_set_midi_ch;
-	#endif
 
 	// Grid set repository - stores the actual grid sets
 	for ( setIx = 0; setIx < GRID_NROF_SETS; setIx++ ) {
-		#ifdef FEATURE_ENABLE_SONG_UPE
-		targetGridPt->noteOffsets[setIx] = GRID_p_set_note_offsets[setIx];
-		#endif
+
 		for ( bankIx = 0; bankIx < GRID_NROF_BANKS; bankIx++ ) {
 			pageid_t pageId = ~0;
 			if ( GRID_p_set[setIx][bankIx] != NULL ) {
 				pageId = GRID_p_set[setIx][bankIx]->pageNdx;
 			}
+
+			#ifdef FEATURE_SOLO_REC
+			if ( bankIx == 0 ){
+				targetGridPt->GRID_p_id_set[setIx][bankIx] = GRID_p_set_note_offsets[setIx] << 8;
+			}
+			targetGridPt->GRID_p_id_set[setIx][bankIx] |= pageId & 0xFF;
+			#else
 			targetGridPt->GRID_p_id_set[setIx][bankIx] = pageId;
+			#endif
 		}
 	}
 
@@ -192,7 +186,15 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	targetGridPt->GRID_CURSOR = GRID_CURSOR;
 	targetGridPt->GRID_mixAttribute = GRID_mixAttribute;
 	targetGridPt->GRID_play_mode = GRID_play_mode;
-	targetGridPt->GRID_bank_playmodes = GRID_bank_playmodes;		// either _SIMPLE or _CHAIN
+
+	#ifdef FEATURE_SOLO_REC
+	// First 9 bits used for grid bank play mode bit flags. Last 7 bits used for grid set MIDI channel
+	targetGridPt->GRID_bank_playmodes = GRID_p_set_midi_ch << 9;
+	targetGridPt->GRID_bank_playmodes |= GRID_bank_playmodes & 0x1ff; // toggle using a bit mask
+	#else
+	targetGridPt->GRID_bank_playmodes = GRID_bank_playmodes;
+	#endif
+
 	targetGridPt->GRID_set_switchmode = GRID_set_switchmode;
 	targetGridPt->current_GRID_set = current_GRID_set;
 	targetGridPt->GRID_OPS_mode = GRID_OPS_mode;
@@ -324,28 +326,45 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 	// Maintain current zoom level.
 	// G_zoom_level = sourceGridPt->G_zoom_level;
 	// Because zoom level is not used, I will override it to set the CC controller mode - Synth knobs, etc. or MIDI controller.
-	G_midi_map_controller_mode = sourceGridPt->G_zoom_level;
+	G_midi_map_controller_mode = sourceGridPt->G_zoom_level & 0x1; // use only the first bit
+	G_MIDI_B_priority = sourceGridPt->G_zoom_level >> 1 & 0x1; // shift the second bit
+	G_initZoom = sourceGridPt->G_zoom_level >> 2 & 0x1; // shift the third bit
+
+	if ( G_flashgridheadersonly_flag == TRUE ){
+		return;
+	}
 
 	GRID_scene = sourceGridPt->GRID_scene;		// Currently selected grid scene for play or storage
 	GRID_switch_mode = sourceGridPt->GRID_switch_mode;
 	GRID_CURSOR = sourceGridPt->GRID_CURSOR;
 	GRID_mixAttribute = sourceGridPt->GRID_mixAttribute;
 	GRID_play_mode = sourceGridPt->GRID_play_mode;
+
+	#ifdef FEATURE_SOLO_REC
+	// First 9 bits used for grid bank play mode bit flags. Last 7 bits used for grid set MIDI channel
+	GRID_p_set_midi_ch = sourceGridPt->GRID_bank_playmodes >> 9 & 0x7F;
+	GRID_bank_playmodes = sourceGridPt->GRID_bank_playmodes & 0x1FF;		// either _SIMPLE or _CHAIN
+	#else
 	GRID_bank_playmodes = sourceGridPt->GRID_bank_playmodes;		// either _SIMPLE or _CHAIN
+	#endif
 	GRID_set_switchmode = sourceGridPt->GRID_set_switchmode;
 	current_GRID_set = sourceGridPt->current_GRID_set;
-	#ifdef FEATURE_ENABLE_SONG_UPE
-	GRID_p_set_midi_ch = sourceGridPt->midiCh;
-	#endif
 
 	// Grid set repository - stores the actual grid sets
 	for ( setIx = 0; setIx < GRID_NROF_SETS; setIx++ ) {
-		#ifdef FEATURE_ENABLE_SONG_UPE
-		GRID_p_set_note_offsets[setIx] = sourceGridPt->noteOffsets[setIx];
-		#endif
+
 		for ( bankIx = 0; bankIx < GRID_NROF_BANKS; bankIx++ ) {
 			GRID_p_set[setIx][bankIx] = NULL;
+
+			#ifdef FEATURE_SOLO_REC
+			if ( bankIx == 0 ){
+				GRID_p_set_note_offsets[setIx] = sourceGridPt->GRID_p_id_set[setIx][bankIx] >> 8 & 0xFF;
+			}
+			pageid_t pageId = sourceGridPt->GRID_p_id_set[setIx][bankIx] & 0xFF;
+			#else
 			pageid_t pageId = sourceGridPt->GRID_p_id_set[setIx][bankIx];
+			#endif
+
 			if ( pageId < MAX_NROF_PAGES ) {
 				GRID_p_set[setIx][bankIx] = &Page_repository[pageId];
 			}
