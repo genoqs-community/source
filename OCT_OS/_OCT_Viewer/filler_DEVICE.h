@@ -31,9 +31,19 @@
 		
 			case DEFAULT:
 			
+				if ( G_MIDI_B_priority == OFF ){
+
+					MIR_write_dot (LED_SCALE_MYSEL,		MIR_GREEN);
+				}
+				else {
+					MIR_write_dot (LED_SCALE_MYSEL,		MIR_RED);
+				}
+
 				// ZOOM DEVICE MODE INDICATORS
 				// Show all Mode buttons on
-				MIR_write_dot (LED_ZOOM_GRID,		MIR_GREEN);
+				if ( G_initZoom == FALSE ){
+					MIR_write_dot (LED_ZOOM_GRID,		MIR_GREEN);
+				}
 				MIR_write_dot (LED_ZOOM_GRID, 		MIR_RED);
 				MIR_write_dot (LED_ZOOM_GRID, 		MIR_BLINK);			
 				

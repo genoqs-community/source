@@ -39,6 +39,38 @@
 				}
 
 
+
+				// D O U B L E - C L I C K  C O N S T R U C T
+				// DOUBLE CLICK SCENARIO
+				if (	( DOUBLE_CLICK_TARGET == keyNdx )
+					&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+
+				} // end of double click scenario
+
+
+				// SINGLE CLICK SCENARIO
+				else if (DOUBLE_CLICK_TARGET == 0) {
+
+						DOUBLE_CLICK_TARGET = keyNdx;
+						DOUBLE_CLICK_TIMER = ON;
+						// Start the Double click Alarm
+						cyg_alarm_initialize(
+								doubleClickAlarm_hdl,
+								cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+								DOUBLE_CLICK_ALARM_TIME );
+
+					// Single click code
+					// ...
+					if ( keyNdx == KEY_SCALE_MYSEL ){
+						G_MIDI_B_priority ^= 1; // toggle
+						Flash_write_grid();
+					}
+					else if ( keyNdx == KEY_ZOOM_GRID ){
+						G_initZoom ^= 1; // toggle
+						Flash_write_grid();
+					}
+				}
+
 				// DIAG MODE entry
 				if ( keyNdx == 1 ){
 

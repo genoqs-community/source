@@ -157,7 +157,9 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	targetGridPt->G_TIMER_REFILL = G_TIMER_REFILL;
 	targetGridPt->G_clock_source = G_clock_source;	// Can be any of OFF, INT(ernal), EXT(ernal)
 	// Because zoom level is not used, I will override it to set the CC controller mode - Synth knobs, etc. or MIDI controller.
-	targetGridPt->G_zoom_level = G_midi_map_controller_mode;
+	targetGridPt->G_zoom_level |= G_midi_map_controller_mode & 0x1;
+	targetGridPt->G_zoom_level |= G_MIDI_B_priority << 1 & 0x2;
+	targetGridPt->G_zoom_level |= G_initZoom << 2 & 0x4;
 	targetGridPt->GRID_scene = GRID_scene;		// Currently selected grid scene for play or storage
 
 	// Grid set repository - stores the actual grid sets
@@ -188,7 +190,7 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	#ifdef FEATURE_SOLO_REC
 	// First 9 bits used for grid bank play mode bit flags. Last 7 bits used for grid set MIDI channel
 	targetGridPt->GRID_bank_playmodes = GRID_p_set_midi_ch << 9;
-	targetGridPt->GRID_bank_playmodes |= GRID_bank_playmodes & 0x1ff;
+	targetGridPt->GRID_bank_playmodes |= GRID_bank_playmodes & 0x1ff; // toggle using a bit mask
 	#else
 	targetGridPt->GRID_bank_playmodes = GRID_bank_playmodes;
 	#endif
@@ -324,7 +326,13 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 	// Maintain current zoom level.
 	// G_zoom_level = sourceGridPt->G_zoom_level;
 	// Because zoom level is not used, I will override it to set the CC controller mode - Synth knobs, etc. or MIDI controller.
-	G_midi_map_controller_mode = sourceGridPt->G_zoom_level;
+	G_midi_map_controller_mode = sourceGridPt->G_zoom_level & 0x1; // use only the first bit
+	G_MIDI_B_priority = sourceGridPt->G_zoom_level >> 1 & 0x1; // shift the second bit
+	G_initZoom = sourceGridPt->G_zoom_level >> 2 & 0x1; // shift the third bit
+
+	if ( G_flashgridheadersonly_flag == TRUE ){
+		return;
+	}
 
 	GRID_scene = sourceGridPt->GRID_scene;		// Currently selected grid scene for play or storage
 	GRID_switch_mode = sourceGridPt->GRID_switch_mode;
