@@ -77,7 +77,10 @@ void executeKey( unsigned int keyNdx ){
 //	Trackstruct* current_track = NULL;
 
 	// Page pointer holder
+	Pagestruct* temp_page = NULL;
 	static Pagestruct* previous_page = NULL;
+	static Pagestruct* prev_previous_page = NULL; // used to validate page cluster selections
+	static unsigned char prev_previous_page_clear = ON;
 
 	// Used in the key entry routine for the mixer maps modes
 	unsigned char* target_ptr = NULL;

@@ -29,6 +29,7 @@ extern unsigned char row_of_track( 				Pagestruct* target_page,
 												Trackstruct* target_track );
 extern unsigned int is_pressed_steprange();
 extern void show_preview_stepLEN( unsigned int index, unsigned char row, unsigned char col, unsigned char length );
+extern void	page_cluster_selection( unsigned char grid_cursor );
 
 extern unsigned char page_get_window_shift();
 extern unsigned char track_get_window_shift( Pagestruct* target_page );

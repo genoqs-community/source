@@ -22,6 +22,33 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
+// Indicates a page cluster selection by blinking
+void page_cluster_selection( unsigned char grid_cursor ){
+
+	Pagestruct* temp_page = &Page_repository[ grid_cursor ];
+	signed short 	next_ndx = 0,
+			this_ndx = 0;
+
+	unsigned char shiftPageRow = page_get_window_shift();
+
+	// Compute the index of the right neighbor
+	this_ndx = temp_page->pageNdx;
+	next_ndx = this_ndx + 10;
+
+	// SET PREV PAGE
+	GRID_write_dot (this_ndx - shiftPageRow - 10, MIR_BLINK);
+	GRID_write_dot (this_ndx - shiftPageRow, MIR_BLINK);
+
+	// RIGHT neighbor exists and has some content
+	while ( 	(next_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[next_ndx].page_clear == OFF)
+	){
+		GRID_write_dot (next_ndx - shiftPageRow, MIR_BLINK);
+		temp_page = &Page_repository[ next_ndx ];
+		this_ndx = temp_page->pageNdx;
+		next_ndx = this_ndx + 10;
+	}
+}
 
 // Utility function to the one below
 void fill_length_bits( unsigned char index, unsigned char row, unsigned char col, unsigned char length ){

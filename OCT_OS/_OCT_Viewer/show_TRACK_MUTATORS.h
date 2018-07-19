@@ -149,12 +149,9 @@
 				MIR_write_buttool (RHS, G_on_the_measure_trackMutepattern, MIR_RED);
 				MIR_write_buttool (RHS, G_on_the_measure_trackMutepattern, MIR_GREEN);
 				MIR_write_buttool (RHS, G_on_the_measure_trackMutepattern, MIR_BLINK);
-				MIR_write_buttool (RHS, target_page->trackMutepattern, MIR_RED);
 			}
-			else
-			{
-				MIR_write_buttool (RHS, target_page->trackMutepattern, MIR_RED);
-			}
+
+			MIR_write_buttool (RHS, target_page->trackMutepattern, MIR_RED);
 
 			break;
 			

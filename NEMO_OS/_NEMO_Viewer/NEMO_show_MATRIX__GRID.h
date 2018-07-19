@@ -32,6 +32,11 @@
 			// GRID_CURSOR shown by blinking 
 			GRID_write_dot (GRID_CURSOR - shiftPageRow, MIR_BLINK);
 
+			// blink page cluster selection
+			if ( GRID_p_selection_cluster == ON ) {
+				page_cluster_selection( GRID_CURSOR - shiftPageRow);
+			}
+
 			if ( Page_repository[GRID_CURSOR].page_clear == ON ){	
 				// If on empty page then light position orange
 				GRID_write_dot (GRID_CURSOR - shiftPageRow, MIR_GREEN);

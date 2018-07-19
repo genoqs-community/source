@@ -465,32 +465,46 @@
 			// Start with the pressed track.
 			current_track = target_page->Track[ keyNdx-187 ];
 
-			// Depending on the way we choose the track base..
-			switch( target_page->CHAINS_PLAY_HEAD ){
-
-				case TRUE:
-					// Act as toggle on the full chain
-					// How long is the chain?
-					temp = cardinality_of_chain( current_track );
-
-					// Loop through the chain of the selected track and mute all chain tracks
-					for ( i=0; i < temp; i++ ){
-
-						target_page->trackMutepattern ^= ( 1 << row_of_track( target_page, current_track ));
-						current_track = current_track->chain_data[NEXT];
-					}
-					break;
-
-				// Act only on the individual track
-				case FALSE:
-					target_page->trackMutepattern ^=
-						( 1 << row_of_track( target_page, current_track ));
-					break;
+			if ( G_track_page_chain_mod_bit == ON ){
+				apply_page_cluster_track_mute_toggle( target_page, current_track );
 			}
+			else if ( G_track_page_chain_mod_bit == SCALE_MOD ){
+				apply_page_track_mute_toggle( target_page, current_track, &G_on_the_measure_trackMutepattern );
+				G_on_the_measure_trackMutepattern_pageNdx = target_page->pageNdx;
+				G_on_the_measure_track[keyNdx-187] = current_track;
+			}
+			else
+			{
+
+				target_page->trackMutepatternStored = target_page->trackMutepattern;
+
+				// Depending on the way we choose the track base..
+				switch( target_page->CHAINS_PLAY_HEAD ){
+
+					case TRUE:
+						// Act as toggle on the full chain
+						// How long is the chain?
+						temp = cardinality_of_chain( current_track );
+
+						// Loop through the chain of the selected track and mute all chain tracks
+						for ( i=0; i < temp; i++ ){
+
+							target_page->trackMutepattern ^= ( 1 << row_of_track( target_page, current_track ));
+							current_track = current_track->chain_data[NEXT];
+						}
+						break;
+
+					// Act only on the individual track
+					case FALSE:
+						target_page->trackMutepattern ^=
+							( 1 << row_of_track( target_page, current_track ));
+						break;
+				}
 
 
-			// Update the stored variable
-			target_page->trackMutepatternStored = target_page->trackMutepattern;
+				// Update the stored variable
+				target_page->trackMutepatternStored = target_page->trackMutepattern;
+			}
 
 
 			// D O U B L E - C L I C K
@@ -538,6 +552,18 @@
 	//
 	key_exe_chainselectors( keyNdx );
 
+
+	if ( keyNdx == KEY_ZOOM_TRACK ){
+		if ( G_track_page_chain_mod_bit == OFF ){
+			G_track_page_chain_mod_bit = ON;
+		}
+		else if ( G_track_page_chain_mod_bit == ON ){
+			G_track_page_chain_mod_bit = SCALE_MOD;
+		}
+		else {
+			G_track_page_chain_mod_bit = OFF;
+		}
+	}
 
 	if ( keyNdx == KEY_SCALE_SEL ){
 

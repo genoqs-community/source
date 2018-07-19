@@ -23,7 +23,10 @@
 //
 
 
-
+	// blink page cluster selection
+	if ( GRID_p_selection_cluster == ON ) {
+		page_cluster_selection( GRID_CURSOR );
+	}
 
 	//
 	// GRID  M I X  MODE
