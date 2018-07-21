@@ -161,6 +161,10 @@
 					 * ########################################
 					 */
 					SOLO_rec_page = &Page_repository[pressed];
+
+					if ( SOLO_has_rec == OFF ){
+						GRID_CURSOR = SOLO_rec_page->pageNdx; // TODO: <-------- freeflow
+					}
 				}
 
 				SOLO_rec_pressed_col = pressedCol;

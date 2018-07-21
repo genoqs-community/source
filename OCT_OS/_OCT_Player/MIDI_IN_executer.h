@@ -107,6 +107,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 				||	( G_zoom_level == zoomSTEP	)
 				||	( G_zoom_level == zoomGRID	)
 				||	( G_zoom_level == zoomSCALE )
+				||	( G_zoom_level == zoomSOLOREC )
 				)
 
 			// ..neither tracks nor page are armed for record.
@@ -341,6 +342,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 	//	current_TTC, UART_ndx, status_byte, data_byte_1, data_byte_2 );
 	//		return;
 
+
 	// REC STATUS CHECKPOINT
 	// Do not continue if ..
 	if (
@@ -350,6 +352,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 				&& 	( G_zoom_level != zoomMAP 	)
 				&&	( G_zoom_level != zoomSTEP	)
 				&&	( G_zoom_level != zoomGRID	)
+				&&	( G_zoom_level != zoomSOLOREC )
 #ifdef NEMO
 				&&	( G_zoom_level != zoomSCALE )
 #endif
@@ -390,7 +393,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 		// Assigning pitch to selected track or step recording, or forcing input to scale, or..
 		case ON:
 
-			// d_iag_printf("OK 1\n");
+//			 diag_printf("OK 1\n");
 
 			// Modify the scale composition
 			if (	( target_page->scaleStatus == SCALE_MOD )
@@ -496,6 +499,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  				// However, even in Stopped mode, the MIDI input is echoed to the outputs, after optional re-channelling.
 
  				if ( (G_run_bit == ON) && (G_track_rec_bit == ON) ) {
+
  					unsigned char target_row = row;
  					// Compute the coordinates of the step to be activated
  					// Adjust the step start value according to current TTC. Logic: see book p.189
