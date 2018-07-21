@@ -77,8 +77,10 @@ void executeKey( unsigned int keyNdx ){
 
 //	diag_printf(" key: %d\n", keyNdx); // TODO
 	if ( G_zoom_level == zoomSOLOREC ){
-		if ( keyNdx == KEY_RETURN && G_run_bit == OFF ){
-			exit_solo_recording();
+		if ( keyNdx == KEY_RETURN ){
+			if ( G_run_bit == OFF ){
+				exit_solo_recording();
+			}
 			return;
 		}
 	}

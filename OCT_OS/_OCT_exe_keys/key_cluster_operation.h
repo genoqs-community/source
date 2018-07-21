@@ -251,7 +251,7 @@ unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char ta
 void stop_solo_rec(){
 
 	sequencer_STOP( true );
-	sequencer_RESET( true );
+	sequencer_RESET( false );
 	if ( SOLO_rec_measure_hold == OFF ){
 		SOLO_has_rec = ON;
 	}

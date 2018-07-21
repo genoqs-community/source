@@ -11,18 +11,18 @@
 		}
 	}
 
+	if ( keyNdx == KEY_PLAY4 ){ // values = OFF, ON, 1.2.3.
+		if ( ++SOLO_rec_ending_flash == QBIT )
+		{
+			SOLO_rec_ending_flash = OFF;
+		}
+	}
+
 	if ( SOLO_rec_page != NULL ){ // A record page cluster is selected
 
 		if ( keyNdx == KEY_PLAY1 && SOLO_has_rec == ON){
 			G_track_rec_bit = OFF;
 			sequencer_command_PLAY();
-		}
-
-		else if ( keyNdx == KEY_PLAY4 ){ // values = OFF, ON, 1.2.3.
-			if ( ++SOLO_rec_ending_flash == QBIT )
-			{
-				SOLO_rec_ending_flash = OFF;
-			}
 		}
 
 		else if ( keyNdx == KEY_STOP ){

@@ -8,18 +8,18 @@
 			MIR_write_dot( LED_RECORD, MIR_GREEN );
 			MIR_write_dot( LED_RECORD, MIR_BLINK );
 		}
+	}
 
-		// Show the end of recording chord flash
-		if ( SOLO_rec_ending_flash == OFF ){
-			MIR_write_dot( LED_PLAY4, MIR_RED );
-		}
-		else if ( SOLO_rec_ending_flash == ON ){
-			MIR_write_dot( LED_PLAY4, MIR_GREEN );
-			MIR_write_dot( LED_PLAY4, MIR_RED );
-		}
-		else {
-			MIR_write_dot( LED_PLAY4, MIR_GREEN );
-		}
+	// Show the end of recording chord flash
+	if ( SOLO_rec_ending_flash == OFF ){
+		MIR_write_dot( LED_PLAY4, MIR_RED );
+	}
+	else if ( SOLO_rec_ending_flash == ON ){
+		MIR_write_dot( LED_PLAY4, MIR_GREEN );
+		MIR_write_dot( LED_PLAY4, MIR_RED );
+	}
+	else {
+		MIR_write_dot( LED_PLAY4, MIR_GREEN );
 	}
 
 	if ( G_run_bit == ON ){
