@@ -99,7 +99,7 @@
 
 			previous_page = &Page_repository[ PREV_GRID_CURSOR ];
 
-			if ( PREV_GRID_CURSOR > 10 ) { // there is a prev_prev in the row
+			if ( PREV_GRID_CURSOR >= 10 ) { // there is a prev_prev in the row
 
 				prev_previous_page = &Page_repository[ PREV_GRID_CURSOR - 10 ];
 				prev_previous_page_clear = prev_previous_page->page_clear;

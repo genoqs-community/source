@@ -104,9 +104,6 @@ unsigned int is_page_in_cluster( Pagestruct* temp_page, unsigned char pageNdx )
 	unsigned char	prev_ndx = 0;
 
 	this_ndx = temp_page->pageNdx;
-	if (Page_repository[this_ndx].pageNdx == pageNdx) {
-		return 1;
-	}
 
 	// Scan pageNdx forwards
 	prev_ndx = this_ndx;
