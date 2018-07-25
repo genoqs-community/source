@@ -30,7 +30,7 @@
 			stop_solo_rec();
 		}
 
-		else if ( keyNdx == KEY_RECORD ){
+		else if ( keyNdx == KEY_RECORD ){ // Record
 			G_track_rec_bit = ON;
 			if ( SOLO_has_rec == OFF ){
 				SOLO_rec_measure_hold = ON;
@@ -174,7 +174,6 @@
 				}
 
 				SOLO_rec_pressed_col = pressedCol;
-				SOLO_rec_measure_count -= Rec_repository[pressedCol].measure_count;
 				create_page_record_track_chain(SOLO_rec_page, rowZeroTrack);
 				Rec_repository[pressedCol].measure_count = rowZeroTrack;
 				reset_page_cluster( SOLO_rec_page );

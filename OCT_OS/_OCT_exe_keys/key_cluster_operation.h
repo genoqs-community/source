@@ -315,6 +315,8 @@ void reset_page_cluster( Pagestruct* target_page ){
 	GRID_p_selection[ SOLO_rec_bank ] = temp_page;
 	GRID_p_preselection[ SOLO_rec_bank ] = temp_page;
 	GRID_p_clock_presel[ SOLO_rec_bank ] = temp_page;
+	GRID_CURSOR = temp_page->pageNdx;
+	follow_flag = FOLLOW_PAGE;
 }
 
 // copies a selected page cluster

@@ -789,6 +789,7 @@ void select_page_preselections() {
 
 				if (	( 	(GRID_p_selection[i]->pageNdx % 10) == (target_page->pageNdx % 10) )
 					&& 	( 	(G_zoom_level == zoomPAGE)
+						|| 	(G_zoom_level == zoomSOLOREC)
 						|| 	(G_zoom_level == zoomMIXMAP) )
 					#ifdef NEMO
 					&&	(	G_track_rec_bit == ON )

@@ -1218,7 +1218,7 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 	}
 
 	chain_selected_tracks( target_page );
-	Page_setTrackRecPatternBit(target_page, (n+1));
+	Page_setTrackRecPatternBit( target_page, (n+1) );
 }
 
 void clear_page_record_track_chain(Pagestruct* target_page){
