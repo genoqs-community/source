@@ -177,6 +177,7 @@
 				SOLO_rec_measure_count -= Rec_repository[pressedCol].measure_count;
 				create_page_record_track_chain(SOLO_rec_page, rowZeroTrack);
 				Rec_repository[pressedCol].measure_count = rowZeroTrack;
+				reset_page_cluster( SOLO_rec_page );
 
 				// Snow the measure count for a few extra blinks
 				ROT_INDEX = REC_MEASURES_IDX;
