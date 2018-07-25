@@ -22,6 +22,7 @@
 
 		if ( keyNdx == KEY_PLAY1 && SOLO_has_rec == ON){
 			G_track_rec_bit = OFF;
+			reset_page_cluster( SOLO_rec_page );
 			sequencer_command_PLAY();
 		}
 
@@ -34,6 +35,7 @@
 			if ( SOLO_has_rec == OFF ){
 				SOLO_rec_measure_hold = ON;
 			}
+			reset_page_cluster( SOLO_rec_page );
 			sequencer_command_PLAY();
 		}
 
