@@ -1430,6 +1430,7 @@
 				#ifdef FEATURE_SOLO_REC
 				// the sequencer is not paused and it is not running, i.e. stopped
 				if ( G_pause_bit == OFF && G_run_bit == OFF ){
+					SOLO_rec_save_playmodes = GRID_bank_playmodes;
 					G_zoom_level = zoomSOLOREC;
 				}
 				#endif

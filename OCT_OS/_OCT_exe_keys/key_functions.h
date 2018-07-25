@@ -1173,7 +1173,7 @@ void exit_solo_recording()
 	G_measure_locator			= OFF;
 	SOLO_rec_measure_count		= OFF;
 	SOLO_rec_measure_hold		= OFF;
-	GRID_bank_playmodes = SOLO_rec_save_playmodes;
+	GRID_bank_playmodes 		= SOLO_rec_save_playmodes;
 	SOLO_rec_save_playmodes		= OFF;
 	G_zoom_level = zoomGRID; // exit the Solo Recording view
 }
@@ -1196,12 +1196,10 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 
 	target_page->page_clear = OFF;
 	target_page->attr_STA = measures;
-	// Only play the solo recording page cluster
-	if ( SOLO_rec_save_playmodes == OFF ){
-		SOLO_rec_save_playmodes = GRID_bank_playmodes;
-	}
+
 	GRID_bank_playmodes = 0;
-	GRID_bank_playmodes ^= 1 << row;
+	GRID_bank_playmodes |= 1 << row;
+	SOLO_rec_save_playmodes |= 1 << row;
 
 	if ( GRID_p_selection[ row ] == NULL ){
 
@@ -1209,6 +1207,10 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 		GRID_p_preselection[ row ] = target_page;
 		GRID_p_clock_presel[ row ] = target_page;
 	}
+
+	// reset first
+	target_page->trackSelection = 0;
+	Page_setTrackRecPattern(target_page, 0);
 
 	m = (10 - measures); // from the bottom up
 	for (n=9; n >= m; --n) { // each measure

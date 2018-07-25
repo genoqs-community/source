@@ -73,15 +73,17 @@
 			 selected_page_cluster( GRID_CURSOR, SOLO_rec_page->pageNdx ) != OFF &&
 			 is_pressed_key( temp )
 		){
-			// Clear the page cluster if it is currently selected
+
 			selected_page_cluster_clear(SOLO_rec_page->pageNdx);
-			SOLO_normalize_pitch = OFF;
-			SOLO_normalize_len = OFF;
-			SOLO_rec_page = NULL;
-			SOLO_has_rec = OFF;
-			SOLO_edit_buffer_volatile = OFF;
-			SOLO_rec_freeflow = OFF;
-			G_measure_locator = OFF;
+			SOLO_normalize_pitch 		= OFF;
+			SOLO_normalize_len 			= OFF;
+			SOLO_rec_page 				= NULL;
+			SOLO_has_rec 				= OFF;
+			SOLO_edit_buffer_volatile 	= OFF;
+			SOLO_rec_freeflow 			= OFF;
+			SOLO_rec_measure_count 		= OFF;
+			SOLO_rec_measure_pos 		= OFF;
+			G_measure_locator 			= OFF;
 			Solorec_init();
 		}
 	}
@@ -170,6 +172,7 @@
 				}
 
 				SOLO_rec_pressed_col = pressedCol;
+				SOLO_rec_measure_count -= Rec_repository[pressedCol].measure_count;
 				create_page_record_track_chain(SOLO_rec_page, rowZeroTrack);
 				Rec_repository[pressedCol].measure_count = rowZeroTrack;
 
