@@ -37,10 +37,12 @@
 			sequencer_command_PLAY();
 		}
 
-		else if ( keyNdx == KEY_CHAINER && G_run_bit == OFF ){
+		else if ( keyNdx == KEY_CHAINER && G_run_bit == OFF ){ // Clear recording
 			if ( SOLO_has_rec == ON ){
 				SOLO_edit_buffer_volatile ^= 1; // toggle
 				SOLO_has_rec = OFF;
+				// Clear the pages
+				clear_page_record_track_chain(SOLO_rec_page);
 				MIX_TIMER = ON;
 				// Setup alarm for the MIX TIMER
 				cyg_alarm_initialize(	alarm_hdl,

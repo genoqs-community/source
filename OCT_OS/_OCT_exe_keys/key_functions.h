@@ -1219,6 +1219,28 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 	Page_setTrackRecPatternBit(target_page, (n+1));
 }
 
+void clear_page_record_track_chain(Pagestruct* target_page){
+	int row, col;
+
+	signed short    	this_ndx = first_page_in_cluster(target_page->pageNdx);
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+		// Init each step in each page
+		for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
+			for ( col=0; col < MATRIX_NROF_COLUMNS; col++ ){
+
+				Step_init(Page_repository[this_ndx].Step[row][col]);
+			}
+		}
+
+		this_ndx += 10;
+	}
+}
+
 void drivePageCursor(Pagestruct* target_page, unsigned int measures){
 	unsigned int n, i, res;
 

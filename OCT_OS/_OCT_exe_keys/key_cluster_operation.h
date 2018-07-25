@@ -208,6 +208,28 @@ void selected_page_cluster_clear( unsigned char grid_cursor ){
 	}
 }
 
+unsigned char first_page_in_cluster( unsigned char target_page ){
+
+	Pagestruct* temp_page = &Page_repository[ target_page ];
+
+	signed short 	prev_ndx = 0,
+					this_ndx = 0;
+
+	this_ndx = temp_page->pageNdx;
+	prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
+
+	// track back to beginning of cluster selection
+	while ( 	(prev_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[prev_ndx].page_clear == OFF)
+	){
+		temp_page = &Page_repository[ prev_ndx ];
+		this_ndx = temp_page->pageNdx;
+		prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
+	}
+
+	return this_ndx;
+}
+
 // Is the cursor a member of the target page cluster
 // Returns the column of the grid cursor
 unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char target_page ){

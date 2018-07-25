@@ -62,6 +62,7 @@ extern unsigned int 	selected_page_cluster_right_neighbor( Pagestruct* temp_page
 extern void 			apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track );
 extern unsigned int 	selected_solo_rec_page( unsigned char grid_cursor, unsigned char dot );
 extern unsigned char 	selected_page_cluster( unsigned char grid_cursor, unsigned char target_page );
+extern unsigned char 	first_page_in_cluster( unsigned char target_page );
 extern  void 			reset_page_cluster( Pagestruct* target_page );
 extern 	void 			stop_solo_rec();
 extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
