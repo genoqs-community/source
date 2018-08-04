@@ -93,6 +93,9 @@ unsigned char 		G_tempo_tracker		= 1;
 // Absolute value of the TIMER_TICK_CTR in the 1xT and 2xT modes
 unsigned char 		G_TTC_abs_value		= 0;
 
+// STA amount subtracted from the timing of incoming MIDI notes to account for external hardware latency.
+unsigned char		G_TT_external_latency_offset = 0;
+
 // Total number of tracks currently set in record select. If just 1, auto rechanneling for record is enabled.
 int					G_tracks_in_record_count = 0;
 

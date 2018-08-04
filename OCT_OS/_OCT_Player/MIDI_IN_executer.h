@@ -312,6 +312,8 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 	unsigned char 	target_start	=	0;
 	unsigned char	target_col		=	0;
 
+	current_TTC -= G_TT_external_latency_offset;
+
 	// Only work on the current page.
 	Pagestruct* target_page 		= &Page_repository[GRID_CURSOR];
 

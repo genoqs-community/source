@@ -584,6 +584,7 @@ extern unsigned char G_zoom_level;
 
 extern unsigned char G_midi_map_controller_mode;
 extern unsigned char G_MIDI_B_priority;
+extern unsigned char G_TT_external_latency_offset;
 extern unsigned char G_flashgridheadersonly_flag;
 extern unsigned char G_initZoom;
 
