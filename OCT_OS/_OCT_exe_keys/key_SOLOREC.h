@@ -11,6 +11,10 @@
 		}
 	}
 
+	if ( keyNdx == KEY_PLAY2 ){ // ON = continue playing after the loop after recording
+		SOLO_rec_continue_recording ^= 1; // toggle
+	}
+
 	if ( keyNdx == KEY_PLAY4 ){ // values = OFF, ON, 1.2.3.
 		if ( ++SOLO_rec_ending_flash == QBIT )
 		{

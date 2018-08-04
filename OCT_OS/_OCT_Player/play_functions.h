@@ -255,8 +255,8 @@ void compute_chain_presel( unsigned char target_bank ){
 				if ( G_zoom_level == zoomSOLOREC ){
 					if ( G_zoom_level == zoomSOLOREC &&
 						 G_track_rec_bit == ON &&
-						 SOLO_has_rec == FALSE &&
-						 target_bank == SOLO_rec_bank ){
+						 target_bank == SOLO_rec_bank &&
+						 SOLO_rec_continue_recording == OFF ){
 
 						stop_solo_rec(); // We have reached the end of the recording so stop
 						return;

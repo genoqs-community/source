@@ -274,9 +274,6 @@ void stop_solo_rec(){
 
 	sequencer_STOP( true );
 	sequencer_RESET( false );
-	if ( SOLO_rec_measure_hold == OFF ){
-		SOLO_has_rec = ON;
-	}
 	G_track_rec_bit = OFF;
 	G_measure_locator = OFF;
 	SOLO_pos_marker_in = OFF;

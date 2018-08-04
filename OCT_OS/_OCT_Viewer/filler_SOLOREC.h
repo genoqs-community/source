@@ -10,6 +10,14 @@
 		}
 	}
 
+	if ( SOLO_rec_continue_recording == ON ){
+		MIR_write_dot( LED_PLAY2, MIR_GREEN );
+		MIR_write_dot( LED_PLAY2, MIR_RED );
+	}
+	else {
+		MIR_write_dot( LED_PLAY2, MIR_RED );
+	}
+
 	// Show the end of recording chord flash
 	if ( SOLO_rec_ending_flash == OFF ){
 		MIR_write_dot( LED_PLAY4, MIR_RED );

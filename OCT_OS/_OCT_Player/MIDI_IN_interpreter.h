@@ -243,6 +243,7 @@ void G_midi_interpret_NOTE_ON( unsigned char midi_byte, unsigned char UART_ndx )
 	// TODO: make function and handle CC
 	if ( SOLO_rec_page != NULL && G_run_bit == ON && SOLO_rec_measure_hold == ON ) {
 		SOLO_rec_measure_pos = 1;
+		SOLO_has_rec = ON;
 		SOLO_rec_measure_hold = OFF;
 	}
 	#endif
