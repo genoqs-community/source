@@ -22,7 +22,7 @@
 
 		if ( keyNdx == KEY_PLAY1 && SOLO_has_rec == ON){
 			G_track_rec_bit = OFF;
-			reset_page_cluster( SOLO_rec_page );
+			reset_page_cluster( SOLO_rec_page, FALSE );
 			sequencer_command_PLAY();
 		}
 
@@ -35,7 +35,7 @@
 			if ( SOLO_has_rec == OFF ){
 				SOLO_rec_measure_hold = ON;
 			}
-			reset_page_cluster( SOLO_rec_page );
+			reset_page_cluster( SOLO_rec_page, FALSE );
 			sequencer_command_PLAY();
 		}
 
@@ -176,7 +176,7 @@
 				SOLO_rec_pressed_col = pressedCol;
 				create_page_record_track_chain(SOLO_rec_page, rowZeroTrack);
 				Rec_repository[pressedCol].measure_count = rowZeroTrack;
-				reset_page_cluster( SOLO_rec_page );
+				reset_page_cluster( SOLO_rec_page, FALSE );
 
 				// Snow the measure count for a few extra blinks
 				ROT_INDEX = REC_MEASURES_IDX;

@@ -254,16 +254,17 @@ void compute_chain_presel( unsigned char target_bank ){
 				#ifdef FEATURE_SOLO_REC
 				if ( G_zoom_level == zoomSOLOREC ){
 					if ( G_zoom_level == zoomSOLOREC &&
+						 G_track_rec_bit == ON &&
 						 SOLO_has_rec == FALSE &&
-						 G_track_rec_bit == ON && // TODO
 						 target_bank == SOLO_rec_bank ){
 
 						stop_solo_rec(); // We have reached the end of the recording so stop
 						return;
 					}
-					else {
-						G_measure_locator = 1; // Reset the measure counter when the page cluster ends
-					}
+
+					G_measure_locator = 1; // Reset the measure counter when the page cluster ends
+					SOLO_rec_measure_pos = 1;
+					Page_repository[next_ndx].repeats_left = Page_repository[next_ndx].attr_STA; // Reset page repeats
 				}
 				#endif
 

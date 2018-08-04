@@ -320,9 +320,8 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		}
 
 		#ifdef FEATURE_SOLO_REC
-		// TODO
 		if ( SOLO_rec_measure_hold == ON ){
-			return; // XXX we're probably not playing the measure
+			return;
 		}
 		#endif
 

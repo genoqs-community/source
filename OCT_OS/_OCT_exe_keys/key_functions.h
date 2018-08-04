@@ -1150,6 +1150,9 @@ void align_measure_locators(){
 
 void exit_solo_recording()
 {
+	if ( SOLO_rec_page != NULL ){
+		reset_page_cluster( SOLO_rec_page, TRUE );
+	}
 	// Reset most of the global variables
 	SOLO_quantize_fine_tune 	= 0;
 	SOLO_quantize_note 			= 1;
@@ -1169,12 +1172,12 @@ void exit_solo_recording()
 //	SOLO_rec_ending_flash		= OFF;
 	SOLO_rec_legato				= OFF;
 //	SOLO_page_play_along[10];
-
 	G_measure_locator			= OFF;
 	SOLO_rec_measure_count		= OFF;
 	SOLO_rec_measure_hold		= OFF;
 	GRID_bank_playmodes 		= SOLO_rec_save_playmodes;
 	SOLO_rec_save_playmodes		= OFF;
+	Solorec_init();
 	G_zoom_level = zoomGRID; // exit the Solo Recording view
 }
 
@@ -1209,8 +1212,8 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 	}
 
 	// reset first
-	target_page->trackSelection = 0;
 	Page_setTrackRecPattern(target_page, 0);
+	target_page->trackSelection = 0;
 
 	m = (10 - measures); // from the bottom up
 	for (n=9; n >= m; --n) { // each measure

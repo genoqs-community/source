@@ -284,33 +284,36 @@ void stop_solo_rec(){
 	SOLO_rec_measure_pos = OFF;
 	// Reset the grid cursor for the recording page cluster
 	if ( SOLO_rec_page != NULL ){
-		reset_page_cluster( SOLO_rec_page );
+		reset_page_cluster( SOLO_rec_page, FALSE );
 	}
 }
 
-void reset_page_cluster( Pagestruct* target_page ){
+void reset_page_cluster( Pagestruct* target_page, unsigned char resetTackSelections ){
 
 	signed short 	prev_ndx = 0,
 					this_ndx = 0;
 
 	Pagestruct* temp_page = target_page;
 
-	this_ndx = target_page->pageNdx;
+	prev_ndx = target_page->pageNdx;
 	if (!Page_repository[this_ndx].page_clear == ON) {
-
-		prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
 
 		// track back to beginning of cluster selection
 		while ( 	(prev_ndx < MAX_NROF_PAGES) &&
 				(Page_repository[prev_ndx].page_clear == OFF)
 		){
 			temp_page = &Page_repository[ prev_ndx ];
+			temp_page->repeats_left = temp_page->attr_STA; // reset page repeats
+
+			if ( resetTackSelections == TRUE ){
+				Page_setTrackRecPattern(temp_page, 0);
+				temp_page->trackSelection = 0;
+			}
+
 			this_ndx = temp_page->pageNdx;
 			prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
 		}
 	}
-
-	temp_page->repeats_left = temp_page->attr_STA; // reset page repeats
 
 	GRID_p_selection[ SOLO_rec_bank ] = temp_page;
 	GRID_p_preselection[ SOLO_rec_bank ] = temp_page;
