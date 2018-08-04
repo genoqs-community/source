@@ -116,7 +116,7 @@
 		}
 	}
 
-	if ( G_midi_map_controller_mode == OFF ){
+	if ( G_midi_map_controller_mode == ON ){
 
 		MIR_write_dot (LED_ZOOM_MAP, 		MIR_RED);
 		MIR_write_dot( LED_ZOOM_MAP, 		MIR_BLINK );

@@ -69,6 +69,11 @@
 						G_initZoom ^= 1; // toggle
 						Flash_write_grid();
 					}
+					// Anti-Echo
+					else if ( keyNdx == KEY_ZOOM_MAP ){
+						G_midi_map_controller_mode ^= 1; // toggle
+						Flash_write_grid();
+					}
 
 					unsigned char latencyOffset = 0;
 					switch (keyNdx) {

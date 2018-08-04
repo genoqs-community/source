@@ -1219,7 +1219,10 @@ void assign_note_to_selection( 	Pagestruct* target_page,
  				int trackMidiBus  	= (target_page->Track[headRow]->attr_MCH -1) / 16;
  				int trackMidiChan 	= ((target_page->Track[headRow]->attr_MCH + target_page->Track[headRow]->event_offset[ATTR_MIDICH] -1) % 16) + 1;
 
-				MIDI_NOTE_new( trackMidiBus * 16 + trackMidiChan, scale_pitch(target_page, in_pitch), in_velocity, 0 );
+ 				if ( G_midi_map_controller_mode == ON ){
+
+ 					MIDI_NOTE_new( trackMidiBus * 16 + trackMidiChan, scale_pitch(target_page, in_pitch), in_velocity, 0 );
+ 				}
 				play_MIDI_queue( G_MIDI_timestamp );
 
 

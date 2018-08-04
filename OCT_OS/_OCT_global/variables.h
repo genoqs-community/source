@@ -60,7 +60,7 @@ unsigned int 		G_scan_cycle = 0;
 unsigned char 	 	G_master_tempo 		= DEF_TEMPO; 	//120 default
 unsigned char		G_clock_source		= OFF;	// Can be any of OFF, INT(ernal), EXT(ernal)
 
-unsigned char G_midi_map_controller_mode = OFF;
+unsigned char G_midi_map_controller_mode = ON;
 
 // G_master_blinker is used to control LED blinking activities
 unsigned char 		G_master_blinker		= 0;

@@ -56,11 +56,14 @@
 				MIR_write_dot (LED_ZOOM_STEP,		MIR_GREEN);
 				MIR_write_dot (LED_ZOOM_STEP, 		MIR_RED);
 		
-				MIR_write_dot (LED_ZOOM_MAP,		MIR_GREEN);
-				MIR_write_dot (LED_ZOOM_MAP, 		MIR_RED);
-		
 				MIR_write_dot (LED_ZOOM_PLAY,		MIR_GREEN);
 				MIR_write_dot (LED_ZOOM_PLAY, 		MIR_RED);
+
+				// Anti-Echo
+				if ( G_midi_map_controller_mode == ON ){
+					MIR_write_dot (LED_ZOOM_MAP, MIR_RED);
+					MIR_write_dot (LED_ZOOM_MAP, MIR_BLINK);
+				}
 		
 				// Show the RETURN key
 				MIR_write_dot( LED_RETURN,			MIR_GREEN);
