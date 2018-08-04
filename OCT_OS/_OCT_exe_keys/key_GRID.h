@@ -100,7 +100,7 @@
 
 			previous_page = &Page_repository[ PREV_GRID_CURSOR ];
 
-			if ( PREV_GRID_CURSOR > 10 ) { // there is a prev_prev in the row
+			if ( PREV_GRID_CURSOR >= 10 ) { // there is a prev_prev in the row
 
 				prev_previous_page = &Page_repository[ PREV_GRID_CURSOR - 10 ];
 				prev_previous_page_clear = prev_previous_page->page_clear;
@@ -218,9 +218,9 @@
 //			// MODE_OBJECT_SELECTION = INTERACTIVE;
 //		}
 
-		// MIDI CC routing and pass through enabled
+		// MIDI NOTE and CC routing and pass through enabled
 		if ( keyNdx == KEY_ZOOM_MAP ){
-			G_midi_map_controller_mode = (G_midi_map_controller_mode == OFF) ? ON : OFF;
+			G_midi_map_controller_mode ^= 1;
 		}
 
 

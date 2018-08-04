@@ -260,7 +260,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 				if ( GRID_p_selection[i] != NULL ){
 
 					// on the measure page mute
-					if ( G_on_the_measure_trackMutepattern != 0 && selected_page_cluster_right_neighbor( GRID_p_selection[i], G_on_the_measure_trackMutepattern_pageNdx ) ) {
+					if ( G_on_the_measure_trackMutepattern != 0 && is_page_in_cluster( GRID_p_selection[i], G_on_the_measure_trackMutepattern_pageNdx ) ) {
 
 						for ( j=0; j < MATRIX_NROF_ROWS; j++ ){
 

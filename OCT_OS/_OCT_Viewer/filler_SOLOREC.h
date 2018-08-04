@@ -18,6 +18,12 @@
 		MIR_write_dot( LED_PLAY2, MIR_RED );
 	}
 
+	// MIDI NOTE and CC routing and pass through enabled
+	if ( G_midi_map_controller_mode == ON ){
+		MIR_write_dot (LED_ZOOM_MAP, MIR_RED);
+		MIR_write_dot( LED_ZOOM_MAP, MIR_BLINK );
+	}
+
 	// Show the end of recording chord flash
 	if ( SOLO_rec_ending_flash == OFF ){
 		MIR_write_dot( LED_PLAY4, MIR_RED );

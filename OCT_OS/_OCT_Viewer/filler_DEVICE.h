@@ -56,14 +56,37 @@
 				MIR_write_dot (LED_ZOOM_STEP,		MIR_GREEN);
 				MIR_write_dot (LED_ZOOM_STEP, 		MIR_RED);
 		
-				MIR_write_dot (LED_ZOOM_MAP,		MIR_GREEN);
-				MIR_write_dot (LED_ZOOM_MAP, 		MIR_RED);
-		
 				MIR_write_dot (LED_ZOOM_PLAY,		MIR_GREEN);
 				MIR_write_dot (LED_ZOOM_PLAY, 		MIR_RED);
+
+				// Anti-Echo
+				if ( G_midi_map_controller_mode == ON ){
+					MIR_write_dot (LED_ZOOM_MAP, MIR_RED);
+					MIR_write_dot (LED_ZOOM_MAP, MIR_BLINK);
+				}
 		
 				// Show the RETURN key
 				MIR_write_dot( LED_RETURN,			MIR_GREEN);
+
+				switch (G_TT_external_latency_offset) {
+					case 1:
+						MIR_write_dot( LED_MIXTGT_USR1,	MIR_RED);
+						break;
+					case 2:
+						MIR_write_dot( LED_MIXTGT_USR2,	MIR_RED);
+						break;
+					case 3:
+						MIR_write_dot( LED_MIXTGT_USR3, MIR_RED);
+						break;
+					case 4:
+						MIR_write_dot( LED_MIXTGT_USR4,	MIR_RED);
+						break;
+					case 5:
+						MIR_write_dot( LED_MIXTGT_USR5,	MIR_RED);
+						break;
+					default:
+						break;
+				}
 
 				#ifdef CE_OS_ADDON_BUILD
 				MIR_write_dot( LED_EDIT_MASTER,		MIR_SHINE_GREEN);

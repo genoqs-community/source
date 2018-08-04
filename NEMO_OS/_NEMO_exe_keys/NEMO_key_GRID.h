@@ -23,8 +23,88 @@
 //
 
 
+	// GRID PAGE CLUSTER SELECTIONS
+	if ( (keyNdx >= 11) && (keyNdx <= 185) ) {
+
+		switch( keyNdx ){
+
+			// These don't belong to the matrix. Only accidentally in the range.
+			case 21: 	case 32: 	case 43: 	case 54:
+			case 65: 	case 76:	case 87: 	case 98:
+			case 109: 	case 120: 	case 131: 	case 142:
+			case 153: 	case 164: 	case 175:
+				// Do nothing
+				break;
 
 
+			default:
+
+				temp = row_of(keyNdx) + (10 * column_of (keyNdx));
+				GRID_CURSOR = temp;
+
+				if ( GRID_p_selection_cluster == ON ) {
+
+					if (! ( (keyNdx >= 187)
+							&& 	(keyNdx <= 195)
+					) ) {
+
+						if ( selected_page_cluster_pressed( GRID_CURSOR, PREV_GRID_CURSOR ) ) {
+
+							if ( CHECK_BIT(page_cluster_op, PGM_CLST_CLR) ) {
+								selected_page_cluster_clear( GRID_CURSOR );
+
+							}
+
+						} else if ( CHECK_BIT(page_cluster_op, PGM_CLST_CPY) ) {
+
+							selected_page_cluster_copy( GRID_CURSOR, PREV_GRID_CURSOR );
+
+						} else if ( !CHECK_BIT(page_cluster_op, PGM_CLST_CLR) ){
+
+							selected_page_cluster_move( GRID_CURSOR, PREV_GRID_CURSOR );
+
+						}
+					}
+				}
+
+				if ( PREV_GRID_CURSOR + 10 == GRID_CURSOR && is_pressed_key(keyNdx - shiftPageRow - 11) ) {
+
+					previous_page = &Page_repository[ PREV_GRID_CURSOR ];
+
+					if ( PREV_GRID_CURSOR >= 10 ) { // there is a prev_prev in the row
+
+						prev_previous_page = &Page_repository[ PREV_GRID_CURSOR - 10 ];
+						prev_previous_page_clear = prev_previous_page->page_clear;
+					} else {
+
+						prev_previous_page_clear = ON;
+					}
+					temp_page = &Page_repository[ GRID_CURSOR ];
+
+					if ( previous_page->page_clear == OFF && temp_page->page_clear == OFF && prev_previous_page_clear == ON ){
+
+						GRID_p_selection_cluster = ON;
+
+					} else {
+
+						GRID_p_selection_cluster = OFF;
+						CLEAR_BIT(page_cluster_op, PGM_CLST_CLR);
+						CLEAR_BIT(page_cluster_op, PGM_CLST_CPY);
+					}
+
+				} else if (! ( (keyNdx >= 187)
+							&& 	(keyNdx <= 195)
+				) ) {
+
+					GRID_p_selection_cluster = OFF;
+					CLEAR_BIT(page_cluster_op, PGM_CLST_CLR);
+					CLEAR_BIT(page_cluster_op, PGM_CLST_CPY);
+				}
+				PREV_GRID_CURSOR = GRID_CURSOR;
+		}
+
+	}
+	// -- END GRID PAGE CLUSTER SELECTIONS
 
 
 	// GENERAL STUFF - clear the GRID
@@ -141,7 +221,26 @@
 		}
 
 
+		if ( GRID_p_selection_cluster == ON ) {
 
+			if (keyNdx == KEY_COPY ) {
+				if ( CHECK_BIT(page_cluster_op, PGM_CLST_CPY) ) {
+					CLEAR_BIT(page_cluster_op, PGM_CLST_CPY);
+				} else {
+					SET_BIT(page_cluster_op, PGM_CLST_CPY);
+					CLEAR_BIT(page_cluster_op, PGM_CLST_CLR);
+				}
+			} else if ( ( keyNdx - shiftPageRow ) == KEY_CLEAR) {
+				if ( CHECK_BIT(page_cluster_op, PGM_CLST_CLR) ) {
+					CLEAR_BIT(page_cluster_op, PGM_CLST_CLR);
+				} else {
+					SET_BIT(page_cluster_op, PGM_CLST_CLR);
+					CLEAR_BIT(page_cluster_op, PGM_CLST_CPY);
+				}
+			}
+
+			return;
+		}
 /*		// MATRIX
 		// operate on the GRID set or switch to EDIT mode..
 		if ( (keyNdx >= 11) && (keyNdx <= 185) ) {
@@ -1186,7 +1285,6 @@
 						target_page->Track[row]->chain_data[PREV] = target_page->Track[row];
 						target_page->Track[row]->chain_data[PLAY] = target_page->Track[row];
 					}
-
 					break;
 
 

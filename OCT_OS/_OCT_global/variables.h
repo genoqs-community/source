@@ -60,7 +60,7 @@ unsigned int 		G_scan_cycle = 0;
 unsigned char 	 	G_master_tempo 		= DEF_TEMPO; 	//120 default
 unsigned char		G_clock_source		= OFF;	// Can be any of OFF, INT(ernal), EXT(ernal)
 
-unsigned char G_midi_map_controller_mode = OFF;
+unsigned char G_midi_map_controller_mode = ON;
 
 // G_master_blinker is used to control LED blinking activities
 unsigned char 		G_master_blinker		= 0;
@@ -92,6 +92,9 @@ unsigned char 		G_tempo_tracker		= 1;
 
 // Absolute value of the TIMER_TICK_CTR in the 1xT and 2xT modes
 unsigned char 		G_TTC_abs_value		= 0;
+
+// STA amount subtracted from the timing of incoming MIDI notes to account for external hardware latency.
+unsigned char		G_TT_external_latency_offset = 0;
 
 // Total number of tracks currently set in record select. If just 1, auto rechanneling for record is enabled.
 int					G_tracks_in_record_count = 0;

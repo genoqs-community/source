@@ -313,6 +313,8 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 	unsigned char 	target_start	=	0;
 	unsigned char	target_col		=	0;
 
+	current_TTC -= G_TT_external_latency_offset;
+
 	// Only work on the current page.
 	Pagestruct* target_page 		= &Page_repository[GRID_CURSOR];
 
@@ -543,7 +545,10 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  			// Note that the note may have been re-channelled in the meantime.
  			// MIDI_NOTE_new() also uses the internal [1,64] range for MIDI channels.
 
- 			MIDI_NOTE_new( outputMidiBus * 16 + outputMidiChan, scale_pitch(target_page, in_pitch), in_velocity, 0 );
+ 			if ( G_midi_map_controller_mode == ON ){
+
+ 				MIDI_NOTE_new( outputMidiBus * 16 + outputMidiChan, scale_pitch(target_page, in_pitch), in_velocity, 0 );
+ 			}
 
 			// Play MIDI queue elements which are due just before current timestamp, including the above..
 			play_MIDI_queue( G_MIDI_timestamp );

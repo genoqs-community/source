@@ -118,23 +118,35 @@ void apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct*
 	}
 }
 
-unsigned int selected_page_cluster_right_neighbor( Pagestruct* temp_page, unsigned char pageNdx )
+unsigned int is_page_in_cluster( Pagestruct* temp_page, unsigned char pageNdx )
 {
-	signed short	this_ndx = 0;
+	unsigned char	this_ndx = 0;
+	unsigned char	prev_ndx = 0;
 
-	// Compute the index of the right neighbor
 	this_ndx = temp_page->pageNdx;
-	if (Page_repository[this_ndx].pageNdx == pageNdx)
-	{
-		return 1;
+
+	// Scan pageNdx forwards
+	prev_ndx = this_ndx;
+	while (		( prev_ndx < MAX_NROF_PAGES )
+			&&	( Page_repository[prev_ndx].page_clear == OFF )
+	){
+		if ( Page_repository[ prev_ndx ].pageNdx == pageNdx ) {
+			return 1;
+		}
+		prev_ndx = prev_ndx + 10;
 	}
-	if (this_ndx % 10 == MATRIX_NROF_COLUMNS)
-	{
-		return 0;
+
+	// Scan pageNdx backwards
+	prev_ndx = this_ndx - 10;
+	while (		( prev_ndx < MAX_NROF_PAGES ) // -1 wrap
+			&&	( Page_repository[prev_ndx].page_clear == OFF )
+	){
+		if ( Page_repository[ prev_ndx ].pageNdx == pageNdx ) {
+			return 1;
+		}
+		prev_ndx = prev_ndx - 10;
 	}
-	if (Page_repository[this_ndx + 10].page_clear == OFF && Page_repository[this_ndx + 10].pageNdx == pageNdx){
-		return 1;
-	}
+
 	return 0;
 }
 

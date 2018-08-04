@@ -22,6 +22,11 @@
 		}
 	}
 
+	// MIDI NOTE and CC routing and pass through enabled
+	if ( keyNdx == KEY_ZOOM_MAP ){
+		G_midi_map_controller_mode ^= 1;
+	}
+
 	if ( SOLO_rec_page != NULL ){ // A record page cluster is selected
 
 		if ( keyNdx == KEY_PLAY1 && SOLO_has_rec == ON){

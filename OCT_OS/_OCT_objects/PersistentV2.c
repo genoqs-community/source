@@ -160,6 +160,8 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	targetGridPt->G_zoom_level |= G_midi_map_controller_mode & 0x1;
 	targetGridPt->G_zoom_level |= G_MIDI_B_priority << 1 & 0x2;
 	targetGridPt->G_zoom_level |= G_initZoom << 2 & 0x4;
+	targetGridPt->G_zoom_level |= G_TT_external_latency_offset << 3 & 0x38;
+
 	targetGridPt->GRID_scene = GRID_scene;		// Currently selected grid scene for play or storage
 
 	// Grid set repository - stores the actual grid sets
@@ -329,6 +331,7 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 	G_midi_map_controller_mode = sourceGridPt->G_zoom_level & 0x1; // use only the first bit
 	G_MIDI_B_priority = sourceGridPt->G_zoom_level >> 1 & 0x1; // shift the second bit
 	G_initZoom = sourceGridPt->G_zoom_level >> 2 & 0x1; // shift the third bit
+	G_TT_external_latency_offset = sourceGridPt->G_zoom_level >> 3 & 0x7;
 
 	if ( G_flashgridheadersonly_flag == TRUE ){
 		return;
