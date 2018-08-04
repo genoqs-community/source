@@ -46,7 +46,23 @@
 	switch (content) {
 		
 		case GRID_SET_SWITCHMODE:
+			// page cluster selection
+			if ( GRID_p_selection_cluster == ON ) {
 
+				MIR_write_dot( LED_CLEAR, MIR_RED );
+				MIR_write_dot( LED_CLEAR, MIR_GREEN );
+				if ( CHECK_BIT(page_cluster_op, PGM_CLST_CLR) ) {
+					MIR_write_dot( LED_CLEAR, MIR_BLINK );
+				}
+
+				MIR_write_dot( LED_COPY, MIR_RED );
+				MIR_write_dot( LED_COPY, MIR_GREEN );
+				if ( CHECK_BIT(page_cluster_op, PGM_CLST_CPY) ) {
+					MIR_write_dot( LED_COPY, MIR_BLINK );
+				}
+
+				break;
+			}
 			// SOLO LED
 			// Find out whether there is something in the solo buffer
 			j = FALSE;
@@ -87,6 +103,13 @@
 
 
 		case TRACK_MUTEPATTERN:
+
+			// On the measure mutepattern
+			if (G_on_the_measure_trackMutepattern != 0) {
+				MIR_write_buttool (RHS, G_on_the_measure_trackMutepattern >> shiftTrackRow, MIR_RED);
+				MIR_write_buttool (RHS, G_on_the_measure_trackMutepattern >> shiftTrackRow, MIR_GREEN);
+				MIR_write_buttool (RHS, G_on_the_measure_trackMutepattern >> shiftTrackRow, MIR_BLINK);
+			}
 
 			MIR_write_buttool (RHS, target_page->trackMutepattern >> shiftTrackRow, MIR_RED);
 

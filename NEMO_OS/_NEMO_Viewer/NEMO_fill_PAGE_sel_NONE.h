@@ -249,7 +249,17 @@
 
 			}
 
-
+			if ( G_track_page_chain_mod_bit == ON && target_page->OPS_mode != BIRDSEYE )
+			{
+				MIR_write_dot( LED_ZOOM_TRACK,	MIR_RED	);
+			}
+			// on the measure mode
+			else if ( G_track_page_chain_mod_bit == SCALE_MOD && target_page->OPS_mode != BIRDSEYE )
+			{
+				MIR_write_dot( LED_ZOOM_TRACK,	MIR_RED );
+				MIR_write_dot( LED_ZOOM_TRACK,	MIR_GREEN );
+				MIR_write_dot( LED_ZOOM_TRACK,	MIR_BLINK );
+			}
 
 			// EDIT MASTER
 			// Activity only when no track is selected
