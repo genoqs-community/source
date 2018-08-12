@@ -713,7 +713,10 @@ void record_note_to_track( 	Pagestruct* target_page,
 	NOTEeventstruct* off_event = NULL;
 	signed short in_pitch_delta = 0;
 
+	if ( SOLO_rec_measure_hold ) return;
+
 	// Validate the target column number and stop if column is strange
+	// TODO: What would lead to a "strange" column? Is this a bug workaround?
 	if ( target_col > 15 ) return;
 
 	// Transform the in_pitch according to play chains head status

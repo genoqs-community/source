@@ -5,7 +5,9 @@
 		// Record button
 		MIR_write_dot( LED_RECORD, MIR_RED );
 		if ( G_run_bit == ON && G_track_rec_bit == ON ){
-			MIR_write_dot( LED_RECORD, MIR_GREEN );
+			if ( SOLO_rec_rehersal == OFF ){
+				MIR_write_dot( LED_RECORD, MIR_GREEN );
+			}
 			MIR_write_dot( LED_RECORD, MIR_BLINK );
 		}
 	}
@@ -59,6 +61,15 @@
 		// Clear recording
 		if ( G_run_bit == OFF ){
 			MIR_write_dot( LED_CHAINER, MIR_RED );
+		}
+	}
+	else { // No recording yet
+
+		// Rehersal
+		if ( SOLO_rec_rehersal == ON ){
+			MIR_write_dot( LED_PLAY1, MIR_GREEN );
+			MIR_write_dot( LED_PLAY1, MIR_RED );
+			MIR_write_dot( LED_PLAY1, MIR_BLINK );
 		}
 	}
 

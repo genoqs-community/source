@@ -29,10 +29,15 @@
 
 	if ( SOLO_rec_page != NULL ){ // A record page cluster is selected
 
-		if ( keyNdx == KEY_PLAY1 && SOLO_has_rec == ON){
-			G_track_rec_bit = OFF;
-			reset_page_cluster( SOLO_rec_page, FALSE );
-			sequencer_command_PLAY();
+		if ( keyNdx == KEY_PLAY1 ){
+			if ( SOLO_has_rec == ON ){
+				G_track_rec_bit = OFF;
+				reset_page_cluster( SOLO_rec_page, FALSE );
+				sequencer_command_PLAY();
+			}
+			else if ( SOLO_rec_measure_hold == ON ){
+				SOLO_rec_rehersal ^= 1;
+			}
 		}
 
 		else if ( keyNdx == KEY_STOP ){
