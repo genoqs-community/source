@@ -312,8 +312,12 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 	unsigned int 	current_TTC		= 	G_TTC_abs_value;
 	unsigned char 	target_start	=	0;
 	unsigned char	target_col		=	0;
+	int				offset_TTC		=	current_TTC;
 
-	current_TTC -= G_TT_external_latency_offset;
+	if ( G_MIDI_timestamp > G_TT_external_latency_offset ){
+		offset_TTC = current_TTC;
+		offset_TTC -= G_TT_external_latency_offset;
+	}
 
 	// Only work on the current page.
 	Pagestruct* target_page 		= &Page_repository[GRID_CURSOR];
@@ -494,7 +498,6 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  					outputMidiChan = trackMidiChan;
   				}
 
-
  				// RECORD
  				// ------
  				// Only record when the sequencer is running and in record mode.
@@ -505,17 +508,17 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  					unsigned char target_row = row;
  					// Compute the coordinates of the step to be activated
  					// Adjust the step start value according to current TTC. Logic: see book p.189
- 					if ( current_TTC <= 6 ) {
+ 					if ( offset_TTC <= STEP_DEF_START ) {
 
  						// Place step in current column
  						target_col 		= target_page->Track[row]->attr_LOCATOR -1;
- 						target_start 	= current_TTC-1 + 6;
+ 						target_start 	= offset_TTC-1 + 6;
  					}
  					else {
 
  						// Place step in next column, which may have to wrap
  						target_col 		= get_next_tracklocator( target_page->Track[row], target_page->Track[row]->attr_LOCATOR ) -1;
- 						target_start 	= current_TTC-1 -6;
+ 						target_start 	= offset_TTC-1 -6;
 
  						// Make sure we stay within valid bounds
  						if ( target_start < STEP_MIN_START ) target_start = STEP_MIN_START;
