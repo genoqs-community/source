@@ -22,6 +22,10 @@
 		}
 	}
 
+	if ( keyNdx == KEY_SCALE_SEL ){
+		SOLO_rec_quantize_first_beat ^= 1;
+	}
+
 	// MIDI NOTE and CC routing and pass through enabled
 	if ( keyNdx == KEY_ZOOM_MAP ){
 		G_midi_map_controller_mode ^= 1;

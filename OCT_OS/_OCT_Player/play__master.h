@@ -246,6 +246,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 			if ( SOLO_rec_measure_hold == ON ) {
 				// Send the ALL NOTES OFF message
 				send_ALL_NOTES_OFF();
+				G_MIDI_timestamp = 0;
 				G_measure_locator = OFF;
 				SOLO_rec_measure_pos = OFF;
 			}

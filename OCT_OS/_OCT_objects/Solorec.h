@@ -21,6 +21,7 @@ unsigned char SOLO_pos_marker_out				= OFF;
 unsigned char SOLO_rec_freeflow					= OFF;
 unsigned char SOLO_rec_ending_flash				= ON;
 unsigned char SOLO_rec_continue_recording		= OFF;
+unsigned char SOLO_rec_quantize_first_beat		= OFF;
 unsigned char SOLO_rec_legato					= OFF;
 unsigned char SOLO_rec_measure_hold				= OFF;
 unsigned char SOLO_rec_bank						= OFF;

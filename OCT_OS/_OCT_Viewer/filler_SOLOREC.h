@@ -20,6 +20,12 @@
 		MIR_write_dot( LED_PLAY2, MIR_RED );
 	}
 
+	if ( SOLO_rec_quantize_first_beat == TRUE ){
+		MIR_write_dot( LED_SCALE_SEL, MIR_GREEN );
+	}
+	MIR_write_dot( LED_SCALE_SEL, MIR_RED );
+
+
 	// MIDI NOTE and CC routing and pass through enabled
 	if ( G_midi_map_controller_mode == ON ){
 		MIR_write_dot (LED_ZOOM_MAP, MIR_RED);

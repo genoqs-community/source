@@ -317,6 +317,10 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 	if ( G_MIDI_timestamp > G_TT_external_latency_offset ){
 		offset_TTC = current_TTC;
 		offset_TTC -= G_TT_external_latency_offset;
+
+		if ( G_MIDI_timestamp <= 16 && SOLO_rec_quantize_first_beat == ON && offset_TTC <= 0 ){
+			offset_TTC = 1; // NOTE at first 1/16th has a STA > 0
+		}
 	}
 
 	// Only work on the current page.
