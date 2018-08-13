@@ -66,7 +66,10 @@
 	else { // No recording yet
 
 		// Rehersal
-		if ( SOLO_rec_rehersal == ON ){
+		if ( SOLO_rec_rehersal == OFF && SOLO_rec_measure_hold == ON ){
+			MIR_write_dot( LED_PLAY1, MIR_RED );
+		}
+		else if ( SOLO_rec_rehersal == ON ){
 			MIR_write_dot( LED_PLAY1, MIR_GREEN );
 			MIR_write_dot( LED_PLAY1, MIR_RED );
 			MIR_write_dot( LED_PLAY1, MIR_BLINK );
