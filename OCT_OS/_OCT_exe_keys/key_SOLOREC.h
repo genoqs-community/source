@@ -159,45 +159,56 @@
 		unsigned char cursor = Page_repository[pressed].pageNdx;
 
 		// Activate a record page - set the measure count
-		if ( !SOLO_has_rec && // does not have a recording yet
+		if (
 			 ( selected_solo_rec_page( cursor, cursor_to_dot( cursor ) ) == ON ||
 			   selected_page_cluster( cursor, SOLO_rec_page->pageNdx ) != OFF )){
 			/*
 			 * A page with a measure count has been selected on this press
 			 */
-			if ( keyNdx == KEY_CHAINMODE_4 && SOLO_rec_page == NULL && Page_repository[pressed].page_clear == ON ){
-				SOLO_rec_freeflow = ON;
-				Page_repository[pressed].page_clear = OFF;
-				SOLO_rec_page = &Page_repository[pressed];
-				Rec_repository[pressedCol].measure_count = 1;
-			}
-			// A page is pressed first then step 1 through 10 of row zero to set the measure count
-			else if ( rowZeroTrack != OFF && rowZeroTrack <= 10 && SOLO_rec_freeflow == OFF ){
+			if ( !SOLO_has_rec ){ // does not have a recording yet
 
-				if ( Page_repository[pressed].page_clear == ON ){
-					/*
-					 * ########################################
-					 * A record page was created!
-					 * ########################################
-					 */
+				if ( keyNdx == KEY_CHAINMODE_4 && SOLO_rec_page == NULL && Page_repository[pressed].page_clear == ON ){
+					SOLO_rec_freeflow = ON;
+					Page_repository[pressed].page_clear = OFF;
 					SOLO_rec_page = &Page_repository[pressed];
-
-					if ( SOLO_has_rec == OFF ){
-						GRID_CURSOR = SOLO_rec_page->pageNdx; // TODO: <-------- freeflow
-					}
+					Rec_repository[pressedCol].measure_count = 1;
 				}
+				// A page is pressed first then step 1 through 10 of row zero to set the measure count
+				else if ( rowZeroTrack != OFF && rowZeroTrack <= 10 && SOLO_rec_freeflow == OFF ){
 
-				SOLO_rec_pressed_col = pressedCol;
-				create_page_record_track_chain(SOLO_rec_page, rowZeroTrack);
-				Rec_repository[pressedCol].measure_count = rowZeroTrack;
-				reset_page_cluster( SOLO_rec_page, FALSE );
+					if ( Page_repository[pressed].page_clear == ON ){
+						/*
+						 * ########################################
+						 * A record page was created!
+						 * ########################################
+						 */
+						SOLO_rec_page = &Page_repository[pressed];
 
-				// Snow the measure count for a few extra blinks
-				ROT_INDEX = REC_MEASURES_IDX;
-				// Setup alarm for the EDIT TIMER
-				cyg_alarm_initialize(	alarm_hdl,
-										cyg_current_time() + (TIMEOUT_VALUE / 3),
-										0 );
+						if ( SOLO_has_rec == OFF ){
+							GRID_CURSOR = SOLO_rec_page->pageNdx; // TODO: <-------- freeflow
+						}
+					}
+
+					SOLO_rec_pressed_col = pressedCol;
+					create_page_record_track_chain(SOLO_rec_page, rowZeroTrack);
+					Rec_repository[pressedCol].measure_count = rowZeroTrack;
+					reset_page_cluster( SOLO_rec_page, FALSE );
+
+					// Snow the measure count for a few extra blinks
+					ROT_INDEX = REC_MEASURES_IDX;
+					// Setup alarm for the EDIT TIMER
+					cyg_alarm_initialize(	alarm_hdl,
+											cyg_current_time() + (TIMEOUT_VALUE / 3),
+											0 );
+				}
+			}
+			else { // Has a recording
+
+				if ( keyNdx == KEY_ZOOM_PAGE ){
+					// Enter the page edit warp tunnel
+					GRID_CURSOR = Page_repository[pressed].pageNdx;
+					G_zoom_level = zoomPAGE;
+				}
 			}
 		}
 

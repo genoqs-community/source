@@ -306,6 +306,9 @@
 					if ( SOLO_rec_page != NULL && Rec_repository[column_of(temp)].measure_count >= result ){
 
 						MIR_write_dot( i, MIR_RED );
+						// Show the page edit warp tunnel
+						MIR_write_dot( LED_ZOOM_PAGE, MIR_RED   );
+						MIR_write_dot( LED_ZOOM_PAGE, MIR_BLINK );
 					}
 				}
 				else {

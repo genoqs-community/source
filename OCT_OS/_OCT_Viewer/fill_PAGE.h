@@ -68,6 +68,12 @@
 				show (ELE_RETURN, GREEN);
 			}
 
+			#ifdef FEATURE_SOLO_REC
+			else if ( G_zoom_level == zoomPAGE && SOLO_has_rec == TRUE ){
+				show (ELE_RETURN, GREEN);
+			}
+			#endif
+
 
 			// ALIGN - Indicate that ALIGN is available
 			MIR_write_dot( LED_ALIGN, MIR_GREEN );
