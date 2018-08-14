@@ -22,7 +22,7 @@
 		}
 	}
 
-	if ( keyNdx == KEY_SCALE_SEL ){
+	if ( keyNdx == KEY_QUANTIZE_FIRST ){
 		SOLO_rec_quantize_first_beat ^= 1;
 	}
 
@@ -134,13 +134,10 @@
 	}
 
 	// Quantize chord buttons
-	else if (SOLO_has_rec == ON && G_run_bit == OFF && keyNdx >= KEY_QUANTIZE_LOW && keyNdx <= KEY_QUANTIZE_HIGH){
+	else if (keyNdx >= KEY_QUANTIZE_LOW && keyNdx <= KEY_QUANTIZE_HIGH){
 
-		if ((keyNdx - KEY_QUANTIZE_LOW + 1) == SOLO_quantize_note){
-			// turn quantize off if the same button is pressed twice
-			SOLO_quantize_note = 0;
-		}
-		else {
+		if ((keyNdx - KEY_QUANTIZE_LOW + 1) != SOLO_quantize_note){
+
 			SOLO_quantize_note = keyNdx - KEY_QUANTIZE_LOW + 1;
 		}
 	}

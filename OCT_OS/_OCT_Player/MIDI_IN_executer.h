@@ -710,6 +710,7 @@ void midi_controller_execute( 	unsigned char UART_ndx,
 		case zoomPAGE:
 		case zoomTRACK:
 		case zoomMAP:
+//		case zoomSOLOREC: xxx FIXME: Records ok but doesn't play back unless in track/MCC zoom -- maybe related to earlier echo-back work
 
 			// Point to the cursor page
 			target_page = &Page_repository[GRID_CURSOR];

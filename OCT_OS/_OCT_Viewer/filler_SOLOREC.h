@@ -20,12 +20,6 @@
 		MIR_write_dot( LED_PLAY2, MIR_RED );
 	}
 
-	if ( SOLO_rec_quantize_first_beat == TRUE ){
-		MIR_write_dot( LED_SCALE_SEL, MIR_GREEN );
-	}
-	MIR_write_dot( LED_SCALE_SEL, MIR_RED );
-
-
 	// MIDI NOTE and CC routing and pass through enabled
 	if ( G_midi_map_controller_mode == ON ){
 		MIR_write_dot (LED_ZOOM_MAP, MIR_RED);
@@ -152,46 +146,44 @@
 
 
 	// Flash the end of recording indicator using the CHORD LEDs
-	if ( G_run_bit == ON && SOLO_rec_ending_flash > OFF ){
+	if ( SOLO_rec_ending_flash == ON && G_run_bit == ON &&
+		 SOLO_rec_measure_pos == SOLO_rec_measure_count &&
+		 SOLO_rec_measure_count > 1 ){ // Flash the last measure
 
-		if ( SOLO_rec_ending_flash == ON ){ // Flash the last measure
-
-			if ( SOLO_rec_measure_pos == SOLO_rec_measure_count && SOLO_rec_measure_count > 1 ){
-
-				for (i=LED_QUANTIZE_LOW; i <= LED_QUANTIZE_HIGH; i++) {
-					MIR_write_dot( i, MIR_RED );
-					MIR_write_dot( i, MIR_GREEN );
-					MIR_write_dot( i, MIR_BLINK );
-				}
-			}
+		for (i=LED_QUANTIZE_FIRST; i <= LED_QUANTIZE_HIGH; i++) {
+			MIR_write_dot( i, MIR_RED );
+			MIR_write_dot( i, MIR_GREEN );
+			MIR_write_dot( i, MIR_BLINK );
 		}
-		else if ( SOLO_rec_ending_flash > ON ){ // 3 - 2 - 1 ... Flash the measure count down
+	}
+	else if ( SOLO_rec_ending_flash > ON && G_run_bit == ON &&
+			  SOLO_rec_measure_pos > (SOLO_rec_measure_count - 3) &&
+			  SOLO_rec_measure_count > 3 ){ // 3 - 2 - 1 ... Flash the measure count down
 
-			if ( SOLO_rec_measure_pos >= SOLO_rec_measure_count - 3 && SOLO_rec_measure_count > 3 ){
-
-				for (i=LED_QUANTIZE_LOW; i <= LED_QUANTIZE_HIGH; i++) {
-					if ( SOLO_rec_measure_pos == SOLO_rec_measure_count - 2 ){
-						MIR_write_dot( i, MIR_RED );
-					}
-					else if ( SOLO_rec_measure_pos == SOLO_rec_measure_count - 1 ){
-						MIR_write_dot( i, MIR_GREEN );
-					}
-					else if ( SOLO_rec_measure_pos == SOLO_rec_measure_count ){
-						MIR_write_dot( i, MIR_RED );
-						MIR_write_dot( i, MIR_GREEN );
-					}
-					MIR_write_dot( i, MIR_BLINK );
-				}
+		for (i=LED_QUANTIZE_FIRST; i <= LED_QUANTIZE_HIGH; i++) {
+			if ( SOLO_rec_measure_pos == SOLO_rec_measure_count - 2 ){
+				MIR_write_dot( i, MIR_RED );
 			}
+			else if ( SOLO_rec_measure_pos == SOLO_rec_measure_count - 1 ){
+				MIR_write_dot( i, MIR_GREEN );
+			}
+			else if ( SOLO_rec_measure_pos == SOLO_rec_measure_count ){
+				MIR_write_dot( i, MIR_RED );
+				MIR_write_dot( i, MIR_GREEN );
+			}
+			MIR_write_dot( i, MIR_BLINK );
 		}
 	}
 	else {
 
 		// Quantize value
 		// CHORD SECTION
-		if ( SOLO_quantize_note > OFF && SOLO_has_rec == ON && G_run_bit == OFF ){
-			MIR_write_dot( (LED_QUANTIZE_LOW + SOLO_quantize_note -1), MIR_RED );
+		MIR_write_dot( (LED_QUANTIZE_LOW + SOLO_quantize_note -1), MIR_RED );
+
+		if ( SOLO_rec_quantize_first_beat == TRUE ){
+			MIR_write_dot( LED_QUANTIZE_FIRST, MIR_GREEN );
 		}
+		MIR_write_dot( LED_QUANTIZE_FIRST, MIR_RED );
 	}
 
 
