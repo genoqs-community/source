@@ -75,6 +75,7 @@ void executeKey( unsigned int keyNdx ){
 	}
 #endif
 
+	#ifdef FEATURE_SOLO_REC
 	if ( G_zoom_level == zoomSOLOREC ){
 		if ( keyNdx == KEY_RETURN ){
 			if ( G_run_bit == OFF ){
@@ -90,6 +91,7 @@ void executeKey( unsigned int keyNdx ){
 			return;
 		}
 	}
+	#endif
 
 
 	// Work on the page under the grid cursor

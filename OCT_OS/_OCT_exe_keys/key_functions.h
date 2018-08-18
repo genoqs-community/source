@@ -1192,6 +1192,7 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 	PAGE_init(target_page, target_page->pageNdx, false);
 	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
 		Track_hard_init( target_page->Track[row], target_page->Track[row]->trackId );
+		target_page->Track[row]->attr_MCH = SOLO_midi_ch;
 	}
 
 	row = target_page->pageNdx % 10;
@@ -2474,6 +2475,13 @@ void interpret_matrix_stepkey( 	unsigned char row,
 
 		// STEP TOGGLE is OFF
 		case OFF:
+
+			#ifdef FEATURE_SOLO_REC
+			if ( G_zoom_level == zoomSOLOREC ){ // Steps can only be cleared by touch in SoloRec zoom
+				return;
+			}
+			#endif
+
 			#ifdef FEATURE_ENABLE_SONG_UPE
 			if (Track_get_MISC(target_page->Track[row], CONTROL_BIT) ){
 				if ( Step_get_status( target_step, STEPSTAT_SKIP ) == ON ){

@@ -31,12 +31,16 @@
 		G_midi_map_controller_mode ^= 1;
 	}
 
+	if ( keyNdx == KEY_SELECT_MASTER ){
+		SOLO_rec_track_preview ^= 1;
+	}
+
 	if ( SOLO_rec_page != NULL ){ // A record page cluster is selected
 
 		if ( keyNdx == KEY_PLAY1 ){
 			if ( SOLO_has_rec == ON ){
 				G_track_rec_bit = OFF;
-				reset_page_cluster( SOLO_rec_page, FALSE );
+				reset_page_cluster( SOLO_rec_page, TRUE );
 				sequencer_command_PLAY();
 			}
 			else if ( SOLO_rec_measure_hold == ON ){
@@ -53,7 +57,7 @@
 			if ( SOLO_has_rec == OFF ){
 				SOLO_rec_measure_hold = ON;
 			}
-			reset_page_cluster( SOLO_rec_page, FALSE );
+			reset_page_cluster( SOLO_rec_page, TRUE );
 			sequencer_command_PLAY();
 		}
 
@@ -84,6 +88,17 @@
 		if ( keyNdx == KEY_ZOOM_STEP && G_run_bit == OFF &&  SOLO_has_rec == ON ){
 			SOLO_rec_legato ^= 1; // toggle
 		}
+	}
+
+	if ( keyNdx < 187 && G_run_bit == ON ){
+
+		// Compute Step coordinates
+		unsigned char row = row_of( keyNdx );
+		unsigned char col = column_of( keyNdx );
+		Pagestruct* target_page = &Page_repository[GRID_CURSOR];
+
+		// Turns the step selection off
+		interpret_matrix_stepkey( row, col, target_page );
 	}
 
 	// Clear the record pages
@@ -144,7 +159,7 @@
 	else {
 
 		// GRID PAGE CLUSTER SELECTIONS
-		if ( ( (keyNdx < 187)
+		if ( ( (keyNdx < 187 && G_run_bit == OFF)
 		) ) {
 
 			unsigned char temp = row_of(keyNdx) + (10 * column_of(keyNdx));

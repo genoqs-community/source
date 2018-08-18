@@ -242,6 +242,37 @@ unsigned char first_page_in_cluster( unsigned char target_page ){
 	return this_ndx;
 }
 
+void assign_solorec_track_midi_ch( unsigned char target_page ){
+
+	Pagestruct* temp_page = &Page_repository[ target_page ];
+
+	signed short 	prev_ndx = 0,
+					this_ndx = 0,
+					row;
+
+	this_ndx = temp_page->pageNdx;
+	prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
+
+	// track back to beginning of cluster selection
+	while ( 	(prev_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[prev_ndx].page_clear == OFF)
+	){
+		temp_page = &Page_repository[ prev_ndx ];
+		this_ndx = temp_page->pageNdx;
+		prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
+	}
+
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+		for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
+			Page_repository[this_ndx].Track[row]->attr_MCH = SOLO_midi_ch;
+		}
+		this_ndx += 10;
+	}
+}
+
 // Is the cursor a member of the target page cluster
 // Returns the column of the grid cursor
 unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char target_page ){
@@ -297,38 +328,57 @@ void stop_solo_rec(){
 	}
 }
 
-void reset_page_cluster( Pagestruct* target_page, unsigned char resetTackSelections ){
+void reset_page_cluster( Pagestruct* temp_page, unsigned char resetTackSelections ){
 
 	signed short 	prev_ndx = 0,
-					this_ndx = 0;
+					this_ndx = 0,
+					m,
+					n;
 
-	Pagestruct* temp_page = target_page;
+	this_ndx = temp_page->pageNdx;
+	prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
 
-	prev_ndx = target_page->pageNdx;
-	if (!Page_repository[this_ndx].page_clear == ON) {
-
-		// track back to beginning of cluster selection
-		while ( 	(prev_ndx < MAX_NROF_PAGES) &&
-				(Page_repository[prev_ndx].page_clear == OFF)
-		){
-			temp_page = &Page_repository[ prev_ndx ];
-			temp_page->repeats_left = temp_page->attr_STA; // reset page repeats
-
-			if ( resetTackSelections == TRUE ){
-				Page_setTrackRecPattern(temp_page, 0);
-				temp_page->trackSelection = 0;
-			}
-
-			this_ndx = temp_page->pageNdx;
-			prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
-		}
+	// track back to beginning of cluster selection
+	while ( 	(prev_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[prev_ndx].page_clear == OFF)
+	){
+		temp_page = &Page_repository[ prev_ndx ];
+		this_ndx = temp_page->pageNdx;
+		prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
 	}
+
+	temp_page = &Page_repository[this_ndx];
 
 	GRID_p_selection[ SOLO_rec_bank ] = temp_page;
 	GRID_p_preselection[ SOLO_rec_bank ] = temp_page;
 	GRID_p_clock_presel[ SOLO_rec_bank ] = temp_page;
 	GRID_CURSOR = temp_page->pageNdx;
 	follow_flag = FOLLOW_PAGE;
+
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		temp_page = &Page_repository[this_ndx];
+
+		// reset first
+		temp_page->repeats_left = temp_page->attr_STA; // reset page repeats
+
+		if ( resetTackSelections == TRUE ){
+
+			Page_setTrackRecPattern(temp_page, 0);
+			temp_page->trackSelection = 0;
+			m = (10 - temp_page->attr_STA); // from the bottom up
+			for (n=9; n >= m; --n) { // each measure
+				temp_page->trackSelection |= 1 << n;
+			}
+			chain_selected_tracks( temp_page );
+			Page_setTrackRecPatternBit( temp_page, (n+1) );
+		}
+
+		this_ndx += 10;
+	}
 }
 
 // copies a selected page cluster

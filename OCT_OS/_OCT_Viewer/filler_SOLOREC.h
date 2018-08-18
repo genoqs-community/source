@@ -91,6 +91,12 @@
 		}
 	}
 
+	// SEL toggle track preview - measure POS
+	MIR_write_dot( LED_SELECT_MASTER, MIR_RED );
+	if ( SOLO_rec_track_preview ){
+		MIR_write_dot( LED_SELECT_MASTER, MIR_GREEN );
+	}
+
 	// ESC
 	if ( G_run_bit == OFF ){
 		MIR_write_dot( LED_RETURN, MIR_GREEN );
@@ -348,7 +354,7 @@
 	}
 
 	// Show the row zero measure position
-	if ( G_run_bit == ON ){
+	if ( G_run_bit == ON && SOLO_rec_track_preview == OFF ){
 
 		// - and end of recording
 		// measure hold
@@ -372,8 +378,20 @@
 		}
 	}
 
-	// Show the packman at playtime - unless there is a scale selected
-	show ( ELE_OCTAVE_CIRCLE, G_global_locator_PICTURE );
+	if ( G_run_bit == ON && SOLO_rec_track_preview == ON ){
+		// MATRIX
+		show ( ELE_MATRIX, STEP_TOGGLE );
+
+		// Show the REC status of tracks
+		show( ELE_TRACK_SELECTORS, TRACK_REC_STATUS );
+
+		MIR_write_lauflicht ();
+	}
+	else {
+
+		// Show the packman at playtime - unless there is a scale selected
+		show ( ELE_OCTAVE_CIRCLE, G_global_locator_PICTURE );
+	}
 
 
 	if ( is_pressed_key(KEY_PASTE) || ( EDIT_TIMER == ON && ROT_INDEX == 10 ) )

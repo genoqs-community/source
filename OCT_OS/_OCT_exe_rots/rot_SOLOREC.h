@@ -46,6 +46,7 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 		case 10:
 			// Set the MIDI Channel for solo recording
 			modify_parameter(&SOLO_midi_ch, TRACK_MIN_MIDICH, TRACK_MAX_MIDICH, direction, OFF, FIXED);
+			assign_solorec_track_midi_ch( SOLO_rec_page->pageNdx );
 			break;
 	}
 
