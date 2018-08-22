@@ -315,6 +315,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 				if ( GRID_p_set_note_offsets[(int) GRID_p_set_note_presel] > 0 ){
 
 					MIDI_send(	MIDI_NOTE, GRID_p_set_midi_ch, GRID_p_set_note_offsets[(int) GRID_p_set_note_presel], 127 );
+					MIDI_send(	MIDI_NOTE, GRID_p_set_midi_ch, GRID_p_set_note_offsets[(int) GRID_p_set_note_presel], 0 );
 					GRID_p_set_note_presel = 255;
 				}
 			}

@@ -114,6 +114,7 @@ void apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct*
 		temp_page = &Page_repository[ this_ndx ];
 		next_track = temp_page->Track[next_track->trackId % 10];
 		apply_page_track_mute_toggle( temp_page, next_track, &temp_page->trackMutepattern );
+		temp_page->trackMutepatternStored = 0;
 		this_ndx += 10;
 	}
 }
