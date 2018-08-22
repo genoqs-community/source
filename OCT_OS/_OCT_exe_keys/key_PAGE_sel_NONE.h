@@ -222,6 +222,10 @@
 		if (target_page->trackSelection != 0){
 			break;
 		}
+		// Disable MUTE when on-the-measure mode is activated
+		else if ( G_track_page_chain_mod_bit == SCALE_MOD && target_page->OPS_mode != BIRDSEYE ){
+			break;
+		}
 
 		// Check if a STEP key is pressed. If so, skip that step - actually supports multiple steps.
 		unsigned char temp = is_pressed_steprange();
