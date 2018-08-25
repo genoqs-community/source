@@ -84,11 +84,19 @@ void executeKey( unsigned int keyNdx ){
 			return;
 		}
 	}
-	else if ( G_zoom_level == zoomPAGE && SOLO_has_rec == TRUE ){
+	if ( SOLO_has_rec == TRUE && G_zoom_level != zoomSOLOREC ){ // Page Warp
 
-		if ( keyNdx == KEY_RETURN ){
-			G_zoom_level = zoomSOLOREC;
+		if ( keyNdx == KEY_ZOOM_PAGE || keyNdx == KEY_ZOOM_GRID || is_pressed_key(KEY_ZOOM_PAGE) ){
 			return;
+		}
+
+		// Escape back to SoloRec zoom by pressing ESC in Page zoom
+		if ( G_zoom_level == zoomPAGE ){
+
+			if ( keyNdx == KEY_RETURN ){
+				G_zoom_level = zoomSOLOREC;
+				return;
+			}
 		}
 	}
 	#endif

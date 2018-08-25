@@ -120,8 +120,10 @@
 
 				else if ( (is_pressed_key( KEY_ZOOM_PAGE 		)) ){
 
-					// Enter the Birds Eye view
-					target_page->OPS_mode = BIRDSEYE;
+					if ( SOLO_has_rec == FALSE ){
+						// Enter the Birds Eye view
+						target_page->OPS_mode = BIRDSEYE;
+					}
 				}
 
 				// This is the break select mode from page mode
