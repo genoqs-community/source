@@ -151,9 +151,10 @@
 	// Quantize chord buttons
 	else if (keyNdx >= KEY_QUANTIZE_LOW && keyNdx <= KEY_QUANTIZE_HIGH){
 
-		if ((keyNdx - KEY_QUANTIZE_LOW + 1) != SOLO_quantize_note){
+		if ((keyNdx - KEY_QUANTIZE_LOW) != SOLO_quantize_note){
 
-			SOLO_quantize_note = keyNdx - KEY_QUANTIZE_LOW + 1;
+			SOLO_quantize_note = keyNdx - KEY_QUANTIZE_LOW;
+			quantize(SOLO_rec_page); // Apply the quantize
 		}
 	}
 	else {

@@ -5,7 +5,7 @@
 // Fine tune acts like a band pass filter that opens wider starting equal distance between two steps.
 // Notes found within this band will be quantize-flipped so that the note is placed in the opposite direction.
 unsigned char SOLO_quantize_fine_tune 			= 0; // Odd=switch polarity Even=drop polarized notes
-unsigned char SOLO_quantize_note 				= 1; // 0=OFF, 1=1/64, 2=1/32, 3=1/16, 4=1/8, 5=1/4, 6=1/2, 7=1/1-Note
+unsigned char SOLO_quantize_note 				= 0; // 0=OFF, 1=STA4, 2=STA3, 3=STA2, 4=STA1, 5=STA0
 signed char	  SOLO_strum						= 9; // 9=OFF
 unsigned char SOLO_slow_tempo					= OFF;
 Pagestruct*	  SOLO_rec_page						= NULL;
@@ -56,3 +56,69 @@ void Solorec_init(){
 		SOLO_page_play_along[i] = 255;
 	 }
 }
+
+void quantizeStep(Stepstruct* target_step, Notestruct* noteRec){
+
+	if ( noteRec->attr_STA > STEP_MAX_START - SOLO_quantize_note ){
+
+		target_step->attr_STA = STEP_MAX_START - SOLO_quantize_note;
+	}
+	else if ( noteRec->attr_STA < STEP_MIN_START + SOLO_quantize_note ){
+
+		target_step->attr_STA = STEP_MIN_START + SOLO_quantize_note;
+	}
+	else {
+		target_step->attr_STA = noteRec->attr_STA;
+	}
+}
+
+void capture_note_event(
+		Stepstruct* target_step,
+		Pagestruct* target_page,
+		Trackstruct* target_track,
+		unsigned char target_col ){
+
+	Notestruct* noteRec = Rec_repository[row_of(target_page->pageNdx)].Note[row_of(target_track->trackId) * target_col];
+	noteRec->chord_up = target_step->chord_up;
+	noteRec->chord_data = target_step->chord_data;
+	noteRec->attr_VEL = target_step->attr_VEL;
+	noteRec->attr_STA = target_step->attr_STA;
+	noteRec->attr_PIT = target_step->attr_PIT;
+	noteRec->attr_LEN = target_step->attr_LEN;
+
+	// Quantize notes as they are recorded
+	quantizeStep(target_step, noteRec);
+}
+
+void quantize(Pagestruct* target_page){
+
+	// move to beginning of page cluster
+	unsigned char this_ndx = first_page_in_cluster(target_page->pageNdx);
+	unsigned char step_row, step_col = 0;
+	unsigned int i=0;
+	Notestruct* target_note;
+
+	// track forward
+	while ((this_ndx < MAX_NROF_PAGES) && (Page_repository[this_ndx].page_clear == OFF)
+	){
+		target_page = &Page_repository[this_ndx];
+
+		// loop for each note
+		for (i=0; i<MAX_NROF_PAGE_NOTES; i++){
+
+			// line up the recording note with the actual step
+			step_row = i / MATRIX_NROF_COLUMNS;
+			step_col = i % MATRIX_NROF_COLUMNS;
+			target_note = Rec_repository[row_of(target_page->pageNdx)].Note[step_row * step_col];
+
+			if ( target_page->Step[step_row][step_col]->attr_STATUS == ON ){
+
+				quantizeStep(target_page->Step[step_row][step_col], target_note);
+			}
+		}
+
+		this_ndx += 10;
+	}
+}
+
+

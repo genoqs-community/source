@@ -184,7 +184,7 @@
 
 		// Quantize value
 		// CHORD SECTION
-		MIR_write_dot( (LED_QUANTIZE_LOW + SOLO_quantize_note -1), MIR_RED );
+		MIR_write_dot( (LED_QUANTIZE_LOW + SOLO_quantize_note), MIR_RED );
 
 		if ( SOLO_rec_quantize_first_beat == TRUE ){
 			MIR_write_dot( LED_QUANTIZE_FIRST, MIR_GREEN );

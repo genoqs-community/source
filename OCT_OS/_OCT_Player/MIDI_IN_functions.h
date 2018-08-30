@@ -545,7 +545,8 @@ unsigned char is_step_queued( Stepstruct* in_step ){
 void G_midi_insert_event( 	NOTEeventstruct* in_event,
 							unsigned int in_timestamp,
 							Pagestruct* target_page,
-							Trackstruct* target_track 	){
+							Trackstruct* target_track,
+							unsigned char target_col ){
 
 	unsigned int stepLength = 0;
 	unsigned int stepLengthMax = 0;
@@ -604,6 +605,13 @@ void G_midi_insert_event( 	NOTEeventstruct* in_event,
 	// STATUS adjustment: turn on Step under the locator (adjusted by 1)
 	Step_set_status( in_event->target_step, STEPSTAT_TOGGLE, ON );
 
+	#ifdef FEATURE_SOLO_REC
+	// Save the source notes for SoloRec mutator functions such as, quantize and normalize.
+	if ( SOLO_has_rec == TRUE ){
+
+		capture_note_event(in_event->target_step, target_page, target_track, target_col);
+	}
+	#endif
 
 	// Final step: reG_scan_cycle the event - by placing it back onto the stack
 	NOTE_stack_push( in_event );
@@ -716,7 +724,6 @@ void record_note_to_track( 	Pagestruct* target_page,
 	if ( SOLO_rec_measure_hold ) return;
 
 	// Validate the target column number and stop if column is strange
-	// TODO: What would lead to a "strange" column? Is this a bug workaround?
 	if ( target_col > 15 ) return;
 
 	// Transform the in_pitch according to play chains head status
@@ -752,7 +759,7 @@ void record_note_to_track( 	Pagestruct* target_page,
 			if ( off_event != NULL ){
 
 				// Insert event into the sequencing engine - i.e. activate corresponding step!
-				G_midi_insert_event( off_event, G_MIDI_timestamp, target_page, target_page->Track[row] );
+				G_midi_insert_event( off_event, G_MIDI_timestamp, target_page, target_page->Track[row], target_col );
 			}
 			break;
 

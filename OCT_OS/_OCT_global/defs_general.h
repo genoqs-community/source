@@ -146,8 +146,9 @@
 #define MAX_NROF_PAGES			160
 #define PAGE_NROF_ATTRIBUTES	4	// means: STATUS, VELOCITY, PITCH, LENGTH.
 
-// Max number of solo recording measures
-#define MAX_NROF_REC_MEASURES	10 * 16  // all track for a full page cluster
+#define MAX_NROF_PAGE_NOTES		160  // all notes for a full page
+#define MAX_NROF_REC_NOTES		16 * 160  // all notes for a full page cluster
+
 #define REC_MEASURES_IDX		22
 #define REC_MEASURES_SPLIT		23
 

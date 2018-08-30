@@ -71,7 +71,7 @@ Trackstruct 		Track_repository	[MAX_NROF_TRACKS];
 Pagestruct 			Page_repository		[MAX_NROF_PAGES];
 
 // REC NOTES
-Notestruct			Note_repository		[MAX_NROF_REC_MEASURES];
+Notestruct			Note_repository		[MAX_NROF_REC_NOTES];
 
 // REC MEASURES
 Recstruct			Rec_repository		[16];
