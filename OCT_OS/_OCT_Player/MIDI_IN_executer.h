@@ -652,6 +652,14 @@ void Track_record_CC( 	Pagestruct* 	target_page,
  			target_page->Track[row]->event_offset[ATTR_MIDICC] = 0;
  			target_page->Step[row][target_col]->attr_MCC = controller_value;
  			target_page->page_clear = OFF;
+
+			#ifdef FEATURE_SOLO_REC
+ 			if ( SOLO_rec_has_MCC == FALSE ){
+
+ 				SOLO_rec_track_preview = SOLOMCC;
+ 				SOLO_rec_has_MCC = TRUE;
+ 			}
+			#endif
  		}
  	} // row iterator
 
@@ -710,7 +718,7 @@ void midi_controller_execute( 	unsigned char UART_ndx,
 		case zoomPAGE:
 		case zoomTRACK:
 		case zoomMAP:
-//		case zoomSOLOREC: xxx FIXME: Records ok but doesn't play back unless in track/MCC zoom -- maybe related to earlier echo-back work
+		case zoomSOLOREC:
 
 			// Point to the cursor page
 			target_page = &Page_repository[GRID_CURSOR];

@@ -31,6 +31,13 @@
 		// Get the selected attribute
 		attribute = my_bit2ndx( target_page->trackAttributeSelection );
 
+		#ifdef FEATURE_SOLO_REC
+		if ( G_zoom_level == zoomSOLOREC ){
+			attribute = MIDICC;
+			row = my_bit2ndx( target_page->priv_track_REC_pattern );
+		}
+		#endif
+
 		// Display type depends on the attribute itself
 		switch( attribute ){
 

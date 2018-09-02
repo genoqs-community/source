@@ -76,6 +76,7 @@ void executeKey( unsigned int keyNdx ){
 #endif
 
 	#ifdef FEATURE_SOLO_REC
+//	diag_printf("keyNdx=%d\n", keyNdx);
 	if ( G_zoom_level == zoomSOLOREC ){
 		if ( keyNdx == KEY_RETURN ){
 			if ( G_run_bit == OFF ){

@@ -1,4 +1,8 @@
 
+	if ( keyNdx <= 10 ){
+		return; // disable track select buttons
+	}
+
 	if ( keyNdx == KEY_TEMPO ){
 
 		if ( SOLO_slow_tempo != OFF ){ // slow tempo
@@ -16,8 +20,7 @@
 	}
 
 	if ( keyNdx == KEY_PLAY4 ){ // values = OFF, ON, 1.2.3.
-		if ( ++SOLO_rec_ending_flash == QBIT )
-		{
+		if ( ++SOLO_rec_ending_flash == QBIT ){
 			SOLO_rec_ending_flash = OFF;
 		}
 	}
@@ -32,7 +35,12 @@
 	}
 
 	if ( keyNdx == KEY_SELECT_MASTER ){
-		SOLO_rec_track_preview ^= 1;
+		if ( SOLO_rec_has_MCC == FALSE ){
+			SOLO_rec_track_preview ^= 1; // toggle grid and page view because we don't have MCC data
+
+		} else if ( ++SOLO_rec_track_preview > SOLOMCC ){
+			SOLO_rec_track_preview = SOLOGRID;
+		}
 	}
 
 	if ( SOLO_rec_page != NULL ){ // A record page cluster is selected

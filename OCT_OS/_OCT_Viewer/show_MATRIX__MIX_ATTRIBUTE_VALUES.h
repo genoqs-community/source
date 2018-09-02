@@ -216,10 +216,12 @@
 				switch( target_page->Track[row]->attr_MCC ){
 				
 					case MIDICC_NONE:
+
 						MIR_write_trackpattern ( 0x0f, row, MIR_GREEN);
 						break;
 
 					case MIDICC_BENDER:
+
 						MIR_write_trackpattern ( 0x01, row, MIR_RED);	
 						break;	
 

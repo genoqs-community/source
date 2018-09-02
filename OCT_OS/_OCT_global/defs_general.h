@@ -136,6 +136,10 @@
 #define		RECEIVE				2	// EFF flag - Track being influenced by EFF pool
 #define		RECEIVESEND			3	// EFF flag - Track is sending and receiveing EFF pool data
 
+#define		SOLOMCC				2
+#define		SOLOPAGE			1
+#define		SOLOGRID			0
+
 // FUNCTION RELATED DEFINES
 #include "defs_functions.h"
 

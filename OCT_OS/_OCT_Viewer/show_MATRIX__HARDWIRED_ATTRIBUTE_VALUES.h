@@ -130,7 +130,7 @@
 			MIR_write_trackpattern ( 0x0f, 8, MIR_GREEN);
 		}
 		else if ( (	target_page->Track[row]->attr_MCC ) == MIDICC_BENDER ){
-		
+
 			// Signal the bender as selected
 			MIR_write_trackpattern ( 0x01, 8, MIR_RED);	
 		}

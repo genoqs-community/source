@@ -93,8 +93,11 @@
 
 	// SEL toggle track preview - measure POS
 	MIR_write_dot( LED_SELECT_MASTER, MIR_RED );
-	if ( SOLO_rec_track_preview ){
+	if ( SOLO_rec_track_preview >= SOLOPAGE ){
 		MIR_write_dot( LED_SELECT_MASTER, MIR_GREEN );
+	}
+	if ( SOLO_rec_track_preview == SOLOMCC ){
+		MIR_write_dot( LED_SELECT_MASTER, MIR_BLINK );
 	}
 
 	// ESC
@@ -238,39 +241,43 @@
 		}
 	}
 
-	// MATRIX
-	for (i=0; i < MAX_NROF_PAGES; i++) {
-		// Page has contents and is not one of the row zero
-		if (	(Page_repository[i].page_clear != ON)  &&	( (i % 10) != 9 )){
-			// This is our Solo Recording cluster
-			if ( SOLO_rec_page != NULL && selected_page_cluster( i, SOLO_rec_page->pageNdx ) != OFF ){
-				// Page PLAYING - i.e. selected in GRID
-				if ( is_selected_in_GRID( &Page_repository[i] ) ){
 
-					// Show it in GREEN
-					GRID_write_dot( i, MIR_GREEN );
+	if ( SOLO_rec_track_preview == SOLOGRID || G_run_bit == OFF ){
+
+		// MATRIX
+		for (i=0; i < MAX_NROF_PAGES; i++) {
+			// Page has contents and is not one of the row zero
+			if (	(Page_repository[i].page_clear != ON)  &&	( (i % 10) != 9 )){
+				// This is our Solo Recording cluster
+				if ( SOLO_rec_page != NULL && selected_page_cluster( i, SOLO_rec_page->pageNdx ) != OFF ){
+					// Page PLAYING - i.e. selected in GRID
+					if ( is_selected_in_GRID( &Page_repository[i] ) ){
+
+						// Show it in GREEN
+						GRID_write_dot( i, MIR_GREEN );
+					}
+					else {
+						GRID_write_dot( i, MIR_RED );
+					}
 				}
 				else {
-					GRID_write_dot( i, MIR_RED );
-				}
-			}
-			else {
 
-				if ( SOLO_page_play_along[i % 10] == i ){
-					GRID_write_dot( i, MIR_GREEN );
-					GRID_write_dot( i, MIR_BLINK );
+					if ( SOLO_page_play_along[i % 10] == i ){
+						GRID_write_dot( i, MIR_GREEN );
+						GRID_write_dot( i, MIR_BLINK );
+					}
+					else {
+						// This is a muted page in the grid
+						GRID_write_dot( i, MIR_RED );
+					}
 				}
-				else {
-					// This is a muted page in the grid
-					GRID_write_dot( i, MIR_RED );
-				}
-			}
-		} // page_clear != ON
-	} // page iterator
+			} // page_clear != ON
+		} // page iterator
 
 
-	// Write Grid to MIR
-	MIR_write_GRID ();
+		// Write Grid to MIR
+		MIR_write_GRID ();
+	}
 
 
 	// Show the GRID cursor
@@ -353,44 +360,57 @@
 		}
 	}
 
-	// Show the row zero measure position
-	if ( G_run_bit == ON && SOLO_rec_track_preview == OFF ){
+	if ( G_run_bit == ON ){
 
-		// - and end of recording
-		// measure hold
+		// Show the row zero measure position
+		if ( SOLO_rec_track_preview == SOLOGRID ){
 
-		unsigned int min = 20;
-		unsigned int max = 119;
-		unsigned int result = 0;
+			// - and end of recording
+			// measure hold
 
-		// Show the row zero measure count for the pressed page
-		for( i=min; i <= max; i+=11 ){
-			result = (i - 9) / 11;
+			unsigned int min = 20;
+			unsigned int max = 119;
+			unsigned int result = 0;
 
-			if ( SOLO_rec_page != NULL && result == G_measure_locator ){ // Show current measure
+			// Show the row zero measure count for the pressed page
+			for( i=min; i <= max; i+=11 ){
+				result = (i - 9) / 11;
 
-				MIR_write_dot( i, MIR_GREEN );
-				MIR_write_dot( i, MIR_BLINK );
-			}
-			else if ( result <= GRID_p_selection[SOLO_rec_bank]->attr_STA ) {
-				MIR_write_dot( i, MIR_RED );
+				if ( SOLO_rec_page != NULL && result == G_measure_locator ){ // Show current measure
+
+					MIR_write_dot( i, MIR_GREEN );
+					MIR_write_dot( i, MIR_BLINK );
+				}
+				else if ( result <= GRID_p_selection[SOLO_rec_bank]->attr_STA ) {
+					MIR_write_dot( i, MIR_RED );
+				}
 			}
 		}
-	}
 
-	if ( G_run_bit == ON && SOLO_rec_track_preview == ON ){
-		// MATRIX
-		show ( ELE_MATRIX, STEP_TOGGLE );
+		if ( SOLO_rec_track_preview == SOLOPAGE ){
+			// MATRIX
+			show ( ELE_MATRIX, STEP_TOGGLE );
 
-		// Show the REC status of tracks
-		show( ELE_TRACK_SELECTORS, TRACK_REC_STATUS );
+			// Show the REC status of tracks
+			show( ELE_TRACK_SELECTORS, TRACK_REC_STATUS );
 
-		MIR_write_lauflicht ();
-	}
-	else {
+			if ( G_run_bit == ON ){
 
-		// Show the packman at playtime - unless there is a scale selected
-		show ( ELE_OCTAVE_CIRCLE, G_global_locator_PICTURE );
+				MIR_write_lauflicht ();
+			}
+		}
+		else if ( SOLO_rec_track_preview == SOLOMCC ){
+			// MATRIX
+			if ( G_run_bit == ON ){
+				show( ELE_MATRIX, LAUFLICHT_BOTTOM );
+			}
+			show ( ELE_MATRIX, ATTR_MAP_VALUES );
+		}
+		else {
+
+			// Show the packman at playtime - unless there is a scale selected
+			show ( ELE_OCTAVE_CIRCLE, G_global_locator_PICTURE );
+		}
 	}
 
 

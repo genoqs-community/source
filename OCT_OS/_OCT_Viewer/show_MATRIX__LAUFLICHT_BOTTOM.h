@@ -27,6 +27,13 @@
 			// Get index of selected track
 			j = my_bit2ndx( target_page->trackSelection );
 
+			#ifdef FEATURE_SOLO_REC
+			if ( G_zoom_level == zoomSOLOREC ){
+				j = my_bit2ndx( target_page->priv_track_REC_pattern );
+			}
+			#endif
+
+
 			// Write contents of selected track to rowzero
 			MIR_write_trackpattern( Page_get_trackpattern( target_page, j ), 9, MIR_GREEN	    );
 			MIR_write_trackpattern( Page_get_skippattern ( target_page, j ), 9, MIR_RED			);
