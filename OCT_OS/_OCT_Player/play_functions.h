@@ -201,6 +201,16 @@ void compute_chain_presel( unsigned char target_bank ){
 
 			// d_iag_printf( "this_ndx:%d\n", this_ndx );
 
+			#ifdef FEATURE_SOLO_REC
+			// Free Flow recording -- add a page to the end of the cluster
+			if ( G_zoom_level == zoomSOLOREC && SOLO_rec_freeflow == ON &&
+				 next_ndx < MAX_NROF_PAGES && Page_repository[next_ndx].page_clear == ON)
+			{
+				create_next_freeflow_page_cluster(next_ndx);
+				G_measure_locator = 1;
+			}
+			#endif
+
 			// RIGHT neighbor exists and has some content
 			if ( 	(next_ndx < MAX_NROF_PAGES) &&
 					(Page_repository[next_ndx].page_clear == OFF)
@@ -253,8 +263,7 @@ void compute_chain_presel( unsigned char target_bank ){
 
 				#ifdef FEATURE_SOLO_REC
 				if ( G_zoom_level == zoomSOLOREC ){
-					if ( G_zoom_level == zoomSOLOREC &&
-						 G_track_rec_bit == ON &&
+					if ( G_track_rec_bit == ON &&
 						 target_bank == SOLO_rec_bank &&
 						 SOLO_rec_continue_recording == OFF ){
 

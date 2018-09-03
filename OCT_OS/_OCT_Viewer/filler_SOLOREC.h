@@ -249,12 +249,17 @@
 			// Page has contents and is not one of the row zero
 			if (	(Page_repository[i].page_clear != ON)  &&	( (i % 10) != 9 )){
 				// This is our Solo Recording cluster
-				if ( SOLO_rec_page != NULL && selected_page_cluster( i, SOLO_rec_page->pageNdx ) != OFF ){
+				if ( SOLO_rec_page != NULL && selected_page_cluster( i, SOLO_rec_page->pageNdx ) != NOP ){
 					// Page PLAYING - i.e. selected in GRID
 					if ( is_selected_in_GRID( &Page_repository[i] ) ){
 
 						// Show it in GREEN
 						GRID_write_dot( i, MIR_GREEN );
+
+						// Flash for Free Flow
+						if ( SOLO_rec_freeflow == ON ){
+							GRID_write_dot( i, MIR_BLINK );
+						}
 					}
 					else {
 						GRID_write_dot( i, MIR_RED );
@@ -285,14 +290,14 @@
 	unsigned int selRec = selected_solo_rec_page( GRID_CURSOR, temp );
 	if ( selRec == ON ||
 	   ( SOLO_rec_page != NULL &&
-	     selected_page_cluster( GRID_CURSOR, SOLO_rec_page->pageNdx ) != OFF &&
+	     selected_page_cluster( GRID_CURSOR, SOLO_rec_page->pageNdx ) != NOP &&
 	     is_pressed_key( temp )
 	)){
 
 		if ( selRec == OFF && SOLO_rec_page != NULL ){
 			MIR_write_dot( LED_CLEAR, MIR_BLINK );
 		}
-		if ( SOLO_rec_page == NULL && SOLO_rec_freeflow == OFF ){
+		if ( SOLO_rec_page == NULL && SOLO_rec_freeflow == OFF && has_empty_grid_row_ahead(GRID_CURSOR) == TRUE ){
 			// No recording page has been chosen yet so show the Free Flow button flashing
 			// when an eligible grid page is pressed
 			MIR_write_dot( LED_CHAINMODE_4, MIR_RED   );
@@ -301,7 +306,7 @@
 		}
 
 		// Show the pressed recording page or the page to the right that may become a recording page
-		if ( SOLO_rec_freeflow == OFF || selected_page_cluster( GRID_CURSOR, SOLO_rec_page->pageNdx ) != OFF ){
+		if ( SOLO_rec_freeflow == OFF || selected_page_cluster( GRID_CURSOR, SOLO_rec_page->pageNdx ) != NOP ){
 
 			MIR_write_dot( temp, MIR_RED   );
 			MIR_write_dot( temp, MIR_GREEN );

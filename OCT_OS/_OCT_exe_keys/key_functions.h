@@ -1181,6 +1181,12 @@ void exit_solo_recording()
 	G_zoom_level = zoomGRID; // exit the Solo Recording view
 }
 
+void create_next_freeflow_page_cluster(signed short next_ndx){
+
+	Pagestruct* temp_page = &Page_repository[ next_ndx ];
+	temp_page->page_clear = OFF;
+}
+
 void create_page_record_track_chain(Pagestruct* target_page, unsigned int measures){
 	int n, m, row, col;
 

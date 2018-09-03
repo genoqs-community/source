@@ -46,12 +46,16 @@
 	if ( SOLO_rec_page != NULL ){ // A record page cluster is selected
 
 		if ( keyNdx == KEY_PLAY1 ){
-			if ( SOLO_has_rec == ON ){
+			if ( SOLO_rec_freeflow == ON && SOLO_rec_measure_hold == OFF ){
+				SOLO_rec_freeflow = OFF;
+				G_track_rec_bit = OFF;
+			}
+			else if ( SOLO_has_rec == ON && G_run_bit == OFF ){
 				G_track_rec_bit = OFF;
 				reset_page_cluster( SOLO_rec_page, TRUE );
 				sequencer_command_PLAY();
 			}
-			else if ( SOLO_rec_measure_hold == ON ){
+			if ( SOLO_rec_measure_hold == ON && G_run_bit == ON ){
 				SOLO_rec_rehersal ^= 1;
 			}
 		}
@@ -73,6 +77,7 @@
 			if ( SOLO_has_rec == ON ){
 				SOLO_edit_buffer_volatile ^= 1; // toggle
 				SOLO_has_rec = OFF;
+				SOLO_rec_freeflow = OFF;
 				// Clear the pages
 				clear_page_record_track_chain(SOLO_rec_page);
 				MIX_TIMER = ON;
@@ -98,7 +103,7 @@
 		}
 	}
 
-	if ( keyNdx < 187 && G_run_bit == ON ){
+	if ( keyNdx < 187 && G_run_bit == ON && SOLO_rec_track_preview == SOLOPAGE ){
 
 		// Compute Step coordinates
 		unsigned char row = row_of( keyNdx );
@@ -113,7 +118,7 @@
 	if (keyNdx == KEY_CLEAR && G_run_bit == OFF){
 		unsigned char temp = cursor_to_dot( GRID_CURSOR );
 		if ( SOLO_rec_page != NULL &&
-			 selected_page_cluster( GRID_CURSOR, SOLO_rec_page->pageNdx ) != OFF &&
+			 selected_page_cluster( GRID_CURSOR, SOLO_rec_page->pageNdx ) != NOP &&
 			 is_pressed_key( temp )
 		){
 
@@ -126,6 +131,7 @@
 			SOLO_rec_freeflow 			= OFF;
 			SOLO_rec_measure_count 		= OFF;
 			SOLO_rec_measure_pos 		= OFF;
+			SOLO_rec_has_MCC			= OFF;
 			G_measure_locator 			= OFF;
 			Solorec_init();
 		}
@@ -186,17 +192,21 @@
 		// Activate a record page - set the measure count
 		if (
 			 ( selected_solo_rec_page( cursor, cursor_to_dot( cursor ) ) == ON ||
-			   selected_page_cluster( cursor, SOLO_rec_page->pageNdx ) != OFF )){
+			   selected_page_cluster( cursor, SOLO_rec_page->pageNdx ) != NOP )){
 			/*
 			 * A page with a measure count has been selected on this press
 			 */
 			if ( !SOLO_has_rec ){ // does not have a recording yet
 
-				if ( keyNdx == KEY_CHAINMODE_4 && SOLO_rec_page == NULL && Page_repository[pressed].page_clear == ON ){
+				if ( has_empty_grid_row_ahead(pressed) == TRUE && keyNdx == KEY_CHAINMODE_4 && SOLO_rec_page == NULL && Page_repository[pressed].page_clear == ON ){
+
+					// Free Flow!
 					SOLO_rec_freeflow = ON;
 					Page_repository[pressed].page_clear = OFF;
 					SOLO_rec_page = &Page_repository[pressed];
-					Rec_repository[pressedCol].measure_count = 1;
+					Rec_repository[pressedCol].measure_count = 1; // <------------------------------------------- FIXME pressedCol is not 1600
+					create_page_record_track_chain(SOLO_rec_page, 1);
+					reset_page_cluster( SOLO_rec_page, FALSE );
 				}
 				// A page is pressed first then step 1 through 10 of row zero to set the measure count
 				else if ( rowZeroTrack != OFF && rowZeroTrack <= 10 && SOLO_rec_freeflow == OFF ){
@@ -210,13 +220,13 @@
 						SOLO_rec_page = &Page_repository[pressed];
 
 						if ( SOLO_has_rec == OFF ){
-							GRID_CURSOR = SOLO_rec_page->pageNdx; // TODO: <-------- freeflow
+							GRID_CURSOR = SOLO_rec_page->pageNdx;
 						}
 					}
 
 					SOLO_rec_pressed_col = pressedCol;
 					create_page_record_track_chain(SOLO_rec_page, rowZeroTrack);
-					Rec_repository[pressedCol].measure_count = rowZeroTrack;
+					Rec_repository[pressedCol].measure_count = rowZeroTrack; // <------------------------------------------- FIXME pressedCol is not 1600
 					reset_page_cluster( SOLO_rec_page, FALSE );
 
 					// Snow the measure count for a few extra blinks

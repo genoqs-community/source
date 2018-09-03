@@ -221,6 +221,35 @@ void selected_page_cluster_clear( unsigned char grid_cursor ){
 	}
 }
 
+unsigned char last_page_in_grid_row( unsigned char target_page ){
+
+	return target_page % 10 + 150;
+}
+
+unsigned char has_empty_grid_row_ahead( unsigned char target_page ){
+
+	Pagestruct* temp_page = &Page_repository[ target_page ];
+
+	signed short 	this_ndx = 0;
+	unsigned char	last_page = last_page_in_grid_row(target_page);
+
+	if ( target_page % 10 == 9 ) // don't show the grid scene row
+	{
+		return FALSE;
+	}
+
+	this_ndx = temp_page->pageNdx;
+
+	// track forward
+	while ( 	(this_ndx < last_page) &&
+			(Page_repository[this_ndx].page_clear == ON)
+	){
+		this_ndx += 10;
+	}
+
+	return this_ndx == last_page;
+}
+
 unsigned char first_page_in_cluster( unsigned char target_page ){
 
 	Pagestruct* temp_page = &Page_repository[ target_page ];
@@ -287,7 +316,7 @@ unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char ta
 	// Compute the index of the right neighbor
 	this_ndx = temp_page->pageNdx;
 	if (Page_repository[this_ndx].page_clear == ON) {
-		return 0;
+		return NOP;
 	}
 
 	prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
@@ -307,22 +336,25 @@ unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char ta
 	){
 		if ( Page_repository[ this_ndx ].pageNdx == target_page ){
 
-			return column_of(grid_cursor);
+			return grid_cursor / 10;
 		}
 		this_ndx += 10;
 	}
-	return 0;
+	return NOP;
 }
 
 void stop_solo_rec(){
 
 	sequencer_STOP( true );
 	sequencer_RESET( false );
-	G_track_rec_bit = OFF;
-	G_measure_locator = OFF;
-	SOLO_pos_marker_in = OFF;
-	SOLO_pos_marker_out = OFF;
-	SOLO_rec_measure_pos = OFF;
+
+	G_track_rec_bit 		= OFF;
+	G_measure_locator		= OFF;
+	SOLO_pos_marker_in 		= OFF;
+	SOLO_pos_marker_out 	= OFF;
+	SOLO_rec_measure_pos 	= OFF;
+	SOLO_rec_freeflow 		= OFF;
+
 	// Reset the grid cursor for the recording page cluster
 	if ( SOLO_rec_page != NULL ){
 		reset_page_cluster( SOLO_rec_page, FALSE );
