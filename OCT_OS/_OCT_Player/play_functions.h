@@ -267,7 +267,7 @@ void compute_chain_presel( unsigned char target_bank ){
 						 target_bank == SOLO_rec_bank &&
 						 SOLO_rec_continue_recording == OFF ){
 
-						stop_solo_rec(); // We have reached the end of the recording so stop
+						stop_solo_rec(FALSE); // We have reached the end of the recording so stop
 						return;
 					}
 

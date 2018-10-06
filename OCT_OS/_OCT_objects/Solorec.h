@@ -19,6 +19,7 @@ unsigned char SOLO_rec_pressed_col				= OFF;
 unsigned char SOLO_pos_marker_in				= OFF;
 unsigned char SOLO_pos_marker_out				= OFF;
 unsigned char SOLO_rec_freeflow					= OFF;
+unsigned char SOLO_rec_freeflow_trim			= ON;
 unsigned char SOLO_rec_ending_flash				= ON;
 unsigned char SOLO_rec_continue_recording		= OFF;
 unsigned char SOLO_rec_quantize_first_beat		= ON;
@@ -31,6 +32,7 @@ unsigned char SOLO_rec_has_MCC					= FALSE;
 unsigned char SOLO_page_play_along[10];
 unsigned short SOLO_rec_save_playmodes			= OFF;
 unsigned short SOLO_rec_measure_count			= OFF;
+unsigned short SOLO_rec_freeflow_measures		= OFF;
 unsigned short SOLO_rec_measure_pos				= OFF;
 
 
@@ -56,6 +58,17 @@ void Solorec_init(){
 
 		SOLO_page_play_along[i] = 255;
 	 }
+}
+
+void freeflowOff( unsigned char trim ){
+
+	if ( trim == TRUE ){
+
+		unsigned char last_page = last_page_in_cluster(SOLO_rec_page->pageNdx);
+		Pagestruct* target_page = &Page_repository[ last_page ];
+		trim_freeflow_track_chain(target_page, (target_page->attr_STA - target_page->repeats_left));
+	}
+	SOLO_rec_freeflow = OFF;
 }
 
 void quantizeStep(Stepstruct* target_step, Notestruct* noteRec){

@@ -43,7 +43,7 @@
 	}
 
 	if ( SOLO_has_rec == ON ){
-		if ( G_track_rec_bit == OFF ){
+		if ( G_track_rec_bit == OFF && SOLO_rec_freeflow == OFF ){
 			if ( G_run_bit == ON ){
 				MIR_write_dot( LED_PLAY1, MIR_GREEN );
 			}
@@ -78,8 +78,17 @@
 
 	// Free Flow recording
 	if ( SOLO_rec_freeflow == ON ){
-		MIR_write_dot( LED_CHAINMODE_4, MIR_RED   );
-		MIR_write_dot( LED_CHAINMODE_4, MIR_GREEN );
+
+		// Flash every 4 measures when in Free Flow recording
+		if ( (SOLO_rec_measure_pos % 4) == 0 && G_run_bit == ON ){
+
+			MIR_write_dot( LED_CHAINMODE_4, MIR_RED );
+			MIR_write_dot( LED_CHAINMODE_4, MIR_BLINK );
+		}
+		else {
+			MIR_write_dot( LED_CHAINMODE_4, MIR_RED   );
+			MIR_write_dot( LED_CHAINMODE_4, MIR_GREEN );
+		}
 	}
 
 	// Undo Edit buffer
@@ -153,11 +162,12 @@
 	MIR_write_dot( LED_PASTE, MIR_RED ); // MCH
 	MIR_write_dot( LED_PASTE, MIR_GREEN );
 
+	unsigned short measures = (SOLO_rec_freeflow == OFF) ? SOLO_rec_measure_count : SOLO_rec_freeflow_measures;
 
 	// Flash the end of recording indicator using the CHORD LEDs
 	if ( SOLO_rec_ending_flash == ON && G_run_bit == ON &&
-		 SOLO_rec_measure_pos == SOLO_rec_measure_count &&
-		 SOLO_rec_measure_count > 1 ){ // Flash the last measure
+		 SOLO_rec_measure_pos == measures &&
+		 measures > 1 ){ // Flash the last measure
 
 		for (i=LED_QUANTIZE_FIRST; i <= LED_QUANTIZE_HIGH; i++) {
 			MIR_write_dot( i, MIR_RED );
@@ -166,17 +176,17 @@
 		}
 	}
 	else if ( SOLO_rec_ending_flash > ON && G_run_bit == ON &&
-			  SOLO_rec_measure_pos > (SOLO_rec_measure_count - 3) &&
-			  SOLO_rec_measure_count > 3 ){ // 3 - 2 - 1 ... Flash the measure count down
+			  SOLO_rec_measure_pos > (measures - 3) &&
+			  measures > 3 ){ // 3 - 2 - 1 ... Flash the measure count down
 
 		for (i=LED_QUANTIZE_FIRST; i <= LED_QUANTIZE_HIGH; i++) {
-			if ( SOLO_rec_measure_pos == SOLO_rec_measure_count - 2 ){
+			if ( SOLO_rec_measure_pos == measures - 2 ){
 				MIR_write_dot( i, MIR_RED );
 			}
-			else if ( SOLO_rec_measure_pos == SOLO_rec_measure_count - 1 ){
+			else if ( SOLO_rec_measure_pos == measures - 1 ){
 				MIR_write_dot( i, MIR_GREEN );
 			}
-			else if ( SOLO_rec_measure_pos == SOLO_rec_measure_count ){
+			else if ( SOLO_rec_measure_pos == measures ){
 				MIR_write_dot( i, MIR_RED );
 				MIR_write_dot( i, MIR_GREEN );
 			}
@@ -258,6 +268,7 @@
 
 						// Flash for Free Flow
 						if ( SOLO_rec_freeflow == ON ){
+							GRID_write_dot( i, MIR_RED );
 							GRID_write_dot( i, MIR_BLINK );
 						}
 					}

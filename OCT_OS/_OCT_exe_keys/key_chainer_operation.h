@@ -269,6 +269,20 @@ void make_chain_tail( 	Pagestruct* target_page,
 }
 
 
+void remove_track_chain( Pagestruct* pagePt ){
+
+	unsigned char row;
+
+	// Initialize the page Track chain data
+	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
+		// Init the chain data for 10 unchained rows: each track is by itself
+		pagePt->Track[row]->chain_data[HEAD] = pagePt->Track[row];
+		pagePt->Track[row]->chain_data[NEXT] = pagePt->Track[row];
+		pagePt->Track[row]->chain_data[PREV] = pagePt->Track[row];
+		pagePt->Track[row]->chain_data[PLAY] = pagePt->Track[row];
+	}
+}
+
 
 // Takes the current selection in the page and makes a chain out of it.
 // Previous chains are broken and left alone

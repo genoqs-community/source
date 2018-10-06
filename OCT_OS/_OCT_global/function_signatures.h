@@ -64,14 +64,16 @@ extern void 			apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Tr
 extern unsigned int 	selected_solo_rec_page( unsigned char grid_cursor, unsigned char dot );
 extern unsigned char 	selected_page_cluster( unsigned char grid_cursor, unsigned char target_page );
 extern unsigned char 	last_page_in_grid_row( unsigned char target_page );
+extern unsigned char 	last_page_in_cluster( unsigned char target_page );
 extern unsigned char 	has_empty_grid_row_ahead( unsigned char target_page );
 extern unsigned char 	first_page_in_cluster( unsigned char target_page );
 extern  void 			reset_page_cluster( Pagestruct* target_page, unsigned char resetTackSelections );
-extern 	void 			stop_solo_rec();
+extern 	void 			stop_solo_rec( unsigned char trim );
 extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
 extern	void 			align_measure_locators();
 extern  void 			create_page_record_track_chain(Pagestruct* target_page, unsigned int measures);
-extern  void			create_next_freeflow_page_cluster(signed short next_ndx);
+extern  void			create_next_freeflow_page_cluster(unsigned char next_ndx);
+extern  void 			trim_freeflow_track_chain(Pagestruct* target_page, unsigned int measures);
 
 extern 	void 			sequencer_RESET( unsigned char force_stop );
 

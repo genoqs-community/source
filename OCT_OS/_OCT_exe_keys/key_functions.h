@@ -1154,8 +1154,8 @@ void exit_solo_recording()
 		reset_page_cluster( SOLO_rec_page, TRUE );
 	}
 	// Reset most of the global variables
-	SOLO_quantize_fine_tune 	= 0;
-	SOLO_quantize_note 			= 1;
+	SOLO_quantize_fine_tune 	= OFF;
+	SOLO_quantize_note 			= OFF;
 	SOLO_strum					= 9; // 9=OFF
 	SOLO_slow_tempo				= OFF;
 	SOLO_rec_page				= NULL;
@@ -1174,6 +1174,7 @@ void exit_solo_recording()
 //	SOLO_page_play_along[10];
 	G_measure_locator			= OFF;
 	SOLO_rec_measure_count		= OFF;
+	SOLO_rec_freeflow_measures	= OFF;
 	SOLO_rec_measure_hold		= OFF;
 	GRID_bank_playmodes 		= SOLO_rec_save_playmodes;
 	SOLO_rec_save_playmodes		= OFF;
@@ -1181,10 +1182,49 @@ void exit_solo_recording()
 	G_zoom_level = zoomGRID; // exit the Solo Recording view
 }
 
-void create_next_freeflow_page_cluster(signed short next_ndx){
+void create_next_freeflow_page_cluster(unsigned char next_ndx){
 
-	Pagestruct* temp_page = &Page_repository[ next_ndx ];
-	temp_page->page_clear = OFF;
+	Pagestruct* next_page = &Page_repository[ next_ndx ];
+	create_page_record_track_chain(next_page, MATRIX_NROF_ROWS);
+	SOLO_rec_freeflow_trim = ON; // last page requires trim()
+}
+
+void trim_freeflow_track_chain(Pagestruct* target_page, unsigned int measureNdx){
+	int n, m, row, col, j, measureCnt;
+
+	measureCnt = measureNdx + 1;
+	SOLO_rec_freeflow_measures -= (MATRIX_NROF_ROWS - measureNdx);
+	SOLO_rec_measure_count = SOLO_rec_freeflow_measures;
+
+	// shift down by inserting
+	j = (MATRIX_NROF_ROWS -1);
+	for ( row=measureNdx; row >= 0; row-- ){
+		Track_hard_init( target_page->Track[j], target_page->Track[j]->trackId ); // clear the end most track
+		// insert the last original track in the chain to the new end from the bottom up
+		Track_copy( target_page, row, target_page, j-- ); // Execute the copy operation
+		Track_clear_steps( target_page, row );
+	}
+
+	// reset first
+	remove_track_chain(target_page);
+	Page_setTrackRecPattern(target_page, 0);
+	target_page->trackSelection = 0;
+	target_page->attr_STA = measureCnt;
+	target_page->repeats_left = measureCnt;
+
+	m = MATRIX_NROF_ROWS - measureCnt;
+
+	for (n=9; n >= m; --n) { // each measure from the bottom up
+		target_page->trackSelection |= 1 << n;
+	}
+
+	chain_selected_tracks( target_page );
+	Page_setTrackRecPatternBit( target_page, (n+1) );
+
+	col = target_page->pageNdx / 10;
+
+	Rec_repository[col].measure_count = measureCnt;
+	SOLO_rec_freeflow_trim = OFF;
 }
 
 void create_page_record_track_chain(Pagestruct* target_page, unsigned int measures){
