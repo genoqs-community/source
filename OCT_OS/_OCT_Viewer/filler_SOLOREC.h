@@ -142,6 +142,7 @@
 		}
 	}
 
+//	--------------------------------------------------------
 	// POS recording split button
 	if (SOLO_rec_page != NULL && SOLO_has_rec == ON ){
 		MIR_write_dot( LED_FLT, MIR_RED ); // POS
@@ -153,6 +154,8 @@
 			}
 		}
 	}
+//	--------------------------------------------------------
+
 
 	// Show the MODE - (Special) Grid Solo Zoom
 	MIR_write_dot( LED_ZOOM_GRID, MIR_RED );
@@ -297,18 +300,19 @@
 
 
 	// Show the GRID cursor
-	unsigned char temp = cursor_to_dot( GRID_CURSOR );
-	unsigned int selRec = selected_solo_rec_page( GRID_CURSOR, temp );
+	unsigned int pressed = is_pressed_pagerange();
+	unsigned char pressedNdx = grid_ndx_from_key(pressed); // the key that is pressed FIXME: short circuit
+	unsigned char selRec = selected_solo_rec_page( pressedNdx, pressedNdx );
+
 	if ( selRec == ON ||
 	   ( SOLO_rec_page != NULL &&
-	     selected_page_cluster( GRID_CURSOR, SOLO_rec_page->pageNdx ) != NOP &&
-	     is_pressed_key( temp )
+	     selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) != NOP
 	)){
 
 		if ( selRec == OFF && SOLO_rec_page != NULL ){
 			MIR_write_dot( LED_CLEAR, MIR_BLINK );
 		}
-		if ( SOLO_rec_page == NULL && SOLO_rec_freeflow == OFF && has_empty_grid_row_ahead(GRID_CURSOR) == TRUE ){
+		if ( SOLO_rec_page == NULL && SOLO_rec_freeflow == OFF && has_empty_grid_row_ahead(pressedNdx) == TRUE ){
 			// No recording page has been chosen yet so show the Free Flow button flashing
 			// when an eligible grid page is pressed
 			MIR_write_dot( LED_CHAINMODE_4, MIR_RED   );
@@ -317,11 +321,11 @@
 		}
 
 		// Show the pressed recording page or the page to the right that may become a recording page
-		if ( SOLO_rec_freeflow == OFF || selected_page_cluster( GRID_CURSOR, SOLO_rec_page->pageNdx ) != NOP ){
+		if ( SOLO_rec_freeflow == OFF || selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) != NOP ){
 
-			MIR_write_dot( temp, MIR_RED   );
-			MIR_write_dot( temp, MIR_GREEN );
-			MIR_write_dot( temp, MIR_BLINK );
+			MIR_write_dot( pressed, MIR_RED   );
+			MIR_write_dot( pressed, MIR_GREEN );
+			MIR_write_dot( pressed, MIR_BLINK );
 
 			unsigned int min = 20;
 			unsigned int max = 119;
@@ -333,7 +337,7 @@
 
 				if ( SOLO_has_rec == TRUE ){ // has a recording
 
-					if ( SOLO_rec_page != NULL && Rec_repository[column_of(temp)].measure_count >= result ){
+					if ( SOLO_rec_page != NULL && Rec_repository[ grid_col(pressedNdx) ].measure_count >= result ){
 
 						MIR_write_dot( i, MIR_RED );
 						// Show the page edit warp tunnel
@@ -343,7 +347,7 @@
 				}
 				else {
 
-					if ( SOLO_rec_page != NULL && Rec_repository[column_of(temp)].measure_count == result ){
+					if ( SOLO_rec_page != NULL && Rec_repository[ grid_col(pressedNdx) ].measure_count == result ){
 
 						MIR_write_dot( i, MIR_GREEN );
 					}

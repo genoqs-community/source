@@ -436,8 +436,37 @@ unsigned int column_of (unsigned int stepKeyNdx) {
 
 
 
+unsigned char grid_row (unsigned char gridNdx) {
+	return gridNdx % 10;
+}
 
+unsigned char grid_col (unsigned char gridNdx) {
+	return gridNdx / 10;
+}
 
+unsigned char grid_ndx (unsigned char grid_row, unsigned char grid_col) {
+	return grid_row + (10 * grid_col);
+}
+
+unsigned char grid_ndx_from_key (unsigned int keyNdx) {
+	return grid_ndx( row_of(keyNdx), column_of(keyNdx));
+}
+
+unsigned char grid_ndx_next_col (unsigned char gridNdx) {
+
+	if (grid_col(gridNdx) == 15){
+		return NOP;
+	}
+	return grid_ndx( grid_row(gridNdx), grid_col(gridNdx) + 1);
+}
+
+unsigned char grid_ndx_prev_col (unsigned char gridNdx) {
+
+	if (grid_col(gridNdx) == 0){
+		return NOP;
+	}
+	return grid_ndx( grid_row(gridNdx), grid_col(gridNdx) - 1);
+}
 
 
 // Computes the key index given the reg(ister), the significant byte xSB and the port value

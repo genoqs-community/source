@@ -61,19 +61,26 @@ extern	void 			make_control_track ( Pagestruct* target_page, unsigned char track
 extern unsigned int 	is_page_in_cluster( Pagestruct* temp_page, unsigned char pageNdx );
 extern unsigned int 	selected_page_cluster_right_neighbor( Pagestruct* temp_page, unsigned char pageNdx );
 extern void 			apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track );
-extern unsigned int 	selected_solo_rec_page( unsigned char grid_cursor, unsigned char dot );
+extern unsigned char 	selected_solo_rec_page( unsigned char heldNdx, unsigned char pressedNdx );
 extern unsigned char 	selected_page_cluster( unsigned char grid_cursor, unsigned char target_page );
 extern unsigned char 	last_page_in_grid_row( unsigned char target_page );
 extern unsigned char 	last_page_in_cluster( unsigned char target_page );
 extern unsigned char 	has_empty_grid_row_ahead( unsigned char target_page );
 extern unsigned char 	first_page_in_cluster( unsigned char target_page );
-extern  void 			reset_page_cluster( Pagestruct* target_page, unsigned char resetTackSelections );
+extern  void 			reset_page_cluster( Pagestruct* target_page );
 extern 	void 			stop_solo_rec( unsigned char trim );
 extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
 extern	void 			align_measure_locators();
 extern  void 			create_page_record_track_chain(Pagestruct* target_page, unsigned int measures);
 extern  void			create_next_freeflow_page_cluster(unsigned char next_ndx);
-extern  void 			trim_freeflow_track_chain(Pagestruct* target_page, unsigned int measures);
+extern  void 			cut_freeflow_track_chain(Pagestruct* target_page, unsigned char measures);
+extern  void			shift_down_freeflow_track_chain(Pagestruct* target_page, unsigned char measures, unsigned char count);
+extern  void 			trim_freeflow_track_chain(Pagestruct* target_page, unsigned char measures);
+
+extern unsigned char 	grid_row (unsigned char gridNdx);
+extern unsigned char 	grid_col (unsigned char gridNdx);
+extern unsigned char 	grid_ndx (unsigned char grid_row, unsigned char grid_col);
+extern unsigned char 	grid_ndx_from_key (unsigned int keyNdx);
 
 extern 	void 			sequencer_RESET( unsigned char force_stop );
 
@@ -236,6 +243,7 @@ extern void 			my_sysex_dump( unsigned char dump_type, unsigned char my_grid_cur
 extern void 			show_progress_bar( unsigned char part, unsigned char color );
 
 extern unsigned int 	is_pressed_keyrange( unsigned int min, unsigned int max );
+extern unsigned int 	is_pressed_pagerange();
 extern void 			MIR_write_base12_H( int val, unsigned char target_row );
 extern void 			MIR_write_numeric_C (unsigned char number);
 extern unsigned char 	Step_get_status ( Stepstruct* target_step, unsigned char target_bit);

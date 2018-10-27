@@ -509,7 +509,9 @@ typedef struct notestruct{
 typedef struct recstruct{
 
 	Notestruct*		Note[MAX_NROF_REC_NOTES];
+	Notestruct*		NoteUndo[MAX_NROF_REC_NOTES];
 	unsigned char	measure_count;
+	unsigned char	measure_count_undo;
 
 } Recstruct;
 
@@ -528,7 +530,7 @@ extern Stepstruct 			Step_repository[MAX_NROF_STEPS];
 extern Trackstruct 			Track_repository[MAX_NROF_TRACKS];
 extern Pagestruct 			Page_repository[MAX_NROF_PAGES];
 extern Track_Direction 		direction_repository[];
-extern Recstruct			Rec_repository[16];
+extern Recstruct			Rec_repository[MATRIX_NROF_COLUMNS];
 extern Notestruct			Note_repository[MAX_NROF_REC_NOTES];
 
 

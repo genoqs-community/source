@@ -25,22 +25,23 @@
 
 
 // Only allow selection of right neighbor pages that are not connecting to an existing page cluster
-unsigned int selected_solo_rec_page( unsigned char grid_cursor, unsigned char dot ){
+unsigned char selected_solo_rec_page( unsigned char held, unsigned char pressedNdx ){
 
 	if ( SOLO_has_rec ){
-		return 0; // new page chains cannot be added if there is a recording
+		return OFF; // new page chains cannot be added if there is a recording
 	}
 
-	if ( Page_repository[grid_cursor].page_clear == ON && is_pressed_key(dot) &&
-	   ( dot < 20 || // first column
-			   ( SOLO_rec_page == NULL && Page_repository[grid_cursor - 10].page_clear == ON) ||
-				 SOLO_rec_page != NULL
-	   ) &&
-	   ( SOLO_rec_page == NULL || SOLO_rec_page->pageNdx == (grid_cursor - 10) )){
+	if ( Page_repository[held].page_clear == ON &&
+	   ( SOLO_rec_page == NULL &&
+	   ( grid_col(held) == 0 || Page_repository[grid_ndx_prev_col(held)].page_clear == ON))) {
 
-		return 1;
+		return ON;
 	}
-	return 0;
+	else if ( SOLO_rec_page != NULL && SOLO_rec_page->pageNdx == grid_ndx_prev_col(held))
+	{
+		return ON; // FIXME: we are relying on the page being one column back
+	}
+	return OFF;
 }
 
 // apply a track mute toggle for a single page
@@ -360,7 +361,7 @@ unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char ta
 	){
 		if ( Page_repository[ this_ndx ].pageNdx == target_page ){
 
-			return grid_cursor / 10;
+			return grid_col(grid_cursor);
 		}
 		this_ndx += 10;
 	}
@@ -375,23 +376,63 @@ void stop_solo_rec( unsigned char trim ){
 
 	G_track_rec_bit 		= OFF;
 	G_measure_locator		= OFF;
-	SOLO_pos_marker_in 		= OFF;
-	SOLO_pos_marker_out 	= OFF;
 	SOLO_rec_measure_pos 	= OFF;
+	SOLO_rec_rehersal		= OFF;
 
 	// Reset the grid cursor for the recording page cluster
 	if ( SOLO_rec_page != NULL ){
-		reset_page_cluster( SOLO_rec_page, FALSE );
+		reset_page_cluster( SOLO_rec_page );
 	}
 }
 
-void reset_page_cluster( Pagestruct* temp_page, unsigned char resetTackSelections ){
+void clear_pages_left( Pagestruct* temp_page ){
+
+	signed short 	prev_ndx = 0,
+					this_ndx = 0;
+
+	this_ndx = temp_page->pageNdx;
+	prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
+
+	// track back to beginning of cluster selection
+	while ( 	(prev_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[prev_ndx].page_clear == OFF)
+	){
+		temp_page = &Page_repository[ prev_ndx ];
+		Page_clear( temp_page );
+		this_ndx = temp_page->pageNdx;
+		prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
+	}
+}
+
+void clear_pages_right( Pagestruct* temp_page ){
+
+	signed short 	prev_ndx = 0,
+					this_ndx = 0;
+
+	prev_ndx = temp_page->pageNdx;
+	this_ndx = prev_ndx += 10;
+
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+		temp_page = &Page_repository[this_ndx];
+		Page_clear( temp_page );
+		this_ndx += 10;
+	}
+}
+
+void reset_page_cluster( Pagestruct* temp_page ){
 
 	signed short 	prev_ndx = 0,
 					this_ndx = 0,
 					m,
 					n;
 
+
+	if ( G_run_bit == ON ){
+		return;
+	}
 	this_ndx = temp_page->pageNdx;
 	prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
 
@@ -420,24 +461,23 @@ void reset_page_cluster( Pagestruct* temp_page, unsigned char resetTackSelection
 		temp_page = &Page_repository[this_ndx];
 
 		// reset first
+		temp_page->attr_STA = Rec_repository[grid_col(temp_page->pageNdx)].measure_count;
 		temp_page->repeats_left = temp_page->attr_STA; // reset page repeats
 
-		if ( resetTackSelections == TRUE ){
+		// reset first
+		remove_track_chain(temp_page);
+		Page_setTrackRecPattern(temp_page, 0);
 
-			// reset first
-			remove_track_chain(temp_page);
-			Page_setTrackRecPattern(temp_page, 0);
-			temp_page->trackSelection = 0;
+		temp_page->trackSelection = 0;
 
-			m = MATRIX_NROF_ROWS - temp_page->attr_STA; // from the bottom up
+		m = MATRIX_NROF_ROWS - temp_page->attr_STA; // from the bottom up
 
-			for (n=9; n >= m; --n) { // each measure
-				temp_page->trackSelection |= 1 << n;
-			}
-
-			chain_selected_tracks( temp_page );
-			Page_setTrackRecPatternBit( temp_page, (n+1) );
+		for (n=9; n >= m; --n) { // each measure
+			temp_page->trackSelection |= 1 << n;
 		}
+
+		chain_selected_tracks( temp_page );
+		Page_setTrackRecPatternBit( temp_page, (n+1) );
 
 		this_ndx += 10;
 	}

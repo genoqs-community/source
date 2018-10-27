@@ -797,7 +797,7 @@ void select_page_preselections() {
 			// Check the row of the current VIEWER _page and the other conditions
 			if ( GRID_p_selection[i] != NULL ){
 
-				if (	( 	(GRID_p_selection[i]->pageNdx % 10) == (target_page->pageNdx % 10) )
+				if (	( 	grid_row(GRID_p_selection[i]->pageNdx) == grid_row(target_page->pageNdx) )
 					&& 	( 	(G_zoom_level == zoomPAGE)
 						|| 	(G_zoom_level == zoomSOLOREC)
 						|| 	(G_zoom_level == zoomMIXMAP) )

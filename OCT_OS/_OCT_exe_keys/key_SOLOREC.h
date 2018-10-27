@@ -48,7 +48,7 @@
 		if ( keyNdx == KEY_PLAY1 ){
 			if ( SOLO_has_rec == ON && G_run_bit == OFF ){
 				G_track_rec_bit = OFF;
-				reset_page_cluster( SOLO_rec_page, TRUE );
+				reset_page_cluster( SOLO_rec_page );
 				sequencer_command_PLAY();
 			}
 			if ( SOLO_rec_measure_hold == ON && G_run_bit == ON ){
@@ -57,15 +57,21 @@
 		}
 
 		else if ( keyNdx == KEY_STOP ){
-			stop_solo_rec(SOLO_rec_freeflow_trim);
+			if ( G_run_bit == ON ){
+				stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON );
+				if ( SOLO_pos_marker_in != OFF ){ // FIXME
+					reset_page_cluster( SOLO_rec_page ); // reset will set the GRID_CURSOR to the first page
+					cut_freeflow_track_chain(&Page_repository[GRID_CURSOR], SOLO_pos_marker_in);
+				}
+			}
 		}
 
 		else if ( keyNdx == KEY_RECORD ){ // Record
-			G_track_rec_bit = ON;
+			G_track_rec_bit ^= 1; // toggle
 			if ( SOLO_has_rec == OFF ){
 				SOLO_rec_measure_hold = ON;
 			}
-			reset_page_cluster( SOLO_rec_page, !SOLO_rec_freeflow );
+			reset_page_cluster( SOLO_rec_page );
 			sequencer_command_PLAY();
 		}
 
@@ -104,7 +110,7 @@
 		// Compute Step coordinates
 		unsigned char row = row_of( keyNdx );
 		unsigned char col = column_of( keyNdx );
-		Pagestruct* target_page = &Page_repository[GRID_CURSOR];
+		Pagestruct* target_page = &Page_repository[GRID_CURSOR]; // FIXME
 
 		// Turns the step selection off
 		interpret_matrix_stepkey( row, col, target_page );
@@ -112,10 +118,10 @@
 
 	// Clear the record pages
 	if (keyNdx == KEY_CLEAR && G_run_bit == OFF){
-		unsigned char temp = cursor_to_dot( GRID_CURSOR );
+		unsigned int pressed = is_pressed_pagerange();
 		if ( SOLO_rec_page != NULL &&
-			 selected_page_cluster( GRID_CURSOR, SOLO_rec_page->pageNdx ) != NOP &&
-			 is_pressed_key( temp )
+			 pressed != FALSE &&
+			 selected_page_cluster( grid_ndx_from_key(pressed), SOLO_rec_page->pageNdx ) != NOP
 		){
 
 			selected_page_cluster_clear(SOLO_rec_page->pageNdx);
@@ -128,6 +134,10 @@
 			SOLO_rec_measure_count 		= OFF;
 			SOLO_rec_freeflow_measures	= OFF;
 			SOLO_rec_measure_pos 		= OFF;
+			SOLO_pos_marker_in 			= OFF;
+			SOLO_pos_marker_out 		= OFF;
+			SOLO_pos_in 				= NULL;
+			SOLO_pos_out 				= NULL;
 			SOLO_rec_has_MCC			= OFF;
 			G_measure_locator 			= OFF;
 			Solorec_init();
@@ -136,19 +146,28 @@
 
 	else if (keyNdx == KEY_FLT){
 
-		if ( SOLO_has_rec == ON && G_run_bit == ON && G_track_rec_bit == OFF && SOLO_pos_marker_out == OFF ){
+		if ( SOLO_has_rec == ON && G_run_bit == ON ){
 
 			if ( SOLO_pos_marker_in == OFF ){
-				SOLO_pos_marker_in = G_measure_locator;
+				SOLO_pos_marker_in = SOLO_rec_measure_pos;
+				SOLO_pos_in = &Page_repository[GRID_CURSOR]; // FIXME
 			}
 			else {
-				SOLO_pos_marker_out = G_measure_locator;
-				// XXX only for UI testing
-				// TODO: apply the pos splits
-				G_track_rec_bit = OFF;
-				G_run_bit = OFF;
-				SOLO_pos_marker_in = OFF; // XXX
-				SOLO_pos_marker_out = OFF;
+				SOLO_pos_marker_out = SOLO_rec_measure_pos;
+				SOLO_pos_out = &Page_repository[GRID_CURSOR]; // FIXME may not work with n+1 pages
+
+				stop_solo_rec(FALSE);
+
+				int col = grid_col(SOLO_pos_out->pageNdx);
+				int last_measure = ( MATRIX_NROF_ROWS -1 ) - ( Rec_repository[col].measure_count - SOLO_pos_marker_out );
+				int count = ( SOLO_pos_in->pageNdx == SOLO_pos_out->pageNdx ) ? (( SOLO_pos_marker_out - SOLO_pos_marker_in ) + 1 ) : SOLO_pos_marker_out;
+
+				cut_freeflow_track_chain(SOLO_pos_in, SOLO_pos_marker_in);
+				shift_down_freeflow_track_chain(SOLO_pos_out, last_measure, count);
+
+				// split
+//				--------------------------------------------------------
+				// FIXME make this a function
 			}
 
 			ROT_INDEX = REC_MEASURES_SPLIT;
@@ -171,63 +190,85 @@
 	else {
 
 		// GRID PAGE CLUSTER SELECTIONS
-		if ( ( (keyNdx < 187 && G_run_bit == OFF)
-		) ) {
 
-			unsigned char temp = row_of(keyNdx) + (10 * column_of(keyNdx));
-			GRID_CURSOR = temp;
-		}
+		// The key that is held
+		unsigned char heldNdx = grid_ndx_from_key(keyNdx);
 
 		// Grid page toggle
 		unsigned char keyRow = row_of(keyNdx);
 		unsigned int pressed = is_pressed_pagerange();
+		unsigned char isPressed = pressed != FALSE;
+		unsigned char pressedNdx = grid_ndx_from_key(pressed); // the gridNdx that is pressed
 		unsigned int rowZeroTrack = is_key_rowzero(keyNdx);
-		unsigned int pressedCol = column_of (pressed);
-		pressed = row_of(pressed) + (10 * column_of (pressed));
-		unsigned char cursor = Page_repository[pressed].pageNdx;
+
+		if (isPressed) {
+			heldNdx = pressedNdx;
+			pressedNdx = grid_ndx_from_key(keyNdx);
+		}
+
+		unsigned char heldCol = grid_col(heldNdx);
+
+//		diag_printf("key:%d\n", keyNdx);
+//		diag_printf("heldNdx:%d\n", heldNdx);
+//		diag_printf("is_pressed:%d\n", isPressed);
+//		diag_printf("pressedNdx:%d\n", pressedNdx);
+//		diag_printf("keyRow:%d\n", keyRow);
+//		diag_printf("hCol:%d\n", heldCol);
+//		diag_printf("heldCol:%d\n", grid_col(heldNdx));
+//		diag_printf("heldRow:%d\n", grid_row(heldNdx));
+//		diag_printf("heldX:%d\n", grid_ndx(grid_row(heldNdx), grid_col(heldNdx)));
+//		diag_printf("solorec:%d\n", selected_solo_rec_page( heldNdx, pressedNdx ));
+//		diag_printf("gridc:%d\n", GRID_CURSOR);
+//		diag_printf("zerom:%d\n", rowZeroTrack);
+//
+//		diag_printf("1:%d\n", Page_repository[heldNdx].page_clear == ON);
+//		diag_printf("2:%d\n", grid_col(heldNdx) == 0);
+//		diag_printf("3:%d\n", Page_repository[grid_ndx_prev_col(heldNdx)].page_clear == ON);
+//		diag_printf("4:%d\n", SOLO_rec_page == NULL);
 
 		// Activate a record page - set the measure count
 		if (
-			 ( selected_solo_rec_page( cursor, cursor_to_dot( cursor ) ) == ON ||
-			   selected_page_cluster( cursor, SOLO_rec_page->pageNdx ) != NOP )){
+			 ( selected_solo_rec_page( heldNdx, pressedNdx ) == ON ||
+			   selected_page_cluster( heldNdx, SOLO_rec_page->pageNdx ) != NOP )){
+
 			/*
 			 * A page with a measure count has been selected on this press
 			 */
 			if ( !SOLO_has_rec ){ // does not have a recording yet
 
-				if ( has_empty_grid_row_ahead(pressed) == TRUE && keyNdx == KEY_CHAINMODE_4 &&
-					 SOLO_rec_page == NULL && Page_repository[pressed].page_clear == ON ){
+				if ( has_empty_grid_row_ahead(heldNdx) == TRUE && keyNdx == KEY_CHAINMODE_4 &&
+					 SOLO_rec_page == NULL && Page_repository[heldNdx].page_clear == ON ){
 
 					// Free Flow!
-					SOLO_rec_page = &Page_repository[pressed];
+					SOLO_rec_page = &Page_repository[heldNdx];
 					GRID_CURSOR = SOLO_rec_page->pageNdx;
 					SOLO_rec_freeflow = ON;
-					Rec_repository[pressedCol].measure_count = MATRIX_NROF_ROWS;
-					create_next_freeflow_page_cluster(cursor);
-					SOLO_rec_freeflow_measures = count_to_last_page_in_grid_row(cursor) * MATRIX_NROF_ROWS;
+					Rec_repository[heldCol].measure_count = MATRIX_NROF_ROWS;
+					create_next_freeflow_page_cluster(heldNdx);
+					SOLO_rec_freeflow_measures = count_to_last_page_in_grid_row(heldNdx) * MATRIX_NROF_ROWS;
 
-					reset_page_cluster( SOLO_rec_page, FALSE );
+					reset_page_cluster( SOLO_rec_page );
 				}
 				// A page is pressed first then step 1 through 10 of row zero to set the measure count
 				else if ( rowZeroTrack != OFF && rowZeroTrack <= 10 && SOLO_rec_freeflow == OFF ){
 
-					if ( Page_repository[pressed].page_clear == ON ){
+					if ( Page_repository[heldNdx].page_clear == ON ){
 						/*
 						 * ########################################
 						 * A record page was created!
 						 * ########################################
 						 */
-						SOLO_rec_page = &Page_repository[pressed];
+						SOLO_rec_page = &Page_repository[heldNdx];
 
 						if ( SOLO_has_rec == OFF ){
 							GRID_CURSOR = SOLO_rec_page->pageNdx;
 						}
 					}
 
-					SOLO_rec_pressed_col = pressedCol;
+					SOLO_rec_pressed_col = heldCol;
+					Rec_repository[heldCol].measure_count = rowZeroTrack;
 					create_page_record_track_chain(SOLO_rec_page, rowZeroTrack);
-					Rec_repository[pressedCol].measure_count = rowZeroTrack;
-					reset_page_cluster( SOLO_rec_page, FALSE );
+					reset_page_cluster( SOLO_rec_page );
 
 					// Snow the measure count for a few extra blinks
 					ROT_INDEX = REC_MEASURES_IDX;
@@ -241,23 +282,23 @@
 
 				if ( keyNdx == KEY_ZOOM_PAGE ){
 					// Enter the page edit warp tunnel
-					GRID_CURSOR = Page_repository[pressed].pageNdx;
+					GRID_CURSOR = heldNdx;
 					G_zoom_level = zoomPAGE;
 				}
 			}
 		}
 
 		// Toggle the play along status of existing pages in the grid
-		else if ( SOLO_rec_page != NULL && Page_repository[GRID_CURSOR].page_clear == OFF ){
+		else if ( SOLO_rec_page != NULL && Page_repository[heldNdx].page_clear == OFF ){
 
 			// no play along pages set for this row
 			// and - this row does not contain the solo recording page
-			if ((( SOLO_page_play_along[keyRow] == NOP && ( SOLO_rec_page->pageNdx % 10) != keyRow ))
+			if ((( SOLO_page_play_along[keyRow] == NOP && grid_row(SOLO_rec_page->pageNdx) != keyRow ))
 				|| // or
-					((( SOLO_page_play_along[keyRow] % 10) == keyRow ) && // a page in a play along row was pressed
-					( SOLO_page_play_along[keyRow] != GRID_CURSOR ) // and - this page was not already the play along page
+					(( grid_row(SOLO_page_play_along[keyRow]) == keyRow ) && // a page in a play along row was pressed
+					( SOLO_page_play_along[keyRow] != heldNdx ) // and - this page was not already the play along page
 				)){
-				SOLO_page_play_along[keyRow] = GRID_CURSOR;
+				SOLO_page_play_along[keyRow] = heldNdx;
 			}
 			else {
 				SOLO_page_play_along[keyRow] = NOP;

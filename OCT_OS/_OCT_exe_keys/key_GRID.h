@@ -325,6 +325,7 @@
 		#endif
 
 		#ifdef FEATURE_SOLO_REC
+		// Grid Scene change note event send on-the-measure
 		if ( keyNdx == 10 ){ // grid selection row 0 button
 
 			if ( GRID_p_set_note_offsets[current_GRID_set] == 255 )

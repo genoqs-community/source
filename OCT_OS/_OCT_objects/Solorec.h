@@ -16,10 +16,8 @@ unsigned char SOLO_has_rec						= OFF;
 unsigned char SOLO_edit_buffer_volatile			= OFF;
 unsigned char SOLO_overdub						= OFF;
 unsigned char SOLO_rec_pressed_col				= OFF;
-unsigned char SOLO_pos_marker_in				= OFF;
-unsigned char SOLO_pos_marker_out				= OFF;
 unsigned char SOLO_rec_freeflow					= OFF;
-unsigned char SOLO_rec_freeflow_trim			= ON;
+unsigned char SOLO_rec_freeflow_trim			= OFF;
 unsigned char SOLO_rec_ending_flash				= ON;
 unsigned char SOLO_rec_continue_recording		= OFF;
 unsigned char SOLO_rec_quantize_first_beat		= ON;
@@ -34,6 +32,11 @@ unsigned short SOLO_rec_save_playmodes			= OFF;
 unsigned short SOLO_rec_measure_count			= OFF;
 unsigned short SOLO_rec_freeflow_measures		= OFF;
 unsigned short SOLO_rec_measure_pos				= OFF;
+unsigned short SOLO_pos_marker_in				= OFF; // left cut -  SOLO_rec_measure_pos
+unsigned short SOLO_pos_marker_out				= OFF; // right cut - SOLO_rec_measure_pos
+Pagestruct*   SOLO_pos_in						= NULL;
+Pagestruct*   SOLO_pos_out						= NULL;
+
 
 
 // Solo Recordings: Initalize the original note recording repository
@@ -92,7 +95,7 @@ void capture_note_event(
 		Trackstruct* target_track,
 		unsigned char target_col ){
 
-	Notestruct* noteRec = Rec_repository[row_of(target_page->pageNdx)].Note[row_of(target_track->trackId) * target_col];
+	Notestruct* noteRec = Rec_repository[grid_col(target_page->pageNdx)].Note[grid_ndx(grid_row(target_track->trackId), target_col)];
 	noteRec->chord_up = target_step->chord_up;
 	noteRec->chord_data = target_step->chord_data;
 	noteRec->attr_VEL = target_step->attr_VEL;
@@ -107,7 +110,7 @@ void capture_note_event(
 void quantize(Pagestruct* target_page){
 
 	// move to beginning of page cluster
-	unsigned char this_ndx = first_page_in_cluster(target_page->pageNdx);
+	unsigned short this_ndx = first_page_in_cluster(target_page->pageNdx);
 	unsigned char step_row, step_col = 0;
 	unsigned int i=0;
 	Notestruct* target_note;
@@ -123,7 +126,7 @@ void quantize(Pagestruct* target_page){
 			// line up the recording note with the actual step
 			step_row = i / MATRIX_NROF_COLUMNS;
 			step_col = i % MATRIX_NROF_COLUMNS;
-			target_note = Rec_repository[row_of(target_page->pageNdx)].Note[step_row * step_col];
+			target_note = Rec_repository[grid_col(target_page->pageNdx)].Note[grid_ndx(step_row, step_col)];
 
 			if ( target_page->Step[step_row][step_col]->attr_STATUS == ON ){
 

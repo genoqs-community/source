@@ -26,7 +26,7 @@
 //void print_chain_data( Pagestruct* target_page ){
 //	unsigned char i=0;
 //	for (i=0; i<MATRIX_NROF_ROWS; i++){
-//		d_iag_printf( "Track:%d HEAD:%d PLAY:%d LOC:%d\n",
+//		diag_printf( "Track:%d HEAD:%d PLAY:%d LOC:%d\n",
 //				i,
 //				row_of_track( target_page, target_page->Track[i]->chain_data[HEAD]),
 //				row_of_track( target_page, target_page->Track[i]->chain_data[PLAY]),
@@ -275,12 +275,30 @@ void remove_track_chain( Pagestruct* pagePt ){
 
 	// Initialize the page Track chain data
 	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
+
+		pagePt->Track[row]->attr_LOCATOR = 0;
+		pagePt->Track[row]->frame_ndx = 0;
+
 		// Init the chain data for 10 unchained rows: each track is by itself
 		pagePt->Track[row]->chain_data[HEAD] = pagePt->Track[row];
 		pagePt->Track[row]->chain_data[NEXT] = pagePt->Track[row];
 		pagePt->Track[row]->chain_data[PREV] = pagePt->Track[row];
 		pagePt->Track[row]->chain_data[PLAY] = pagePt->Track[row];
 	}
+
+	// Align all non-PLAY tracks to 0, and do not touch the PLAY tracks
+	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
+
+		// Work only on the PLAY tracks
+		if ( pagePt->Track[row]->chain_data[PLAY] == pagePt->Track[row] ){
+
+			// Set the actual locators
+			set_track_locators( pagePt, pagePt->Track[row], 0, 1 );
+		}
+	}
+
+	pagePt->chainMode = 0;
+	pagePt->CHAINS_PLAY_HEAD = 0;
 }
 
 
@@ -319,19 +337,19 @@ void chain_selected_tracks( Pagestruct* target_page ){
 		// Next selected track is added to the chain of the current head
 		if ( (target_page->trackSelection & ( 1 << tail )) != 0 ){
 
-// d_iag_printf( "1:\n" ); print_chain_data( target_page );
+// diag_printf( "1:\n" ); print_chain_data( target_page );
 
 			// Remove selected track from its previous chain
 			remove_chain_element( target_page, target_page->Track[tail] );
 
-// d_iag_printf( "2:\n" ); print_chain_data( target_page );
+// diag_printf( "2:\n" ); print_chain_data( target_page );
 
 			// Make selected track the tail of the chain led by the current head
 			make_chain_tail( 	target_page,
 								target_page->Track[tail],
 								target_page->Track[head] );
 
-// d_iag_printf( "3:\n" ); print_chain_data( target_page );
+// diag_printf( "3:\n" ); print_chain_data( target_page );
 
 			// Signal chainer activity in target_page; 4 is an un-#define'd chainmode
 			target_page->chainMode = 4;
