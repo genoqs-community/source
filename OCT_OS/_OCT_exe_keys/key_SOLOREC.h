@@ -61,7 +61,7 @@
 				stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON );
 				if ( SOLO_pos_marker_in != OFF ){ // FIXME
 					reset_page_cluster( SOLO_rec_page ); // reset will set the GRID_CURSOR to the first page
-					cut_freeflow_track_chain(&Page_repository[GRID_CURSOR], SOLO_pos_marker_in);
+//					cut_freeflow_track_chain(&Page_repository[GRID_CURSOR], SOLO_pos_marker_in);
 				}
 			}
 		}
@@ -110,7 +110,7 @@
 		// Compute Step coordinates
 		unsigned char row = row_of( keyNdx );
 		unsigned char col = column_of( keyNdx );
-		Pagestruct* target_page = &Page_repository[GRID_CURSOR]; // FIXME
+		Pagestruct* target_page = &Page_repository[GRID_CURSOR];
 
 		// Turns the step selection off
 		interpret_matrix_stepkey( row, col, target_page );
@@ -133,7 +133,7 @@
 			SOLO_rec_freeflow 			= OFF;
 			SOLO_rec_measure_count 		= OFF;
 			SOLO_rec_freeflow_measures	= OFF;
-			SOLO_rec_measure_pos 		= OFF;
+			SOLO_rec_measure_pos		= OFF;
 			SOLO_pos_marker_in 			= OFF;
 			SOLO_pos_marker_out 		= OFF;
 			SOLO_pos_in 				= NULL;
@@ -150,24 +150,15 @@
 
 			if ( SOLO_pos_marker_in == OFF ){
 				SOLO_pos_marker_in = SOLO_rec_measure_pos;
-				SOLO_pos_in = &Page_repository[GRID_CURSOR]; // FIXME
+				SOLO_pos_in = &Page_repository[GRID_CURSOR];
 			}
 			else {
+
 				SOLO_pos_marker_out = SOLO_rec_measure_pos;
-				SOLO_pos_out = &Page_repository[GRID_CURSOR]; // FIXME may not work with n+1 pages
+				SOLO_pos_out = &Page_repository[GRID_CURSOR];
 
 				stop_solo_rec(FALSE);
-
-				int col = grid_col(SOLO_pos_out->pageNdx);
-				int last_measure = ( MATRIX_NROF_ROWS -1 ) - ( Rec_repository[col].measure_count - SOLO_pos_marker_out );
-				int count = ( SOLO_pos_in->pageNdx == SOLO_pos_out->pageNdx ) ? (( SOLO_pos_marker_out - SOLO_pos_marker_in ) + 1 ) : SOLO_pos_marker_out;
-
-				cut_freeflow_track_chain(SOLO_pos_in, SOLO_pos_marker_in);
-				shift_down_freeflow_track_chain(SOLO_pos_out, last_measure, count);
-
-				// split
-//				--------------------------------------------------------
-				// FIXME make this a function
+				cut_by_pos_markers();
 			}
 
 			ROT_INDEX = REC_MEASURES_SPLIT;

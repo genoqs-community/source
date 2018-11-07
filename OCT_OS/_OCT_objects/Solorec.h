@@ -138,4 +138,61 @@ void quantize(Pagestruct* target_page){
 	}
 }
 
+int measure_of_page_by_locator_vector (
+		unsigned char pageNdx,
+		int measure_count_vector /* 1 based */,
+		unsigned char single_page ){
+
+	int col = grid_col(pageNdx);
+	int first_col = grid_col(first_page_in_cluster(pageNdx));
+	unsigned char measure_count = Rec_repository[col].measure_count;
+
+	measure_count_vector = ( single_page == TRUE ) ?
+			measure_count_vector :
+			// subtract the count of the first page so align the vector to the grid rows
+		   (measure_count_vector - Rec_repository[first_col].measure_count);
+
+	return (( MATRIX_NROF_ROWS - measure_count ) +
+		   (( measure_count_vector -1 /* to zero based */) % MATRIX_NROF_ROWS ));
+}
+
+void cut_by_pos_markers() {
+
+	int count_in, count_out;
+
+	unsigned char single_page_in = ( first_page_in_cluster(SOLO_pos_in->pageNdx) == SOLO_pos_in->pageNdx ) ? TRUE : FALSE;
+	unsigned char single_page_out = ( SOLO_pos_in->pageNdx == SOLO_pos_out->pageNdx ) ? TRUE : FALSE;
+
+	int last_cut_measure = measure_of_page_by_locator_vector( SOLO_pos_in->pageNdx, SOLO_pos_marker_in, single_page_in );
+	int last_shift_measure = measure_of_page_by_locator_vector( SOLO_pos_out->pageNdx, SOLO_pos_marker_out,
+															 /* we care about multiple pages even if in/out are for a single page */
+																single_page_in );
+	int first_col = grid_col(first_page_in_cluster(SOLO_pos_in->pageNdx));
+	int cnt = Rec_repository[first_col].measure_count;
+
+	if ( single_page_out == TRUE ){
+
+		count_in = (( SOLO_pos_marker_out - cnt ) - ( SOLO_pos_marker_in - cnt )) + 1;
+		count_out = count_in;
+	}
+	else {
+
+		if ( single_page_in == TRUE ){
+
+			count_in = MATRIX_NROF_ROWS - last_cut_measure;
+		}
+		else {
+			count_in = last_cut_measure - (( MATRIX_NROF_ROWS - 1 ) - cnt );
+		}
+
+		count_in = MATRIX_NROF_ROWS - ( last_cut_measure -
+				 ( MATRIX_NROF_ROWS - Rec_repository[grid_col(SOLO_pos_in->pageNdx)].measure_count ));
+
+		count_out = last_shift_measure -
+				 (( MATRIX_NROF_ROWS - 1 ) - Rec_repository[grid_col(SOLO_pos_out->pageNdx)].measure_count );
+	}
+
+	cut_freeflow_track_chain(SOLO_pos_in, last_cut_measure, count_in);
+	shift_down_freeflow_track_chain(SOLO_pos_out, last_shift_measure, count_out);
+}
 

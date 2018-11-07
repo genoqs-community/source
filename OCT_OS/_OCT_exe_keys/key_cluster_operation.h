@@ -390,6 +390,8 @@ void clear_pages_left( Pagestruct* temp_page ){
 	signed short 	prev_ndx = 0,
 					this_ndx = 0;
 
+	Pagestruct* start_page = temp_page;
+
 	this_ndx = temp_page->pageNdx;
 	prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
 
@@ -402,6 +404,12 @@ void clear_pages_left( Pagestruct* temp_page ){
 		this_ndx = temp_page->pageNdx;
 		prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
 	}
+
+	SOLO_rec_page = start_page;
+	GRID_p_selection[ SOLO_rec_bank ] = start_page;
+	GRID_p_preselection[ SOLO_rec_bank ] = start_page;
+	GRID_p_clock_presel[ SOLO_rec_bank ] = start_page;
+	GRID_CURSOR = start_page->pageNdx;
 }
 
 void clear_pages_right( Pagestruct* temp_page ){

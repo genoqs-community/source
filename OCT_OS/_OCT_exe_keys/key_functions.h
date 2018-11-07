@@ -1190,14 +1190,14 @@ void create_next_freeflow_page_cluster(unsigned char next_ndx){
 	SOLO_rec_freeflow_trim = ON; // last page requires trim()
 }
 
-void cut_freeflow_track_chain(Pagestruct* target_page, unsigned char measures){
+void cut_freeflow_track_chain(Pagestruct* target_page, unsigned char last_measure, unsigned char count){
 	int row, col, prev, measureNdx;
 
 	col = grid_col(target_page->pageNdx);
 	prev = Rec_repository[col].measure_count;
-	measureNdx = MATRIX_NROF_ROWS - ( Rec_repository[col].measure_count - ( measures - 1 ));
+	measureNdx = last_measure;
 
-	SOLO_rec_freeflow_measures -= ( prev - measures );
+	SOLO_rec_freeflow_measures -= ( prev - count );
 	SOLO_rec_measure_count = SOLO_rec_freeflow_measures;
 
 	// clear steps before the cut
@@ -1205,7 +1205,7 @@ void cut_freeflow_track_chain(Pagestruct* target_page, unsigned char measures){
 		Track_clear_steps( target_page, row );
 	}
 
-	target_page->attr_STA = Rec_repository[col].measure_count - ( measures - 1 );
+	target_page->attr_STA = count;
 	target_page->repeats_left = target_page->attr_STA;
 	Rec_repository[col].measure_count = target_page->attr_STA;
 
@@ -1217,20 +1217,19 @@ void cut_freeflow_track_chain(Pagestruct* target_page, unsigned char measures){
 void shift_down_freeflow_track_chain(Pagestruct* target_page, unsigned char last_measure, unsigned char count){
 	int row, col, j, idx;
 
-	if ( target_page->attr_STA == count ){
-		return;
-	}
-
 	col = grid_col(target_page->pageNdx);
 	idx = last_measure;
-
-	// shift down by inserting
 	j = (MATRIX_NROF_ROWS -1);
-	for ( row=idx; row >= 0; row-- ){
-		Track_hard_init( target_page->Track[j], target_page->Track[j]->trackId ); // clear the end most track
-		// insert the last original track in the chain to the new end from the bottom up
-		Track_copy( target_page, row, target_page, j-- ); // Execute the copy operation
-		Track_clear_steps( target_page, row );
+
+	if (idx != j) {
+		// shift down by inserting
+		for ( row=idx; row >= 0; row-- ){
+
+			Track_hard_init( target_page->Track[j], target_page->Track[j]->trackId ); // clear the end most track
+			// insert the last original track in the chain to the new end from the bottom up
+			Track_copy( target_page, row, target_page, j-- ); // Execute the copy operation
+			Track_clear_steps( target_page, row );
+		}
 	}
 
 	target_page->attr_STA = count;
@@ -1244,9 +1243,15 @@ void shift_down_freeflow_track_chain(Pagestruct* target_page, unsigned char last
 
 
 void trim_freeflow_track_chain(Pagestruct* target_page, unsigned char measureNdx){
-	int row, j, measureCnt;
+	int row, j;
+	unsigned char measureCnt;
 
 	measureCnt = measureNdx + 1;
+
+	if ( measureCnt == MATRIX_NROF_ROWS ){
+		return;
+	}
+
 	SOLO_rec_freeflow_measures -= (MATRIX_NROF_ROWS - measureNdx);
 	SOLO_rec_measure_count = SOLO_rec_freeflow_measures;
 

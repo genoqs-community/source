@@ -73,7 +73,7 @@ extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
 extern	void 			align_measure_locators();
 extern  void 			create_page_record_track_chain(Pagestruct* target_page, unsigned int measures);
 extern  void			create_next_freeflow_page_cluster(unsigned char next_ndx);
-extern  void 			cut_freeflow_track_chain(Pagestruct* target_page, unsigned char measures);
+extern  void 			cut_freeflow_track_chain(Pagestruct* target_page, unsigned char last_measure, unsigned char count);
 extern  void			shift_down_freeflow_track_chain(Pagestruct* target_page, unsigned char measures, unsigned char count);
 extern  void 			trim_freeflow_track_chain(Pagestruct* target_page, unsigned char measures);
 
