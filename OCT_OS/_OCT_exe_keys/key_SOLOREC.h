@@ -59,10 +59,6 @@
 		else if ( keyNdx == KEY_STOP ){
 			if ( G_run_bit == ON ){
 				stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON );
-				if ( SOLO_pos_marker_in != OFF ){ // FIXME
-					reset_page_cluster( SOLO_rec_page ); // reset will set the GRID_CURSOR to the first page
-//					cut_freeflow_track_chain(&Page_repository[GRID_CURSOR], SOLO_pos_marker_in);
-				}
 			}
 		}
 
@@ -153,12 +149,7 @@
 				SOLO_pos_in = &Page_repository[GRID_CURSOR];
 			}
 			else {
-
-				SOLO_pos_marker_out = SOLO_rec_measure_pos;
-				SOLO_pos_out = &Page_repository[GRID_CURSOR];
-
 				stop_solo_rec(FALSE);
-				cut_by_pos_markers();
 			}
 
 			ROT_INDEX = REC_MEASURES_SPLIT;

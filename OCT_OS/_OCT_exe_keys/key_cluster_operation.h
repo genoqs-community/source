@@ -370,6 +370,11 @@ unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char ta
 
 void stop_solo_rec( unsigned char trim ){
 
+	if ( SOLO_pos_marker_in != OFF ){
+		SOLO_pos_marker_out = SOLO_rec_measure_pos;
+		SOLO_pos_out = &Page_repository[GRID_CURSOR];
+	}
+
 	freeflowOff( trim );
 	sequencer_STOP( true );
 	sequencer_RESET( false );
@@ -382,6 +387,10 @@ void stop_solo_rec( unsigned char trim ){
 	// Reset the grid cursor for the recording page cluster
 	if ( SOLO_rec_page != NULL ){
 		reset_page_cluster( SOLO_rec_page );
+	}
+
+	if ( SOLO_pos_marker_in != OFF ){
+		cut_by_pos_markers();
 	}
 }
 
