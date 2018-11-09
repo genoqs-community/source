@@ -384,12 +384,17 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 	// row = my_bit2ndx( target_page->track_REC_pattern );
 
 
+	// -------------------------- XXX
+
 	// Handle NOTE OFF messages -> pretend they don't exist, and simply transform them.
 	if ( ( status_byte & 0xF0 ) == MIDI_CMD_NOTE_OFF ){
 
 		// transform into NOTE ON with VEL 0
 		in_velocity = OFF;
+//		in_velocity = 100; // XXX
 	}
+
+	// -------------------------- XXX
 
 	// d_iag_printf("OK 0\n");
 

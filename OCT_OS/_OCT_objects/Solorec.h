@@ -71,7 +71,10 @@ void freeflowOff( unsigned char trim ){
 		Pagestruct* target_page = &Page_repository[ last_page ];
 		trim_freeflow_track_chain(target_page, (target_page->attr_STA - target_page->repeats_left));
 	}
+	SOLO_rec_freeflow_trim = OFF;
 	SOLO_rec_freeflow = OFF;
+	SOLO_pos_marker_in = OFF;
+	SOLO_pos_marker_out = OFF;
 }
 
 void quantizeStep(Stepstruct* target_step, Notestruct* noteRec){

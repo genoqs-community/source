@@ -60,6 +60,9 @@
 			if ( G_run_bit == ON ){
 				stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON );
 			}
+			else {
+				send_ALL_NOTES_OFF();
+			}
 		}
 
 		else if ( keyNdx == KEY_RECORD ){ // Record

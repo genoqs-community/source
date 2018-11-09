@@ -1267,7 +1267,6 @@ void trim_freeflow_track_chain(Pagestruct* target_page, unsigned char measureNdx
 	target_page->attr_STA = measureCnt;
 	target_page->repeats_left = measureCnt;
 	Rec_repository[grid_col(target_page->pageNdx)].measure_count = measureCnt;
-	SOLO_rec_freeflow_trim = OFF;
 }
 
 void create_page_record_track_chain(Pagestruct* target_page, unsigned int measures){
