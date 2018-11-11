@@ -73,8 +73,6 @@ void freeflowOff( unsigned char trim ){
 	}
 	SOLO_rec_freeflow_trim = OFF;
 	SOLO_rec_freeflow = OFF;
-	SOLO_pos_marker_in = OFF;
-	SOLO_pos_marker_out = OFF;
 }
 
 void quantizeStep(Stepstruct* target_step, Notestruct* noteRec){

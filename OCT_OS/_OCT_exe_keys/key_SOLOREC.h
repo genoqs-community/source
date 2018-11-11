@@ -82,6 +82,8 @@
 				SOLO_edit_buffer_volatile ^= 1; // toggle
 				SOLO_has_rec = OFF;
 				freeflowOff(FALSE);
+				SOLO_pos_marker_in = OFF;
+				SOLO_pos_marker_out = OFF;
 				// Clear the pages
 				clear_page_record_track_chain(SOLO_rec_page);
 				MIX_TIMER = ON;
