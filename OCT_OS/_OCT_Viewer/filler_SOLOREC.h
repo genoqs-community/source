@@ -41,6 +41,10 @@
 	if ( G_run_bit == ON ){
 		MIR_write_dot( LED_STOP, MIR_RED );
 	}
+	else if ( is_pressed_key( KEY_MUTE_MASTER ) ){
+		MIR_write_dot( LED_STOP, MIR_RED );
+		MIR_write_dot( LED_STOP, MIR_BLINK );
+	}
 
 	if ( SOLO_has_rec == ON ){
 		if ( G_track_rec_bit == OFF && SOLO_rec_freeflow == OFF ){

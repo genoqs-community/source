@@ -375,6 +375,8 @@ void stop_solo_rec( unsigned char trim ){
 		SOLO_pos_out = &Page_repository[GRID_CURSOR];
 	}
 
+	flush_note_on_queue( &Page_repository[GRID_CURSOR], SOLO_midi_ch );
+
 	freeflowOff( trim );
 	sequencer_STOP( true );
 	sequencer_RESET( false );

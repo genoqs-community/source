@@ -841,6 +841,68 @@ void record_note_to_track( 	Pagestruct* target_page,
 
 
 
+
+
+//_______________________________________________________________________________________
+//
+void flush_note_on_queue( Pagestruct* target_page, unsigned char in_channel ){
+
+	signed char 	pitch 			= 	0;
+	unsigned char   target_row		=	0;
+	unsigned char   target_col		=	0;
+
+	NOTEeventstruct* note;
+
+	// Scan queue..
+	for ( pitch=0; pitch >= 0; pitch++ ){ // scan the entire pitch range
+
+		note = NOTE_queue_remove( pitch );
+
+		if ( note == NULL ){
+			continue;
+		}
+
+		// Identify the index of the selected track in page
+		target_row = my_bit2ndx( target_page->priv_track_REC_pattern );
+		target_col = target_page->Track[target_row]->attr_LOCATOR -1;
+		target_col = target_col > 15 ? 15 : target_col;
+
+		// Save the notes
+		if ( (G_run_bit == ON) && (G_track_rec_bit == ON) ) {
+
+			// Insert event into the sequencing engine - i.e. activate corresponding step!
+			G_midi_insert_event( note, G_MIDI_timestamp, target_page, target_page->Track[target_row], target_col );
+		}
+
+		force_input_to_scale( target_page, in_channel, pitch, OFF );
+	}
+}
+
+
+
+//_______________________________________________________________________________________
+//
+void send_note_off_full_range(){
+
+	signed char pitch;
+	unsigned char channel = 0;
+
+	// Send on all 32 channels. Make sure to count from 1!
+	for ( channel=1; channel <= 32; channel++ ){
+
+		for ( pitch=0; pitch >= 0; pitch++ ){ // The entire pitch range
+
+			// Channel (+1 offset needed), pitch, velocity, trigger time - 0 means NOW
+			MIDI_NOTE_new ( channel, pitch, OFF, 0 );
+
+			// Play MIDI queue elements which are due just before current timestamp, including the above..
+			play_MIDI_queue( G_MIDI_timestamp );
+		}
+	} // channel iterator
+}
+
+
+
 //_______________________________________________________________________________________
 //
 // Make scale changes in page according to the incoming note pitch

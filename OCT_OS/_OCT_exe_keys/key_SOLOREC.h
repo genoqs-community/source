@@ -43,6 +43,18 @@
 		}
 	}
 
+	if ( keyNdx == KEY_STOP ){
+		if ( G_run_bit == ON && SOLO_rec_page != NULL ){
+			stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON );
+		}
+		else {
+			send_ALL_NOTES_OFF();
+			if ( is_pressed_key( KEY_MUTE_MASTER )){
+				send_note_off_full_range();
+			}
+		}
+	}
+
 	if ( SOLO_rec_page != NULL ){ // A record page cluster is selected
 
 		if ( keyNdx == KEY_PLAY1 ){
@@ -53,15 +65,6 @@
 			}
 			if ( SOLO_rec_measure_hold == ON && G_run_bit == ON ){
 				SOLO_rec_rehersal ^= 1;
-			}
-		}
-
-		else if ( keyNdx == KEY_STOP ){
-			if ( G_run_bit == ON ){
-				stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON );
-			}
-			else {
-				send_ALL_NOTES_OFF();
 			}
 		}
 
