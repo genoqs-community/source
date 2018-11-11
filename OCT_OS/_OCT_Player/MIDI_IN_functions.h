@@ -779,6 +779,7 @@ void record_note_to_track( 	Pagestruct* target_page,
 			switch( is_step_queued( target_page->Step[row][target_col] ) ){
 
 				case TRUE:
+
 					// Add the incoming pitch to the chord structure of the step
 					make_chord( target_page->Step[row][target_col],
 								target_page->Track[row]->attr_PIT, in_pitch );
@@ -787,7 +788,11 @@ void record_note_to_track( 	Pagestruct* target_page,
 				case FALSE:
 
 					// If the step is on, add pitch to it and make a chord
+					#ifdef FEATURE_SOLO_REC
+					if ( SOLO_overdub == OFF && Step_get_status( target_page->Step[row][target_col], STEPSTAT_TOGGLE ) == ON ){
+					#else
 					if ( Step_get_status( target_page->Step[row][target_col], STEPSTAT_TOGGLE ) == ON ){
+					#endif
 
 						// Add the incoming pitch to the chord structure of the step
 						make_chord( target_page->Step[row][target_col],

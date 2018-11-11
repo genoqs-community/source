@@ -56,10 +56,10 @@
 			}
 		}
 		if ( SOLO_overdub == OFF ){
-			MIR_write_dot( LED_FOLLOW, MIR_RED );
+			MIR_write_dot( LED_FOLLOW, MIR_GREEN );
 		}
 		else {
-			MIR_write_dot( LED_FOLLOW, MIR_GREEN );
+			MIR_write_dot( LED_FOLLOW, MIR_RED );
 		}
 
 		// Clear recording
