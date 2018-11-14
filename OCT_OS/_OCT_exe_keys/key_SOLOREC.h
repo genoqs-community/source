@@ -15,8 +15,10 @@
 		}
 	}
 
-	if ( keyNdx == KEY_PLAY2 ){ // ON = continue playing after the loop after recording
-		SOLO_rec_continue_recording ^= 1; // toggle
+	if ( SOLO_has_rec == OFF && SOLO_rec_freeflow == OFF ){
+		if ( keyNdx == KEY_PLAY2 ){ // ON = continue playing after the loop after recording
+			SOLO_rec_continue_recording ^= 1; // toggle
+		}
 	}
 
 	if ( keyNdx == KEY_PLAY4 ){ // values = OFF, ON, 1.2.3.
@@ -84,6 +86,7 @@
 				freeflowOff(FALSE);
 				SOLO_pos_marker_in = OFF;
 				SOLO_pos_marker_out = OFF;
+				SOLO_rec_finalized = OFF;
 				// Clear the pages
 				clear_page_record_track_chain(SOLO_rec_page);
 				MIX_TIMER = ON;
@@ -96,6 +99,7 @@
 
 		else if ( keyNdx == KEY_EDIT_MASTER && SOLO_edit_buffer_volatile == ON ){
 			SOLO_has_rec = ON; // XXX rm - only for UI testing
+			SOLO_rec_finalized = ON;
 			SOLO_edit_buffer_volatile ^= 1; // toggle
 		}
 
@@ -134,6 +138,7 @@
 			SOLO_rec_page 				= NULL;
 			SOLO_has_rec 				= OFF;
 			SOLO_edit_buffer_volatile 	= OFF;
+			SOLO_rec_finalized			= OFF;
 			SOLO_rec_freeflow 			= OFF;
 			SOLO_rec_measure_count 		= OFF;
 			SOLO_rec_freeflow_measures	= OFF;

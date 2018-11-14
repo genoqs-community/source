@@ -1163,6 +1163,7 @@ void exit_solo_recording()
 	SOLO_normalize_pitch		= OFF;
 	SOLO_normalize_len			= OFF;
 	SOLO_has_rec				= OFF;
+	SOLO_rec_finalized			= OFF;
 	SOLO_edit_buffer_volatile	= OFF;
 	SOLO_overdub				= OFF;
 	SOLO_rec_pressed_col		= OFF;

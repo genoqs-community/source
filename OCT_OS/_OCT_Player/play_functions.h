@@ -266,7 +266,8 @@ void compute_chain_presel( unsigned char target_bank ){
 					if ( SOLO_pos_marker_in != OFF ||
 						(G_track_rec_bit == ON &&
 						 target_bank == SOLO_rec_bank &&
-						 SOLO_rec_continue_recording == OFF )){
+						(SOLO_rec_continue_recording == OFF && SOLO_rec_finalized == OFF)
+						)){
 
 						SOLO_rec_measure_pos--; // Move back one measure because we already incremented
 						stop_solo_rec(FALSE); // We have reached the end of the recording so stop

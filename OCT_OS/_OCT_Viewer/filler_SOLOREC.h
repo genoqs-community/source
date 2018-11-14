@@ -12,12 +12,13 @@
 		}
 	}
 
-	if ( SOLO_rec_continue_recording == ON ){
-		MIR_write_dot( LED_PLAY2, MIR_GREEN );
-		MIR_write_dot( LED_PLAY2, MIR_RED );
-	}
-	else {
-		MIR_write_dot( LED_PLAY2, MIR_RED );
+	if ( SOLO_has_rec == OFF && SOLO_rec_freeflow == OFF ){
+		if ( SOLO_rec_continue_recording == ON ){
+			MIR_write_dot( LED_PLAY2, MIR_GREEN );
+		}
+		else {
+			MIR_write_dot( LED_PLAY2, MIR_RED );
+		}
 	}
 
 	// MIDI NOTE and CC routing and pass through enabled
@@ -57,9 +58,11 @@
 		}
 		if ( SOLO_overdub == OFF ){
 			MIR_write_dot( LED_FOLLOW, MIR_GREEN );
+			MIR_write_dot( LED_FOLLOW, MIR_RED );
 		}
 		else {
 			MIR_write_dot( LED_FOLLOW, MIR_RED );
+			MIR_write_dot( LED_FOLLOW, MIR_BLINK );
 		}
 
 		// Clear recording

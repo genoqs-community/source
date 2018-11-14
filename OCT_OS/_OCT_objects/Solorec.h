@@ -13,6 +13,7 @@ unsigned char SOLO_midi_ch						= 1;
 unsigned char SOLO_normalize_pitch				= OFF;
 unsigned char SOLO_normalize_len				= OFF;
 unsigned char SOLO_has_rec						= OFF;
+unsigned char SOLO_rec_finalized				= OFF;
 unsigned char SOLO_edit_buffer_volatile			= OFF;
 unsigned char SOLO_overdub						= OFF;
 unsigned char SOLO_rec_pressed_col				= OFF;

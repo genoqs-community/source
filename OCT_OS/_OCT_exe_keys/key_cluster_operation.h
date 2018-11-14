@@ -381,6 +381,7 @@ void stop_solo_rec( unsigned char trim ){
 	sequencer_STOP( true );
 	sequencer_RESET( false );
 
+	SOLO_rec_finalized		= ON;
 	G_track_rec_bit 		= OFF;
 	G_measure_locator		= OFF;
 	SOLO_rec_measure_pos 	= OFF;
