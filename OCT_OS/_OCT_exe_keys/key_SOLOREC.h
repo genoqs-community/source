@@ -37,7 +37,7 @@
 	}
 
 	if ( keyNdx == KEY_SELECT_MASTER ){
-		if ( SOLO_rec_has_MCC == FALSE ){
+		if ( SOLO_rec_has_MCC == OFF ){
 			SOLO_rec_track_preview ^= 1; // toggle grid and page view because we don't have MCC data
 
 		} else if ( ++SOLO_rec_track_preview > SOLOMCC ){
@@ -68,6 +68,10 @@
 			if ( SOLO_rec_measure_hold == ON && G_run_bit == ON ){
 				SOLO_rec_rehersal ^= 1;
 			}
+			// secret way to toggle record back to play
+			else if ( G_run_bit == ON && G_track_rec_bit == ON ) {
+				G_track_rec_bit ^= 1; // toggle
+			}
 		}
 
 		else if ( keyNdx == KEY_RECORD ){ // Record
@@ -79,8 +83,8 @@
 			sequencer_command_PLAY();
 		}
 
-		else if ( keyNdx == KEY_CHAINER && G_run_bit == OFF ){ // Clear recording
-			if ( SOLO_has_rec == ON ){
+		else if ( keyNdx == KEY_CHAINER ){ // Clear recording
+			if ( G_run_bit == OFF && SOLO_has_rec == ON ){
 				SOLO_edit_buffer_volatile ^= 1; // toggle
 				SOLO_has_rec = OFF;
 				freeflowOff(FALSE);
@@ -94,6 +98,11 @@
 				cyg_alarm_initialize(	alarm_hdl,
 										cyg_current_time() + TIMEOUT_VALUE,
 										0 );
+			}
+			// Clear the MCC data
+			else if ( G_run_bit == ON && SOLO_rec_has_MCC == ON ){
+				clear_page_record_mcc_data(SOLO_rec_page);
+				SOLO_rec_has_MCC = OFF;
 			}
 		}
 

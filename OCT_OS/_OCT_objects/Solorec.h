@@ -27,7 +27,7 @@ unsigned char SOLO_rec_measure_hold				= OFF;
 unsigned char SOLO_rec_bank						= OFF;
 unsigned char SOLO_rec_rehersal					= OFF;
 unsigned char SOLO_rec_track_preview			= SOLOPAGE;
-unsigned char SOLO_rec_has_MCC					= FALSE;
+unsigned char SOLO_rec_has_MCC					= OFF;
 unsigned char SOLO_page_play_along[10];
 unsigned short SOLO_rec_save_playmodes			= OFF;
 unsigned short SOLO_rec_measure_count			= OFF;

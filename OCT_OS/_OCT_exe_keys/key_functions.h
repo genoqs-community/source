@@ -1338,6 +1338,28 @@ void clear_page_record_track_chain(Pagestruct* target_page){
 	}
 }
 
+void clear_page_record_mcc_data(Pagestruct* target_page){
+	int row, col;
+
+	signed short    	this_ndx = first_page_in_cluster(target_page->pageNdx);
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+		// Init each step in each page
+		for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
+			for ( col=0; col < MATRIX_NROF_COLUMNS; col++ ){
+
+				Page_repository[this_ndx].Step[row][col]->attr_MCC		= 	STEP_DEF_MIDICC;
+			}
+		}
+
+		this_ndx += 10;
+	}
+}
+
 void drivePageCursor(Pagestruct* target_page, unsigned int measures){
 	unsigned int n, i, res;
 

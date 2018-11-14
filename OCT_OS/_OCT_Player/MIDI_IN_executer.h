@@ -654,10 +654,10 @@ void Track_record_CC( 	Pagestruct* 	target_page,
  			target_page->page_clear = OFF;
 
 			#ifdef FEATURE_SOLO_REC
- 			if ( SOLO_rec_has_MCC == FALSE ){
+ 			if ( SOLO_rec_has_MCC == OFF ){
 
  				SOLO_rec_track_preview = SOLOMCC;
- 				SOLO_rec_has_MCC = TRUE;
+ 				SOLO_rec_has_MCC = ON;
  			}
 			#endif
  		}
