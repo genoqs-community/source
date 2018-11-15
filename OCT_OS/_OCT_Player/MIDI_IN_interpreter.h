@@ -45,6 +45,10 @@
  */
 void G_midi_interpret_CONTROL( unsigned char midi_byte, unsigned char UART_ndx ){
 
+	#ifdef FEATURE_SOLO_REC
+	breakSoloRecordingMeasureHold();
+	#endif
+
 	// If data byte was received without prior status byte, fill in the running status
 	// but only if the runnig status is valid..
 	if ( G_midi_controller_ndx == 0 ){
@@ -240,12 +244,7 @@ void G_midi_interpret_NOTE_ON( unsigned char midi_byte, unsigned char UART_ndx )
 
 	#ifdef FEATURE_SOLO_REC
 	// Solo Recording - handle the first note of the initial recording
-	// TODO: make function and handle CC
-	if ( SOLO_rec_page != NULL && G_run_bit == ON && SOLO_rec_measure_hold == ON && SOLO_rec_rehersal == OFF ) {
-		SOLO_rec_measure_pos = 1;
-		SOLO_has_rec = ON;
-		SOLO_rec_measure_hold = OFF;
-	}
+	breakSoloRecordingMeasureHold();
 	#endif
 	// Store the byte in the circular array	- just so it can be printed out.
 	// DO NOT USE PRINTFS OR THE LIKE HERE, OR THE INPUT IS DELAYED AND SCRAMBLED

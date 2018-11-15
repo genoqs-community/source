@@ -85,14 +85,18 @@
 
 		else if ( keyNdx == KEY_CHAINER ){ // Clear recording
 			if ( G_run_bit == OFF && SOLO_has_rec == ON ){
+
 				SOLO_edit_buffer_volatile ^= 1; // toggle
 				SOLO_has_rec = OFF;
 				freeflowOff(FALSE);
 				SOLO_pos_marker_in = OFF;
 				SOLO_pos_marker_out = OFF;
 				SOLO_rec_finalized = OFF;
+				SOLO_rec_has_MCC = OFF;
+				SOLO_rec_track_preview = SOLOPAGE;
 				// Clear the pages
 				clear_page_record_track_chain(SOLO_rec_page);
+
 				MIX_TIMER = ON;
 				// Setup alarm for the MIX TIMER
 				cyg_alarm_initialize(	alarm_hdl,
@@ -103,6 +107,7 @@
 			else if ( G_run_bit == ON && SOLO_rec_has_MCC == ON ){
 				clear_page_record_mcc_data(SOLO_rec_page);
 				SOLO_rec_has_MCC = OFF;
+				SOLO_rec_track_preview = SOLOPAGE;
 			}
 		}
 
@@ -157,6 +162,7 @@
 			SOLO_pos_in 				= NULL;
 			SOLO_pos_out 				= NULL;
 			SOLO_rec_has_MCC			= OFF;
+			SOLO_rec_track_preview		= SOLOPAGE;
 			G_measure_locator 			= OFF;
 			Solorec_init();
 		}
@@ -309,9 +315,21 @@
 			}
 		}
 
-		if (SOLO_has_rec == ON && G_run_bit == OFF){
-			// Fine tune quantize
-			unsigned char xdx = BK_KEY_to_xdx( keyNdx );
-			SOLO_quantize_fine_tune = SOLO_quantize_fine_tune == xdx ? 0 : xdx;
+		// Fine tune quantize
+		unsigned char xdx = BK_KEY_to_xdx( keyNdx );
+		if ( xdx != OFF ){
+			if ( xdx < 5 ){
+				if ( xdx != 4 || SOLO_quantize_fine_tune_edge != 6 ){
+					SOLO_quantize_fine_tune_center = xdx;
+				}
+			}
+			else if ( xdx == 5 ){
+				SOLO_quantize_fine_tune_drop_edge ^= 1;
+			}
+			else if ( xdx < 10 ){
+				if ( xdx != 6 || SOLO_quantize_fine_tune_center != 4 ){
+					SOLO_quantize_fine_tune_edge = xdx;
+				}
+			}
 		}
 	}

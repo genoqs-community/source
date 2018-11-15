@@ -232,36 +232,41 @@
 		MIR_write_dot( LED_ALIGN, MIR_RED );
 		show_strum_in_circle( SOLO_strum );
 	}
-	else if ( SOLO_has_rec == ON && G_run_bit == OFF) {
+	else {
 		// Quantize fine tune value
 		// NUMERIC QUADRANT
-		switch (SOLO_quantize_fine_tune) {
+		switch (SOLO_quantize_fine_tune_center) {
 		case 1:
 			MIR_write_dot( 201, MIR_RED );
 			break;
 		case 2:
-			MIR_write_dot( 200, MIR_GREEN );
+			MIR_write_dot( 200, MIR_RED );
 			break;
 		case 3:
 			MIR_write_dot( 199, MIR_RED );
 			break;
 		case 4:
-			MIR_write_dot( 198, MIR_GREEN );
+			MIR_write_dot( 198, MIR_RED );
 			break;
-		case 5:
+		}
+
+		if ( SOLO_quantize_fine_tune_drop_edge == OFF ){
+			MIR_write_dot( 197, MIR_GREEN );
 			MIR_write_dot( 197, MIR_RED );
-			break;
+		}
+
+		switch (SOLO_quantize_fine_tune_edge) {
 		case 6:
 			MIR_write_dot( 207, MIR_GREEN );
 			break;
 		case 7:
-			MIR_write_dot( 206, MIR_RED );
+			MIR_write_dot( 206, MIR_GREEN );
 			break;
 		case 8:
 			MIR_write_dot( 216, MIR_GREEN );
 			break;
 		case 9:
-			MIR_write_dot( 215, MIR_RED );
+			MIR_write_dot( 215, MIR_GREEN );
 			break;
 		}
 	}

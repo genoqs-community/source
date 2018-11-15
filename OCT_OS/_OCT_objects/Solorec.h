@@ -4,7 +4,9 @@
 
 // Fine tune acts like a band pass filter that opens wider starting equal distance between two steps.
 // Notes found within this band will be quantize-flipped so that the note is placed in the opposite direction.
-unsigned char SOLO_quantize_fine_tune 			= 0; // Odd=switch polarity Even=drop polarized notes
+unsigned char SOLO_quantize_fine_tune_center	= 1; // attract to center (STA_START)
+unsigned char SOLO_quantize_fine_tune_edge		= 9; // switch polarity from the edge
+unsigned char SOLO_quantize_fine_tune_drop_edge	= OFF; // drop edge notes that would otherwise switch polarity
 unsigned char SOLO_quantize_note 				= 0; // 0=OFF, 1=STA4, 2=STA3, 3=STA2, 4=STA1, 5=STA0
 signed char	  SOLO_strum						= 9; // 9=OFF
 unsigned char SOLO_slow_tempo					= OFF;
@@ -62,6 +64,15 @@ void Solorec_init(){
 
 		SOLO_page_play_along[i] = 255;
 	 }
+}
+
+void breakSoloRecordingMeasureHold(){
+
+	if ( SOLO_rec_page != NULL && G_run_bit == ON && SOLO_rec_measure_hold == ON && SOLO_rec_rehersal == OFF ) {
+		SOLO_rec_measure_pos = 1;
+		SOLO_has_rec = ON;
+		SOLO_rec_measure_hold = OFF;
+	}
 }
 
 void freeflowOff( unsigned char trim ){

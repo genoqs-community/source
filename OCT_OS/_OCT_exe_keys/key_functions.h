@@ -1154,31 +1154,33 @@ void exit_solo_recording()
 		reset_page_cluster( SOLO_rec_page );
 	}
 	// Reset most of the global variables
-	SOLO_quantize_fine_tune 	= OFF;
-	SOLO_quantize_note 			= OFF;
-	SOLO_strum					= 9; // 9=OFF
-	SOLO_slow_tempo				= OFF;
-	SOLO_rec_page				= NULL;
-//	SOLO_midi_ch				= 1;
-	SOLO_normalize_pitch		= OFF;
-	SOLO_normalize_len			= OFF;
-	SOLO_has_rec				= OFF;
-	SOLO_rec_finalized			= OFF;
-	SOLO_edit_buffer_volatile	= OFF;
-	SOLO_overdub				= OFF;
-	SOLO_rec_pressed_col		= OFF;
-	SOLO_pos_marker_in			= OFF;
-	SOLO_pos_marker_out			= OFF;
-	SOLO_rec_freeflow			= OFF;
-//	SOLO_rec_ending_flash		= OFF;
-	SOLO_rec_legato				= OFF;
+	SOLO_quantize_fine_tune_center  	= 1;
+	SOLO_quantize_fine_tune_edge		= 9;
+	SOLO_quantize_fine_tune_drop_edge	= OFF;
+	SOLO_quantize_note 					= OFF;
+	SOLO_strum							= 9; // 9=OFF
+	SOLO_slow_tempo						= OFF;
+	SOLO_rec_page						= NULL;
+//	SOLO_midi_ch						= 1;
+	SOLO_normalize_pitch				= OFF;
+	SOLO_normalize_len					= OFF;
+	SOLO_has_rec						= OFF;
+	SOLO_rec_finalized					= OFF;
+	SOLO_edit_buffer_volatile			= OFF;
+	SOLO_overdub						= OFF;
+	SOLO_rec_pressed_col				= OFF;
+	SOLO_pos_marker_in					= OFF;
+	SOLO_pos_marker_out					= OFF;
+	SOLO_rec_freeflow					= OFF;
+//	SOLO_rec_ending_flash				= OFF;
+	SOLO_rec_legato						= OFF;
 //	SOLO_page_play_along[10];
-	G_measure_locator			= OFF;
-	SOLO_rec_measure_count		= OFF;
-	SOLO_rec_freeflow_measures	= OFF;
-	SOLO_rec_measure_hold		= OFF;
-	GRID_bank_playmodes 		= SOLO_rec_save_playmodes;
-	SOLO_rec_save_playmodes		= OFF;
+	G_measure_locator					= OFF;
+	SOLO_rec_measure_count				= OFF;
+	SOLO_rec_freeflow_measures			= OFF;
+	SOLO_rec_measure_hold				= OFF;
+	GRID_bank_playmodes 				= SOLO_rec_save_playmodes;
+	SOLO_rec_save_playmodes				= OFF;
 	//
 	Solorec_init();
 	G_zoom_level = zoomGRID; // exit the Solo Recording view
