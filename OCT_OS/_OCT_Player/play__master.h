@@ -381,20 +381,29 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 	// PAGE PLAY from grid selection: each bank has at most one active page
 	for ( i=0; i < GRID_NROF_BANKS; i++ ){
 
-		// Skip the banks that are not currently active
-		if ( GRID_p_selection[i] != NULL ){
+		#ifdef FEATURE_SOLO_REC
+		// Solo Recording - Skip pages that are not selected to play along
+		if ( G_zoom_level == zoomSOLOREC ){
+			if (SOLO_page_play_along[i] == GRID_p_selection[i]->pageNdx || grid_row(SOLO_rec_page->pageNdx) == i ){
 
-			#ifdef FEATURE_SOLO_REC
-			// Solo Recording - Skip pages that are not selected to play along
-			if ( G_zoom_level == zoomSOLOREC &&
-			     SOLO_page_play_along[i] == NOP &&
-			     grid_row(SOLO_rec_page->pageNdx) != i ){ // Don't skip the solo record page cluster row
-				continue;
+				// Play the page selected in current GRID bank
+				PLAYER_play_page( GRID_p_selection[i], in_G_TTC_abs_value );
 			}
-			#endif
+		}
+		// Skip the banks that are not currently active
+		else if ( GRID_p_selection[i] != NULL ){
+
 			// Play the page selected in current GRID bank
 			PLAYER_play_page( GRID_p_selection[i], in_G_TTC_abs_value );
 		}
+		#else
+		// Skip the banks that are not currently active
+		if ( GRID_p_selection[i] != NULL ){
+
+			// Play the page selected in current GRID bank
+			PLAYER_play_page( GRID_p_selection[i], in_G_TTC_abs_value );
+		}
+		#endif
 	}
 
 	#ifdef FEATURE_ENABLE_DICE

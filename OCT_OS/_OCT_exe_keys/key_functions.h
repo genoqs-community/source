@@ -1182,6 +1182,13 @@ void exit_solo_recording()
 	GRID_bank_playmodes 				= SOLO_rec_save_playmodes;
 	SOLO_rec_save_playmodes				= OFF;
 	//
+	unsigned int i=0;
+	for (i=0; i<10; i++){
+		if ( SOLO_page_play_along_toggle[i] != NOP ){
+			grid_select( &Page_repository[SOLO_page_play_along_toggle[i]], OFF );
+		}
+	}
+
 	Solorec_init();
 
 	G_zoom_level = zoomGRID; // exit the Solo Recording view

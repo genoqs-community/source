@@ -306,6 +306,10 @@
 					( SOLO_page_play_along[keyRow] != heldNdx) // and - this page was not already the play along page
 				)){
 				SOLO_page_play_along[keyRow] = heldNdx;
+				if ( GRID_p_selection[ grid_row(heldNdx) ] != &Page_repository[heldNdx] ){
+					SOLO_page_play_along_toggle[keyRow] = heldNdx;
+				}
+				grid_select( &Page_repository[heldNdx], ON );
 			}
 			else {
 				SOLO_page_play_along[keyRow] = NOP;

@@ -31,6 +31,7 @@ unsigned char SOLO_rec_rehersal					= OFF;
 unsigned char SOLO_rec_track_preview			= SOLOPAGE;
 unsigned char SOLO_rec_has_MCC					= OFF;
 unsigned char SOLO_page_play_along[10];
+unsigned char SOLO_page_play_along_toggle[10];
 unsigned short SOLO_rec_save_playmodes			= OFF;
 unsigned short SOLO_rec_measure_count			= OFF;
 unsigned short SOLO_rec_freeflow_measures		= OFF;
@@ -63,6 +64,7 @@ void Solorec_init(){
 		}
 
 		SOLO_page_play_along[i] = NOP;
+		SOLO_page_play_along_toggle[i] = NOP;
 	 }
 }
 
