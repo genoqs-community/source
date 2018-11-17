@@ -168,24 +168,21 @@
 		}
 	}
 
-	else if (keyNdx == KEY_FLT){
+	else if (keyNdx == KEY_MIX_MASTER && SOLO_rec_finalized == ON && G_run_bit == ON){
 
-		if ( SOLO_has_rec == ON && G_run_bit == ON ){
-
-			if ( SOLO_pos_marker_in == OFF ){
-				SOLO_pos_marker_in = SOLO_rec_measure_pos;
-				SOLO_pos_in = &Page_repository[GRID_CURSOR];
-			}
-			else {
-				stop_solo_rec(FALSE);
-			}
-
-			ROT_INDEX = REC_MEASURES_SPLIT;
-			// Setup alarm for the EDIT TIMER
-			cyg_alarm_initialize(	alarm_hdl,
-									cyg_current_time() + (TIMEOUT_VALUE),
-									0 );
+		if ( SOLO_pos_marker_in == OFF ){
+			SOLO_pos_marker_in = SOLO_rec_measure_pos;
+			SOLO_pos_in = &Page_repository[GRID_CURSOR];
 		}
+		else {
+			stop_solo_rec(FALSE);
+		}
+
+		ROT_INDEX = REC_MEASURES_SPLIT;
+		// Setup alarm for the EDIT TIMER
+		cyg_alarm_initialize(	alarm_hdl,
+								cyg_current_time() + (TIMEOUT_VALUE / 4),
+								0 );
 	}
 
 	// Quantize chord buttons
@@ -330,6 +327,37 @@
 				if ( xdx != 6 || SOLO_quantize_fine_tune_center != 4 ){
 					SOLO_quantize_fine_tune_edge = xdx;
 				}
+			}
+		}
+	}
+
+	if ( G_run_bit == OFF ){
+		unsigned char latencyOffset = 0;
+		switch (keyNdx) {
+			case KEY_MIXTGT_USR1:
+				latencyOffset = 1; // toggle 1
+				break;
+			case KEY_MIXTGT_USR2:
+				latencyOffset = 2;// toggle 2
+				break;
+			case KEY_MIXTGT_USR3:
+				latencyOffset = 3;// toggle 3
+				break;
+			case KEY_MIXTGT_USR4:
+				latencyOffset = 4;// toggle 4
+				break;
+			case KEY_MIXTGT_USR5:
+				latencyOffset = 5;// toggle 5
+				break;
+			default:
+			break;
+		}
+		if ( latencyOffset > 0 ){
+			if ( G_TT_external_latency_offset == latencyOffset ){
+				G_TT_external_latency_offset = OFF;
+			}
+			else {
+				G_TT_external_latency_offset = latencyOffset;
 			}
 		}
 	}

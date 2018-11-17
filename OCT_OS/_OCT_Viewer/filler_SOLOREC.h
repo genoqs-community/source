@@ -154,20 +154,25 @@
 		}
 	}
 
-//	--------------------------------------------------------
-	// POS recording split button
-	if (SOLO_rec_page != NULL && SOLO_has_rec == ON ){
-		MIR_write_dot( LED_FLT, MIR_RED ); // POS
+	// MIX recording split button
+	if ( ROT_INDEX == REC_MEASURES_SPLIT && G_run_bit == OFF ){
+		MIR_write_dot( LED_MIX_MASTER, MIR_RED );
+		MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
+	}
+
+	if ( SOLO_rec_finalized == ON && G_run_bit == ON ){
+		MIR_write_dot( LED_MIX_MASTER, MIR_RED );
 		// The recording is playing and not recording so enable split markers using POS
 		if ( G_run_bit == ON && G_track_rec_bit == OFF ){
-			MIR_write_dot( LED_FLT, MIR_GREEN ); // POS
-			if ( ROT_INDEX == REC_MEASURES_SPLIT ){
-				MIR_write_dot( LED_FLT, MIR_BLINK ); // POS
+			MIR_write_dot( LED_MIX_MASTER, MIR_GREEN );
+			if ( SOLO_pos_marker_in != OFF ){
+				MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
+			}
+			if ( SOLO_pos_marker_in != OFF ){
+				MIR_write_dot( LED_MIX_INDICATOR, MIR_GREEN );
 			}
 		}
 	}
-//	--------------------------------------------------------
-
 
 	// Show the MODE - (Special) Grid Solo Zoom
 	MIR_write_dot( LED_ZOOM_GRID, MIR_RED );
@@ -481,4 +486,23 @@
 			2,	MIR_GREEN);
 	}
 
+	switch (G_TT_external_latency_offset) {
+		case 1:
+			MIR_write_dot( LED_MIXTGT_USR1,	MIR_RED);
+			break;
+		case 2:
+			MIR_write_dot( LED_MIXTGT_USR2,	MIR_RED);
+			break;
+		case 3:
+			MIR_write_dot( LED_MIXTGT_USR3, MIR_RED);
+			break;
+		case 4:
+			MIR_write_dot( LED_MIXTGT_USR4,	MIR_RED);
+			break;
+		case 5:
+			MIR_write_dot( LED_MIXTGT_USR5,	MIR_RED);
+			break;
+		default:
+			break;
+	}
 
