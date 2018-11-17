@@ -1194,6 +1194,10 @@ void exit_solo_recording()
 	G_zoom_level = zoomGRID; // exit the Solo Recording view
 }
 
+void copy_steps_to_recording(Pagestruct* target_page){
+// -----------------------------------------------------------------
+}
+
 void create_next_freeflow_page_cluster(unsigned char next_ndx){
 
 	Pagestruct* next_page = &Page_repository[ next_ndx ];
@@ -1219,6 +1223,7 @@ void cut_freeflow_track_chain(Pagestruct* target_page, unsigned char last_measur
 	target_page->attr_STA = count;
 	target_page->repeats_left = target_page->attr_STA;
 	Rec_repository[col].measure_count = target_page->attr_STA;
+	copy_steps_to_recording(target_page);
 
 	clear_pages_left( target_page );
 	SOLO_pos_marker_in = OFF;
@@ -1246,6 +1251,7 @@ void shift_down_freeflow_track_chain(Pagestruct* target_page, unsigned char last
 	target_page->attr_STA = count;
 	target_page->repeats_left = target_page->attr_STA;
 	Rec_repository[col].measure_count = target_page->attr_STA;
+	copy_steps_to_recording(target_page);
 
 	clear_pages_right( target_page );
 	SOLO_pos_marker_out = OFF;
@@ -1278,6 +1284,57 @@ void trim_freeflow_track_chain(Pagestruct* target_page, unsigned char measureNdx
 	target_page->attr_STA = measureCnt;
 	target_page->repeats_left = measureCnt;
 	Rec_repository[grid_col(target_page->pageNdx)].measure_count = measureCnt;
+	copy_steps_to_recording(target_page);
+}
+
+unsigned char find_record_track_chain_start(Pagestruct* target_page){
+	int row;
+
+	unsigned char start = 0;
+	Trackstruct* current_track;
+
+	current_track = target_page->Track[0];
+
+	// Compute the green pattern - all tracks in chain
+	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
+
+		// If current track is not head, mark it as tail
+		if ( current_track == current_track->chain_data[HEAD] ){
+			start = row_of_track( target_page, current_track );
+		}
+		current_track = target_page->Track[row];
+	}
+
+	// TODO
+//	// The last track needs to be part of a chain to match the Solo Rec format
+//	if ( current_track != current_track->chain_data[PREV]->chain_data[NEXT] ){
+//		return NOP;
+//	}
+
+	return start;
+}
+
+void duplicate_record_track_chain(Pagestruct* target_page){
+	int row, col, j, idx, start;
+
+	col = grid_col(target_page->pageNdx);
+	idx = find_record_track_chain_start(target_page);
+	start = idx - Rec_repository[col].measure_count;
+	j = idx;
+
+	if (idx == NOP || idx < 5){
+		return;
+	}
+
+	for ( row=start; row < idx; row++ ){
+		Track_hard_init( target_page->Track[row], target_page->Track[row]->trackId );
+		Track_copy( target_page, j++, target_page, row );
+	}
+
+	target_page->attr_STA = target_page->attr_STA * 2;
+	target_page->repeats_left = target_page->attr_STA;
+	Rec_repository[col].measure_count = target_page->attr_STA;
+	copy_steps_to_recording(target_page);
 }
 
 void create_page_record_track_chain(Pagestruct* target_page, unsigned int measures){

@@ -195,7 +195,7 @@
 		}
 	}
 	else if ( is_matrix_key(keyNdx) == TRUE || ( SOLO_rec_freeflow == OFF && keyNdx == KEY_CHAINMODE_4 ) ||
-		      keyNdx == KEY_CHAINMODE_3 || keyNdx == KEY_CHAINMODE_2 ) {
+		      keyNdx == KEY_CHAINMODE_3 || keyNdx == KEY_CHAINMODE_2 || keyNdx == KEY_ZOOM_PAGE ) {
 
 		// GRID PAGE CLUSTER SELECTIONS
 
@@ -325,8 +325,7 @@
 			if ( keyNdx == LED_CHAINMODE_3 ){
 				// do we have enough empty tracks left to double the current track chain
 				if ( (10 / Rec_repository[ grid_col(heldNdx) ].measure_count) >= 2 ){
-					// TODO
-
+					duplicate_record_track_chain(&Page_repository[ heldNdx ]);
 				}
 			}
 
