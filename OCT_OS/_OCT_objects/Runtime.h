@@ -509,9 +509,7 @@ typedef struct notestruct{
 typedef struct recstruct{
 
 	Notestruct*		Note[MAX_NROF_REC_NOTES];
-	Notestruct*		NoteUndo[MAX_NROF_REC_NOTES];
 	unsigned char	measure_count;
-	unsigned char	measure_count_undo;
 
 } Recstruct;
 

@@ -334,6 +334,20 @@
 		if ( selRec == OFF && SOLO_rec_page != NULL ){
 			MIR_write_dot( LED_CLEAR, MIR_BLINK );
 		}
+
+		if ( SOLO_rec_finalized == ON ){
+			// do we have enough empty tracks left to double the current track chain
+			if ( (10 / Rec_repository[ grid_col(pressedNdx) ].measure_count) >= 2 ){
+				MIR_write_dot( LED_CHAINMODE_3, MIR_RED   );
+				MIR_write_dot( LED_CHAINMODE_3, MIR_GREEN );
+			}
+
+			if ( grid_col(pressedNdx) < 15 ){
+				MIR_write_dot( LED_CHAINMODE_2, MIR_RED   );
+				MIR_write_dot( LED_CHAINMODE_2, MIR_GREEN );
+			}
+		}
+
 		if ( SOLO_rec_page == NULL && SOLO_rec_freeflow == OFF && has_empty_grid_row_ahead(pressedNdx) == TRUE ){
 			// No recording page has been chosen yet so show the Free Flow button flashing
 			// when an eligible grid page is pressed

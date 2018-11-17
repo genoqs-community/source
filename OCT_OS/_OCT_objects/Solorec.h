@@ -68,6 +68,22 @@ void Solorec_init(){
 	 }
 }
 
+void recPageCopy( unsigned char source_col, unsigned char dest_col ){
+
+	Recstruct* source_rec = &Rec_repository[source_col];
+	Recstruct* dest_rec = &Rec_repository[dest_col];
+	dest_rec->measure_count = source_rec->measure_count;
+	unsigned char j=0;
+	for (j = 0; j < 16; ++j) {
+		dest_rec->Note[j]->attr_LEN = source_rec->Note[j]->attr_LEN;
+		dest_rec->Note[j]->attr_PIT = source_rec->Note[j]->attr_PIT;
+		dest_rec->Note[j]->attr_STA = source_rec->Note[j]->attr_STA;
+		dest_rec->Note[j]->attr_VEL = source_rec->Note[j]->attr_VEL;
+		dest_rec->Note[j]->chord_data = source_rec->Note[j]->chord_data;
+		dest_rec->Note[j]->chord_up = source_rec->Note[j]->chord_up;
+	}
+}
+
 void breakSoloRecordingMeasureHold(){
 
 	if ( SOLO_rec_page != NULL && G_run_bit == ON && SOLO_rec_measure_hold == ON && SOLO_rec_rehersal == OFF ) {

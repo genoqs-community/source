@@ -194,7 +194,8 @@
 			quantize(SOLO_rec_page); // Apply the quantize
 		}
 	}
-	else if ( is_matrix_key(keyNdx) == TRUE || ( SOLO_rec_freeflow == OFF && keyNdx == KEY_CHAINMODE_4 )) {
+	else if ( is_matrix_key(keyNdx) == TRUE || ( SOLO_rec_freeflow == OFF && keyNdx == KEY_CHAINMODE_4 ) ||
+		      keyNdx == KEY_CHAINMODE_3 || keyNdx == KEY_CHAINMODE_2 ) {
 
 		// GRID PAGE CLUSTER SELECTIONS
 
@@ -211,6 +212,9 @@
 		if (isPressed) {
 			heldNdx = pressedNdx;
 			pressedNdx = grid_ndx_from_key(keyNdx);
+		}
+		else if ( is_matrix_key(keyNdx) == FALSE ) {
+			return;
 		}
 
 		unsigned char heldCol = grid_col(heldNdx);
@@ -316,21 +320,39 @@
 			}
 		}
 
-		// Fine tune quantize
-		unsigned char xdx = BK_KEY_to_xdx( keyNdx );
-		if ( xdx != OFF ){
-			if ( xdx < 5 ){
-				if ( xdx != 4 || SOLO_quantize_fine_tune_edge != 6 ){
-					SOLO_quantize_fine_tune_center = xdx;
+		if ( SOLO_rec_finalized == ON ){
+
+			if ( keyNdx == LED_CHAINMODE_3 ){
+				// do we have enough empty tracks left to double the current track chain
+				if ( (10 / Rec_repository[ grid_col(heldNdx) ].measure_count) >= 2 ){
+					// TODO
+
 				}
 			}
-			else if ( xdx == 5 ){
-				SOLO_quantize_fine_tune_drop_edge ^= 1;
-			}
-			else if ( xdx < 10 ){
-				if ( xdx != 6 || SOLO_quantize_fine_tune_center != 4 ){
-					SOLO_quantize_fine_tune_edge = xdx;
+
+			if ( keyNdx == LED_CHAINMODE_2 ){
+				if ( grid_col(last_page_in_cluster(heldNdx)) < 15 ){
+					copy_page_right(heldNdx);
 				}
+			}
+		}
+
+	}
+
+	// Fine tune quantize
+	unsigned char xdx = BK_KEY_to_xdx( keyNdx );
+	if ( xdx != OFF ){
+		if ( xdx < 5 ){
+			if ( xdx != 4 || SOLO_quantize_fine_tune_edge != 6 ){
+				SOLO_quantize_fine_tune_center = xdx;
+			}
+		}
+		else if ( xdx == 5 ){
+			SOLO_quantize_fine_tune_drop_edge ^= 1;
+		}
+		else if ( xdx < 10 ){
+			if ( xdx != 6 || SOLO_quantize_fine_tune_center != 4 ){
+				SOLO_quantize_fine_tune_edge = xdx;
 			}
 		}
 	}

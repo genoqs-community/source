@@ -232,6 +232,13 @@ unsigned char last_page_in_grid_row( unsigned char target_page ){
 	return target_page % MATRIX_NROF_ROWS + 150;
 }
 
+void copy_page_right( unsigned char target_page ){
+
+	unsigned char last = last_page_in_cluster(target_page) + 10;
+	Page_copy( &Page_repository[ target_page ], &Page_repository[ last ] );
+	recPageCopy( grid_col(target_page), grid_col(last) );
+}
+
 unsigned char last_page_in_cluster( unsigned char target_page ){
 
 	Pagestruct* temp_page = &Page_repository[ target_page ];
