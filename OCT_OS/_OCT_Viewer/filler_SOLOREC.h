@@ -282,7 +282,7 @@
 		// MATRIX
 		for (i=0; i < MAX_NROF_PAGES; i++) {
 			// Page has contents and is not one of the row zero
-			if (	(Page_repository[i].page_clear != ON)  &&	( (i % 10) != 9 )){
+			if (	(Page_repository[i].page_clear != ON)  &&	( grid_row(i) != 9 )){
 				// This is our Solo Recording cluster
 				if ( SOLO_rec_page != NULL && selected_page_cluster( i, SOLO_rec_page->pageNdx ) != NOP ){
 					// Page PLAYING - i.e. selected in GRID
@@ -303,7 +303,7 @@
 				}
 				else {
 
-					if ( SOLO_page_play_along[i % 10] == i ){
+					if ( SOLO_page_play_along[grid_row(i)] == i ){
 						GRID_write_dot( i, MIR_GREEN );
 						GRID_write_dot( i, MIR_BLINK );
 					}

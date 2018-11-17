@@ -62,7 +62,7 @@ void Solorec_init(){
 			target_rec->Note[j]->chord_up = 0;
 		}
 
-		SOLO_page_play_along[i] = 255;
+		SOLO_page_play_along[i] = NOP;
 	 }
 }
 

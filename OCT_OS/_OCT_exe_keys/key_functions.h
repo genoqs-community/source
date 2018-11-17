@@ -1183,6 +1183,7 @@ void exit_solo_recording()
 	SOLO_rec_save_playmodes				= OFF;
 	//
 	Solorec_init();
+
 	G_zoom_level = zoomGRID; // exit the Solo Recording view
 }
 
@@ -3214,6 +3215,11 @@ unsigned short page_get_armed_chain_selection( Pagestruct* target_page ) {
 	}
 
 	return track_selection;
+}
+
+
+unsigned char is_matrix_key( unsigned char keyNdx ){
+	return (( keyNdx >= 11 ) && ( keyNdx <= 185 ) && (((keyNdx-10) % 11 ) != 0 ));
 }
 
 

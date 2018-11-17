@@ -194,7 +194,7 @@
 			quantize(SOLO_rec_page); // Apply the quantize
 		}
 	}
-	else {
+	else if ( is_matrix_key(keyNdx) == TRUE || ( SOLO_rec_freeflow == OFF && keyNdx == KEY_CHAINMODE_4 )) {
 
 		// GRID PAGE CLUSTER SELECTIONS
 
@@ -303,7 +303,7 @@
 			if ((( SOLO_page_play_along[keyRow] == NOP && grid_row(SOLO_rec_page->pageNdx) != keyRow ))
 				|| // or
 					(( grid_row(SOLO_page_play_along[keyRow]) == keyRow ) && // a page in a play along row was pressed
-					( SOLO_page_play_along[keyRow] != heldNdx ) // and - this page was not already the play along page
+					( SOLO_page_play_along[keyRow] != heldNdx) // and - this page was not already the play along page
 				)){
 				SOLO_page_play_along[keyRow] = heldNdx;
 			}

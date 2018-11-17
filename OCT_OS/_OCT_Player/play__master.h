@@ -388,7 +388,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 			// Solo Recording - Skip pages that are not selected to play along
 			if ( G_zoom_level == zoomSOLOREC &&
 			     SOLO_page_play_along[i] == NOP &&
-				(SOLO_rec_page->pageNdx % 10) != i ){ // Don't skip the solo record page cluster row
+			     grid_row(SOLO_rec_page->pageNdx) != i ){ // Don't skip the solo record page cluster row
 				continue;
 			}
 			#endif
