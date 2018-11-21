@@ -166,7 +166,7 @@ void undoAllNotes(){
 
 void pageClusterEnterSoloRec(unsigned char pageNdx){
 
-	signed short this_ndx = first_page_in_cluster(pageNdx);
+	unsigned char this_ndx = first_page_in_cluster(pageNdx);
 	unsigned char start, col;
 	Pagestruct* target_page;
 
@@ -183,6 +183,9 @@ void pageClusterEnterSoloRec(unsigned char pageNdx){
 
 		if ( SOLO_rec_page == NULL ){
 			GRID_CURSOR = target_page->pageNdx;
+			GRID_p_selection[ SOLO_rec_bank ] = target_page;
+			GRID_p_preselection[ SOLO_rec_bank ] = target_page;
+			GRID_p_clock_presel[ SOLO_rec_bank ] = target_page;
 			SOLO_rec_page = target_page;
 			SOLO_has_rec = ON;
 			SOLO_rec_finalized = ON;
@@ -193,11 +196,6 @@ void pageClusterEnterSoloRec(unsigned char pageNdx){
 	}
 
 	copy_page_cluster_to_recording();
-}
-
-void pageEnterSoloRec(Pagestruct* target_page){
-
-	// TODO page warp
 }
 
 void breakSoloRecordingMeasureHold(){

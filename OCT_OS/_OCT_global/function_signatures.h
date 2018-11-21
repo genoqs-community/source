@@ -78,6 +78,7 @@ extern  void 			cut_freeflow_track_chain(Pagestruct* target_page, unsigned char 
 extern  void			shift_down_freeflow_track_chain(Pagestruct* target_page, unsigned char measures, unsigned char count);
 extern  void 			trim_freeflow_track_chain(Pagestruct* target_page, unsigned char measures);
 extern unsigned char 	find_record_track_chain_start(Pagestruct* target_page);
+extern unsigned char 	has_valid_record_cluster_format(Pagestruct* target_page);
 
 extern unsigned char 	grid_row (unsigned char gridNdx);
 extern unsigned char 	grid_col (unsigned char gridNdx);

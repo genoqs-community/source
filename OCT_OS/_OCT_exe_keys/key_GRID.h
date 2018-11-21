@@ -1448,10 +1448,15 @@
 				// the sequencer is not paused and it is not running, i.e. stopped
 				if ( G_pause_bit == OFF && G_run_bit == OFF ){
 					SOLO_rec_save_playmodes = GRID_bank_playmodes;
-					if ( is_solo_rec_page_cluster_selection( GRID_CURSOR ) == ON ){
-						pageClusterEnterSoloRec( Page_repository[GRID_CURSOR].pageNdx );
+					if ( GRID_p_selection_cluster == ON ){
+						if ( has_valid_record_cluster_format( &Page_repository[GRID_CURSOR] ) == ON ){
+							pageClusterEnterSoloRec( GRID_CURSOR );
+							G_zoom_level = zoomSOLOREC;
+						}
 					}
-					G_zoom_level = zoomSOLOREC;
+					else {
+						G_zoom_level = zoomSOLOREC;
+					}
 				}
 				#endif
 				sequencer_command_PAUSE();

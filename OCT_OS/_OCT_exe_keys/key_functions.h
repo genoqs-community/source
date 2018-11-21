@@ -1319,10 +1319,36 @@ void trim_freeflow_track_chain(Pagestruct* target_page, unsigned char measureNdx
 	Rec_repository[grid_col(target_page->pageNdx)].measure_count = measureCnt;
 }
 
+unsigned char has_valid_record_cluster_format(Pagestruct* target_page){
+
+	if ( GRID_p_selection_cluster == OFF ){
+
+		return FALSE;
+	}
+
+	unsigned char this_ndx = first_page_in_cluster(target_page->pageNdx);
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		target_page = &Page_repository[this_ndx];
+		if ( find_record_track_chain_start(target_page) == NOP ){
+
+			return FALSE;
+		}
+		this_ndx += 10;
+	}
+
+	return TRUE;
+}
+
 unsigned char find_record_track_chain_start(Pagestruct* target_page){
 	int row;
 
-	unsigned char start = 0;
+	unsigned char start = 0, in_chain = FALSE, chain_count = 0;
 	Trackstruct* current_track;
 
 	current_track = target_page->Track[0];
@@ -1330,18 +1356,38 @@ unsigned char find_record_track_chain_start(Pagestruct* target_page){
 	// Compute the green pattern - all tracks in chain
 	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
 
-		// If current track is not head, mark it as tail
-		if ( current_track == current_track->chain_data[HEAD] ){
-			start = row_of_track( target_page, current_track );
+		// Find head chains larger than one track
+		if ( current_track != current_track->chain_data[NEXT] ){ // not a standalone track
+
+			if ( in_chain == FALSE ){
+
+				start = row_of_track( target_page, current_track );
+				chain_count++;
+			}
+			in_chain = TRUE;
+		}
+		else if ( row == 9 ){ // last track is not part of a chain
+
+			if ( chain_count > 0 ){
+
+				return NOP;
+			}
+		}
+		else {
+
+			in_chain = FALSE;
 		}
 		current_track = target_page->Track[row];
 	}
 
-	// TODO
-//	// The last track needs to be part of a chain to match the Solo Rec format
-//	if ( current_track != current_track->chain_data[PREV]->chain_data[NEXT] ){
-//		return NOP;
-//	}
+	if ( chain_count == 0 ){
+
+		return MATRIX_NROF_ROWS -1; // last row index
+	}
+	else if ( chain_count > 1 ){ // more than one track chain
+
+		return NOP;
+	}
 
 	return start;
 }
