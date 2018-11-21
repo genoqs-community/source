@@ -497,6 +497,7 @@ typedef struct pagestruct{
 
 typedef struct notestruct{
 
+	unsigned char	status;
 	unsigned int 	chord_up;
 	unsigned short  chord_data;
 	  signed char	attr_VEL;
@@ -508,7 +509,7 @@ typedef struct notestruct{
 
 typedef struct recstruct{
 
-	Notestruct*		Note[MAX_NROF_REC_NOTES];
+	Notestruct*		Note[MAX_NROF_PAGE_NOTES];
 	unsigned char	measure_count;
 
 } Recstruct;
@@ -529,8 +530,9 @@ extern Trackstruct 			Track_repository[MAX_NROF_TRACKS];
 extern Pagestruct 			Page_repository[MAX_NROF_PAGES];
 extern Track_Direction 		direction_repository[];
 extern Recstruct			Rec_repository[MATRIX_NROF_COLUMNS];
+extern Recstruct			Rec_undo_repository[MATRIX_NROF_COLUMNS];
 extern Notestruct			Note_repository[MAX_NROF_REC_NOTES];
-
+extern Notestruct			Note_undo_repository[MAX_NROF_REC_NOTES];
 
 
 

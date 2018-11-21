@@ -275,6 +275,7 @@ void compute_chain_presel( unsigned char target_bank ){
 						return;
 					}
 
+					SOLO_rec_finalized = ON;
 					G_measure_locator = 1; // Reset the measure counter when the page cluster ends
 					SOLO_rec_measure_pos = 1;
 					Page_repository[next_ndx].repeats_left = Page_repository[next_ndx].attr_STA; // Reset page repeats

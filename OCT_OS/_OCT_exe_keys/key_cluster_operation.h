@@ -27,19 +27,23 @@
 // Only allow selection of right neighbor pages that are not connecting to an existing page cluster
 unsigned char selected_solo_rec_page( unsigned char held, unsigned char pressedNdx ){
 
-	if ( SOLO_has_rec ){
+	if ( SOLO_has_rec || grid_row(held) == 9 ){
 		return OFF; // new page chains cannot be added if there is a recording
 	}
 
 	if ( Page_repository[held].page_clear == ON &&
 	   ( SOLO_rec_page == NULL &&
-	   ( grid_col(held) == 0 || Page_repository[grid_ndx_prev_col(held)].page_clear == ON))) {
+	   (
+	   ( grid_col(held) == 0 && Page_repository[grid_ndx_next_col(held)].page_clear == ON ) ||
+	   ( grid_col(held) == 15 && Page_repository[grid_ndx_prev_col(held)].page_clear == ON ) ||
+	   ( Page_repository[grid_ndx_prev_col(held)].page_clear == ON && Page_repository[grid_ndx_next_col(held)].page_clear == ON )
+	   ))) {
 
 		return ON;
 	}
 	else if ( SOLO_rec_page != NULL && SOLO_rec_page->pageNdx == grid_ndx_prev_col(held))
 	{
-		return ON; // FIXME: we are relying on the page being one column back
+		return ON;
 	}
 	return OFF;
 }
@@ -158,7 +162,11 @@ unsigned char selected_page_cluster_pressed( unsigned char grid_cursor, unsigned
 	Pagestruct* temp_page = &Page_repository[ grid_cursor ];
 
 	if ( prev_grid_cursor == grid_cursor || prev_grid_cursor - 10 == grid_cursor) {
-		return 1;
+
+		if ( Page_repository[prev_grid_cursor - 10].page_clear == ON && prev_grid_cursor != grid_cursor ){
+			return OFF;
+		}
+		return ON;
 	}
 
 	signed short	this_ndx = 0,
@@ -335,6 +343,45 @@ void assign_solorec_track_midi_ch( unsigned char target_page ){
 	}
 }
 
+// Indicates a page cluster selection by blinking
+unsigned char is_solo_rec_page_cluster_selection( unsigned char grid_cursor ){
+
+	Pagestruct* temp_page = &Page_repository[ grid_cursor ];
+	signed short 	next_ndx = 0,
+					this_ndx = 0;
+	unsigned char	is_solo_rec = ON;
+
+	if ( GRID_p_selection_cluster == OFF ){
+		return OFF;
+	}
+
+	// Compute the index of the right neighbor
+	this_ndx = temp_page->pageNdx;
+	next_ndx = this_ndx + 10;
+
+	if ( find_record_track_chain_start( &Page_repository[ this_ndx - 10 ] ) == NOP ||
+		 find_record_track_chain_start( &Page_repository[ this_ndx ] ) == NOP ){
+
+		is_solo_rec = OFF;
+	}
+
+	// RIGHT neighbor exists and has some content
+	while ( 	(next_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[next_ndx].page_clear == OFF)
+	){
+		temp_page = &Page_repository[ next_ndx ];
+		this_ndx = temp_page->pageNdx;
+		next_ndx = this_ndx + 10;
+		if ( G_run_bit == OFF ){
+			if ( find_record_track_chain_start( temp_page ) == NOP ){
+				is_solo_rec = OFF;
+			}
+		}
+	}
+
+	return is_solo_rec;
+}
+
 // Is the cursor a member of the target page cluster
 // Returns the column of the grid cursor
 unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char target_page ){
@@ -501,6 +548,7 @@ void reset_page_cluster( Pagestruct* temp_page ){
 
 		for (n=9; n >= m; --n) { // each measure
 			temp_page->trackSelection |= 1 << n;
+			temp_page->Track[n]->attr_MCH = SOLO_midi_ch;
 		}
 
 		chain_selected_tracks( temp_page );
@@ -567,10 +615,6 @@ void selected_page_cluster_copy( unsigned char grid_cursor, unsigned char prev_g
 
 // moves a selected page cluster
 void selected_page_cluster_move( unsigned char grid_cursor, unsigned char prev_grid_cursor ){
-
-	if ( grid_cursor / 10 == 15 ) { // don't clear if col 16
-		return;
-	}
 
 	if (Page_repository[prev_grid_cursor].page_clear == OFF) {
 		selected_page_cluster_clear( grid_cursor );

@@ -69,6 +69,7 @@ extern unsigned char 	has_empty_grid_row_ahead( unsigned char target_page );
 extern unsigned char 	first_page_in_cluster( unsigned char target_page );
 extern  void 			reset_page_cluster( Pagestruct* target_page );
 extern 	void 			stop_solo_rec( unsigned char trim );
+extern  void			copy_page_cluster_to_recording();
 extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
 extern	void 			align_measure_locators();
 extern  void 			create_page_record_track_chain(Pagestruct* target_page, unsigned int measures);
@@ -76,6 +77,7 @@ extern  void			create_next_freeflow_page_cluster(unsigned char next_ndx);
 extern  void 			cut_freeflow_track_chain(Pagestruct* target_page, unsigned char last_measure, unsigned char count);
 extern  void			shift_down_freeflow_track_chain(Pagestruct* target_page, unsigned char measures, unsigned char count);
 extern  void 			trim_freeflow_track_chain(Pagestruct* target_page, unsigned char measures);
+extern unsigned char 	find_record_track_chain_start(Pagestruct* target_page);
 
 extern unsigned char 	grid_row (unsigned char gridNdx);
 extern unsigned char 	grid_col (unsigned char gridNdx);

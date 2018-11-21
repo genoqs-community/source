@@ -605,14 +605,6 @@ void G_midi_insert_event( 	NOTEeventstruct* in_event,
 	// STATUS adjustment: turn on Step under the locator (adjusted by 1)
 	Step_set_status( in_event->target_step, STEPSTAT_TOGGLE, ON );
 
-	#ifdef FEATURE_SOLO_REC
-	// Save the source notes for SoloRec mutator functions such as, quantize and normalize.
-	if ( SOLO_has_rec == TRUE ){
-
-		capture_note_event(in_event->target_step, target_page, target_track, target_col);
-	}
-	#endif
-
 	// Final step: reG_scan_cycle the event - by placing it back onto the stack
 	NOTE_stack_push( in_event );
 }
@@ -824,6 +816,11 @@ void record_note_to_track( 	Pagestruct* target_page,
 					}
 					break;
 			}
+
+			#ifdef FEATURE_SOLO_REC
+			SOLO_undo_note_all = SOLO_rec_finalized;
+			capture_note_event(target_page->Step[row][target_col], target_page, row, target_col);
+			#endif
 
 			// Fill the on-event with the current step data
 			NOTEevent_fill( 	on_event, 	target_page->Step[row][target_col],

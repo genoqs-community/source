@@ -52,13 +52,12 @@
 		temp = row_of(keyNdx) + (10 * column_of (keyNdx));
 		GRID_CURSOR = temp;
 
-		//	diag_printf("prev: %d\n", PREV_GRID_CURSOR);
-		//	diag_printf("grid: %d\n", GRID_CURSOR);
-		//	diag_printf("ndx: %d\n", keyNdx);
-		//	diag_printf("temp: %d\n", temp);
-		//	diag_printf("press: %d\n", is_pressed_key(keyNdx - 11));
-		//	diag_printf("gress: %d\n", is_pressed_key(GRID_CURSOR));
-		//	diag_printf("---------------\n");
+//			diag_printf("prev: %d\n", PREV_GRID_CURSOR);
+//			diag_printf("grid: %d\n", GRID_CURSOR);
+//			diag_printf("ndx: %d\n", keyNdx);
+//			diag_printf("temp: %d\n", temp);
+//			diag_printf("press: %d\n", is_pressed_key(keyNdx - 11));
+//			diag_printf("gress: %d\n", is_pressed_key(GRID_CURSOR));
 
 		if ( GRID_p_selection_cluster == ON ) {
 
@@ -70,7 +69,6 @@
 
 					if ( CHECK_BIT(page_cluster_op, PGM_CLST_CLR) ) {
 						selected_page_cluster_clear( GRID_CURSOR );
-
 					}
 
 				} else if ( CHECK_BIT(page_cluster_op, PGM_CLST_CPY) ) {
@@ -80,7 +78,6 @@
 				} else if ( !CHECK_BIT(page_cluster_op, PGM_CLST_CLR) ){
 
 					selected_page_cluster_move( GRID_CURSOR, PREV_GRID_CURSOR );
-
 				}
 			}
 		}
@@ -110,9 +107,28 @@
 			}
 			temp_page = &Page_repository[ GRID_CURSOR ];
 
-			if ( previous_page->page_clear == OFF && temp_page->page_clear == OFF && prev_previous_page_clear == ON ){
+			if (( previous_page->page_clear == OFF && temp_page->page_clear == OFF && prev_previous_page_clear == ON ) ||
+			   // single page
+			   (( grid_col(PREV_GRID_CURSOR) == 0 && Page_repository[ GRID_CURSOR + 10 ].page_clear == ON ) || // left edge
+			    ( grid_col(GRID_CURSOR) == 15 && previous_page->page_clear == ON ) || // right edge
+				( Page_repository[ GRID_CURSOR ].page_clear == ON && previous_page->page_clear == OFF && prev_previous_page_clear == ON ) || // right side select
+				( Page_repository[ GRID_CURSOR + 10 ].page_clear == ON && Page_repository[ GRID_CURSOR ].page_clear == OFF && previous_page->page_clear == ON ) ||
+				( Page_repository[ GRID_CURSOR ].page_clear == OFF && previous_page->page_clear == ON && Page_repository[ GRID_CURSOR + 10 ].page_clear == ON ))){
 
 				GRID_p_selection_cluster = ON;
+
+				// right side select, assuming an adjacent cluster may exist
+				if (//( grid_col(PREV_GRID_CURSOR) == 0 && Page_repository[ GRID_CURSOR + 10 ].page_clear == ON ) ||
+					( Page_repository[ GRID_CURSOR ].page_clear == ON && previous_page->page_clear == OFF && prev_previous_page_clear == ON )){
+
+					GRID_CURSOR = PREV_GRID_CURSOR; // move the cursor left to the single un-cleared page
+					PREV_GRID_CURSOR = temp;
+				}
+				// single page left side select
+				else if (! (previous_page->page_clear == OFF && temp_page->page_clear == OFF && prev_previous_page_clear == ON) ){
+
+					PREV_GRID_CURSOR = GRID_CURSOR;
+				}
 
 			} else {
 
@@ -1432,6 +1448,9 @@
 				// the sequencer is not paused and it is not running, i.e. stopped
 				if ( G_pause_bit == OFF && G_run_bit == OFF ){
 					SOLO_rec_save_playmodes = GRID_bank_playmodes;
+					if ( is_solo_rec_page_cluster_selection( GRID_CURSOR ) == ON ){
+						pageClusterEnterSoloRec( Page_repository[GRID_CURSOR].pageNdx );
+					}
 					G_zoom_level = zoomSOLOREC;
 				}
 				#endif

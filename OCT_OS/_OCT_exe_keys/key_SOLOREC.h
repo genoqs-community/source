@@ -111,10 +111,28 @@
 			}
 		}
 
-		else if ( keyNdx == KEY_EDIT_MASTER && SOLO_edit_buffer_volatile == ON ){
-			SOLO_has_rec = ON; // XXX rm - only for UI testing
-			SOLO_rec_finalized = ON;
-			SOLO_edit_buffer_volatile ^= 1; // toggle
+		else if ( keyNdx == KEY_EDIT_MASTER ){
+
+			if ( SOLO_edit_buffer_volatile == ON ){
+				undoAllNotes();
+				SOLO_has_rec = ON;
+				SOLO_rec_finalized = ON;
+				SOLO_edit_buffer_volatile ^= 1; // toggle
+			}
+			else if ( SOLO_undo_note != NOP ){
+				Notestruct* undoNote = Rec_undo_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
+				Notestruct* note = Rec_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
+				copyNote(undoNote, note);
+				Pagestruct* page = &Page_repository[grid_ndx(grid_row(SOLO_rec_page->pageNdx), SOLO_undo_note_page_col)];
+				Stepstruct* step = page->Step[grid_row(SOLO_undo_note)][grid_col(SOLO_undo_note)];
+				noteToStep(note, step);
+				Step_set_status( step, STEPSTAT_TOGGLE, ON );
+				SOLO_undo_note = NOP;
+				SOLO_undo_note_page_col = NOP;
+			}
+			else if ( SOLO_undo_note_all == ON ){
+				undoAllNotes();
+			}
 		}
 
 		else if ( keyNdx == KEY_FOLLOW ){
@@ -127,15 +145,28 @@
 		}
 	}
 
-	if ( keyNdx < 187 && G_run_bit == ON && SOLO_rec_track_preview == SOLOPAGE ){
+	if ( is_matrix_key(keyNdx) == TRUE && G_run_bit == ON && SOLO_rec_track_preview == SOLOPAGE ){
 
 		// Compute Step coordinates
 		unsigned char row = row_of( keyNdx );
 		unsigned char col = column_of( keyNdx );
-		Pagestruct* target_page = &Page_repository[GRID_CURSOR];
 
-		// Turns the step selection off
-		interpret_matrix_stepkey( row, col, target_page );
+		if ( Step_get_status(target_page->Step[row][col], STEPSTAT_TOGGLE) == ON ){
+
+			Pagestruct* target_page = &Page_repository[GRID_CURSOR];
+			// Turns the step selection off
+			interpret_matrix_stepkey( row, col, target_page );
+
+			if ( SOLO_undo_note != NOP ){
+				SOLO_undo_note_all = ON;
+			}
+			SOLO_undo_note = grid_ndx_from_key( keyNdx );
+			SOLO_undo_note_page_col = grid_col(target_page->pageNdx);
+			Notestruct* undoNote = Rec_undo_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
+			Notestruct* note = Rec_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
+			copyNote(note, undoNote);
+			initNote(note);
+		}
 	}
 
 	// Clear the record pages

@@ -30,6 +30,9 @@ unsigned char SOLO_rec_bank						= OFF;
 unsigned char SOLO_rec_rehersal					= OFF;
 unsigned char SOLO_rec_track_preview			= SOLOPAGE;
 unsigned char SOLO_rec_has_MCC					= OFF;
+unsigned char SOLO_undo_note					= NOP;
+unsigned char SOLO_undo_note_all				= OFF;
+unsigned char SOLO_undo_note_page_col			= NOP;
 unsigned char SOLO_page_play_along[10];
 unsigned char SOLO_page_play_along_toggle[10];
 unsigned short SOLO_rec_save_playmodes			= OFF;
@@ -43,50 +46,168 @@ Pagestruct*   SOLO_pos_out						= NULL;
 
 
 
+void initNote(Notestruct* note){
+
+	note->status = OFF;
+	note->chord_up = 0;
+	note->chord_data = 0;
+	note->attr_VEL = 0;
+	note->attr_STA = 0;
+	note->attr_PIT = 0;
+	note->attr_LEN = 0;
+}
+
 // Solo Recordings: Initalize the original note recording repository
 void Solorec_init(){
 
-	unsigned int i=0;
+	unsigned char i=0, j=0;
+	unsigned short ndx=0;
 	Recstruct* target_rec = NULL;
 
-	for (i=0; i<10; i++){
+	for (i=0; i<MATRIX_NROF_COLUMNS; i++){
+
 		target_rec = &Rec_repository[i];
-
 		target_rec->measure_count = 0;
-		unsigned char j=0;
-		for (j = 0; j < 16; ++j) {
-			target_rec->Note[j]->attr_LEN = 0;
-			target_rec->Note[j]->attr_PIT = 0;
-			target_rec->Note[j]->attr_STA = 0;
-			target_rec->Note[j]->attr_VEL = 0;
-			target_rec->Note[j]->chord_data = 0;
-			target_rec->Note[j]->chord_up = 0;
-		}
-
 		SOLO_page_play_along[i] = NOP;
 		SOLO_page_play_along_toggle[i] = NOP;
-	 }
+	}
+
+	for (i=0; i<MAX_NROF_PAGES; i++){
+
+		for (j=0; j<MATRIX_NROF_COLUMNS; j++){
+
+			ndx = (i * MATRIX_NROF_COLUMNS) + j;
+			initNote( &Note_repository[ndx] );
+			initNote( &Note_undo_repository[ndx] );
+			Rec_repository[j].Note[i] = &Note_repository[ndx];
+			Rec_undo_repository[j].Note[i] = &Note_undo_repository[ndx];
+		}
+	}
+}
+
+void copyNote(Notestruct* src, Notestruct* dest){
+
+	dest->status = src->status;
+	dest->chord_up = src->chord_up;
+	dest->chord_data = src->chord_data;
+	dest->attr_VEL = src->attr_VEL;
+	dest->attr_STA = src->attr_STA;
+	dest->attr_PIT = src->attr_PIT;
+	dest->attr_LEN = src->attr_LEN;
+}
+
+void noteToStep(Notestruct* note, Stepstruct* step){
+
+	Step_set_status( step, STEPSTAT_TOGGLE, note->status );
+	step->chord_up = note->chord_up;
+	step->chord_data = note->chord_data;
+	step->attr_VEL = note->attr_VEL;
+	step->attr_STA = note->attr_STA;
+	step->attr_PIT = note->attr_PIT;
+	step->attr_LEN = note->attr_LEN;
+}
+
+void stepToNote(Stepstruct* step, Notestruct* note){
+
+	note->status = Step_get_status(step, STEPSTAT_TOGGLE);
+	note->chord_up = step->chord_up;
+	note->chord_data = step->chord_data;
+	note->attr_VEL = step->attr_VEL;
+	note->attr_STA = step->attr_STA;
+	note->attr_PIT = step->attr_PIT;
+	note->attr_LEN = step->attr_LEN;
 }
 
 void recPageCopy( unsigned char source_col, unsigned char dest_col ){
 
 	Recstruct* source_rec = &Rec_repository[source_col];
 	Recstruct* dest_rec = &Rec_repository[dest_col];
+	Recstruct* undo_dest_rec = &Rec_undo_repository[dest_col];
+	undo_dest_rec->measure_count = dest_rec->measure_count;
 	dest_rec->measure_count = source_rec->measure_count;
 	unsigned char j=0;
-	for (j = 0; j < 16; ++j) {
-		dest_rec->Note[j]->attr_LEN = source_rec->Note[j]->attr_LEN;
-		dest_rec->Note[j]->attr_PIT = source_rec->Note[j]->attr_PIT;
-		dest_rec->Note[j]->attr_STA = source_rec->Note[j]->attr_STA;
-		dest_rec->Note[j]->attr_VEL = source_rec->Note[j]->attr_VEL;
-		dest_rec->Note[j]->chord_data = source_rec->Note[j]->chord_data;
-		dest_rec->Note[j]->chord_up = source_rec->Note[j]->chord_up;
+	for (j = 0; j < MAX_NROF_REC_NOTES; j++) {
+		copyNote(dest_rec->Note[j], undo_dest_rec->Note[j]); // undo
+		copyNote(source_rec->Note[j], dest_rec->Note[j]);
 	}
+}
+
+void undoAllNotes(){
+
+	signed short this_ndx = first_page_in_cluster(SOLO_rec_page->pageNdx);
+	int i, col;
+	Notestruct* target_note;
+	Notestruct* undo_note;
+	Stepstruct* target_step;
+	Pagestruct* target_page;
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		target_page = &Page_repository[this_ndx];
+		col = grid_col(target_page->pageNdx);
+
+		for (i=0; i<MAX_NROF_PAGE_NOTES; i++){
+			// copy up from undo
+			target_note = Rec_repository[col].Note[i];
+			undo_note = Rec_undo_repository[col].Note[i];
+			target_step = target_page->Step[grid_row(i)][grid_col(i)];
+			copyNote(undo_note, target_note);
+			noteToStep(target_note, target_step);
+		}
+		this_ndx += 10;
+	}
+
+	SOLO_undo_note_all = OFF;
+}
+
+void pageClusterEnterSoloRec(unsigned char pageNdx){
+
+	signed short this_ndx = first_page_in_cluster(pageNdx);
+	unsigned char start, col;
+	Pagestruct* target_page;
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		target_page = &Page_repository[this_ndx];
+		col = grid_col(target_page->pageNdx);
+		start = find_record_track_chain_start(target_page);
+		Rec_repository[col].measure_count = MATRIX_NROF_ROWS - start;
+
+		if ( SOLO_rec_page == NULL ){
+			GRID_CURSOR = target_page->pageNdx;
+			SOLO_rec_page = target_page;
+			SOLO_has_rec = ON;
+			SOLO_rec_finalized = ON;
+			SOLO_rec_bank = grid_row(pageNdx);
+			SOLO_midi_ch = target_page->Track[start]->attr_MCH;
+		}
+		this_ndx += 10;
+	}
+
+	copy_page_cluster_to_recording();
+}
+
+void pageEnterSoloRec(Pagestruct* target_page){
+
+	// TODO page warp
 }
 
 void breakSoloRecordingMeasureHold(){
 
-	if ( SOLO_rec_page != NULL && G_run_bit == ON && SOLO_rec_measure_hold == ON && SOLO_rec_rehersal == OFF ) {
+	if ( SOLO_rec_page != NULL &&
+		 G_run_bit == ON &&
+		 SOLO_rec_measure_hold == ON &&
+		 SOLO_rec_rehersal == OFF
+	   ){
+
 		SOLO_rec_measure_pos = 1;
 		SOLO_has_rec = ON;
 		SOLO_rec_measure_hold = OFF;
@@ -100,6 +221,7 @@ void freeflowOff( unsigned char trim ){
 		unsigned char last_page = last_page_in_cluster(SOLO_rec_page->pageNdx);
 		Pagestruct* target_page = &Page_repository[ last_page ];
 		trim_freeflow_track_chain(target_page, (target_page->attr_STA - target_page->repeats_left));
+		copy_page_cluster_to_recording();
 	}
 	SOLO_rec_freeflow_trim = OFF;
 	SOLO_rec_freeflow = OFF;
@@ -123,16 +245,18 @@ void quantizeStep(Stepstruct* target_step, Notestruct* noteRec){
 void capture_note_event(
 		Stepstruct* target_step,
 		Pagestruct* target_page,
-		Trackstruct* target_track,
-		unsigned char target_col ){
+		unsigned char row,
+		unsigned char step_col ){
 
-	Notestruct* noteRec = Rec_repository[grid_col(target_page->pageNdx)].Note[grid_ndx(grid_row(target_track->trackId), target_col)];
-	noteRec->chord_up = target_step->chord_up;
-	noteRec->chord_data = target_step->chord_data;
-	noteRec->attr_VEL = target_step->attr_VEL;
-	noteRec->attr_STA = target_step->attr_STA;
-	noteRec->attr_PIT = target_step->attr_PIT;
-	noteRec->attr_LEN = target_step->attr_LEN;
+
+	unsigned char col = grid_col(target_page->pageNdx);
+	unsigned char idx = grid_ndx(row, step_col);
+	Notestruct* noteRec = Rec_repository[col].Note[idx];
+
+	stepToNote(target_step, noteRec);
+	if ( SOLO_rec_finalized == OFF ){
+		copyNote(noteRec, Rec_undo_repository[col].Note[idx]); // undo
+	}
 
 	// Quantize notes as they are recorded
 	quantizeStep(target_step, noteRec);

@@ -27,7 +27,8 @@ void page_cluster_selection( unsigned char grid_cursor ){
 
 	Pagestruct* temp_page = &Page_repository[ grid_cursor ];
 	signed short 	next_ndx = 0,
-			this_ndx = 0;
+					this_ndx = 0;
+	unsigned char	is_solo_rec = ON;
 
 	// Compute the index of the right neighbor
 	this_ndx = temp_page->pageNdx;
@@ -37,6 +38,13 @@ void page_cluster_selection( unsigned char grid_cursor ){
 	GRID_write_dot (this_ndx - 10, MIR_BLINK);
 	GRID_write_dot (this_ndx, MIR_BLINK);
 
+	if ( G_run_bit == OFF ){
+		if ( find_record_track_chain_start( &Page_repository[ this_ndx - 10 ] ) == NOP ||
+			 find_record_track_chain_start( &Page_repository[ this_ndx ] ) == NOP ){
+			is_solo_rec = OFF;
+		}
+	}
+
 	// RIGHT neighbor exists and has some content
 	while ( 	(next_ndx < MAX_NROF_PAGES) &&
 			(Page_repository[next_ndx].page_clear == OFF)
@@ -45,6 +53,16 @@ void page_cluster_selection( unsigned char grid_cursor ){
 		temp_page = &Page_repository[ next_ndx ];
 		this_ndx = temp_page->pageNdx;
 		next_ndx = this_ndx + 10;
+		if ( G_run_bit == OFF ){
+			if ( find_record_track_chain_start( temp_page ) == NOP ){
+				is_solo_rec = OFF;
+			}
+		}
+	}
+
+	if ( G_run_bit == OFF && is_solo_rec == ON ){
+		MIR_write_dot( LED_PAUSE, MIR_GREEN );
+		MIR_write_dot( LED_PAUSE, MIR_BLINK );
 	}
 }
 

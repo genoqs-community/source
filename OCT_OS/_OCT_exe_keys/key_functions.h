@@ -1181,6 +1181,9 @@ void exit_solo_recording()
 	SOLO_rec_measure_hold				= OFF;
 	GRID_bank_playmodes 				= SOLO_rec_save_playmodes;
 	SOLO_rec_save_playmodes				= OFF;
+	SOLO_rec_has_MCC					= OFF;
+	SOLO_undo_note						= NOP;
+	SOLO_undo_note_page_col				= NOP;
 	//
 	unsigned int i=0;
 	for (i=0; i<10; i++){
@@ -1191,11 +1194,41 @@ void exit_solo_recording()
 
 	Solorec_init();
 
+	GRID_p_selection_cluster = OFF;
 	G_zoom_level = zoomGRID; // exit the Solo Recording view
 }
 
 void copy_steps_to_recording(Pagestruct* target_page){
-// -----------------------------------------------------------------
+	int col, i;
+
+	Notestruct* target_note;
+	Notestruct* undo_note;
+	Stepstruct* target_step;
+	col = grid_col(target_page->pageNdx);
+
+	for (i=0; i<MAX_NROF_PAGE_NOTES; i++){
+
+		target_note = Rec_repository[col].Note[i];
+		undo_note = Rec_undo_repository[col].Note[i];
+		target_step = target_page->Step[grid_row(i)][grid_col(i)];
+		stepToNote(target_step, target_note);
+		copyNote(target_note, undo_note);
+	}
+}
+
+void copy_page_cluster_to_recording(){
+
+	signed short    	this_ndx = first_page_in_cluster(SOLO_rec_page->pageNdx);
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		copy_steps_to_recording( &Page_repository[this_ndx] );
+		this_ndx += 10;
+	}
 }
 
 void create_next_freeflow_page_cluster(unsigned char next_ndx){
@@ -1284,7 +1317,6 @@ void trim_freeflow_track_chain(Pagestruct* target_page, unsigned char measureNdx
 	target_page->attr_STA = measureCnt;
 	target_page->repeats_left = measureCnt;
 	Rec_repository[grid_col(target_page->pageNdx)].measure_count = measureCnt;
-	copy_steps_to_recording(target_page);
 }
 
 unsigned char find_record_track_chain_start(Pagestruct* target_page){
@@ -1356,6 +1388,7 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 	target_page->page_clear = OFF;
 	target_page->attr_STA = measures;
 	target_page->repeats_left = measures;
+	Rec_repository[grid_col(target_page->pageNdx)].measure_count = target_page->attr_STA;
 
 	GRID_bank_playmodes = 0;
 	GRID_bank_playmodes |= 1 << row;
@@ -1384,23 +1417,29 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 }
 
 void clear_page_record_track_chain(Pagestruct* target_page){
-	int row, col;
+	int row, col, ndx;
 
-	signed short    	this_ndx = first_page_in_cluster(target_page->pageNdx);
+	signed short this_ndx = first_page_in_cluster(target_page->pageNdx);
+	unsigned char page_col;
 
 	// For each page in the record chain
 	// track forward
 	while ( 	(this_ndx < MAX_NROF_PAGES) &&
 			(Page_repository[this_ndx].page_clear == OFF)
 	){
+
+		page_col = grid_col(Page_repository[this_ndx].pageNdx);
+
 		// Init each step in each page
 		for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
 			for ( col=0; col < MATRIX_NROF_COLUMNS; col++ ){
 
+				ndx = grid_ndx(row, col);
 				Step_init(Page_repository[this_ndx].Step[row][col]);
+				copyNote(Rec_repository[page_col].Note[ndx], Rec_undo_repository[page_col].Note[ndx]);
+				initNote(Rec_repository[page_col].Note[ndx]);
 			}
 		}
-
 		this_ndx += 10;
 	}
 }
@@ -1527,7 +1566,7 @@ void sequencer_command_STOP(){
 		if ( SEQUENCER_JUST_RESTARTED == ON || G_pause_bit == ON ) // double click at startup or in grid scroll (paused) view
 		{
 //			G_measure_locator = 0;
-			align_measure_locators();
+			align_measure_locators(); // mute all pages in the grid
 //			unsigned int	row=0;
 //			unsigned int 	i=0;
 //			Trackstruct* target_track = NULL;

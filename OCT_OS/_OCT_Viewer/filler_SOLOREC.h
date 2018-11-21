@@ -111,6 +111,14 @@
 			MIR_write_dot( LED_EDIT_MASTER, MIR_BLINK );
 		}
 	}
+	else if ( SOLO_undo_note != NOP ){
+		MIR_write_dot( LED_EDIT_MASTER, MIR_GREEN );
+	}
+	else if ( SOLO_undo_note_all == ON ){
+		// MIDI overdub - undo the entire page
+		MIR_write_dot( LED_EDIT_MASTER, MIR_GREEN );
+		MIR_write_dot( LED_EDIT_MASTER, MIR_RED );
+	}
 
 	// SEL toggle track preview - measure POS
 	MIR_write_dot( LED_SELECT_MASTER, MIR_RED );
@@ -172,6 +180,11 @@
 				MIR_write_dot( LED_MIX_INDICATOR, MIR_GREEN );
 			}
 		}
+	}
+
+	if ( SOLO_rec_has_MCC == ON ){
+		MIR_write_dot( LED_EDIT_INDICATOR, MIR_GREEN );
+		MIR_write_dot( LED_EDIT_INDICATOR, MIR_RED );
 	}
 
 	// Show the MODE - (Special) Grid Solo Zoom
@@ -281,6 +294,12 @@
 
 		// MATRIX
 		for (i=0; i < MAX_NROF_PAGES; i++) {
+
+			// DEBUG -- see the undo notes in the grid
+			if ( Rec_repository[grid_col(SOLO_rec_page->pageNdx)].Note[i]->status == ON ){
+				GRID_write_dot( i, MIR_RED );
+			}
+
 			// Page has contents and is not one of the row zero
 			if (	(Page_repository[i].page_clear != ON)  &&	( grid_row(i) != 9 )){
 				// This is our Solo Recording cluster

@@ -73,8 +73,12 @@ Pagestruct 			Page_repository		[MAX_NROF_PAGES];
 // REC NOTES
 Notestruct			Note_repository		[MAX_NROF_REC_NOTES];
 
+Notestruct			Note_undo_repository [MAX_NROF_REC_NOTES];
+
 // REC MEASURES
-Recstruct			Rec_repository		[16];
+Recstruct			Rec_repository		[MATRIX_NROF_COLUMNS];
+
+Recstruct			Rec_undo_repository	[MATRIX_NROF_COLUMNS];
 
 
 #ifdef FEATURE_ENABLE_DICE
