@@ -94,7 +94,10 @@ void executeKey( unsigned int keyNdx ){
 		// Escape back to SoloRec zoom by pressing ESC in Page zoom
 		if ( G_zoom_level == zoomPAGE ){
 
-			if ( keyNdx == KEY_RETURN ){
+			if ( keyNdx == KEY_RETURN && G_run_bit == OFF ){
+				copy_steps_to_recording( &Page_repository[GRID_CURSOR], OFF );
+				reset_page_cluster( SOLO_rec_page );
+				GRID_bank_playmodes |= 1 << grid_row(GRID_CURSOR);
 				G_zoom_level = zoomSOLOREC;
 				return;
 			}

@@ -1166,6 +1166,8 @@ void exit_solo_recording()
 	SOLO_normalize_len					= OFF;
 	SOLO_has_rec						= OFF;
 	SOLO_rec_finalized					= OFF;
+	SOLO_undo_page_col					= NOP;
+	SOLO_undo_page_len					= OFF;
 	SOLO_edit_buffer_volatile			= OFF;
 	SOLO_overdub						= OFF;
 	SOLO_rec_pressed_col				= OFF;
@@ -1186,7 +1188,7 @@ void exit_solo_recording()
 	SOLO_undo_note_page_col				= NOP;
 	//
 	unsigned int i=0;
-	for (i=0; i<10; i++){
+	for (i=0; i<MATRIX_NROF_ROWS; i++){
 		if ( SOLO_page_play_along_toggle[i] != NOP ){
 			grid_select( &Page_repository[SOLO_page_play_along_toggle[i]], OFF );
 		}
@@ -1198,7 +1200,7 @@ void exit_solo_recording()
 	G_zoom_level = zoomGRID; // exit the Solo Recording view
 }
 
-void copy_steps_to_recording(Pagestruct* target_page){
+void copy_steps_to_recording(Pagestruct* target_page, unsigned char undo){
 	int col, i;
 
 	Notestruct* target_note;
@@ -1212,7 +1214,9 @@ void copy_steps_to_recording(Pagestruct* target_page){
 		undo_note = Rec_undo_repository[col].Note[i];
 		target_step = target_page->Step[grid_row(i)][grid_col(i)];
 		stepToNote(target_step, target_note);
-		copyNote(target_note, undo_note);
+		if ( undo == ON ){
+			copyNote(target_note, undo_note);
+		}
 	}
 }
 
@@ -1226,7 +1230,7 @@ void copy_page_cluster_to_recording(){
 			(Page_repository[this_ndx].page_clear == OFF)
 	){
 
-		copy_steps_to_recording( &Page_repository[this_ndx] );
+		copy_steps_to_recording( &Page_repository[this_ndx], ON );
 		this_ndx += 10;
 	}
 }
@@ -1238,8 +1242,8 @@ void create_next_freeflow_page_cluster(unsigned char next_ndx){
 	SOLO_rec_freeflow_trim = ON; // last page requires trim()
 }
 
-void cut_freeflow_track_chain(Pagestruct* target_page, unsigned char last_measure, unsigned char count){
-	int row, col, prev, measureNdx;
+void cut_freeflow_track_chain(Pagestruct* target_page, unsigned char last_measure, unsigned char count, unsigned char clear_pages){
+	int row, col, prev, measureNdx, len;
 
 	col = grid_col(target_page->pageNdx);
 	prev = Rec_repository[col].measure_count;
@@ -1247,18 +1251,22 @@ void cut_freeflow_track_chain(Pagestruct* target_page, unsigned char last_measur
 
 	SOLO_rec_freeflow_measures -= ( prev - count );
 	SOLO_rec_measure_count = SOLO_rec_freeflow_measures;
+	len = MATRIX_NROF_ROWS - count;
 
 	// clear steps before the cut
-	for ( row=0; row < measureNdx; row++ ){
+	for ( row=0; row < len; row++ ){
+
 		Track_clear_steps( target_page, row );
 	}
 
 	target_page->attr_STA = count;
 	target_page->repeats_left = target_page->attr_STA;
 	Rec_repository[col].measure_count = target_page->attr_STA;
-	copy_steps_to_recording(target_page);
+	copy_steps_to_recording(target_page, OFF);
 
-	clear_pages_left( target_page );
+	if ( clear_pages == ON ){
+		clear_pages_left( target_page );
+	}
 	SOLO_pos_marker_in = OFF;
 	SOLO_pos_in = NULL;
 }
@@ -1284,11 +1292,8 @@ void shift_down_freeflow_track_chain(Pagestruct* target_page, unsigned char last
 	target_page->attr_STA = count;
 	target_page->repeats_left = target_page->attr_STA;
 	Rec_repository[col].measure_count = target_page->attr_STA;
-	copy_steps_to_recording(target_page);
 
 	clear_pages_right( target_page );
-	SOLO_pos_marker_out = OFF;
-	SOLO_pos_in = NULL;
 }
 
 
@@ -1317,6 +1322,7 @@ void trim_freeflow_track_chain(Pagestruct* target_page, unsigned char measureNdx
 	target_page->attr_STA = measureCnt;
 	target_page->repeats_left = measureCnt;
 	Rec_repository[grid_col(target_page->pageNdx)].measure_count = measureCnt;
+	Rec_undo_repository[grid_col(target_page->pageNdx)].measure_count = measureCnt;
 }
 
 unsigned char has_valid_record_cluster_format(Pagestruct* target_page){
@@ -1412,7 +1418,8 @@ void duplicate_record_track_chain(Pagestruct* target_page){
 	target_page->attr_STA = target_page->attr_STA * 2;
 	target_page->repeats_left = target_page->attr_STA;
 	Rec_repository[col].measure_count = target_page->attr_STA;
-	copy_steps_to_recording(target_page);
+	Rec_undo_repository[col].measure_count = target_page->attr_STA;
+	copy_steps_to_recording(target_page, OFF);
 }
 
 void create_page_record_track_chain(Pagestruct* target_page, unsigned int measures){
@@ -1435,6 +1442,7 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 	target_page->attr_STA = measures;
 	target_page->repeats_left = measures;
 	Rec_repository[grid_col(target_page->pageNdx)].measure_count = target_page->attr_STA;
+	Rec_undo_repository[grid_col(target_page->pageNdx)].measure_count = target_page->attr_STA;
 
 	GRID_bank_playmodes = 0;
 	GRID_bank_playmodes |= 1 << row;

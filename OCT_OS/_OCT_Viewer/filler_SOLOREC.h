@@ -104,7 +104,7 @@
 	}
 
 	// Undo Edit buffer
-	if ( SOLO_edit_buffer_volatile == ON ){
+	if ( SOLO_edit_buffer_volatile == ON && G_run_bit == OFF ){
 		MIR_write_dot( LED_EDIT_MASTER, MIR_RED );
 		MIR_write_dot( LED_EDIT_MASTER, MIR_GREEN );
 		if ( MIX_TIMER == ON ){
@@ -295,10 +295,21 @@
 		// MATRIX
 		for (i=0; i < MAX_NROF_PAGES; i++) {
 
+			int pressed_grid = is_pressed_pagerange();
+			unsigned char pressed_ndx = grid_ndx_from_key(pressed_grid);
 			// DEBUG -- see the undo notes in the grid
-			if ( Rec_repository[grid_col(SOLO_rec_page->pageNdx)].Note[i]->status == ON ){
+//			if ( Rec_repository[grid_col(SOLO_rec_page->pageNdx)].Note[i]->status == ON ){
+			if ( pressed_grid != FALSE && grid_row(pressed_ndx) == SOLO_rec_bank && Rec_repository[grid_col(pressed_ndx)].Note[i]->status == ON ){
+
+				// Shot the notes in the pressed page
+				GRID_write_dot( i, MIR_GREEN );
 				GRID_write_dot( i, MIR_RED );
 			}
+//			if ( is_pressed_pagerange() != FALSE && Rec_undo_repository[grid_col(grid_ndx_from_key(is_pressed_pagerange()))].Note[i]->status == ON ){
+//
+//				GRID_write_dot( i, MIR_RED );
+//				GRID_write_dot( i, MIR_BLINK );
+//			}
 
 			// Page has contents and is not one of the row zero
 			if (	(Page_repository[i].page_clear != ON)  &&	( grid_row(i) != 9 )){

@@ -33,10 +33,13 @@ unsigned char SOLO_rec_has_MCC					= OFF;
 unsigned char SOLO_undo_note					= NOP;
 unsigned char SOLO_undo_note_all				= OFF;
 unsigned char SOLO_undo_note_page_col			= NOP;
+unsigned char SOLO_undo_page_col				= NOP;
+unsigned char SOLO_undo_page_len				= OFF;
 unsigned char SOLO_page_play_along[10];
 unsigned char SOLO_page_play_along_toggle[10];
 unsigned short SOLO_rec_save_playmodes			= OFF;
 unsigned short SOLO_rec_measure_count			= OFF;
+unsigned short SOLO_rec_undo_measure_count		= OFF;
 unsigned short SOLO_rec_freeflow_measures		= OFF;
 unsigned short SOLO_rec_measure_pos				= OFF;
 unsigned short SOLO_pos_marker_in				= OFF; // left cut -  SOLO_rec_measure_pos
@@ -60,7 +63,7 @@ void initNote(Notestruct* note){
 // Solo Recordings: Initalize the original note recording repository
 void Solorec_init(){
 
-	unsigned char i=0, j=0;
+	unsigned char i=0, j=0, row;
 	unsigned short ndx=0;
 	Recstruct* target_rec = NULL;
 
@@ -74,6 +77,10 @@ void Solorec_init(){
 
 	for (i=0; i<MAX_NROF_PAGES; i++){
 
+		for ( row=0; row<MATRIX_NROF_ROWS; row++ ){
+			target_rec->track_pitch[row] = TRACK_DEFAULT_PITCH[row];
+		}
+
 		for (j=0; j<MATRIX_NROF_COLUMNS; j++){
 
 			ndx = (i * MATRIX_NROF_COLUMNS) + j;
@@ -82,6 +89,30 @@ void Solorec_init(){
 			Rec_repository[j].Note[i] = &Note_repository[ndx];
 			Rec_undo_repository[j].Note[i] = &Note_undo_repository[ndx];
 		}
+	}
+}
+
+void tracksToRec(Pagestruct* page, Recstruct* rec){
+	unsigned char row;
+
+	for ( row=0; row<MATRIX_NROF_ROWS; row++ ){
+		rec->track_pitch[row] = page->Track[row]->attr_PIT;
+	}
+}
+
+void recToTracks(Recstruct* rec, Pagestruct* page){
+	unsigned char row;
+
+	for ( row=0; row<MATRIX_NROF_ROWS; row++ ){
+		page->Track[row]->attr_PIT = rec->track_pitch[row];
+	}
+}
+
+void copyTracks(Recstruct* src, Recstruct* dest){
+	unsigned char row;
+
+	for ( row=0; row<MATRIX_NROF_ROWS; row++ ){
+		dest->track_pitch[row] = src->track_pitch[row];
 	}
 }
 
@@ -125,10 +156,12 @@ void recPageCopy( unsigned char source_col, unsigned char dest_col ){
 	Recstruct* undo_dest_rec = &Rec_undo_repository[dest_col];
 	undo_dest_rec->measure_count = dest_rec->measure_count;
 	dest_rec->measure_count = source_rec->measure_count;
+	copyTracks(source_rec, dest_rec);
+	copyTracks(dest_rec, undo_dest_rec);
 	unsigned char j=0;
-	for (j = 0; j < MAX_NROF_REC_NOTES; j++) {
-		copyNote(dest_rec->Note[j], undo_dest_rec->Note[j]); // undo
+	for (j = 0; j < MAX_NROF_PAGE_NOTES; j++) {
 		copyNote(source_rec->Note[j], dest_rec->Note[j]);
+		copyNote(dest_rec->Note[j], undo_dest_rec->Note[j]); // undo
 	}
 }
 
@@ -150,6 +183,9 @@ void undoAllNotes(){
 		target_page = &Page_repository[this_ndx];
 		col = grid_col(target_page->pageNdx);
 
+		copyTracks(&Rec_undo_repository[col], &Rec_repository[col]);
+		recToTracks(&Rec_repository[col], target_page);
+
 		for (i=0; i<MAX_NROF_PAGE_NOTES; i++){
 			// copy up from undo
 			target_note = Rec_repository[col].Note[i];
@@ -164,11 +200,77 @@ void undoAllNotes(){
 	SOLO_undo_note_all = OFF;
 }
 
+void commitMix(){
+
+	SOLO_undo_page_col = NOP;
+	SOLO_undo_page_len = OFF;
+
+	// copy all notes to undo_notes
+	signed short this_ndx = first_page_in_cluster(SOLO_rec_page->pageNdx);
+	int i, col;
+	Notestruct* target_note;
+	Notestruct* undo_note;
+	Pagestruct* target_page;
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		target_page = &Page_repository[this_ndx];
+		col = grid_col(target_page->pageNdx);
+
+		tracksToRec(target_page, &Rec_repository[col]);
+		copyTracks(&Rec_repository[col], &Rec_undo_repository[col]);
+
+		for (i=0; i<MAX_NROF_PAGE_NOTES; i++){
+
+			target_note = Rec_repository[col].Note[i];
+			undo_note = Rec_undo_repository[col].Note[i];
+			copyNote(target_note, undo_note);
+		}
+		this_ndx += 10;
+	}
+}
+
+void playSoloRecCluster(){
+
+	unsigned int pressed = is_pressed_pagerange();
+	unsigned char pressedNdx, cursor_col, col, offset, i;
+	Pagestruct* target_page;
+
+	if ( pressed != FALSE ){
+
+		cursor_col = grid_col(GRID_CURSOR);
+		pressedNdx = grid_ndx_from_key(pressed);
+		if ( selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) != NOP ){
+
+			target_page = &Page_repository[pressedNdx];
+			GRID_p_selection[ SOLO_rec_bank ] = target_page;
+			GRID_p_preselection[ SOLO_rec_bank ] = target_page;
+			GRID_p_clock_presel[ SOLO_rec_bank ] = target_page;
+			GRID_CURSOR = target_page->pageNdx;
+			col = grid_col(target_page->pageNdx);
+			offset = col - cursor_col;
+
+			for (i=0; i<offset; i++){
+				SOLO_rec_measure_pos += Rec_repository[col + i].measure_count;
+			}
+		}
+	}
+	sequencer_command_PLAY();
+}
+
 void pageClusterEnterSoloRec(unsigned char pageNdx){
 
 	unsigned char this_ndx = first_page_in_cluster(pageNdx);
 	unsigned char start, col;
 	Pagestruct* target_page;
+
+	GRID_bank_playmodes = 0;
+	GRID_bank_playmodes |= 1 << grid_row(pageNdx);
+	SOLO_rec_save_playmodes |= 1 << grid_row(pageNdx);
 
 	// For each page in the record chain
 	// track forward
@@ -180,8 +282,13 @@ void pageClusterEnterSoloRec(unsigned char pageNdx){
 		col = grid_col(target_page->pageNdx);
 		start = find_record_track_chain_start(target_page);
 		Rec_repository[col].measure_count = MATRIX_NROF_ROWS - start;
+		Rec_undo_repository[col].measure_count = MATRIX_NROF_ROWS - start;
+
+		tracksToRec(target_page, &Rec_repository[col]);
+		copyTracks(&Rec_repository[col], &Rec_undo_repository[col]);
 
 		if ( SOLO_rec_page == NULL ){
+			SOLO_rec_bank = grid_row(pageNdx);
 			GRID_CURSOR = target_page->pageNdx;
 			GRID_p_selection[ SOLO_rec_bank ] = target_page;
 			GRID_p_preselection[ SOLO_rec_bank ] = target_page;
@@ -189,7 +296,6 @@ void pageClusterEnterSoloRec(unsigned char pageNdx){
 			SOLO_rec_page = target_page;
 			SOLO_has_rec = ON;
 			SOLO_rec_finalized = ON;
-			SOLO_rec_bank = grid_row(pageNdx);
 			SOLO_midi_ch = target_page->Track[start]->attr_MCH;
 		}
 		this_ndx += 10;
@@ -345,7 +451,27 @@ void cut_by_pos_markers() {
 				 (( MATRIX_NROF_ROWS - 1 ) - Rec_repository[grid_col(SOLO_pos_out->pageNdx)].measure_count );
 	}
 
-	cut_freeflow_track_chain(SOLO_pos_in, last_cut_measure, count_in);
+	SOLO_undo_page_col = grid_col(first_page_in_cluster(SOLO_pos_in->pageNdx));
+	SOLO_undo_page_len = grid_col(last_page_in_cluster(SOLO_pos_in->pageNdx)) - SOLO_undo_page_col + 1;
+	SOLO_rec_undo_measure_count = SOLO_rec_measure_count;
+
 	shift_down_freeflow_track_chain(SOLO_pos_out, last_shift_measure, count_out);
+	cut_freeflow_track_chain(SOLO_pos_in, last_cut_measure, count_in, ON);
+
+	if ( SOLO_pos_in != SOLO_pos_out ){
+
+		cut_freeflow_track_chain(SOLO_pos_out, last_shift_measure, count_out, OFF);
+	}
+
+	SOLO_pos_marker_out = OFF;
+	SOLO_pos_in = NULL;
+
+	SOLO_edit_buffer_volatile = ON;
+
+	MIX_TIMER = ON;
+	// Setup alarm for the MIX TIMER
+	cyg_alarm_initialize(	alarm_hdl,
+							cyg_current_time() + TIMEOUT_VALUE,
+							0 );
 }
 

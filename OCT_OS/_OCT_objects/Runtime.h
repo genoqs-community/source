@@ -510,6 +510,7 @@ typedef struct notestruct{
 typedef struct recstruct{
 
 	Notestruct*		Note[MAX_NROF_PAGE_NOTES];
+	unsigned char 	track_pitch[MATRIX_NROF_ROWS];
 	unsigned char	measure_count;
 
 } Recstruct;

@@ -74,11 +74,12 @@ extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
 extern	void 			align_measure_locators();
 extern  void 			create_page_record_track_chain(Pagestruct* target_page, unsigned int measures);
 extern  void			create_next_freeflow_page_cluster(unsigned char next_ndx);
-extern  void 			cut_freeflow_track_chain(Pagestruct* target_page, unsigned char last_measure, unsigned char count);
+extern  void 			cut_freeflow_track_chain(Pagestruct* target_page, unsigned char last_measure, unsigned char count, unsigned char clear_pages);
 extern  void			shift_down_freeflow_track_chain(Pagestruct* target_page, unsigned char measures, unsigned char count);
 extern  void 			trim_freeflow_track_chain(Pagestruct* target_page, unsigned char measures);
 extern unsigned char 	find_record_track_chain_start(Pagestruct* target_page);
 extern unsigned char 	has_valid_record_cluster_format(Pagestruct* target_page);
+extern void 			sequencer_command_PLAY();
 
 extern unsigned char 	grid_row (unsigned char gridNdx);
 extern unsigned char 	grid_col (unsigned char gridNdx);

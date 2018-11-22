@@ -63,7 +63,7 @@
 			if ( SOLO_has_rec == ON && G_run_bit == OFF ){
 				G_track_rec_bit = OFF;
 				reset_page_cluster( SOLO_rec_page );
-				sequencer_command_PLAY();
+				playSoloRecCluster();
 			}
 			if ( SOLO_rec_measure_hold == ON && G_run_bit == ON ){
 				SOLO_rec_rehersal ^= 1;
@@ -80,7 +80,7 @@
 				SOLO_rec_measure_hold = ON;
 			}
 			reset_page_cluster( SOLO_rec_page );
-			sequencer_command_PLAY();
+			playSoloRecCluster();
 		}
 
 		else if ( keyNdx == KEY_CHAINER ){ // Clear recording
@@ -113,17 +113,31 @@
 
 		else if ( keyNdx == KEY_EDIT_MASTER ){
 
-			if ( SOLO_edit_buffer_volatile == ON ){
+			if ( SOLO_edit_buffer_volatile == ON && G_run_bit == OFF ){
+				if ( SOLO_undo_page_col != NOP ){
+
+					unsigned char j=0;
+					for (j = 0; j < SOLO_undo_page_len; j++) {
+
+						Page_repository[grid_ndx(SOLO_rec_bank, ( SOLO_undo_page_col + j ))].page_clear = OFF;
+						Rec_repository[SOLO_undo_page_col + j].measure_count = Rec_undo_repository[SOLO_undo_page_col + j].measure_count;
+					}
+					SOLO_rec_measure_count = SOLO_rec_undo_measure_count;
+					SOLO_rec_undo_measure_count = OFF;
+					SOLO_undo_page_col = NOP;
+					SOLO_undo_page_len = OFF;;
+				}
 				undoAllNotes();
 				SOLO_has_rec = ON;
 				SOLO_rec_finalized = ON;
+				reset_page_cluster( SOLO_rec_page );
 				SOLO_edit_buffer_volatile ^= 1; // toggle
 			}
 			else if ( SOLO_undo_note != NOP ){
 				Notestruct* undoNote = Rec_undo_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
 				Notestruct* note = Rec_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
 				copyNote(undoNote, note);
-				Pagestruct* page = &Page_repository[grid_ndx(grid_row(SOLO_rec_page->pageNdx), SOLO_undo_note_page_col)];
+				Pagestruct* page = &Page_repository[grid_ndx(SOLO_rec_bank, SOLO_undo_note_page_col)];
 				Stepstruct* step = page->Step[grid_row(SOLO_undo_note)][grid_col(SOLO_undo_note)];
 				noteToStep(note, step);
 				Step_set_status( step, STEPSTAT_TOGGLE, ON );
@@ -152,6 +166,10 @@
 		unsigned char col = column_of( keyNdx );
 
 		if ( Step_get_status(target_page->Step[row][col], STEPSTAT_TOGGLE) == ON ){
+
+			if ( SOLO_undo_page_col != NOP ){
+				commitMix();
+			}
 
 			Pagestruct* target_page = &Page_repository[GRID_CURSOR];
 			// Turns the step selection off
@@ -184,6 +202,8 @@
 			SOLO_has_rec 				= OFF;
 			SOLO_edit_buffer_volatile 	= OFF;
 			SOLO_rec_finalized			= OFF;
+			SOLO_undo_page_col			= NOP;
+			SOLO_undo_page_len			= OFF;
 			SOLO_rec_freeflow 			= OFF;
 			SOLO_rec_measure_count 		= OFF;
 			SOLO_rec_freeflow_measures	= OFF;
@@ -286,6 +306,7 @@
 					GRID_CURSOR = SOLO_rec_page->pageNdx;
 					SOLO_rec_freeflow = ON;
 					Rec_repository[heldCol].measure_count = MATRIX_NROF_ROWS;
+					Rec_undo_repository[heldCol].measure_count = MATRIX_NROF_ROWS;
 					create_next_freeflow_page_cluster(heldNdx);
 					SOLO_rec_freeflow_measures = count_to_last_page_in_grid_row(heldNdx) * MATRIX_NROF_ROWS;
 
@@ -309,6 +330,7 @@
 
 					SOLO_rec_pressed_col = heldCol;
 					Rec_repository[heldCol].measure_count = rowZeroTrack;
+					Rec_undo_repository[heldCol].measure_count = rowZeroTrack;
 					create_page_record_track_chain(SOLO_rec_page, rowZeroTrack);
 					reset_page_cluster( SOLO_rec_page );
 
@@ -325,6 +347,10 @@
 				if ( keyNdx == KEY_ZOOM_PAGE ){
 					// Enter the page edit warp tunnel
 					GRID_CURSOR = heldNdx;
+					GRID_p_selection[ SOLO_rec_bank ] = &Page_repository[heldNdx];
+					GRID_p_preselection[ SOLO_rec_bank ] = &Page_repository[heldNdx];
+					GRID_p_clock_presel[ SOLO_rec_bank ] = &Page_repository[heldNdx];
+					GRID_bank_playmodes = 0;
 					G_zoom_level = zoomPAGE;
 				}
 			}
