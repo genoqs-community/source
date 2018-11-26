@@ -251,6 +251,38 @@ void key_ScaleSelector_functions( unsigned int keyNdx, Pagestruct* target_page )
 
 
 
+//_________________________________________________________________________________________
+//
+// Key execution snippet for the Octave circle in Page mode. May be reused as necessary
+// Includes the creation/selection of scales
+void key_ChordScaleSelector( unsigned int keyNdx, Pagestruct* target_page ){
+
+	unsigned int i = 0;
+
+
+	switch( keyNdx ){
+
+		// SCALE TYPE KEYS
+		case KEY_SCALE_PEN:
+		case KEY_SCALE_WHL:
+		case KEY_SCALE_MAJ:
+		case KEY_SCALE_MIN:
+		case KEY_SCALE_DIM:
+		case KEY_SCALE_CHR:
+
+			// Act according to selected scale
+			switch( keyNdx ){
+
+				case KEY_SCALE_PEN:	target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_PEN;		break;
+				case KEY_SCALE_WHL:	target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_WHL;		break;
+				case KEY_SCALE_MAJ:	target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_MAJ;		break;
+				case KEY_SCALE_MIN:	target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_MIN;		break;
+				case KEY_SCALE_DIM:	target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_DIM;		break;
+				case KEY_SCALE_CHR:	target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_CHR;		break;
+			}
+			break;
+	}
+}
 
 
 

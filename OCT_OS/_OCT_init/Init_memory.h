@@ -90,6 +90,9 @@ Pagestruct* BUFFER_page 	= 	&Page_repository[149];
 // Used to keep some PAGE like information to be used by the GRID
 Pagestruct* GRID_assistant_page = &Page_repository[109];
 
+// Used to keep some PAGE like information to be used by the GRID
+Pagestruct* SOLO_assistant_page = &Page_repository[119];
+
 // Used as a copy buffer for sorting of tracks (ALN) in MIX MAP (ATR) mode
 Pagestruct* PAGE_assistant_page = &Page_repository[99];
 

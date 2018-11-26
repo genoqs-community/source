@@ -1176,6 +1176,7 @@ void exit_solo_recording()
 	SOLO_rec_freeflow					= OFF;
 //	SOLO_rec_ending_flash				= OFF;
 	SOLO_rec_legato						= OFF;
+	SOLO_rec_transpose					= OFF;
 //	SOLO_page_play_along[10];
 	G_measure_locator					= OFF;
 	SOLO_rec_measure_count				= OFF;

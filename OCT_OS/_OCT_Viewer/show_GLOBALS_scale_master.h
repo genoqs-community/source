@@ -29,7 +29,7 @@
 	// Status of Scale selection. Book pg. 110..
 void show_GLOBALS_scale_master( Pagestruct* target_page ){
 	
-				
+
 		switch( target_page->scaleStatus ) {
 
 			case OFF:

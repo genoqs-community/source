@@ -57,6 +57,19 @@
 		}
 	}
 
+	if ( SOLO_rec_track_preview == SOLOPAGE ){
+		if ( keyNdx == KEY_SCALE_SEL ){
+			SOLO_scale_chords ^= 1;
+		}
+		else if ( SOLO_scale_chords == OFF && SOLO_assistant_page->scaleStatus != OFF ){
+
+			key_ScaleSelector_functions( keyNdx, SOLO_assistant_page );
+		}
+		else {
+			key_ChordScaleSelector( keyNdx, SOLO_assistant_page );
+		}
+	}
+
 	if ( SOLO_rec_page != NULL ){ // A record page cluster is selected
 
 		if ( keyNdx == KEY_PLAY1 ){
@@ -156,6 +169,11 @@
 		// Legato
 		if ( keyNdx == KEY_ZOOM_STEP && G_run_bit == OFF &&  SOLO_has_rec == ON ){
 			SOLO_rec_legato ^= 1; // toggle
+		}
+
+		// Transpose
+		if ( keyNdx == KEY_ZOOM_PLAY && SOLO_has_rec == ON ){
+			SOLO_rec_transpose ^= 1; // toggle
 		}
 	}
 

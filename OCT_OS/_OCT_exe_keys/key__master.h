@@ -98,7 +98,7 @@ void executeKey( unsigned int keyNdx ){
 				copy_steps_to_recording( &Page_repository[GRID_CURSOR], OFF );
 				reset_page_cluster( SOLO_rec_page );
 				GRID_bank_playmodes |= 1 << grid_row(GRID_CURSOR);
-				G_zoom_level = zoomSOLOREC;
+				enterSoloRec();
 				return;
 			}
 		}

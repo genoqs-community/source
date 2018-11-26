@@ -1451,11 +1451,11 @@
 					if ( GRID_p_selection_cluster == ON ){
 						if ( has_valid_record_cluster_format( &Page_repository[GRID_CURSOR] ) == ON ){
 							pageClusterEnterSoloRec( GRID_CURSOR );
-							G_zoom_level = zoomSOLOREC;
+							enterSoloRec();
 						}
 					}
 					else {
-						G_zoom_level = zoomSOLOREC;
+						enterSoloRec();
 					}
 				}
 				#endif

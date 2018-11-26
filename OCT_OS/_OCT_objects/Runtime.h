@@ -621,6 +621,7 @@ extern unsigned char G_initZoom;
 
 // From init_memory.h
 extern Pagestruct* GRID_assistant_page;
+extern Pagestruct* SOLO_assistant_page;
 
 // Shift distance for the track window 1 = Rows (1-4) 2 = (5-8)
 unsigned char	page_window;

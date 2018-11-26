@@ -9,6 +9,9 @@ unsigned char SOLO_quantize_fine_tune_edge		= 9; // switch polarity from the edg
 unsigned char SOLO_quantize_fine_tune_drop_edge	= OFF; // drop edge notes that would otherwise switch polarity
 unsigned char SOLO_quantize_note 				= 0; // 0=OFF, 1=STA4, 2=STA3, 3=STA2, 4=STA1, 5=STA0
 signed char	  SOLO_strum						= 9; // 9=OFF
+unsigned char SOLO_scale_chords					= OFF;
+unsigned char SOLO_has_scale					= OFF;
+unsigned char SOLO_transpose					= OFF;
 unsigned char SOLO_slow_tempo					= OFF;
 Pagestruct*	  SOLO_rec_page						= NULL;
 unsigned char SOLO_midi_ch						= 1;
@@ -25,6 +28,7 @@ unsigned char SOLO_rec_ending_flash				= ON;
 unsigned char SOLO_rec_continue_recording		= ON;
 unsigned char SOLO_rec_quantize_first_beat		= ON;
 unsigned char SOLO_rec_legato					= OFF;
+unsigned char SOLO_rec_transpose				= OFF;
 unsigned char SOLO_rec_measure_hold				= OFF;
 unsigned char SOLO_rec_bank						= OFF;
 unsigned char SOLO_rec_rehersal					= OFF;
@@ -90,6 +94,17 @@ void Solorec_init(){
 			Rec_undo_repository[j].Note[i] = &Note_undo_repository[ndx];
 		}
 	}
+}
+
+void enterSoloRec(){
+
+	if ( SOLO_has_scale == OFF ){
+		Page_copy(GRID_assistant_page, SOLO_assistant_page);
+		SOLO_assistant_page->force_to_scale = ON;
+		SOLO_assistant_page->scaleStatus = SCALE_MOD;
+	}
+	SOLO_has_scale = ON;
+	G_zoom_level = zoomSOLOREC;
 }
 
 void tracksToRec(Pagestruct* page, Recstruct* rec){
