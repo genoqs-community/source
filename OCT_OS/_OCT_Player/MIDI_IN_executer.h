@@ -330,6 +330,22 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  	// This is where the incoming MIDI note will be sent to, unless re-channelled, below.
  	int outputMidiBus  = inputMidiBus; 		// Range [0, 1].
  	int outputMidiChan = inputMidiChan; 	// Range [1, 16].
+
+	#ifdef FEATURE_SOLO_REC
+	if ( SOLO_scale_chords == ON && G_run_bit == OFF ){
+
+		if ( ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){ // ignore NOTE OFF
+
+			unsigned char programOctave = ( MIDDLE_C - 0xC ) + ( 0xC * SOLO_scale_chords_program_octave );
+			unsigned char isProgramKey = ( in_pitch >= programOctave && in_pitch < ( programOctave + 0xC ) );
+			if ( CHECK_BLACK_KEY(in_pitch) && !isProgramKey ){ // black keys
+
+				SOLO_scale_chords_program ^= 1;
+				return;
+			}
+		}
+	}
+	#endif
 	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
  	// Keyboard Transpose
 	if ( (G_run_bit == ON)

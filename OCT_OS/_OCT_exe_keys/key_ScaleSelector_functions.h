@@ -259,8 +259,25 @@ void key_ChordScaleSelector( unsigned int keyNdx, Pagestruct* target_page ){
 
 	unsigned int i = 0;
 
-
 	switch( keyNdx ){
+
+		// OCTAVE CIRCLE NOTE KEYS
+		case KEY_NOTE_C:
+		case KEY_NOTE_Cis:
+		case KEY_NOTE_D:
+		case KEY_NOTE_Dis:
+		case KEY_NOTE_E:
+		case KEY_NOTE_F:
+		case KEY_NOTE_Fis:
+		case KEY_NOTE_G:
+		case KEY_NOTE_Gis:
+		case KEY_NOTE_A:
+		case KEY_NOTE_Ais:
+		case KEY_NOTE_B:
+			// Transform key Index to a note index and send it to the scale modifier
+			modify_scale_composition( target_page, keyNdx_to_noteNdx( keyNdx ), G_scale_ndx );
+			break;
+
 
 		// SCALE TYPE KEYS
 		case KEY_SCALE_PEN:
@@ -269,6 +286,15 @@ void key_ChordScaleSelector( unsigned int keyNdx, Pagestruct* target_page ){
 		case KEY_SCALE_MIN:
 		case KEY_SCALE_DIM:
 		case KEY_SCALE_CHR:
+
+			// Clear the scale and lead offsets in the tracks
+			for (i=0; i<MATRIX_NROF_ROWS; i++){
+				target_page->Track[i]->scale_pitch_offset = 0;
+				// target_page->Track[i]->lead_pitch_offset = 0;
+			}
+
+			// Save the current scale before making a new assignment
+			target_page->my_scale_signature = target_page-> scaleNotes[G_scale_ndx];
 
 			// Act according to selected scale
 			switch( keyNdx ){
@@ -280,7 +306,28 @@ void key_ChordScaleSelector( unsigned int keyNdx, Pagestruct* target_page ){
 				case KEY_SCALE_DIM:	target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_DIM;		break;
 				case KEY_SCALE_CHR:	target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_CHR;		break;
 			}
-			break;
+
+
+			// XXX ----------------------------------------------------- not sure what this is all for
+			// Shift the signature according to the lead
+			target_page-> scaleNotes[G_scale_ndx] =
+				my_shift_bitpattern( 	target_page-> scaleNotes[G_scale_ndx], 12, INC,
+										(11 - my_bit2ndx(target_page-> scaleLead[G_scale_ndx] ) )  );
+
+			// Export the changes to the tracks
+			target_page->scaleLead_old = target_page-> scaleLead[G_scale_ndx];
+			target_page->scaleNotes_old = target_page-> scaleNotes[G_scale_ndx];
+
+			// Simply update the current scale with what is selected in the octave circle
+			//	target_page->current_scale = target_page-> scaleNotes[G_scale_ndx];
+
+			// Program the new scale into the page
+			if ( target_page->SCL_align == ON ){
+				program_scale_pitches( target_page );
+			}
+			// XXX ----------------------------------------------------- not sure what this is all for
+
+		break;
 	}
 }
 

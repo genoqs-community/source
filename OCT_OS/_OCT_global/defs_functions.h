@@ -104,6 +104,10 @@
 #define KEY_ZOOM		194
 #define	LED_ZOOM		194
 
+// 0000 0101 0100 1010 - literally the black keys by index for one octave when reversed
+#define BLACK_KEYS		0x54A
+#define CHECK_BLACK_KEY(pit) (0x54A & 1<<( pit % 0xC ))
+
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 #define TOGGLE_BIT(var,pos) ((var) = ((var) ^ (1<<(pos))))
 #define SET_BIT(var,pos) ((var) = ((var) | (1<<(pos))))

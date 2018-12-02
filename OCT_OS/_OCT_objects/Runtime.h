@@ -504,6 +504,7 @@ typedef struct notestruct{
 	  signed char	attr_PIT;
 	unsigned char	attr_LEN;
 	unsigned char	attr_STA;
+	  signed char 	attr_MCC; // TODO
 
 } Notestruct;
 
@@ -534,6 +535,7 @@ extern Recstruct			Rec_repository[MATRIX_NROF_COLUMNS];
 extern Recstruct			Rec_undo_repository[MATRIX_NROF_COLUMNS];
 extern Notestruct			Note_repository[MAX_NROF_REC_NOTES];
 extern Notestruct			Note_undo_repository[MAX_NROF_REC_NOTES];
+extern Notestruct			Chord_palette_repository[MAX_NROF_PALETTE_CHORDS];
 
 
 

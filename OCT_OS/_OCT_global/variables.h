@@ -551,6 +551,7 @@ unsigned char 	G_save_song_pos = OFF;
 unsigned short G_prev_rec_page_pattern = 0;
 unsigned short G_prev_rec_page = 0;
 
+
 #ifdef FEATURE_ENABLE_SONG_UPE
 unsigned char 	G_repeats_delay = ON;
 unsigned char 	G_repeats_interval_idx = 0;

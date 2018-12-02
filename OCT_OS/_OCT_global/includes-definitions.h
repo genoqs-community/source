@@ -28,6 +28,7 @@
 
 
 #include "../_OCT_global/variables.h"
+#include "../_OCT_global/chords.h"
 #include "../_OCT_global/tools_general.h"
 
 #include "../_OCT_objects/Panel.h"

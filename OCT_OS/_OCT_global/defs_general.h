@@ -152,6 +152,7 @@
 
 #define MAX_NROF_PAGE_NOTES		160  // all notes for a full page
 #define MAX_NROF_REC_NOTES		16 * 160  // all notes for a full page cluster
+#define MAX_NROF_PALETTE_CHORDS 12
 
 #define REC_MEASURES_IDX		22
 #define REC_MEASURES_SPLIT		23

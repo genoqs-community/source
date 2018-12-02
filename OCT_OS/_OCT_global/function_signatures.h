@@ -81,6 +81,11 @@ extern unsigned char 	find_record_track_chain_start(Pagestruct* target_page);
 extern unsigned char 	has_valid_record_cluster_format(Pagestruct* target_page);
 extern void 			sequencer_command_PLAY();
 
+extern void 			MIDI_NOTE_new( 	unsigned char midiCH,
+										unsigned char pitch,
+										unsigned char velocity,
+										unsigned int  when	);
+
 extern unsigned char 	grid_row (unsigned char gridNdx);
 extern unsigned char 	grid_col (unsigned char gridNdx);
 extern unsigned char 	grid_ndx (unsigned char grid_row, unsigned char grid_col);

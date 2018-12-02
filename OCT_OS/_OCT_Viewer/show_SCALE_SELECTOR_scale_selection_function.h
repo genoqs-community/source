@@ -52,49 +52,31 @@ void show_SCALE_SELECTOR_scale_selection( Pagestruct* target_page ){
 		case SCALE_SIG_PEN:
 			MIR_write_dot( LED_SCALE_PEN,	MIR_GREEN );
 			MIR_write_dot( LED_SCALE_PEN,	MIR_RED	);
-			if ( SOLO_scale_chords == ON ){
-				MIR_write_dot( LED_SCALE_PEN,	MIR_BLINK );
-			}
 			break;
 
 		case SCALE_SIG_WHL:
 			MIR_write_dot( LED_SCALE_WHL,	MIR_GREEN );
 			MIR_write_dot( LED_SCALE_WHL,	MIR_RED	);
-			if ( SOLO_scale_chords == ON ){
-				MIR_write_dot( LED_SCALE_WHL,	MIR_BLINK );
-			}
 			break;
 
 		case SCALE_SIG_MAJ:
 			MIR_write_dot( LED_SCALE_MAJ,	MIR_GREEN );
 			MIR_write_dot( LED_SCALE_MAJ,	MIR_RED	);
-			if ( SOLO_scale_chords == ON ){
-				MIR_write_dot( LED_SCALE_MAJ,	MIR_BLINK );
-			}
 			break;
 
 		case SCALE_SIG_MIN:
 			MIR_write_dot( LED_SCALE_MIN,	MIR_GREEN );
 			MIR_write_dot( LED_SCALE_MIN,	MIR_RED	);
-			if ( SOLO_scale_chords == ON ){
-				MIR_write_dot( LED_SCALE_MIN,	MIR_BLINK );
-			}
 			break;
 
 		case SCALE_SIG_DIM:
 			MIR_write_dot( LED_SCALE_DIM,	MIR_GREEN );
 			MIR_write_dot( LED_SCALE_DIM,	MIR_RED	);
-			if ( SOLO_scale_chords == ON ){
-				MIR_write_dot( LED_SCALE_DIM,	MIR_BLINK );
-			}
 			break;
 
 		case SCALE_SIG_CHR:
 			MIR_write_dot( LED_SCALE_CHR,	MIR_GREEN );
 			MIR_write_dot( LED_SCALE_CHR,	MIR_RED	);
-			if ( SOLO_scale_chords == ON ){
-				MIR_write_dot( LED_SCALE_CHR,	MIR_BLINK );
-			}
 			break;
 
 		default:

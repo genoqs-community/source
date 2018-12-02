@@ -511,7 +511,7 @@
 				MIR_write_lauflicht ();
 			}
 
-
+			// --------------------------------- XXX
 			if ( SOLO_scale_chords == OFF ){
 
 				MIR_write_dot (LED_SCALE_MYSEL, MIR_GREEN); // Scale
@@ -522,7 +522,15 @@
 				// Show the selected notes in scale. Both in MOD and SEL
 				show_OCTAVE_CIRCLE_scale_selection( SOLO_assistant_page );
 			}
+			else {
+
+				// Chord tone select
+				show_OCTAVE_CIRCLE_chord_tone_selection( SOLO_assistant_page );
+				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_octave );
+			}
 			show_SCALE_SELECTOR_scale_selection( SOLO_assistant_page );
+			// --------------------------------- XXX
+
 		}
 		else if ( SOLO_rec_track_preview == SOLOMCC ){
 			// MATRIX
@@ -539,6 +547,7 @@
 	}
 	else if ( SOLO_rec_track_preview == SOLOPAGE ){
 
+		// --------------------------------- XXX
 		if ( SOLO_scale_chords == OFF ){
 
 			MIR_write_dot (LED_SCALE_MYSEL, MIR_GREEN); // Scale
@@ -548,8 +557,26 @@
 
 			// Show the selected notes in scale. Both in MOD and SEL
 			show_OCTAVE_CIRCLE_scale_selection( SOLO_assistant_page );
+			show_SCALE_SELECTOR_scale_selection( SOLO_assistant_page );
 		}
-		show_SCALE_SELECTOR_scale_selection( SOLO_assistant_page );
+		else {
+
+			if ( SOLO_scale_chords_program == OFF ){
+
+				// Chord tone select
+				show_OCTAVE_CIRCLE_chord_tone_selection( SOLO_assistant_page );
+				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_octave );
+				show_SCALE_SELECTOR_scale_selection( SOLO_assistant_page );
+				MIR_write_dot (LED_PROGRAM, MIR_GREEN);
+			}
+			else {
+				MIR_write_dot (LED_PROGRAM, MIR_GREEN); // Program chord keys
+				MIR_write_dot (LED_PROGRAM, MIR_RED);
+				MIR_write_dot (LED_PROGRAM, MIR_BLINK);
+				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_program_octave );
+			}
+		}
+		// --------------------------------- XXX
 	}
 
 	if ( is_pressed_key(KEY_PASTE) || ( EDIT_TIMER == ON && ROT_INDEX == 10 ) )

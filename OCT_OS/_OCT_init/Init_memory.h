@@ -80,6 +80,8 @@ Recstruct			Rec_repository		[MATRIX_NROF_COLUMNS];
 
 Recstruct			Rec_undo_repository	[MATRIX_NROF_COLUMNS];
 
+Notestruct			Chord_palette_repository[MAX_NROF_PALETTE_CHORDS];
+
 
 #ifdef FEATURE_ENABLE_DICE
 // DICE performance modes
@@ -90,7 +92,7 @@ Pagestruct* BUFFER_page 	= 	&Page_repository[149];
 // Used to keep some PAGE like information to be used by the GRID
 Pagestruct* GRID_assistant_page = &Page_repository[109];
 
-// Used to keep some PAGE like information to be used by the GRID
+// A temporary copy of GRID_assistant_page used by SoloRec
 Pagestruct* SOLO_assistant_page = &Page_repository[119];
 
 // Used as a copy buffer for sorting of tracks (ALN) in MIX MAP (ATR) mode
@@ -271,7 +273,6 @@ void direction_repository_init(){
 
 
 
-// FIXME: this gets called twice at startup
 // Initializes the GRID variables
 void Grid_init(){
 
@@ -282,6 +283,9 @@ void Grid_init(){
 
 	// Initialize the direction repository
 	direction_repository_init();
+
+	// Initialize the chord palette
+	chord_palette_init();
 
 	// Init the GRID_selection, _selection_buffer and _preselection
 	for (i=0; i < GRID_NROF_BANKS; i++){
@@ -490,11 +494,53 @@ void Octopus_memory_CLR(){
 
 
 
+// Prior to init
+void Octopus_memory_clean(){
+
+	unsigned int i = 0;
+
+	Step_repository_init();
+
+	Track_repository_init();
+
+	MIR_init();
+
+	// Init the DIAG field
+	for ( i=0; i < 258; i++ ){
+
+		DIAG[i] = OFF;
+	}
+	for ( i=0; i < 21; i++){
+
+		DIAG_rotary_value[i] = 0;
+	}
+
+	// MIDI INIT
+	G_midi_note_IN_UART[0][0] = 0xff;
+	G_midi_note_IN_UART[0][1] = 0xff;
+	G_midi_note_IN_UART[0][2] = 0xff;
+	G_midi_note_IN_UART[1][0] = 0xff;
+	G_midi_note_IN_UART[1][1] = 0xff;
+	G_midi_note_IN_UART[1][2] = 0xff;
+
+	G_midi_controller_IN_UART[0][0] = 0xff;
+	G_midi_controller_IN_UART[0][1] = 0xff;
+	G_midi_controller_IN_UART[0][2] = 0xff;
+	G_midi_controller_IN_UART[1][0] = 0xff;
+	G_midi_controller_IN_UART[1][1] = 0xff;
+	G_midi_controller_IN_UART[1][2] = 0xff;
+
+	// Init the strum levels
+	PhraseInit();
+}
+
+
+
 // This is the memory initialization sequence
 void Octopus_memory_init(){
 
 	// INIT/CLR the repositories first
-	Octopus_memory_CLR();
+	Octopus_memory_clean();
 
 	// ASSIGN entities to each other
 	Page_repository_assign_Steps();

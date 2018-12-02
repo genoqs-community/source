@@ -67,6 +67,29 @@
 		}
 		else {
 			key_ChordScaleSelector( keyNdx, SOLO_assistant_page );
+
+			if ( keyNdx == KEY_PROGRAM ){
+				SOLO_scale_chords_program ^= 1;
+			}
+			else if ( SOLO_scale_chords_program == ON ){
+
+				if ( keyNdx == KEY_SCALE_CAD && SOLO_scale_chords_program_octave < 2 ){
+
+					SOLO_scale_chords_program_octave++;
+				}
+				else if ( keyNdx == KEY_SCALE_MOD && SOLO_scale_chords_program_octave > -2 ){
+
+					SOLO_scale_chords_program_octave--;
+				}
+			}
+			else if ( keyNdx == KEY_SCALE_CAD && SOLO_scale_chords_octave < 2 ){
+
+				SOLO_scale_chords_octave++;
+			}
+			else if ( keyNdx == KEY_SCALE_MOD && SOLO_scale_chords_octave > -2 ){
+
+				SOLO_scale_chords_octave--;
+			}
 		}
 	}
 
