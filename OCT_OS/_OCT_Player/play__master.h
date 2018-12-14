@@ -245,14 +245,40 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 				// Skip the banks that are not currently active
 				if ( GRID_p_selection[i] != NULL ){
 
-					// on the measure page mute
-					if ( G_on_the_measure_trackMutepattern != 0 && is_page_in_cluster( GRID_p_selection[i], G_on_the_measure_trackMutepattern_pageNdx ) ) {
+					if ( G_on_the_measure_operation != OFF && is_page_in_cluster( GRID_p_selection[i], G_on_the_measure_trackMutepattern_pageNdx ) ) {
+						// On the measure page mute / solo
+						Pagestruct * current_page = &Page_repository[G_on_the_measure_trackMutepattern_pageNdx];
+						if ( CHECK_BIT( G_on_the_measure_operation, OPERATION_MASK ) ) {
+							// Direct mute / solo pattern
+							if ( CHECK_BIT( G_track_page_chain_mod_bit, CLUSTER_MOD ) ) {
+								apply_page_cluster_mute_pattern( GRID_p_selection[i], G_on_the_measure_trackMutepattern, G_on_the_measure_operation );
+							} else {
+								if ( CHECK_BIT( G_on_the_measure_operation, OPERATION_MUTE ) ) {
+									current_page->trackMutepattern = G_on_the_measure_trackMutepattern;
+									if (current_page->trackMutepattern) {
+										current_page->trackMutepatternStored = current_page->trackMutepattern;
+									}
+								} else {
+									current_page->trackSolopattern = G_on_the_measure_trackMutepattern;
+								}
+							}
+						} else {
+							// Apply by track selection (toggle state adhere to chain data)
+							for ( j=0; j < MATRIX_NROF_ROWS; j++ ){
 
-						for ( j=0; j < MATRIX_NROF_ROWS; j++ ){
-
-							if ( G_on_the_measure_track[j] != NULL ){
-
-								apply_page_cluster_track_mute_toggle( GRID_p_selection[i], G_on_the_measure_track[j] );
+								if ( G_on_the_measure_track[j] != NULL ){
+									if ( CHECK_BIT( G_track_page_chain_mod_bit, CLUSTER_MOD ) ) {
+										apply_page_cluster_track_mute_toggle( GRID_p_selection[i], G_on_the_measure_track[j], G_on_the_measure_operation );
+									} else {
+										// Apply OTM track ndx to current_page trackMutepattern
+										if ( CHECK_BIT( G_on_the_measure_operation, OPERATION_MUTE ) ) {
+											apply_page_track_mute_toggle( current_page, G_on_the_measure_track[j], &current_page->trackMutepattern );
+											current_page->trackMutepatternStored = current_page->trackMutepattern;
+										} else {
+											apply_page_track_mute_toggle( current_page, G_on_the_measure_track[j], &current_page->trackSolopattern );
+										}
+									}
+								}
 							}
 						}
 					}
@@ -287,11 +313,12 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 			#endif
 
 			// reset the on the measure mute pattern
-			if ( G_on_the_measure_trackMutepattern != 0 ){
+			if ( G_on_the_measure_operation != OFF ){
 				for (j=0; j<MATRIX_NROF_ROWS; j++){
 					G_on_the_measure_track[j] = NULL;
 				}
 				G_on_the_measure_trackMutepattern = 0;
+				G_on_the_measure_operation = OFF;
 				G_on_the_measure_trackMutepattern_pageNdx = 0;
 			}
 

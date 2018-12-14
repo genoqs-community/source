@@ -4,7 +4,7 @@
 #define		SW_VERSION_MINOR				 5	// Max 10 - Tens
 #define		SW_VERSION_RELEASE				 2	// Max 10 - Ones
 
-#define		SW_VERSION_INTERNAL				 3	// Max 127 - Row 0 number
+#define		SW_VERSION_INTERNAL				 4	// Max 127 - Row 0 number
 
 // SWITCH between 'MIDI' and 'USB' modes of the MIDI 2 Port
 #define		OCTDEF_UART2_MODE	 			MIDI
@@ -39,6 +39,7 @@
  * https://docs.google.com/spreadsheets/d/1eM8S2VbLz8OsRawqJ4Pzusfqcv13wKgeyLU071252Nk/edit#gid=520555008
  *
  * COMMUNITY EDITION VERSION CHANGES
+ *  0.0.5.24		Port on the measure / cluster mute (Complete OTM implementation with mute, solo and master)
  *  0.0.5.00		FINAL VERSION of 0.0.5
  *
  *  0.0.4.64	- 	Cases : 1.62x (64-68)

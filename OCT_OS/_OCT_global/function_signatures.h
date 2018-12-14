@@ -58,8 +58,11 @@ extern	void 			quick_assign_control_track ( Pagestruct* target_page, unsigned ch
 extern	void 			make_control_track ( Pagestruct* target_page, unsigned char trackIdx );
 #endif
 
-extern unsigned int is_page_in_cluster( Pagestruct* temp_page, unsigned char pageNdx );
-extern void apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track );
+extern unsigned short 	get_otm_track_pattern();
+extern unsigned int 	is_page_in_cluster( Pagestruct* temp_page, unsigned char pageNdx );
+extern void 			apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track, unsigned char operation );
+extern void 			apply_page_cluster_mute_pattern( Pagestruct* target_page, unsigned short pattern, unsigned char operation );
+extern void 			apply_page_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track, unsigned short* trackMutepattern );
 extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
 extern	void 			align_measure_locators();
 

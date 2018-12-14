@@ -28,6 +28,65 @@
 #include "key_chainer_operation.h"
 #include "key_cluster_operation.h"
 
+unsigned short get_otm_track_pattern() {
+
+	unsigned char i;
+	unsigned short otm_track_pattern = 0;
+
+	for ( i = 0; i < MATRIX_NROF_ROWS; i++ ){
+
+			if ( G_on_the_measure_track[i] != NULL ){
+				SET_BIT(otm_track_pattern, i);
+			}
+	}
+
+	return otm_track_pattern;
+}
+
+void apply_page_mute_pattern_operation( Pagestruct* target_page, unsigned short pattern, unsigned char operation ){
+
+	unsigned char j = 0;
+	G_on_the_measure_operation = OFF;
+	for (j = 0; j < MATRIX_NROF_ROWS; j++){
+		G_on_the_measure_track[j] = NULL;
+	}
+
+	if ( CHECK_BIT( G_track_page_chain_mod_bit, ON_THE_MEASURE_MOD ) ) {
+		SET_BIT( G_on_the_measure_operation, operation );
+		SET_BIT( G_on_the_measure_operation, OPERATION_MASK );
+		G_on_the_measure_trackMutepattern = pattern;
+		G_on_the_measure_trackMutepattern_pageNdx = target_page->pageNdx;
+	} else if ( CHECK_BIT( G_track_page_chain_mod_bit, CLUSTER_MOD ) ) {
+		apply_page_cluster_mute_pattern( target_page, pattern, 1 << operation );
+	} else if ( operation == OPERATION_MUTE ) {
+		target_page->trackMutepattern = pattern;
+		if (pattern) {
+			target_page->trackMutepatternStored = target_page->trackMutepattern;
+		}
+	} else if ( operation == OPERATION_SOLO ) {
+		target_page->trackSolopattern = pattern;
+	}
+}
+
+void apply_page_track_mute_toggle_operation( Pagestruct* target_page, Trackstruct* current_track, unsigned char operation ){
+
+	G_on_the_measure_operation = OFF;
+	G_on_the_measure_trackMutepattern = OFF;
+
+	if ( CHECK_BIT( G_track_page_chain_mod_bit, ON_THE_MEASURE_MOD ) ) {
+		apply_page_track_mute_toggle( target_page, current_track, &G_on_the_measure_trackMutepattern );
+		SET_BIT( G_on_the_measure_operation, operation );
+		G_on_the_measure_trackMutepattern_pageNdx = target_page->pageNdx;
+		G_on_the_measure_track[row_of_track( target_page, current_track )] = current_track;
+	} else if ( CHECK_BIT( G_track_page_chain_mod_bit, CLUSTER_MOD ) ) {
+		apply_page_cluster_track_mute_toggle( target_page, current_track, 1 << operation );
+	} else if ( operation == OPERATION_MUTE ) {
+		apply_page_track_mute_toggle( target_page, current_track, &target_page->trackMutepattern );
+		target_page->trackMutepatternStored = target_page->trackMutepattern;
+	} else if ( operation == OPERATION_SOLO ) {
+		apply_page_track_mute_toggle( target_page, current_track, &target_page->trackSolopattern );
+	}
+}
 
 // Modifies the length of the previewed step in the matrix
 void adjust_preview_stepLEN( unsigned char col ){
