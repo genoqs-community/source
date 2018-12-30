@@ -105,8 +105,26 @@
 #define	LED_ZOOM		194
 
 // 0000 0101 0100 1010 - literally the black keys by index for one octave when reversed
-#define BLACK_KEYS		0x54A
-#define CHECK_BLACK_KEY(pit) (0x54A & 1<<( pit % 0xC ))
+#define BLACK_KEYS				0x54A
+#define TWO_BLACK_KEYS			0xA
+#define THREE_BLACK_KEYS		0x540
+#define UP_TONE_BLACK_KEY		0x400
+#define DOWN_TONE_BLACK_KEY		0x40
+#define AB_BLACK_KEY			0x2
+#define PALETTE_BLACK_KEY		0x100
+#define RECALL_BLACK_KEY		0x8
+
+#define CHECK_BLACK_KEY(pit) (BLACK_KEYS & (1<<( pit % 0xC )))
+#define CHECK_TWO_BLACK_KEY(pit) (TWO_BLACK_KEYS & (1<<( pit % 0xC )))
+#define CHECK_THREE_BLACK_KEY(pit) (THREE_BLACK_KEYS & (1<<( pit % 0xC )))
+#define CHECK_UP_TONE_BLACK_KEY(pit) (UP_TONE_BLACK_KEY & (1<<( pit % 0xC )))
+#define CHECK_DOWN_TONE_BLACK_KEY(pit) (DOWN_TONE_BLACK_KEY & (1<<( pit % 0xC )))
+#define CHECK_PALETTE_BLACK_KEY(pit) (PALETTE_BLACK_KEY & (1<<( pit % 0xC )))
+#define CHECK_RECALL_BLACK_KEY(pit) (RECALL_BLACK_KEY & (1<<( pit % 0xC )))
+#define CHECK_AB_BLACK_KEY(pit) (AB_BLACK_KEY & (1<<( pit % 0xC )))
+
+#define OCTAVE 				0xC
+#define BLACK_KEY_PREFIX	0xA94 // SCALE_SIG_PEN i.e., only the white keys that have a black key before
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 #define TOGGLE_BIT(var,pos) ((var) = ((var) ^ (1<<(pos))))

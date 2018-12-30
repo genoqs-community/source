@@ -28,7 +28,6 @@
 
 
 #include "../_OCT_global/variables.h"
-#include "../_OCT_global/chords.h"
 #include "../_OCT_global/tools_general.h"
 
 #include "../_OCT_objects/Panel.h"
@@ -40,6 +39,7 @@
 #include "../_OCT_objects/NOTE_ON_queue.h"
 #include "../_OCT_objects/Grid.h"
 #include "../_OCT_objects/Solorec.h"
+#include "../_OCT_global/chords.h"
 #ifdef FEATURE_ENABLE_DICE
 #include "../_OCT_objects/Dice.h"
 #endif

@@ -80,7 +80,9 @@ Recstruct			Rec_repository		[MATRIX_NROF_COLUMNS];
 
 Recstruct			Rec_undo_repository	[MATRIX_NROF_COLUMNS];
 
-Notestruct			Chord_palette_repository[MAX_NROF_PALETTE_CHORDS];
+Chordstruct			Chord_palette_repository[MAX_NROF_PALETTE_CHORDS + 1 /* last chord played */];
+
+Notestruct			Arp_pattern_repository[MATRIX_NROF_COLUMNS * MAX_NROF_PALETTE_CHORDS];
 
 
 #ifdef FEATURE_ENABLE_DICE
@@ -94,6 +96,7 @@ Pagestruct* GRID_assistant_page = &Page_repository[109];
 
 // A temporary copy of GRID_assistant_page used by SoloRec
 Pagestruct* SOLO_assistant_page = &Page_repository[119];
+Pagestruct* SOLO_arp_pattern_page = &Page_repository[129];
 
 // Used as a copy buffer for sorting of tracks (ALN) in MIX MAP (ATR) mode
 Pagestruct* PAGE_assistant_page = &Page_repository[99];
@@ -502,6 +505,8 @@ void Octopus_memory_clean(){
 	Step_repository_init();
 
 	Track_repository_init();
+
+	Solorec_init();
 
 	MIR_init();
 

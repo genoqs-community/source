@@ -1867,7 +1867,6 @@ void select_in_scale( 	Pagestruct* target_page,
 						unsigned char target_state,
 						unsigned char scale_ndx ){
 
-	//d_iag_printf( "Sel->scale: k:%d state:%d\n", target_note, target_state );
 	// Syntactic sugar: new_flag has to be at least 12 bits long!
 	unsigned short new_flag 	= 	1 << (target_note - 12);
 
@@ -1915,6 +1914,30 @@ unsigned char keyNdx_to_noteNdx( unsigned int keyNdx ){
 		case KEY_NOTE_Ais:	i = NOTE_Ais;		break;
 		case KEY_NOTE_B:	i = NOTE_B;			break;
 		case KEY_NOTE_Cup:	i = NOTE_C;			break;
+	}
+	return i;
+}
+
+
+
+unsigned char keyNdx_to_ndx( unsigned int keyNdx ){
+
+	unsigned char i = 0;
+	// Transform keyNdx to note index
+	switch (keyNdx) {
+		case KEY_NOTE_C:	i = 0;			break;
+		case KEY_NOTE_Cis:	i = 1;			break;
+		case KEY_NOTE_D:	i = 2;			break;
+		case KEY_NOTE_Dis:	i = 3;			break;
+		case KEY_NOTE_E:	i = 4;			break;
+		case KEY_NOTE_F:	i = 5;			break;
+		case KEY_NOTE_Fis:	i = 6;			break;
+		case KEY_NOTE_G:	i = 7;			break;
+		case KEY_NOTE_Gis:	i = 8;			break;
+		case KEY_NOTE_A:	i = 9;			break;
+		case KEY_NOTE_Ais:	i = 10;			break;
+		case KEY_NOTE_B:	i = 11;			break;
+		case KEY_NOTE_Cup:	i = NOP;		break;
 	}
 	return i;
 }

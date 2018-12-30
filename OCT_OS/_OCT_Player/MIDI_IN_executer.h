@@ -318,9 +318,11 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 		offset_TTC = current_TTC;
 		offset_TTC -= G_TT_external_latency_offset;
 
+		#ifdef FEATURE_SOLO_REC
 		if ( G_MIDI_timestamp <= 16 && SOLO_rec_quantize_first_beat == ON && offset_TTC <= 0 ){
 			offset_TTC = 1; // NOTE at first 1/16th has a STA > 0
 		}
+		#endif
 	}
 
 	// Only work on the current page.
@@ -330,18 +332,69 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  	// This is where the incoming MIDI note will be sent to, unless re-channelled, below.
  	int outputMidiBus  = inputMidiBus; 		// Range [0, 1].
  	int outputMidiChan = inputMidiChan; 	// Range [1, 16].
-
 	#ifdef FEATURE_SOLO_REC
+ 	unsigned char programOctave = ( MIDDLE_C - OCTAVE ) + ( OCTAVE * SOLO_scale_chords_program_octave );
+ 	unsigned char isProgramKey = ( in_pitch >= programOctave && in_pitch < ( programOctave + OCTAVE ) );
+
 	if ( SOLO_scale_chords == ON && G_run_bit == OFF ){
 
-		if ( ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){ // ignore NOTE OFF
+		if ( SOLO_scale_chords_program_keys == OFF || ( !isProgramKey && SOLO_scale_chords_program_keys == ON )){
 
-			unsigned char programOctave = ( MIDDLE_C - 0xC ) + ( 0xC * SOLO_scale_chords_program_octave );
-			unsigned char isProgramKey = ( in_pitch >= programOctave && in_pitch < ( programOctave + 0xC ) );
-			if ( CHECK_BLACK_KEY(in_pitch) && !isProgramKey ){ // black keys
+			// Palette key held for 2s or tap
+			if ( CHECK_PALETTE_BLACK_KEY(in_pitch) ){ // G#
 
-				SOLO_scale_chords_program ^= 1;
+				if ( ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){ // not NOTE OFF
+
+					PHRASE_TIMER = ON;
+					cyg_alarm_initialize(	alarm_hdl,
+											cyg_current_time() + ( TIMEOUT_VALUE / 2 ), // about 2 seconds
+											0 );
+				}
+				else { // note off
+
+					if ( PHRASE_TIMER == ON ){ // before 2s
+
+						if ( SOLO_scale_chords_program_armed == ON ){
+
+							SOLO_scale_chords_program_armed = OFF;
+						}
+						else if ( SOLO_scale_chords_program ==  ON ){
+
+							SOLO_scale_chords_program = OFF;
+						}
+						else {
+							SOLO_scale_chords_program_keys ^= 1; // toggle palette keys enabled
+						}
+					}
+					else { // after 2s
+						SOLO_scale_chords_program = ON; // palette editor enabled
+						SOLO_scale_chords_program_keys = ON;
+
+						if ( SOLO_last_chord != NULL ){
+
+							SOLO_scale_chords_program_armed = ON;
+						}
+					}
+				}
 				return;
+			}
+			if ( ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){ // ignore NOTE OFF
+
+				if ( CHECK_UP_TONE_BLACK_KEY(in_pitch) ){
+
+					modifyChordPitch(1);
+					return;
+				}
+				else if ( CHECK_DOWN_TONE_BLACK_KEY(in_pitch) ){
+
+					modifyChordPitch(-1);
+					return;
+				}
+				else if ( CHECK_AB_BLACK_KEY(in_pitch) ){ // 2 black keys
+
+					SOLO_scale_chords_b ^= 1;
+					return;
+				}
 			}
 		}
 	}
@@ -393,7 +446,11 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 			||	( is_selected_in_GRID( target_page ) == FALSE )
 		){
 
+		#ifdef FEATURE_SOLO_REC
+		if ( SOLO_scale_chords_program == OFF ) return;
+		#else
 		return;
+		#endif
 	}
 
 	// Get the index of the REC row. Only one track selected at any time. No quantization.
@@ -568,10 +625,69 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  			// Note that the note may have been re-channelled in the meantime.
  			// MIDI_NOTE_new() also uses the internal [1,64] range for MIDI channels.
 
- 			if ( G_midi_map_controller_mode == ON ){
+			#ifdef FEATURE_SOLO_REC
+			if ( SOLO_scale_chords == ON ){
 
- 				MIDI_NOTE_new( outputMidiBus * 16 + outputMidiChan, scale_pitch(target_page, in_pitch), in_velocity, 0 );
- 			}
+				if ( CHECK_RECALL_BLACK_KEY(in_pitch) && ( SOLO_scale_chords_program_keys == OFF || !isProgramKey )){
+
+					if ( in_velocity != OFF ){
+
+						PHRASE_TIMER = ON;
+						cyg_alarm_initialize(	alarm_hdl,
+												cyg_current_time() + ( TIMEOUT_VALUE / 2 ), // about 2 seconds
+												0 );
+					}
+					else { // black tone recall key - note off
+
+						if ( PHRASE_TIMER == ON ){ // before 2s
+							// fast press
+							if ( SOLO_assistant_page->attr_PIT != SOLO_scale_chords_pitch_recall ){
+
+								SOLO_assistant_page->attr_PIT = SOLO_scale_chords_pitch_recall;
+							}
+							else {
+								SOLO_assistant_page->attr_PIT = SOLO_scale_chords_pitch_prev;
+							}
+						}
+						else { // after 2s
+							SOLO_scale_chords_pitch_prev = SOLO_scale_chords_pitch_recall;
+							SOLO_scale_chords_pitch_recall = SOLO_assistant_page->attr_PIT;
+						}
+					}
+					return;
+				}
+				else if ( isProgramKey == ON && SOLO_scale_chords_program_keys == ON ){
+
+					if ( SOLO_scale_chords_program_armed == ON && ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){
+
+						assignChordToPalette(in_pitch);
+					}
+					if ( Chord_palette_repository[in_pitch % OCTAVE].chord_id != NOP ) {
+
+						SOLO_scale_chords_palette_ndx = in_pitch % OCTAVE;
+						playChordstruct(SOLO_scale_chords_palette_ndx, in_velocity, outputMidiBus * 16 + outputMidiChan, ON);
+					}
+					return;
+				}
+
+				if ( CHECK_BLACK_KEY(in_pitch) == OFF ){
+
+					SOLO_scale_chords_palette_ndx = NOP;
+					playNotesInChord( outputMidiBus * 16 + outputMidiChan, in_velocity, in_pitch);
+				}
+			}
+			else {
+				if ( G_midi_map_controller_mode == ON ){
+
+					MIDI_NOTE_new( outputMidiBus * 16 + outputMidiChan, scale_pitch(target_page, in_pitch), in_velocity, 0 );
+				}
+			}
+			#else
+			if ( G_midi_map_controller_mode == ON ){
+
+				MIDI_NOTE_new( outputMidiBus * 16 + outputMidiChan, scale_pitch(target_page, in_pitch), in_velocity, 0 );
+			}
+			#endif
 
 			// Play MIDI queue elements which are due just before current timestamp, including the above..
 			play_MIDI_queue( G_MIDI_timestamp );

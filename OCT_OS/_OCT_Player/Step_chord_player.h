@@ -49,6 +49,7 @@
 	booln strumPresetBo = False;
 
 	if ( strumLevel != 9 ) {
+
 		if ( strumLevel >= 9 ){
 			strumLevel -= 9;
 			phraseNum = PHRASE_STRUM_PRESET_NUM + strumLevel - 1;
@@ -197,7 +198,6 @@
 		if ( PhrasePtGetPit(&phraseObj, noteIx) == -128 ) {
 			continue;
 		}
-
 
 		//---------------------------------------------------------------------------------------
 		// START OFFSET (STA)

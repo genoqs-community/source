@@ -508,6 +508,20 @@ typedef struct notestruct{
 
 } Notestruct;
 
+typedef struct chordstruct{
+
+	unsigned char	chord_id;
+	unsigned char	scale;
+	unsigned char	tone;
+	unsigned char	octave;
+	unsigned char	pitch;
+	unsigned char	strum;
+	signed char		attr_VEL;
+	unsigned char	attr_LEN;
+	Notestruct*		Arp[MATRIX_NROF_COLUMNS];
+
+} Chordstruct;
+
 typedef struct recstruct{
 
 	Notestruct*		Note[MAX_NROF_PAGE_NOTES];
@@ -535,7 +549,8 @@ extern Recstruct			Rec_repository[MATRIX_NROF_COLUMNS];
 extern Recstruct			Rec_undo_repository[MATRIX_NROF_COLUMNS];
 extern Notestruct			Note_repository[MAX_NROF_REC_NOTES];
 extern Notestruct			Note_undo_repository[MAX_NROF_REC_NOTES];
-extern Notestruct			Chord_palette_repository[MAX_NROF_PALETTE_CHORDS];
+extern Chordstruct			Chord_palette_repository[MAX_NROF_PALETTE_CHORDS + 1];
+extern Notestruct			Arp_pattern_repository[MATRIX_NROF_COLUMNS * MAX_NROF_PALETTE_CHORDS];
 
 
 

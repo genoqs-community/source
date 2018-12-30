@@ -402,6 +402,11 @@ void stop_solo_rec( unsigned char trim ){
 	SOLO_rec_measure_pos 	= OFF;
 	SOLO_rec_rehersal		= OFF;
 
+	if ( SOLO_scale_chords_program == ON ){
+		SOLO_rec_measure_hold = OFF;
+		GRID_CURSOR = SOLO_rec_page->pageNdx;
+	}
+
 	// Reset the grid cursor for the recording page cluster
 	if ( SOLO_rec_page != NULL ){
 		reset_page_cluster( SOLO_rec_page );

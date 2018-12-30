@@ -58,6 +58,17 @@ extern	void 			quick_assign_control_track ( Pagestruct* target_page, unsigned ch
 extern	void 			make_control_track ( Pagestruct* target_page, unsigned char trackIdx );
 #endif
 
+extern  void 			MIR_write_trackpattern( 	unsigned int bitpattern,
+													unsigned char track,
+													unsigned char color);
+
+extern  void 			MIR_augment_trackpattern(	unsigned int bitpattern,
+													unsigned int track,
+													unsigned char color);
+
+extern  void 			MIR_write_lauflicht_track( 	unsigned char trackNdx, unsigned char rowNdx );
+
+
 extern unsigned int 	is_page_in_cluster( Pagestruct* temp_page, unsigned char pageNdx );
 extern unsigned int 	selected_page_cluster_right_neighbor( Pagestruct* temp_page, unsigned char pageNdx );
 extern void 			apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track );
@@ -80,11 +91,25 @@ extern  void 			trim_freeflow_track_chain(Pagestruct* target_page, unsigned char
 extern unsigned char 	find_record_track_chain_start(Pagestruct* target_page);
 extern unsigned char 	has_valid_record_cluster_format(Pagestruct* target_page);
 extern void 			sequencer_command_PLAY();
+extern unsigned int 	get_chord_projected( Stepstruct* target_step );
+
+extern void 			modify_scale_composition( Pagestruct* target_page,
+												  unsigned char k,
+												  unsigned char scale_ndx );
 
 extern void 			MIDI_NOTE_new( 	unsigned char midiCH,
 										unsigned char pitch,
 										unsigned char velocity,
 										unsigned int  when	);
+
+extern void 			MIDI_OFF_build_new(	unsigned char midiCH,
+											unsigned char pitch,
+											unsigned int length	);
+
+extern void 			MIDI_send( 	unsigned char type,
+									unsigned char val0,
+									unsigned char val1,
+									unsigned char val2 );
 
 extern unsigned char 	grid_row (unsigned char gridNdx);
 extern unsigned char 	grid_col (unsigned char gridNdx);

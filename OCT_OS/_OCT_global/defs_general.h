@@ -339,12 +339,12 @@
 #define		NOTE_B					12
 
 // THE SCALE SIGNATURES - computed to hex from binary. See book p. 120ff
-#define		SCALE_SIG_PEN			0xA94
-#define		SCALE_SIG_WHL			0xAAA
-#define		SCALE_SIG_MAJ			0xAD5		// MAJ scale signature
-#define		SCALE_SIG_MIN			0xB5A
-#define 	SCALE_SIG_DIM			0xB75
-#define		SCALE_SIG_CHR			0xFFF		// CHR is the chromatic scale
+#define		SCALE_SIG_PEN			0xA94		// C D E G A 			- Major Pentatonic 	- https://www.scales-chords.com/scaleinfo.php?skey=C&sname=major%20pentatonic
+#define		SCALE_SIG_WHL			0xAAA		// C D E F# G# Bb 		- Whole Tone 		- https://www.scales-chords.com/scaleinfo.php?skey=C&sname=whole%20tone
+#define		SCALE_SIG_MAJ			0xAD5		// C D E F G A B		- Major Scale		- https://www.scales-chords.com/scaleinfo.php?skey=C&sname=major
+#define		SCALE_SIG_MIN			0xB5A		// C D Eb F G Ab Bb		- Natual Minor		- https://www.scales-chords.com/scaleinfo.php?skey=C&sname=natural%20minor
+#define 	SCALE_SIG_DIM			0xB35		// C D Eb F# G A B		- Diminished Lydian - https://www.scales-chords.com/scaleinfo.php?skey=C&sname=diminished%20lydian
+#define		SCALE_SIG_CHR			0xFFF		// CHR is the chromatic scale - All Keys
 
 
 // GRID SELECTION EMPTY flag - 0 is a valid index so need something greater than 160
@@ -424,6 +424,7 @@
 
 // This is the pitch offset of the middle C. Used at various occasoins
 #define 	MIDDLE_C				60
+#define 	C3						48
 
 
 // This defines the states that the follow variable may take

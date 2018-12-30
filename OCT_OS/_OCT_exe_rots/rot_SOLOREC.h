@@ -4,6 +4,46 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 						unsigned char rotNdx,
 						unsigned char direction ){
 
+	int i;
+
+	if ( SOLO_scale_chords_program == ON ){
+
+		for (i=0; i<MATRIX_NROF_COLUMNS; i++) {
+
+			if ( is_pressed_key( 20 + (i * 11)) == TRUE &&
+				 Note_get_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], STEPSTAT_TOGGLE ) == ON
+			   ){ // an Arp step is pressed
+
+				modify_parameter(&SOLO_assistant_page->Step[0][i]->attr_LEN,
+								  LEGATO,
+								  STEP_MAX_LENGTH,
+								  direction,
+								  OFF,
+								  FIXED);
+
+				modify_parameter(&Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i]->attr_LEN,
+								  LEGATO,
+								  STEP_MAX_LENGTH,
+								  direction,
+								  OFF,
+								  FIXED);
+				return;
+			}
+		}
+
+		// modify the Arp length
+		if ( rotNdx == 3 && Chord_palette_repository[SOLO_scale_chords_palette_ndx].chord_id != NOP ){
+
+			modify_parameter(&Chord_palette_repository[SOLO_scale_chords_palette_ndx].attr_LEN,
+							  LEGATO,
+							  STEP_MAX_LENGTH,
+							  direction,
+							  OFF,
+							  FIXED);
+		}
+		return;
+	}
+
 	if ( G_run_bit == ON ){
 		return; // Don't allow parameter modification while the machine is playing
 	}

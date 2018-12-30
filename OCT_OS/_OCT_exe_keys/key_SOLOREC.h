@@ -1,4 +1,24 @@
 
+
+	// Shift Arp patterns
+	if (( keyNdx == ROT_MCH || keyNdx == KEY_PASTE ) && SOLO_scale_chords_program == ON ){
+
+		unsigned char j;
+		for (j=0; j<MATRIX_NROF_COLUMNS; j++) {
+
+			if ( is_pressed_key( 20 + (j * 11)) == TRUE ){ // is there a pressed step
+				break;
+			}
+		}
+		if ( j == MATRIX_NROF_COLUMNS ){
+			shiftArpPattern( (keyNdx == ROT_MCH), 0 ); // no step is pressed
+		}
+		else {
+			shiftArpPattern( (keyNdx == ROT_MCH), j+1 );
+		}
+		return;
+	}
+
 	if ( keyNdx <= 10 ){
 		return; // disable track select buttons
 	}
@@ -37,80 +57,290 @@
 	}
 
 	if ( keyNdx == KEY_SELECT_MASTER ){
-		if ( SOLO_rec_has_MCC == OFF ){
-			SOLO_rec_track_preview ^= 1; // toggle grid and page view because we don't have MCC data
+		if ( SOLO_scale_chords_program == OFF ){
+			if ( SOLO_rec_has_MCC == OFF ){
+				SOLO_rec_track_preview ^= 1; // toggle grid and page view because we don't have MCC data
 
-		} else if ( ++SOLO_rec_track_preview > SOLOMCC ){
-			SOLO_rec_track_preview = SOLOGRID;
+			} else if ( ++SOLO_rec_track_preview > SOLOMCC ){
+				SOLO_rec_track_preview = SOLOGRID;
+			}
+		}
+		else { // clear Arp pattern
+			if ( SOLO_assistant_page->Track[1]->attr_STATUS == OFF ){
+
+				unsigned char hasArp = OFF;
+				for (i=0; i<MATRIX_NROF_COLUMNS; i++){
+
+					if ( Note_get_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], STEPSTAT_TOGGLE ) == ON ){
+						hasArp = ON;
+						break;
+					}
+				}
+				if (!hasArp) return;
+				saveArpPattern(SOLO_scale_chords_palette_ndx);
+				clearArpPattern(SOLO_scale_chords_palette_ndx);
+			}
+			else {
+				restoreArpPattern(SOLO_scale_chords_palette_ndx);
+			}
 		}
 	}
 
 	if ( keyNdx == KEY_STOP ){
-		if ( G_run_bit == ON && SOLO_rec_page != NULL ){
+		if (( G_run_bit == ON && SOLO_rec_page != NULL ) || SOLO_scale_chords_program == ON ){
 			stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON );
 		}
 		else {
 			send_ALL_NOTES_OFF();
-			if ( is_pressed_key( KEY_MUTE_MASTER )){
-				send_note_off_full_range();
-			}
+		}
+		if ( is_pressed_key( KEY_MUTE_MASTER )){
+			send_note_off_full_range( SOLO_midi_ch, G_pitch_segment++ );
 		}
 	}
 
-	if ( SOLO_rec_track_preview == SOLOPAGE ){
-		if ( keyNdx == KEY_SCALE_SEL ){
-			SOLO_scale_chords ^= 1;
+	if ( keyNdx == KEY_SCALE_SEL ){
+		SOLO_scale_chords ^= 1;
+		if ( SOLO_scale_chords == ON && SOLO_assistant_page->scaleNotes[G_scale_ndx] == SCALE_SIG_CHR ){
+			// There are no scales in Chromatic keys so choose Major
+			SOLO_assistant_page->scaleNotes[G_scale_ndx] = SCALE_SIG_MAJ;
 		}
-		else if ( SOLO_scale_chords == OFF && SOLO_assistant_page->scaleStatus != OFF ){
+	}
+	else if ( SOLO_scale_chords == OFF && SOLO_assistant_page->scaleStatus != OFF ){
 
-			key_ScaleSelector_functions( keyNdx, SOLO_assistant_page );
+		key_ScaleSelector_functions( keyNdx, SOLO_assistant_page );
+	}
+	else {
+
+		if ( SOLO_scale_chords_program == ON ){
+
+			if ( row_of(keyNdx) == 9 ){
+
+				// An empty arp key is clicked
+				if ( Note_get_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[column_of(keyNdx)], STEPSTAT_TOGGLE ) == OFF ){
+
+					// find the end
+					unsigned char stopCol = MATRIX_NROF_COLUMNS;
+					for (i=0; i<MATRIX_NROF_COLUMNS; i++){
+						if ( Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_SKIP ) == ON ){
+							stopCol = i;
+						}
+					}
+					if ( column_of(keyNdx) >= stopCol ){
+						return; // arp note copy out of arp range
+					}
+					for (i=0; i<stopCol; i++){
+
+						if ( is_pressed_key( 20 + (i * 11)) == TRUE &&
+							 Note_get_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], STEPSTAT_TOGGLE ) == ON
+						   ){ // another Arp step is already pressed with status ON
+
+							// copy the step
+							copyNote( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i],
+									  Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[column_of(keyNdx)]);
+							noteToStep (Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i],
+										SOLO_assistant_page->Step[0][column_of(keyNdx)]);
+						}
+					}
+				}
+
+				// D O U B L E - C L I C K  C O N S T R U C T
+				// DOUBLE CLICK SCENARIO
+				if (	( DOUBLE_CLICK_TARGET == keyNdx )
+					&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+
+					// Double click code
+					// ...
+					if ( Note_get_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[column_of(keyNdx)], STEPSTAT_TOGGLE ) == ON ){
+
+						unsigned char len = SOLO_assistant_page->Step[0][column_of(keyNdx)]->attr_LEN; // keep the LEN
+						initNote( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[column_of(keyNdx)] );
+						noteToStep( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[column_of(keyNdx)],
+									SOLO_assistant_page->Step[0][column_of(keyNdx)]
+								  );
+						SOLO_assistant_page->Step[0][column_of(keyNdx)]->attr_LEN = len;
+						Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[column_of(keyNdx)]->attr_LEN = len;
+					}
+
+				} // end of double click scenario
+
+				// SINGLE CLICK SCENARIO
+				else if (DOUBLE_CLICK_TARGET == 0) {
+
+					DOUBLE_CLICK_TARGET = keyNdx;
+					DOUBLE_CLICK_TIMER = ON;
+					// Start the Double click Alarm
+					cyg_alarm_initialize(
+							doubleClickAlarm_hdl,
+							cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+							DOUBLE_CLICK_ALARM_TIME );
+
+
+					for (j=0; j<OCTAVE; j++) {
+
+						if ( is_pressed_key( 33 + (j * 11)) == TRUE ){ // an Arp step is pressed
+
+							unsigned char pitches[MAX_NOTES];
+							Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
+							translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches);
+
+							for (i=0; i < MAX_NOTES; i++){
+
+								if ( pitches[i] == NOP ) return;
+								if ( pitches[i] == j ){
+
+									chordPitchAddToStep( SOLO_assistant_page, column_of(keyNdx), pitches[i] );
+									return;
+								}
+							}
+						}
+					}
+
+					if ( Step_get_status( SOLO_assistant_page->Step[0][column_of(keyNdx)], STEPSTAT_TOGGLE ) == ON ){
+
+						PLAYER_preview_step( SOLO_assistant_page, 0, column_of(keyNdx) ); // play the sound with the note length
+					}
+				}
+			}
+			else if ( row_of(keyNdx) == 0 && G_run_bit == OFF ) {
+
+				unsigned char pitches[MAX_NOTES];
+				Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
+				translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches);
+
+				for (i=0; i < MAX_NOTES; i++){
+
+					if ( pitches[i] == NOP ) return;
+					if ( pitches[i] == ( column_of(keyNdx) -2) ){
+
+						playChordPitch( pitches[i], SOLO_midi_ch, TRACK_DEF_VELOCITY, STEP_DEF_LENGTH );
+						return;
+					}
+				}
+			}
+
+			switch( keyNdx ){
+
+				// OCTAVE CIRCLE NOTE KEYS
+				case KEY_NOTE_C:
+				case KEY_NOTE_Cis:
+				case KEY_NOTE_D:
+				case KEY_NOTE_Dis:
+				case KEY_NOTE_E:
+				case KEY_NOTE_F:
+				case KEY_NOTE_Fis:
+				case KEY_NOTE_G:
+				case KEY_NOTE_Gis:
+				case KEY_NOTE_A:
+				case KEY_NOTE_Ais:
+				case KEY_NOTE_B:
+				{
+					unsigned char ndx = keyNdx_to_ndx( keyNdx );
+					if ( ndx != NOP ){
+
+						// D O U B L E - C L I C K  C O N S T R U C T
+						// DOUBLE CLICK SCENARIO
+						if (	( DOUBLE_CLICK_TARGET == keyNdx )
+							&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+
+							// Double click code
+							// ...
+							initChord(&Chord_palette_repository[ndx], ndx);
+							SOLO_scale_chords_palette_ndx = NOP;
+							SOLO_scale_chords_last = OFF;
+							SOLO_scale_chords_program_armed = OFF;
+
+						} // end of double click scenario
+
+						// SINGLE CLICK SCENARIO
+						else if (DOUBLE_CLICK_TARGET == 0) {
+
+								DOUBLE_CLICK_TARGET = keyNdx;
+								DOUBLE_CLICK_TIMER = ON;
+								// Start the Double click Alarm
+								cyg_alarm_initialize(
+										doubleClickAlarm_hdl,
+										cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+										DOUBLE_CLICK_ALARM_TIME );
+
+							// Single click code
+							// ...
+							if ( Chord_palette_repository[ndx].chord_id != NOP ){
+
+								SOLO_scale_chords_palette_ndx = ndx;
+								playChordstruct(ndx, TRACK_DEF_VELOCITY, SOLO_midi_ch, OFF);
+							}
+						}
+					}
+					break;
+				}
+			}
 		}
 		else {
 			key_ChordScaleSelector( keyNdx, SOLO_assistant_page );
+		}
 
-			if ( keyNdx == KEY_PROGRAM ){
-				SOLO_scale_chords_program ^= 1;
+		if ( keyNdx == KEY_PROGRAM ){
+
+			if ( SOLO_scale_chords_program == ON && SOLO_scale_chords_program_armed == ON ){
+				SOLO_scale_chords_program_armed = OFF;
 			}
-			else if ( SOLO_scale_chords_program == ON ){
-
-				if ( keyNdx == KEY_SCALE_CAD && SOLO_scale_chords_program_octave < 2 ){
-
-					SOLO_scale_chords_program_octave++;
-				}
-				else if ( keyNdx == KEY_SCALE_MOD && SOLO_scale_chords_program_octave > -2 ){
-
-					SOLO_scale_chords_program_octave--;
-				}
+			else if ( SOLO_scale_chords_program == OFF ){
+				SOLO_scale_chords_program = ON;
 			}
-			else if ( keyNdx == KEY_SCALE_CAD && SOLO_scale_chords_octave < 2 ){
-
-				SOLO_scale_chords_octave++;
+			else {
+				SOLO_scale_chords_last = OFF;
+				SOLO_scale_chords_program = OFF;
 			}
-			else if ( keyNdx == KEY_SCALE_MOD && SOLO_scale_chords_octave > -2 ){
+		}
+		else if ( SOLO_scale_chords_program == ON ){
 
-				SOLO_scale_chords_octave--;
+			if ( keyNdx == KEY_SCALE_CAD && SOLO_scale_chords_program_octave < 3 ){
+
+				SOLO_scale_chords_program_octave++;
 			}
+			else if ( keyNdx == KEY_SCALE_MOD && SOLO_scale_chords_program_octave > -3 ){
+
+				SOLO_scale_chords_program_octave--;
+			}
+		}
+		else if ( keyNdx == KEY_SCALE_CAD && SOLO_scale_chords_octave < 3 ){
+
+			SOLO_scale_chords_octave++;
+		}
+		else if ( keyNdx == KEY_SCALE_MOD && SOLO_scale_chords_octave > -3 ){
+
+			SOLO_scale_chords_octave--;
 		}
 	}
 
-	if ( SOLO_rec_page != NULL ){ // A record page cluster is selected
+	if ( SOLO_rec_page != NULL || SOLO_scale_chords_program == ON ){ // A record page cluster is selected
 
 		if ( keyNdx == KEY_PLAY1 ){
-			if ( SOLO_has_rec == ON && G_run_bit == OFF ){
-				G_track_rec_bit = OFF;
-				reset_page_cluster( SOLO_rec_page );
-				playSoloRecCluster();
+			if ( SOLO_scale_chords_program == ON ){
+
+				SOLO_rec_rehersal = ON;
+				GRID_CURSOR = SOLO_assistant_page->pageNdx;
+				reset_page_cluster( SOLO_assistant_page );
+				sequencer_command_PLAY();
 			}
-			if ( SOLO_rec_measure_hold == ON && G_run_bit == ON ){
-				SOLO_rec_rehersal ^= 1;
-			}
-			// secret way to toggle record back to play
-			else if ( G_run_bit == ON && G_track_rec_bit == ON ) {
-				G_track_rec_bit ^= 1; // toggle
+			else {
+
+				if ( SOLO_has_rec == ON && G_run_bit == OFF ){
+					G_track_rec_bit = OFF;
+					reset_page_cluster( SOLO_rec_page );
+					playSoloRecCluster();
+				}
+				if ( SOLO_rec_measure_hold == ON && G_run_bit == ON ){
+					SOLO_rec_rehersal ^= 1;
+				}
+				// secret way to toggle record back to play
+				else if ( G_run_bit == ON && G_track_rec_bit == ON ) {
+					G_track_rec_bit ^= 1; // toggle
+				}
 			}
 		}
 
-		else if ( keyNdx == KEY_RECORD ){ // Record
+		else if ( keyNdx == KEY_RECORD && SOLO_scale_chords_program == OFF ){ // Record
 			G_track_rec_bit ^= 1; // toggle
 			if ( SOLO_has_rec == OFF ){
 				SOLO_rec_measure_hold = ON;
@@ -119,7 +349,7 @@
 			playSoloRecCluster();
 		}
 
-		else if ( keyNdx == KEY_CHAINER ){ // Clear recording
+		else if ( keyNdx == KEY_CHAINER && SOLO_scale_chords_program == OFF ){ // Clear recording
 			if ( G_run_bit == OFF && SOLO_has_rec == ON ){
 
 				SOLO_edit_buffer_volatile ^= 1; // toggle
@@ -185,7 +415,7 @@
 			}
 		}
 
-		else if ( keyNdx == KEY_FOLLOW ){
+		else if ( keyNdx == KEY_FOLLOW && SOLO_scale_chords_program == OFF ){
 			SOLO_overdub ^= 1; // toggle
 		}
 
@@ -229,7 +459,7 @@
 	}
 
 	// Clear the record pages
-	if (keyNdx == KEY_CLEAR && G_run_bit == OFF){
+	if (keyNdx == KEY_CLEAR && G_run_bit == OFF && SOLO_scale_chords_program == OFF ){
 		unsigned int pressed = is_pressed_pagerange();
 		if ( SOLO_rec_page != NULL &&
 			 pressed != FALSE &&
@@ -260,7 +490,7 @@
 		}
 	}
 
-	else if (keyNdx == KEY_MIX_MASTER && SOLO_rec_finalized == ON && G_run_bit == ON){
+	else if ( keyNdx == KEY_MIX_MASTER && SOLO_rec_finalized == ON && G_run_bit == ON && SOLO_scale_chords_program == OFF ){
 
 		if ( SOLO_pos_marker_in == OFF ){
 			SOLO_pos_marker_in = SOLO_rec_measure_pos;
@@ -286,8 +516,9 @@
 			quantize(SOLO_rec_page); // Apply the quantize
 		}
 	}
-	else if ( is_matrix_key(keyNdx) == TRUE || ( SOLO_rec_freeflow == OFF && keyNdx == KEY_CHAINMODE_4 ) ||
-		      keyNdx == KEY_CHAINMODE_3 || keyNdx == KEY_CHAINMODE_2 || keyNdx == KEY_ZOOM_PAGE ) {
+	else if ( SOLO_scale_chords_program == OFF &&
+			( is_matrix_key(keyNdx) == TRUE || ( SOLO_rec_freeflow == OFF && keyNdx == KEY_CHAINMODE_4 ) ||
+		      keyNdx == KEY_CHAINMODE_3 || keyNdx == KEY_CHAINMODE_2 || keyNdx == KEY_ZOOM_PAGE )) {
 
 		// GRID PAGE CLUSTER SELECTIONS
 
@@ -484,3 +715,18 @@
 			}
 		}
 	}
+
+	// Arp pattern presets
+	switch (keyNdx) {
+		case KEY_MIXTGT_ATR: // ABC
+		case KEY_MIXTGT_VOL: // CBA
+		case KEY_MIXTGT_PAN: // BAC
+		case KEY_MIXTGT_MOD: // BCA
+		case KEY_MIXTGT_EXP: // ACB
+		case KEY_MIXTGT_USR0: // CAB
+			buildPresetArp( keyNdx );
+		default:
+			break;
+	}
+
+

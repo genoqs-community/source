@@ -304,11 +304,18 @@ void key_ChordScaleSelector( unsigned int keyNdx, Pagestruct* target_page ){
 				case KEY_SCALE_MAJ:	target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_MAJ;		break;
 				case KEY_SCALE_MIN:	target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_MIN;		break;
 				case KEY_SCALE_DIM:	target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_DIM;		break;
-				case KEY_SCALE_CHR:	target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_CHR;		break;
+				case KEY_SCALE_CHR:
+				{
+					if ( SOLO_scale_chords == OFF ){
+
+						target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_CHR;		break;
+					}
+					else {
+						return;
+					}
+				}
 			}
 
-
-			// XXX ----------------------------------------------------- not sure what this is all for
 			// Shift the signature according to the lead
 			target_page-> scaleNotes[G_scale_ndx] =
 				my_shift_bitpattern( 	target_page-> scaleNotes[G_scale_ndx], 12, INC,
@@ -317,15 +324,6 @@ void key_ChordScaleSelector( unsigned int keyNdx, Pagestruct* target_page ){
 			// Export the changes to the tracks
 			target_page->scaleLead_old = target_page-> scaleLead[G_scale_ndx];
 			target_page->scaleNotes_old = target_page-> scaleNotes[G_scale_ndx];
-
-			// Simply update the current scale with what is selected in the octave circle
-			//	target_page->current_scale = target_page-> scaleNotes[G_scale_ndx];
-
-			// Program the new scale into the page
-			if ( target_page->SCL_align == ON ){
-				program_scale_pitches( target_page );
-			}
-			// XXX ----------------------------------------------------- not sure what this is all for
 
 		break;
 	}

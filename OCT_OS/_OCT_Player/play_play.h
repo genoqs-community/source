@@ -430,7 +430,7 @@ void play_row_ON( 	Pagestruct* 	target_page,
 
 	// Get step strum level, in range [0, 18]. Value 9 is the neutral value.
 	card8 			strumLevel  	= ( target_page->Step[phys_row][locator-1]->chord_data & 0xF800 ) >> 11;
-	
+
 	signed char dice_pitch_offset 	= 0;
 	signed char dice_velocity_offset= 0;
 	signed int dice_length_offset	= 0;

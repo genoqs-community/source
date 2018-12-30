@@ -10,9 +10,19 @@ unsigned char SOLO_quantize_fine_tune_drop_edge	= OFF; // drop edge notes that w
 unsigned char SOLO_quantize_note 				= 0; // 0=OFF, 1=STA4, 2=STA3, 3=STA2, 4=STA1, 5=STA0
 signed char	  SOLO_strum						= 9; // 9=OFF
 unsigned char SOLO_scale_chords					= OFF;
+unsigned short SOLO_scale_chords_modulations	= OFF;
+unsigned short SOLO_scale_chords_last			= OFF;
 signed char   SOLO_scale_chords_octave			= OFF;
 signed char   SOLO_scale_chords_program_octave	= OFF;
 unsigned char SOLO_scale_chords_program			= OFF;
+unsigned char SOLO_scale_chords_program_keys	= OFF;
+unsigned char SOLO_scale_chords_program_armed	= OFF;
+unsigned char SOLO_scale_chords_palette_ndx		= NOP;
+unsigned char SOLO_scale_chords_prev_palette_ndx = NOP;
+unsigned char SOLO_scale_chords_prev_on_ndx		= NOP;
+unsigned char SOLO_scale_chords_pitch_recall	= OFF;
+unsigned char SOLO_scale_chords_pitch_prev		= OFF;
+unsigned char SOLO_scale_chords_b				= OFF;
 unsigned char SOLO_has_scale					= OFF;
 unsigned char SOLO_transpose					= OFF;
 unsigned char SOLO_slow_tempo					= OFF;
@@ -53,6 +63,7 @@ unsigned short SOLO_pos_marker_in				= OFF; // left cut -  SOLO_rec_measure_pos
 unsigned short SOLO_pos_marker_out				= OFF; // right cut - SOLO_rec_measure_pos
 Pagestruct*   SOLO_pos_in						= NULL;
 Pagestruct*   SOLO_pos_out						= NULL;
+Chordstruct*  SOLO_last_chord					= NULL;
 
 
 
@@ -61,10 +72,32 @@ void initNote(Notestruct* note){
 	note->status = OFF;
 	note->chord_up = 0;
 	note->chord_data = 0;
-	note->attr_VEL = 0;
-	note->attr_STA = 0;
-	note->attr_PIT = 0;
-	note->attr_LEN = 0;
+	note->attr_VEL = STEP_DEF_VELOCITY;
+	note->attr_STA = STEP_DEF_START;
+	note->attr_PIT = STEP_DEF_PITCH;
+	note->attr_LEN = STEP_DEF_LENGTH;
+}
+
+void initChord(Chordstruct* chord, unsigned char col){
+
+	unsigned char i;
+	Notestruct* target_note = NULL;
+
+	chord->chord_id = NOP;
+	chord->octave = 0;
+	chord->pitch = 0;
+	chord->scale = 0;
+	chord->strum = 9;
+	chord->tone = 0;
+	chord->attr_LEN = STEP_DEF_LENGTH;
+	chord->attr_VEL = 0;
+
+	for (i=0; i<MATRIX_NROF_COLUMNS; i++){
+
+		target_note = &Arp_pattern_repository[(col * MAX_NROF_PALETTE_CHORDS) + i];
+		initNote(target_note);
+		chord->Arp[i] = target_note;
+	}
 }
 
 // Solo Recordings: Initalize the original note recording repository
@@ -85,7 +118,7 @@ void Solorec_init(){
 	for (i=0; i<MAX_NROF_PAGES; i++){
 
 		for ( row=0; row<MATRIX_NROF_ROWS; row++ ){
-			target_rec->track_pitch[row] = TRACK_DEFAULT_PITCH[row];
+			target_rec->track_pitch[row] = 0;
 		}
 
 		for (j=0; j<MATRIX_NROF_COLUMNS; j++){
@@ -103,22 +136,56 @@ void chord_palette_init(){
 
 	unsigned int i=0;
 
-	for (i=0; i < MAX_NROF_PALETTE_CHORDS; i++){
+	for (i=0; i < (MAX_NROF_PALETTE_CHORDS + 1); i++){
 
-		initNote( &Chord_palette_repository[i] );
+		initChord( &Chord_palette_repository[i], i );
 	}
 	//	validatePitches();
 }
 
 void enterSoloRec(){
+	unsigned char row;
 
 	if ( SOLO_has_scale == OFF ){
+
 		Page_copy(GRID_assistant_page, SOLO_assistant_page);
 		SOLO_assistant_page->force_to_scale = ON;
 		SOLO_assistant_page->scaleStatus = SCALE_MOD;
+		SOLO_assistant_page->attr_PIT = OFF;
+		SOLO_assistant_page->Track[0]->attr_PIT -= ( OCTAVE -3 ); // Magic number to align the absolute Note pitches
+
+		for ( row=1; row<MATRIX_NROF_ROWS; row++ ){ // row zero will play arp patterns
+			// mute all other tracks
+			SET_BIT(SOLO_assistant_page->trackMutepattern, row);
+		}
 	}
 	SOLO_has_scale = ON;
 	G_zoom_level = zoomSOLOREC;
+}
+
+unsigned char Note_get_status (	Notestruct* target_note,
+								unsigned char target_bit){
+
+	if ( target_note->status & (1 << target_bit) ) {
+
+		return ON;
+	}
+	else {
+
+		return OFF;
+	}
+}
+
+void Note_set_status (			Notestruct* target_note,
+								unsigned char target_bit,
+								unsigned char in_value		) {
+	// Set target bit to 0
+	target_note->status &= (0xFF ^ (1 << target_bit));
+
+	// Apply the in_value
+	if (in_value == ON) {
+		target_note->status |= (1 << target_bit);
+	}
 }
 
 void tracksToRec(Pagestruct* page, Recstruct* rec){
@@ -158,18 +225,26 @@ void copyNote(Notestruct* src, Notestruct* dest){
 
 void noteToStep(Notestruct* note, Stepstruct* step){
 
-	Step_set_status( step, STEPSTAT_TOGGLE, note->status );
+	step->attr_STATUS = note->status;
 	step->chord_up = note->chord_up;
 	step->chord_data = note->chord_data;
 	step->attr_VEL = note->attr_VEL;
 	step->attr_STA = note->attr_STA;
 	step->attr_PIT = note->attr_PIT;
 	step->attr_LEN = note->attr_LEN;
+
+	// TODO
+	// Enter the step strum level
+//	temp = ( target_page->Step[row][col]->chord_data & 0xF800 ) >> 11;
+//	modify_parameter( &temp, 0, 18, direction, OFF, FIXED);
+
+	// Enter the step strum level
+	step->chord_data = ( SOLO_strum << 11 ) | ( step->chord_data & 0x7FF );
 }
 
 void stepToNote(Stepstruct* step, Notestruct* note){
 
-	note->status = Step_get_status(step, STEPSTAT_TOGGLE);
+	note->status = step->attr_STATUS;
 	note->chord_up = step->chord_up;
 	note->chord_data = step->chord_data;
 	note->attr_VEL = step->attr_VEL;

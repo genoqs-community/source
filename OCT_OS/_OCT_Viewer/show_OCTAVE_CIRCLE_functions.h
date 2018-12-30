@@ -57,8 +57,6 @@ void show_OCTAVE_CIRCLE_scale_selection( Pagestruct* target_page ){
 		}
 	}
 
-
-
 	// ON fields showing first
 	for (i=0; i<12; i++) {
 
@@ -159,93 +157,366 @@ void show_OCTAVE_CIRCLE_scale_selection( Pagestruct* target_page ){
 // Show the chord tone selection of the given page
 void show_OCTAVE_CIRCLE_chord_tone_selection( Pagestruct* target_page ){
 
-	unsigned int 	i = 0,
-					j = 0;
+	unsigned int 	i = 0, j = 0;
+	unsigned char 	hasArp = OFF;
 
-	// Determine which scale to show
-	if ( target_page->scaleStatus == OFF ){
-//		j = target_page->current_scale;
-
-		j = target_page-> scaleNotes[G_scale_ndx];
+	if ( SOLO_scale_chords_b == ON ){
+		MIR_write_dot( LED_NOTE_Cup, MIR_RED ); // Display A/B toggle - 2nd C
 	}
-	else{
-		j = target_page-> scaleNotes[G_scale_ndx];
+	else {
+		MIR_write_dot( LED_NOTE_Cup, MIR_GREEN );
 	}
 
+	if ( TEMPO_TIMER == ON || ( SOLO_scale_chords_program == ON && SOLO_scale_chords_palette_ndx != NOP )){
 
-	// Show the SCL_align status - not relevant in GRID mode
-//	if ( target_page != GRID_assistant_page ){
-//
-//		if ( target_page->SCL_align == OFF ){
-//
-//			MIR_write_dot( LED_SCALE_CAD, MIR_GREEN );
-//		}
-//		else{
-//
-//			MIR_write_dot( LED_SCALE_CAD, MIR_RED );
-//			MIR_write_dot( LED_SCALE_CAD, MIR_BLINK );
-//		}
-//	}
 
+		if ( SOLO_scale_chords_program == ON && SOLO_scale_chords_palette_ndx != NOP ){ // show the Arp notes
+
+			for (i=0; i<MATRIX_NROF_COLUMNS; i++){
+
+				if ( Note_get_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], STEPSTAT_TOGGLE ) == ON ){
+					hasArp = ON;
+					break;
+				}
+			}
+
+			if ( SOLO_assistant_page->Track[1]->attr_STATUS == ON ){ // blink if there is an arp undo
+
+				MIR_write_dot( LED_SELECT_MASTER, MIR_RED );
+				MIR_write_dot( LED_SELECT_MASTER, MIR_BLINK );
+			}
+
+			MIR_write_dot( ROT_MCH, MIR_RED );
+			if (! hasArp ){
+
+				MIR_write_dot( 20, 		MIR_GREEN );
+				MIR_write_dot( 20, 		MIR_RED );
+				MIR_write_dot( 31, 		MIR_RED );
+
+			}
+			if ( hasArp ){
+
+				MIR_write_dot( LED_SELECT_MASTER, MIR_RED );
+
+				unsigned int track_togglepattern 	= 	Page_get_trackpattern( target_page, 0 ); // first track holds the visible Arp steps
+				unsigned int track_eventpattern 	=	Page_get_event_trackpattern( target_page, 0 );
+				unsigned int track_skippattern		=	Page_get_skippattern( target_page, 0 );
+
+				// These are the active steps - exempting the skipped steps
+				MIR_write_trackpattern  ( 	(	(  	track_togglepattern	| track_eventpattern )
+												^	track_skippattern
+											)
+											&	(  	track_togglepattern	| track_eventpattern )
+											,
+										9,
+										MIR_GREEN);
+
+				// .. the ones containing chords..
+				MIR_write_trackpattern( Page_get_chord_trackpattern( target_page, 0 ), 9, MIR_RED);
+
+				MIR_augment_trackpattern( Page_get_skippattern( target_page, 0 ), 9, MIR_RED );
+
+				MIR_write_lauflicht_track( 9, 9 ); // show the Arp chase light
+			}
+		}
+
+		for (i=0; i<OCTAVE; i++) {
+
+			if ( CHECK_BIT(SOLO_scale_chords_last, i) != OFF ){ // this pitch has a chord note
+
+				// 33=C, 44=C#, 55=D
+				MIR_write_dot( 33 + (i * 11), 		MIR_GREEN );
+				if (( !hasArp && is_pressed_key(20) ) || ( hasArp == ON && is_pressed_key(33 + (i * 11))) ){
+					MIR_write_dot( 33 + (i * 11), 		MIR_BLINK );
+				}
+				else {
+
+					for (j=0; j<MATRIX_NROF_COLUMNS; j++) {
+
+						if ( is_pressed_key( 20 + (j * 11)) == TRUE &&
+							 Note_get_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j], STEPSTAT_TOGGLE ) == ON
+						   ){ // an Arp step is pressed
+
+							if (( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j]->attr_PIT % OCTAVE ) == i ){
+
+								unsigned int chord_value = get_chord_projected(SOLO_assistant_page->Step[0][j]);
+								unsigned int k=0;
+
+								for (k = 0; k < 32; k++) {
+									if (CHECK_BIT(chord_value, k)) {
+										MIR_write_dot(33 + ((i + k + 1) * 11), MIR_BLINK);
+									}
+								}
+
+								MIR_write_dot( 33 + (i * 11), 		MIR_BLINK ); // flash the corresponding note at the top of the page
+								MIR_write_dot( 20 + (j * 11), 		MIR_BLINK ); // flash the pressed step
+							}
+							break;
+						}
+					}
+				}
+			}
+
+			// Display the chord modulations
+			if ( CHECK_BIT(SOLO_scale_chords_modulations, i) == OFF || SOLO_scale_chords_program == ON ){
+
+				continue;
+			}
+			switch (i) {
+				case 0:
+					MIR_write_dot( LED_NOTE_C, 		MIR_GREEN );
+					break;
+				case 1:
+					MIR_write_dot( LED_NOTE_Cis, 	MIR_GREEN );
+					break;
+				case 2:
+					MIR_write_dot( LED_NOTE_D,	 	MIR_GREEN );
+					break;
+				case 3:
+					MIR_write_dot( LED_NOTE_Dis, 	MIR_GREEN );
+					break;
+				case 4:
+					MIR_write_dot( LED_NOTE_E,	 	MIR_GREEN );
+					break;
+				case 5:
+					MIR_write_dot( LED_NOTE_F,	 	MIR_GREEN );
+					break;
+				case 6:
+					MIR_write_dot( LED_NOTE_Fis, 	MIR_GREEN );
+					break;
+				case 7:
+					MIR_write_dot( LED_NOTE_G,	 	MIR_GREEN );
+					break;
+				case 8:
+					MIR_write_dot( LED_NOTE_Gis, 	MIR_GREEN );
+					break;
+				case 9:
+					MIR_write_dot( LED_NOTE_A, 		MIR_GREEN );
+					break;
+				case 10:
+					MIR_write_dot( LED_NOTE_Ais, 	MIR_GREEN );
+					break;
+				case 11:
+					MIR_write_dot( LED_NOTE_B,	 	MIR_GREEN );
+					break;
+			}
+		}
+	}
 
 	// UP fields showing first. This shows the scale lead
 	for (i=0; i<12; i++) {
 
+		if ( SOLO_scale_chords_program == ON ){
+
+			if ( Chord_palette_repository[i].chord_id != NOP ){
+
+				switch (i) {
+					case 0:
+						MIR_write_dot( LED_NOTE_C, 		MIR_GREEN );
+						break;
+					case 1:
+						MIR_write_dot( LED_NOTE_Cis, 	MIR_GREEN );
+						break;
+					case 2:
+						MIR_write_dot( LED_NOTE_D,	 	MIR_GREEN );
+						break;
+					case 3:
+						MIR_write_dot( LED_NOTE_Dis, 	MIR_GREEN );
+						break;
+					case 4:
+						MIR_write_dot( LED_NOTE_E,	 	MIR_GREEN );
+						break;
+					case 5:
+						MIR_write_dot( LED_NOTE_F,	 	MIR_GREEN );
+						break;
+					case 6:
+						MIR_write_dot( LED_NOTE_Fis, 	MIR_GREEN );
+						break;
+					case 7:
+						MIR_write_dot( LED_NOTE_G,	 	MIR_GREEN );
+						break;
+					case 8:
+						MIR_write_dot( LED_NOTE_Gis, 	MIR_GREEN );
+						break;
+					case 9:
+						MIR_write_dot( LED_NOTE_A, 		MIR_GREEN );
+						break;
+					case 10:
+						MIR_write_dot( LED_NOTE_Ais, 	MIR_GREEN );
+						break;
+					case 11:
+						MIR_write_dot( LED_NOTE_B,	 	MIR_GREEN );
+						break;
+				}
+
+				switch (i) {
+					case 0:
+						MIR_write_dot( LED_NOTE_C, 		MIR_RED );
+						break;
+					case 1:
+						MIR_write_dot( LED_NOTE_Cis, 	MIR_RED );
+						break;
+					case 2:
+						MIR_write_dot( LED_NOTE_D,	 	MIR_RED );
+						break;
+					case 3:
+						MIR_write_dot( LED_NOTE_Dis, 	MIR_RED );
+						break;
+					case 4:
+						MIR_write_dot( LED_NOTE_E,	 	MIR_RED );
+						break;
+					case 5:
+						MIR_write_dot( LED_NOTE_F,	 	MIR_RED );
+						break;
+					case 6:
+						MIR_write_dot( LED_NOTE_Fis, 	MIR_RED );
+						break;
+					case 7:
+						MIR_write_dot( LED_NOTE_G,	 	MIR_RED );
+						break;
+					case 8:
+						MIR_write_dot( LED_NOTE_Gis, 	MIR_RED );
+						break;
+					case 9:
+						MIR_write_dot( LED_NOTE_A, 		MIR_RED );
+						break;
+					case 10:
+						MIR_write_dot( LED_NOTE_Ais, 	MIR_RED );
+						break;
+					case 11:
+						MIR_write_dot( LED_NOTE_B,	 	MIR_RED );
+						break;
+				}
+
+				if ( SOLO_scale_chords_palette_ndx == i ){
+
+					switch (i) {
+						case 0:
+							MIR_write_dot( LED_NOTE_C, 		MIR_BLINK );
+							break;
+						case 1:
+							MIR_write_dot( LED_NOTE_Cis, 	MIR_BLINK );
+							break;
+						case 2:
+							MIR_write_dot( LED_NOTE_D,	 	MIR_BLINK );
+							break;
+						case 3:
+							MIR_write_dot( LED_NOTE_Dis, 	MIR_BLINK );
+							break;
+						case 4:
+							MIR_write_dot( LED_NOTE_E,	 	MIR_BLINK );
+							break;
+						case 5:
+							MIR_write_dot( LED_NOTE_F,	 	MIR_BLINK );
+							break;
+						case 6:
+							MIR_write_dot( LED_NOTE_Fis, 	MIR_BLINK );
+							break;
+						case 7:
+							MIR_write_dot( LED_NOTE_G,	 	MIR_BLINK );
+							break;
+						case 8:
+							MIR_write_dot( LED_NOTE_Gis, 	MIR_BLINK );
+							break;
+						case 9:
+							MIR_write_dot( LED_NOTE_A, 		MIR_BLINK );
+							break;
+						case 10:
+							MIR_write_dot( LED_NOTE_Ais, 	MIR_BLINK );
+							break;
+						case 11:
+							MIR_write_dot( LED_NOTE_B,	 	MIR_BLINK );
+							break;
+					}
+				}
+			}
+		}
+
 		// If the note is selected as UP
-		if ( target_page-> scaleLead[G_scale_ndx] & (1 << (11-i) ) ) {
+		else if ( target_page-> scaleLead[G_scale_ndx] & (1 << (11-i) ) ) {
 
 			switch (i) {
 				case 0:
-					MIR_write_dot( LED_NOTE_C, 		MIR_GREEN );
 					MIR_write_dot( LED_NOTE_C, 		MIR_RED );
 					break;
 				case 1:
-					MIR_write_dot( LED_NOTE_Cis, 	MIR_GREEN );
 					MIR_write_dot( LED_NOTE_Cis, 	MIR_RED );
 					break;
 				case 2:
-					MIR_write_dot( LED_NOTE_D,	 	MIR_GREEN );
 					MIR_write_dot( LED_NOTE_D,	 	MIR_RED );
 					break;
 				case 3:
-					MIR_write_dot( LED_NOTE_Dis, 	MIR_GREEN );
 					MIR_write_dot( LED_NOTE_Dis, 	MIR_RED );
 					break;
 				case 4:
-					MIR_write_dot( LED_NOTE_E,	 	MIR_GREEN );
 					MIR_write_dot( LED_NOTE_E,	 	MIR_RED );
 					break;
 				case 5:
-					MIR_write_dot( LED_NOTE_F,	 	MIR_GREEN );
 					MIR_write_dot( LED_NOTE_F,	 	MIR_RED );
 					break;
 				case 6:
-					MIR_write_dot( LED_NOTE_Fis, 	MIR_GREEN );
 					MIR_write_dot( LED_NOTE_Fis, 	MIR_RED );
 					break;
 				case 7:
-					MIR_write_dot( LED_NOTE_G,	 	MIR_GREEN );
 					MIR_write_dot( LED_NOTE_G,	 	MIR_RED );
 					break;
 				case 8:
-					MIR_write_dot( LED_NOTE_Gis, 	MIR_GREEN );
 					MIR_write_dot( LED_NOTE_Gis, 	MIR_RED );
 					break;
 				case 9:
-					MIR_write_dot( LED_NOTE_A, 		MIR_GREEN );
 					MIR_write_dot( LED_NOTE_A, 		MIR_RED );
 					break;
 				case 10:
-					MIR_write_dot( LED_NOTE_Ais, 	MIR_GREEN );
 					MIR_write_dot( LED_NOTE_Ais, 	MIR_RED );
 					break;
 				case 11:
-					MIR_write_dot( LED_NOTE_B,	 	MIR_GREEN );
 					MIR_write_dot( LED_NOTE_B,	 	MIR_RED );
 					break;
 			}
 		}
 	} // UP field for iterator
+
+	if ( SOLO_scale_chords_program == OFF ){ // show the pitch
+
+		switch (target_page->attr_PIT % OCTAVE) {
+			case 0:
+				MIR_write_dot( LED_NOTE_C, 		MIR_GREEN );
+				break;
+			case 1:
+				MIR_write_dot( LED_NOTE_Cis, 	MIR_GREEN );
+				break;
+			case 2:
+				MIR_write_dot( LED_NOTE_D,	 	MIR_GREEN );
+				break;
+			case 3:
+				MIR_write_dot( LED_NOTE_Dis, 	MIR_GREEN );
+				break;
+			case 4:
+				MIR_write_dot( LED_NOTE_E,	 	MIR_GREEN );
+				break;
+			case 5:
+				MIR_write_dot( LED_NOTE_F,	 	MIR_GREEN );
+				break;
+			case 6:
+				MIR_write_dot( LED_NOTE_Fis, 	MIR_GREEN );
+				break;
+			case 7:
+				MIR_write_dot( LED_NOTE_G,	 	MIR_GREEN );
+				break;
+			case 8:
+				MIR_write_dot( LED_NOTE_Gis, 	MIR_GREEN );
+				break;
+			case 9:
+				MIR_write_dot( LED_NOTE_A, 		MIR_GREEN );
+				break;
+			case 10:
+				MIR_write_dot( LED_NOTE_Ais, 	MIR_GREEN );
+				break;
+			case 11:
+				MIR_write_dot( LED_NOTE_B,	 	MIR_GREEN );
+				break;
+		}
+	}
 
 }
 
@@ -256,6 +527,9 @@ void show_OCTAVE_CIRCLE_chord_octave_transpose_selection( signed char octave ){
 
 	switch ( octave ){
 
+		case -3:
+			MIR_write_dot (LED_SCALE_CAD, MIR_GREEN);
+			break;
 		case -2:
 			MIR_write_dot (LED_SCALE_CAD, MIR_GREEN);
 			MIR_write_dot (LED_SCALE_MOD, MIR_RED);
@@ -278,7 +552,9 @@ void show_OCTAVE_CIRCLE_chord_octave_transpose_selection( signed char octave ){
 			MIR_write_dot (LED_SCALE_CAD, MIR_RED);
 			MIR_write_dot (LED_SCALE_MOD, MIR_GREEN);
 			break;
-
+		case 3:
+			MIR_write_dot (LED_SCALE_MOD, MIR_GREEN);
+			break;
 	}
 }
 

@@ -386,8 +386,14 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		if ( G_zoom_level == zoomSOLOREC ){
 			if (SOLO_page_play_along[i] == GRID_p_selection[i]->pageNdx || grid_row(SOLO_rec_page->pageNdx) == i ){
 
-				// Play the page selected in current GRID bank
-				PLAYER_play_page( GRID_p_selection[i], in_G_TTC_abs_value );
+				if ( SOLO_scale_chords_program == ON ){
+
+					PLAYER_play_page( SOLO_assistant_page, in_G_TTC_abs_value );
+				}
+				else {
+					// Play the page selected in current GRID bank
+					PLAYER_play_page( GRID_p_selection[i], in_G_TTC_abs_value );
+				}
 			}
 		}
 		// Skip the banks that are not currently active

@@ -1,6 +1,6 @@
 
 	// TRANSPORT CONTROLS
-	if ( SOLO_rec_page != NULL ){
+	if ( SOLO_rec_page != NULL && SOLO_scale_chords_program == OFF ){
 
 		// Record button
 		MIR_write_dot( LED_RECORD, MIR_RED );
@@ -26,7 +26,7 @@
 		}
 	}
 
-	if ( SOLO_scale_chords == ON && SOLO_rec_track_preview == SOLOPAGE ){
+	if ( SOLO_scale_chords == ON ){
 		MIR_write_dot (LED_SCALE_SEL, MIR_GREEN); // MIDI notes as chords
 		MIR_write_dot (LED_SCALE_SEL, MIR_RED);
 	}
@@ -57,7 +57,7 @@
 		MIR_write_dot( LED_STOP, MIR_BLINK );
 	}
 
-	if ( SOLO_has_rec == ON ){
+	if ( SOLO_has_rec == ON || SOLO_scale_chords_program == ON ){
 		if ( G_track_rec_bit == OFF && SOLO_rec_freeflow == OFF ){
 			if ( G_run_bit == ON ){
 				MIR_write_dot( LED_PLAY1, MIR_GREEN );
@@ -66,18 +66,20 @@
 				MIR_write_dot( LED_PLAY1, MIR_RED );
 			}
 		}
-		if ( SOLO_overdub == OFF ){
-			MIR_write_dot( LED_FOLLOW, MIR_GREEN );
-			MIR_write_dot( LED_FOLLOW, MIR_RED );
-		}
-		else {
-			MIR_write_dot( LED_FOLLOW, MIR_RED );
-			MIR_write_dot( LED_FOLLOW, MIR_BLINK );
-		}
+		if ( SOLO_scale_chords_program == OFF ){
+			if ( SOLO_overdub == OFF ){
+				MIR_write_dot( LED_FOLLOW, MIR_GREEN );
+				MIR_write_dot( LED_FOLLOW, MIR_RED );
+			}
+			else {
+				MIR_write_dot( LED_FOLLOW, MIR_RED );
+				MIR_write_dot( LED_FOLLOW, MIR_BLINK );
+			}
 
-		// Clear recording
-		if ( G_run_bit == OFF ){
-			MIR_write_dot( LED_CHAINER, MIR_RED );
+			// Clear recording
+			if ( G_run_bit == OFF ){
+				MIR_write_dot( LED_CHAINER, MIR_RED );
+			}
 		}
 	}
 	else { // No recording yet
@@ -125,13 +127,16 @@
 		MIR_write_dot( LED_EDIT_MASTER, MIR_RED );
 	}
 
-	// SEL toggle track preview - measure POS
-	MIR_write_dot( LED_SELECT_MASTER, MIR_RED );
-	if ( SOLO_rec_track_preview >= SOLOPAGE ){
-		MIR_write_dot( LED_SELECT_MASTER, MIR_GREEN );
-	}
-	if ( SOLO_rec_track_preview == SOLOMCC ){
-		MIR_write_dot( LED_SELECT_MASTER, MIR_BLINK );
+	if ( SOLO_scale_chords_program == OFF ){
+
+		// SEL toggle track preview - measure POS
+		MIR_write_dot( LED_SELECT_MASTER, MIR_RED );
+		if ( SOLO_rec_track_preview >= SOLOPAGE ){
+			MIR_write_dot( LED_SELECT_MASTER, MIR_GREEN );
+		}
+		if ( SOLO_rec_track_preview == SOLOMCC ){
+			MIR_write_dot( LED_SELECT_MASTER, MIR_BLINK );
+		}
 	}
 
 	// ESC
@@ -151,14 +156,19 @@
 
 	if (SOLO_rec_page != NULL && G_run_bit == OFF){
 
-		MIR_write_dot( LED_CLEAR, MIR_RED ); // LEN / clr
-		MIR_write_dot( LED_CLEAR, MIR_GREEN );
+		if ( SOLO_scale_chords_program == OFF ){
+			MIR_write_dot( LED_CLEAR, MIR_RED ); // LEN / clr
+			MIR_write_dot( LED_CLEAR, MIR_GREEN );
+		}
 
 		if ( SOLO_has_rec == ON ){
 
 			// Grid controls
-			MIR_write_dot( LED_TGGL, MIR_RED ); // VEL
-			MIR_write_dot( LED_TGGL, MIR_GREEN );
+			if ( SOLO_scale_chords_program == OFF ){
+
+				MIR_write_dot( LED_TGGL, MIR_RED ); // VEL
+				MIR_write_dot( LED_TGGL, MIR_GREEN );
+			}
 
 			// Legato
 			if ( SOLO_rec_legato == ON ){
@@ -179,22 +189,25 @@
 		}
 	}
 
-	// MIX recording split button
-	if ( ROT_INDEX == REC_MEASURES_SPLIT && G_run_bit == OFF ){
-		MIR_write_dot( LED_MIX_MASTER, MIR_RED );
-		MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
-	}
+	if ( SOLO_scale_chords_program == OFF ){
 
-	if ( SOLO_rec_finalized == ON && G_run_bit == ON ){
-		MIR_write_dot( LED_MIX_MASTER, MIR_RED );
-		// The recording is playing and not recording so enable split markers using POS
-		if ( G_run_bit == ON && G_track_rec_bit == OFF ){
-			MIR_write_dot( LED_MIX_MASTER, MIR_GREEN );
-			if ( SOLO_pos_marker_in != OFF ){
-				MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
-			}
-			if ( SOLO_pos_marker_in != OFF ){
-				MIR_write_dot( LED_MIX_INDICATOR, MIR_GREEN );
+		// MIX recording split button
+		if ( ROT_INDEX == REC_MEASURES_SPLIT && G_run_bit == OFF ){
+			MIR_write_dot( LED_MIX_MASTER, MIR_RED );
+			MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
+		}
+
+		if ( SOLO_rec_finalized == ON && G_run_bit == ON ){
+			MIR_write_dot( LED_MIX_MASTER, MIR_RED );
+			// The recording is playing and not recording so enable split markers using POS
+			if ( G_run_bit == ON && G_track_rec_bit == OFF ){
+				MIR_write_dot( LED_MIX_MASTER, MIR_GREEN );
+				if ( SOLO_pos_marker_in != OFF ){
+					MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
+				}
+				if ( SOLO_pos_marker_in != OFF ){
+					MIR_write_dot( LED_MIX_INDICATOR, MIR_GREEN );
+				}
 			}
 		}
 	}
@@ -209,8 +222,40 @@
 	MIR_write_dot( LED_ZOOM_GRID, MIR_GREEN );
 	MIR_write_dot( LED_ZOOM_GRID, MIR_BLINK );
 
-	MIR_write_dot( LED_PASTE, MIR_RED ); // MCH
-	MIR_write_dot( LED_PASTE, MIR_GREEN );
+	if ( SOLO_scale_chords_program == OFF ){
+
+		MIR_write_dot( LED_PASTE, MIR_RED ); // MCH
+		MIR_write_dot( LED_PASTE, MIR_GREEN );
+	}
+	else {
+		MIR_write_dot( LED_PASTE, MIR_RED ); // Arp shift left
+
+		// Arp presets
+		MIR_write_dot( LED_MIXTGT_ATR, MIR_GREEN ); // ABC
+		if ( is_pressed_key( LED_MIXTGT_ATR )){
+			MIR_write_dot( LED_MIXTGT_ATR, MIR_RED );
+		}
+		MIR_write_dot( LED_MIXTGT_VOL, MIR_GREEN ); // CBA
+		if ( is_pressed_key( LED_MIXTGT_VOL )){
+			MIR_write_dot( LED_MIXTGT_VOL, MIR_RED );
+		}
+		MIR_write_dot( LED_MIXTGT_PAN, MIR_GREEN ); // BAC
+		if ( is_pressed_key( LED_MIXTGT_PAN )){
+			MIR_write_dot( LED_MIXTGT_PAN, MIR_RED );
+		}
+		MIR_write_dot( LED_MIXTGT_MOD, MIR_GREEN ); // BCA
+		if ( is_pressed_key( LED_MIXTGT_MOD )){
+			MIR_write_dot( LED_MIXTGT_MOD, MIR_RED );
+		}
+		MIR_write_dot( LED_MIXTGT_EXP, MIR_GREEN ); // ACB
+		if ( is_pressed_key( LED_MIXTGT_EXP )){
+			MIR_write_dot( LED_MIXTGT_EXP, MIR_RED );
+		}
+		MIR_write_dot( LED_MIXTGT_USR0, MIR_GREEN ); // CAB
+		if ( is_pressed_key( LED_MIXTGT_USR0 )){
+			MIR_write_dot( LED_MIXTGT_USR0, MIR_RED );
+		}
+	}
 
 	unsigned short measures = (SOLO_rec_freeflow == OFF) ? SOLO_rec_measure_count : SOLO_rec_freeflow_measures;
 
@@ -316,10 +361,14 @@
 	}
 
 
-	if ( SOLO_rec_track_preview == SOLOGRID || G_run_bit == OFF ){
+	if ( SOLO_rec_track_preview == SOLOGRID || G_run_bit == OFF || SOLO_scale_chords_program == ON || TEMPO_TIMER == ON ){
 
 		// MATRIX
 		for (i=0; i < MAX_NROF_PAGES; i++) {
+
+			if (( TEMPO_TIMER == ON && grid_row(i) == 0 ) || SOLO_scale_chords_program == ON ){
+				continue; // we are showing the chord notes in the top row
+			}
 
 			int pressed_grid = is_pressed_pagerange();
 			unsigned char pressed_ndx = grid_ndx_from_key(pressed_grid);
@@ -382,12 +431,13 @@
 	unsigned char pressedNdx = grid_ndx_from_key(pressed); // the key that is pressed FIXME: short circuit
 	unsigned char selRec = selected_solo_rec_page( pressedNdx, pressedNdx );
 
-	if ( selRec == ON ||
+	if ( SOLO_scale_chords_program == OFF &&
+	   ( selRec == ON ||
 	   ( SOLO_rec_page != NULL &&
 	     selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) != NOP
-	)){
+	))){
 
-		if ( selRec == OFF && SOLO_rec_page != NULL ){
+		if ( selRec == OFF && SOLO_rec_page != NULL && SOLO_scale_chords_program == OFF ){
 			MIR_write_dot( LED_CLEAR, MIR_BLINK );
 		}
 
@@ -500,13 +550,14 @@
 		}
 
 		if ( SOLO_rec_track_preview == SOLOPAGE ){
-			// MATRIX
-			show ( ELE_MATRIX, STEP_TOGGLE );
 
-			// Show the REC status of tracks
-			show( ELE_TRACK_SELECTORS, TRACK_REC_STATUS );
+			if ( SOLO_scale_chords_program == OFF ){
 
-			if ( G_run_bit == ON ){
+				// MATRIX
+				show ( ELE_MATRIX, STEP_TOGGLE );
+
+				// Show the REC status of tracks
+				show( ELE_TRACK_SELECTORS, TRACK_REC_STATUS );
 
 				MIR_write_lauflicht ();
 			}
@@ -545,7 +596,7 @@
 			show ( ELE_OCTAVE_CIRCLE, G_global_locator_PICTURE );
 		}
 	}
-	else if ( SOLO_rec_track_preview == SOLOPAGE ){
+	else { //if ( SOLO_rec_track_preview == SOLOPAGE || SOLO_scale_chords_program == ON || TEMPO_TIMER == ON ){
 
 		// --------------------------------- XXX
 		if ( SOLO_scale_chords == OFF ){
@@ -561,13 +612,16 @@
 		}
 		else {
 
+			// Chord tone select and grid display
+			show_OCTAVE_CIRCLE_chord_tone_selection( SOLO_assistant_page );
+
 			if ( SOLO_scale_chords_program == OFF ){
 
-				// Chord tone select
-				show_OCTAVE_CIRCLE_chord_tone_selection( SOLO_assistant_page );
 				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_octave );
 				show_SCALE_SELECTOR_scale_selection( SOLO_assistant_page );
-				MIR_write_dot (LED_PROGRAM, MIR_GREEN);
+				if ( SOLO_scale_chords_program_keys == ON ){
+					MIR_write_dot (LED_PROGRAM, MIR_GREEN);
+				}
 			}
 			else {
 				MIR_write_dot (LED_PROGRAM, MIR_GREEN); // Program chord keys
@@ -575,11 +629,48 @@
 				MIR_write_dot (LED_PROGRAM, MIR_BLINK);
 				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_program_octave );
 			}
+			if ( SOLO_scale_chords_program_armed == ON ){
+				MIR_write_dot( LED_SCALE_MYSEL, MIR_RED );
+				MIR_write_dot( LED_SCALE_MYSEL, MIR_BLINK );
+			}
 		}
 		// --------------------------------- XXX
 	}
 
-	if ( is_pressed_key(KEY_PASTE) || ( EDIT_TIMER == ON && ROT_INDEX == 10 ) )
+	if ( SOLO_scale_chords_program == ON && SOLO_scale_chords_palette_ndx != NOP ){
+
+		unsigned char len = NOP;
+
+		for (i=0; i<MATRIX_NROF_COLUMNS; i++){ // scan arp steps
+
+			if ( Note_get_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], STEPSTAT_TOGGLE ) == ON ){ // there is an arp
+
+				if ( is_pressed_key( 20 + (i * 11)) == TRUE ){ // an Arp step is pressed
+
+					// show the pressed step length
+					len = Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i]->attr_LEN;
+					break;
+				}
+
+				// show the arp length
+				len = Chord_palette_repository[SOLO_scale_chords_palette_ndx].attr_LEN;
+			}
+		}
+		if ( len == NOP ) return; // not an arp
+
+		// LENGTH
+		if ( len == LEGATO ){
+
+			// Step is set to play legato, show legato flag
+			MIR_write_trackpattern ( 0x0f, 2, MIR_GREEN );
+		}
+		else {
+			// The common case is when the length value is shown
+			MIR_write_length_H( len, 2 );
+		}
+	}
+
+	if (( is_pressed_key(KEY_PASTE) || ( EDIT_TIMER == ON && ROT_INDEX == 10 )) && SOLO_scale_chords_program == OFF )
 	{
 		if ( SOLO_midi_ch <= 16 ){
 
@@ -594,14 +685,14 @@
 				9,	MIR_RED);
 		}
 	}
-	else if ( ( SOLO_rec_page != NULL ) &&
+	else if ( ( SOLO_rec_page != NULL && SOLO_scale_chords_program == OFF ) &&
 			( is_pressed_key(KEY_TGGL) || ( EDIT_TIMER == ON && ROT_INDEX == 1 ) ))
 	{
 		MIR_point_numeric(
 			SOLO_normalize_pitch,
 			0,	MIR_GREEN);
 	}
-	else if ( ( SOLO_rec_page != NULL ) &&
+	else if ( ( SOLO_rec_page != NULL && SOLO_scale_chords_program == OFF ) &&
 			( is_pressed_key(KEY_CLEAR) || ( EDIT_TIMER == ON && ROT_INDEX == 3 ) ))
 	{
 		MIR_point_numeric(

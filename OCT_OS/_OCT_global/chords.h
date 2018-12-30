@@ -1,4 +1,5 @@
 
+#define TONE_BTN_OFFSET 23
 #define MAX_CHORD_WORD 14
 #define MAX_CHORDS 70
 #define MAX_NOTES 8
@@ -4342,6 +4343,16 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 // Total Chords: 2472
 };
 
+const unsigned char white_key_pitch_to_array_index[] = { // total of 70 elements with a/b toggle
+		0, 0xFF, 1, 0xFF, 2, 2, 0xFF, 3, 0xFF, 4, 0xFF, 5,
+		5, 0xFF, 6, 0xFF, 7, 7, 0xFF, 8, 0xFF, 9, 0xFF, 10,
+		10, 0xFF, 11, 0xFF, 12, 12, 0xFF, 13, 0xFF, 14, 0xFF, 15,
+		15, 0xFF, 16, 0xFF, 17, 17, 0xFF, 18, 0xFF, 19, 0xFF, 20,
+		20, 0xFF, 21, 0xFF, 22, 22, 0xFF, 23, 0xFF, 24, 0xFF, 25,
+		25, 0xFF, 26, 0xFF, 27, 27, 0xFF, 28, 0xFF, 29, 0xFF, 30,
+		30, 0xFF, 31, 0xFF, 32, 32, 0xFF, 33, 0xFF, 34, 0xFF, 35
+};
+
 unsigned char index_of_key_symbol(char symbol){
 
 	switch (symbol) {
@@ -4383,6 +4394,7 @@ unsigned char index_of_key_symbol_flat(char symbol){
 void translateSymbolsToChord(const char word[], unsigned char pitches[]){
 	int i, j=0;
 
+//	diag_printf("word:%s\n", word);
 	for (i=0; i < MAX_CHORD_WORD; i++){
 
 		if (word[i] == '\0' || word[i] == ' '){ // delimiters
@@ -4406,61 +4418,605 @@ void translateSymbolsToChord(const char word[], unsigned char pitches[]){
 	pitches[j] = 0xFF; // add a terminator
 }
 
-void validatePitches(){
+//void validatePitches(){
+//
+//	int i, j;
+//	unsigned char pitches[MAX_NOTES];
+//
+//	for (i=0; i < MAX_CHORDS; i++){
+//
+//		translateSymbolsToChord(chords[0][0][i], pitches);
+//
+//		diag_printf("chord:%d", i);
+//		for (j=0; j < MAX_NOTES; j++){
+//
+//			if (pitches[j] == 0xFF){
+//				break;
+//			}
+//			diag_printf(" p:%d", pitches[j]);
+//		}
+//		diag_printf("\n");
+//	}
+//}
 
-	int i, j;
-	unsigned char pitches[MAX_NOTES];
+unsigned char toneToIndex(unsigned char scale_ndx){
 
-	for (i=0; i < MAX_CHORDS; i++){
+	 return ( OCTAVE - my_bit2ndx( SOLO_assistant_page->scaleLead[ scale_ndx ] )) -1 /* zero based */;
+}
 
-		translateSymbolsToChord(chords[0][0][i], pitches);
+unsigned char modifyChordOctave(signed char val){
 
-		diag_printf("chord:%d", i);
-		for (j=0; j < MAX_NOTES; j++){
+	if ( SOLO_scale_chords_octave + val > 3 || SOLO_scale_chords_octave + val < -3 ) return FALSE; // out of range
+	SOLO_scale_chords_octave += val;
+	return TRUE;
+}
 
-			if (pitches[j] == 0xFF){
-				break;
-			}
-			diag_printf(" p:%d", pitches[j]);
-		}
-		diag_printf("\n");
+void modifyChordPitch(signed char val){
+
+	signed char pit = SOLO_assistant_page->attr_PIT;
+
+	if ( pit + val < 0 ){
+
+		if (!modifyChordOctave(-1)) return;
+	}
+	else if ( pit + val >= OCTAVE ){
+
+		if (!modifyChordOctave(1)) return;
+	}
+	SOLO_assistant_page->attr_PIT = (unsigned char) (abs(OCTAVE + (pit + val)) % OCTAVE);
+}
+
+void modifyChordTone(signed char val){ // add scale_ndx 2, 3 for chords, program
+
+	unsigned char toneNdx = my_bit2ndx( SOLO_assistant_page->scaleLead[ G_scale_ndx ] ) + OCTAVE;
+//	diag_printf("tone:%d\n", toneNdx);
+
+	// TODO: check min and max octaves
+	if (toneNdx - val > TONE_BTN_OFFSET){ // TODO: count octaves
+
+//		diag_printf("down octave\n");
+	}
+	else if (toneNdx - val < OCTAVE){ // TODO: count octaves
+
+//		diag_printf("up octave\n");
+	}
+	else {
+		modify_scale_composition( SOLO_assistant_page, toneNdx - val, G_scale_ndx);
+	}
+
+	// XXX
+//	SOLO_assistant_page-> scaleNotes[ G_scale_ndx ] =
+//					my_shift_bitpattern( 	SOLO_assistant_page->scaleNotes_old, 12, INC,
+//											(11 - my_bit2ndx(SOLO_assistant_page-> scaleLead[ G_scale_ndx ] ) )  );
+//	pitch_to_noteNdx(pitch + val);
+//	keyNdx_to_noteNdx( keyNdx )
+//
+//	key_ChordScaleSelector( keyNdx, SOLO_assistant_page );
+}
+
+unsigned char currentScaleIndex( Pagestruct* target_page ){
+
+	unsigned int j = my_shift_bitpattern( target_page-> scaleNotes[G_scale_ndx], 12, INC,
+							  my_bit2ndx( target_page-> scaleLead[G_scale_ndx] )+1);
+
+	switch( j ) {
+		case SCALE_SIG_PEN: return 0;
+		case SCALE_SIG_WHL: return 1;
+		case SCALE_SIG_MAJ:	return 2;
+		case SCALE_SIG_MIN: return 3;
+		case SCALE_SIG_DIM: return 4;
+		default: return NOP;
 	}
 }
 
-void playNotesInChord(unsigned char in_channel,
-					  unsigned char in_velocity,
-					  unsigned char in_pitch,
-					  unsigned char scale,
-					  unsigned char tone,
-					  unsigned char octave
-					  ){
+unsigned short modulationsOfChord( unsigned char chord_id, Pagestruct* target_page ){
+
+	unsigned char tone = toneToIndex( G_scale_ndx );
+	unsigned char scale = currentScaleIndex( target_page );
+	unsigned char i, j;
+	unsigned short modulations = 0;
+
+	for ( i=0; i < OCTAVE; i++ ){
+
+		if ( i == tone ){
+			continue;
+		}
+
+		for ( j=0; j < MAX_CHORDS; j++ ){
+
+			if ( strcmp(chords[scale][tone][chord_id], chords[scale][i][j]) == 0 ){
+
+				SET_BIT(modulations, i);
+			}
+		}
+	}
+
+	return modulations;
+}
+
+void copyChord(Chordstruct* src, Chordstruct* dest){
+
+	dest->chord_id = src->chord_id;
+	dest->octave = src->octave;
+	dest->pitch = src->pitch;
+	dest->scale = src->scale;
+	dest->strum = src->strum;
+	dest->tone = src->tone;
+	dest->attr_LEN = src->attr_LEN;
+	dest->attr_VEL = src->attr_VEL;
+}
+
+void clearArpPattern( unsigned char chord_palette_ndx ){
+	unsigned char i;
+
+	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
+
+		initNote(Chord_palette_repository[chord_palette_ndx].Arp[i]);
+		noteToStep(Chord_palette_repository[chord_palette_ndx].Arp[i], SOLO_assistant_page->Step[0][i]);
+	}
+	SOLO_assistant_page->attr_LEN = MATRIX_NROF_COLUMNS;
+}
+
+void saveArpPattern( unsigned char chord_palette_ndx ){
+	unsigned char i, last = OFF;
+
+	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
+		last = Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_SKIP );
+		noteToStep(Chord_palette_repository[chord_palette_ndx].Arp[i], SOLO_assistant_page->Step[1][i]); // save to row 1
+		if ( last == ON ){
+			Step_set_status( SOLO_assistant_page->Step[1][i], STEPSTAT_SKIP, ON );
+		}
+	}
+	SOLO_assistant_page->Track[1]->attr_LEN = SOLO_assistant_page->attr_LEN;
+	SOLO_assistant_page->Track[1]->attr_STATUS = ON;
+}
+
+void restoreArpPattern( unsigned char chord_palette_ndx ){
+	unsigned char i, last = OFF;
+
+	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
+
+		last = Step_get_status( SOLO_assistant_page->Step[1][i], STEPSTAT_SKIP );
+		stepToNote(SOLO_assistant_page->Step[1][i], Chord_palette_repository[chord_palette_ndx].Arp[i]);
+		noteToStep(Chord_palette_repository[chord_palette_ndx].Arp[i], SOLO_assistant_page->Step[0][i]);
+		if ( last == ON ){
+			Step_set_status( SOLO_assistant_page->Step[0][i], STEPSTAT_SKIP, ON );
+		}
+	}
+	SOLO_assistant_page->attr_LEN = SOLO_assistant_page->Track[1]->attr_LEN;
+	SOLO_assistant_page->Track[1]->attr_STATUS = OFF;
+}
+
+void assignChordToPalette(unsigned char in_pitch){
+
+	if ( SOLO_last_chord == NULL || Chord_palette_repository[in_pitch % OCTAVE].chord_id != NOP ){ // don't overwrite
+		SOLO_scale_chords_program_armed = OFF;
+		return;
+	}
+
+	clearArpPattern(SOLO_scale_chords_palette_ndx);
+	SOLO_scale_chords_palette_ndx = in_pitch % OCTAVE;
+	copyChord(SOLO_last_chord, &Chord_palette_repository[SOLO_scale_chords_palette_ndx]);
+	SOLO_scale_chords_program_armed = OFF;
+}
+
+void assignLastNotes(){
 
 	int i;
 	unsigned char pitches[MAX_NOTES];
-	signed char idx = in_pitch - (MIDDLE_C - OCTAVE); // C3
-	unsigned char offsets[] = { // TODO
-			0, 0xFF, 1, 0xFF, 2, 2, 0xFF, 3, 0xFF, 4, 0xFF, 5,
-			5, 0xFF, 6, 0xFF, 7, 7, 0xFF, 8, 0xFF, 9, 0xFF, 10,
-			10, 0xFF, 11, 0xFF, 12, 12, 0xFF, 13, 0xFF, 14, 0xFF, 15,
-			15, 0xFF, 16, 0xFF, 17, 17, 0xFF, 18, 0xFF, 19, 0xFF, 20,
-			20, 0xFF, 21, 0xFF, 22, 22, 0xFF, 23, 0xFF, 24, 0xFF, 25,
-	};
+	Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
+	SOLO_scale_chords_last = OFF;
 
-	diag_printf("idx:%d\n", idx);
-	diag_printf("oct:%d\n", octave);
-	diag_printf("offsets:%d\n", offsets[idx]);
-	diag_printf("index:%d\n", idx - offsets[idx]);
-
-	// TODO: return if zero pitches 0xFF if pitch is out of range or no chord is found
-	translateSymbolsToChord(chords[scale][tone][idx - offsets[idx]], pitches);
+	translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches);
 
 	for (i=0; i < MAX_NOTES; i++){
 
 		if (pitches[i] == 0xFF){
 			break;
 		}
-		diag_printf("pit:%d\n", (octave + pitches[i]));
-		diag_printf("p:%d\n", pitches[i]);
-		MIDI_NOTE_new ( in_channel, (octave + pitches[i]), in_velocity, 0 );
+
+		SET_BIT( SOLO_scale_chords_last, pitches[i] ); // show the chord keys in the grid
+	}
+}
+
+Notestruct* buildNote( unsigned char col, unsigned char note_pitch ){
+
+	Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
+	Notestruct* note = chord->Arp[col];
+	Note_set_status( note, STEPSTAT_TOGGLE, ON);
+	note->attr_PIT = (C3 + (OCTAVE * SOLO_scale_chords_octave) + note_pitch);
+	note->attr_LEN = chord->attr_LEN;
+	return note;
+}
+
+void chordPitchToStep( Pagestruct* target_page,
+					   unsigned char col,
+					   unsigned char note_pitch ){
+
+	Notestruct* note = buildNote(col, note_pitch);
+	Stepstruct* step = target_page->Step[0][col];
+	noteToStep(note, step);
+}
+
+void chordPitchAddToStep( Pagestruct* target_page,
+						  unsigned char col,
+					      unsigned char note_pitch ){
+
+	Notestruct* note = buildNote(col, note_pitch);
+	Stepstruct* step = target_page->Step[0][col];
+
+	if ( Step_get_status( step, STEPSTAT_TOGGLE ) == OFF ){
+		noteToStep(note, step);
+	}
+	else {
+		make_chord( step, 0, note->attr_PIT );
+		stepToNote( step, note );
+	}
+}
+
+void shiftArpPattern( unsigned char direction, unsigned char pressedCol ){
+
+	signed char i, j;
+	unsigned char hasArp = OFF;
+	unsigned char hasStop = OFF;
+	signed char stopCol = MATRIX_NROF_COLUMNS -1;
+	signed char startCol;
+
+	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
+
+		if ( Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_SKIP ) == ON ){
+
+			stopCol = i;
+			hasStop = ON;
+		}
+		if ( Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_TOGGLE ) == ON ){
+
+			hasArp = ON;
+		}
+	}
+
+	if (( hasArp == OFF ) ||
+		( direction == POS && (( stopCol == MATRIX_NROF_COLUMNS -1 && hasStop == OFF ) ||
+		( pressedCol >= stopCol +1 )))
+	   ){
+		return;
+	}
+
+	startCol = stopCol;
+
+	if ( direction == NEG ){
+
+		if ( Step_get_status( SOLO_assistant_page->Step[0][pressedCol], STEPSTAT_TOGGLE ) == ON ){ // no skip to the right
+
+			for (i=0; i < pressedCol -1; i++){ // are there any steps to the left
+
+				if ( Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_TOGGLE ) == ON ){ // yes
+
+					return; // do nothing
+				}
+			}
+		}
+		startCol = pressedCol;
+		pressedCol = 0;
+	}
+
+	if ( stopCol != 0 && stopCol < ( MATRIX_NROF_COLUMNS -1 ) && direction == POS ){
+
+		Step_set_status( SOLO_assistant_page->Step[0][stopCol +1], STEPSTAT_SKIP, ON ); // show the end of arp LED red
+		Note_set_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[stopCol +1], STEPSTAT_SKIP, ON );
+		SOLO_assistant_page->attr_LEN = stopCol +1;
+	}
+
+	for (i=startCol; i >= pressedCol; --i){
+
+		if ( direction == POS ){ // shift right
+
+			if ( i == pressedCol ) break;
+			copyNote(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i-1], Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i]);
+			noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], SOLO_assistant_page->Step[0][i]);
+		}
+		else { // push left
+
+			// shrink 16 steps from the right
+			if ( hasStop == OFF &&
+				 stopCol == ( MATRIX_NROF_COLUMNS -1 ) &&
+				 stopCol == i && // only affect the last column
+				 Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_TOGGLE ) == OFF &&
+				 Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_SKIP ) == OFF){
+
+				initNote(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i]);
+				noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], SOLO_assistant_page->Step[0][i]);
+				Step_set_status( SOLO_assistant_page->Step[0][i], STEPSTAT_SKIP, ON );
+				Note_set_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], STEPSTAT_SKIP, ON );
+				SOLO_assistant_page->attr_LEN = i;
+				break;
+			}
+
+			// if the current step is empty push the right side step left
+			if ( Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_TOGGLE ) == OFF &&
+				 Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_SKIP ) == OFF ){
+
+				// cascade
+				for (j=i; j <= stopCol; j++){
+
+					if ( Step_get_status( SOLO_assistant_page->Step[0][j+1], STEPSTAT_SKIP ) == ON ||
+						 j == ( MATRIX_NROF_COLUMNS -1 )){
+
+						// push the end of arp in
+						initNote(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j+1]);
+						noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j+1], SOLO_assistant_page->Step[0][j+1]);
+						initNote(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j]);
+						noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j], SOLO_assistant_page->Step[0][j]);
+						Step_set_status( SOLO_assistant_page->Step[0][j], STEPSTAT_SKIP, ON );
+						Note_set_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j], STEPSTAT_SKIP, ON );
+						SOLO_assistant_page->attr_LEN = j;
+						break;
+					}
+					copyNote(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j+1], Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j]);
+					noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j], SOLO_assistant_page->Step[0][j]);
+				}
+				break;
+			}
+		}
+	}
+
+	if ( direction == POS ){
+		// clear the pressed page
+		initNote(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[pressedCol]);
+		noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[pressedCol], SOLO_assistant_page->Step[0][pressedCol]);
+	}
+}
+
+void buildPresetArp( unsigned char keyNdx ){
+
+	unsigned char i, j = 0, size = 0, pivot = 0, dir = 0, val, up = 0, down = 0;
+	unsigned char pitches[MAX_NOTES];
+	Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
+
+	translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches);
+
+	for (i=0; i < MAX_NOTES; i++){
+
+		if (pitches[i] == 0xFF){
+			break;
+		}
+		size++;
+	}
+
+	clearArpPattern(SOLO_scale_chords_palette_ndx);
+
+	for (i=0; i<size; i++){
+
+		switch (keyNdx) {
+			case KEY_MIXTGT_ATR: // ABC
+
+				chordPitchToStep( SOLO_assistant_page, j, pitches[i] );
+				break;
+
+			case KEY_MIXTGT_VOL: // CBA
+
+				chordPitchToStep( SOLO_assistant_page, j, pitches[(size -1) -i] );
+				break;
+
+			case KEY_MIXTGT_PAN: // BAC
+
+				// inside out down then up
+				if ( pivot == 0 ) pivot = size / 2;
+				if ( dir == 0 ) val = pivot -i;
+				else val = i;
+				if ( val == 0 ) dir = 1;
+				// down to zero then up past pivot to end
+				chordPitchToStep( SOLO_assistant_page, j, pitches[val] );
+				break;
+
+			case KEY_MIXTGT_MOD: // BCA
+
+				// inside out up then down
+				if ( pivot == 0 ) pivot = size / 2;
+				if ( dir == 0 ) val = pivot +i; // [01234]
+				else val = --pivot;				// [23410]
+				if ( val == size -1 ) dir = 1;
+				chordPitchToStep( SOLO_assistant_page, j, pitches[val] );
+				break;
+
+			case KEY_MIXTGT_EXP: // ACB
+
+				// outside in start low
+				if ( down == 0 ) down = size -1; 				// [01234]
+				val = ( (dir ^= 1) == 1 ) ? up++ : down--;		// [04132]
+				chordPitchToStep( SOLO_assistant_page, j, pitches[val] );
+				break;
+
+			case KEY_MIXTGT_USR0: // CAB
+
+				// outside in start high
+				if ( down == 0 ) down = size -1; 				// [01234]
+				val = ( (dir ^= 1) == 0 ) ? up++ : down--;		// [40312]
+				chordPitchToStep( SOLO_assistant_page, j, pitches[val] );
+				break;
+
+			default:
+				break;
+		}
+		j+=2; // 8th intervals
+	}
+
+	if ( size > 0 && size < MATRIX_NROF_COLUMNS ){
+
+		Note_set_status( chord->Arp[j], STEPSTAT_SKIP, ON );
+		noteToStep( chord->Arp[j], SOLO_assistant_page->Step[0][j] );
+		SOLO_assistant_page->attr_LEN = j;
+	}
+	else {
+
+		SOLO_assistant_page->attr_LEN = MATRIX_NROF_COLUMNS;
+	}
+}
+
+
+
+void playChordPitch( unsigned char in_pitch,
+					 unsigned char in_channel,
+					 unsigned char in_velocity,
+					 unsigned char in_length
+					){
+
+	unsigned char pitch = (C3 + (OCTAVE * SOLO_scale_chords_octave) + in_pitch);
+
+	if ( in_length == OFF ){
+
+		MIDI_NOTE_new ( in_channel, pitch, in_velocity, 0 );
+	}
+	else {
+
+		// NOTE OFF build
+		MIDI_OFF_build_new( SOLO_midi_ch, pitch, in_length );
+
+		// SEND NOTE ON
+		MIDI_send(		MIDI_NOTE,
+						SOLO_midi_ch,
+						pitch,
+						in_velocity );
+	}
+}
+
+
+
+void playChord( unsigned char scale,
+			    unsigned char tone,
+			    unsigned char chord_id,
+			    unsigned char attr_PIT,
+			    unsigned char in_channel,
+			    unsigned char in_velocity
+			   ){
+	int i;
+	unsigned char pitches[MAX_NOTES];
+	unsigned char hasChord = OFF;
+	Chordstruct* chord ;
+	SOLO_scale_chords_last = OFF; // reset
+
+	translateSymbolsToChord(chords[scale][tone][chord_id], pitches);
+
+	for (i=0; i < MAX_NOTES; i++){
+
+		if (pitches[i] == 0xFF){
+			break;
+		}
+		hasChord = ON;
+		SET_BIT( SOLO_scale_chords_last, pitches[i] ); // show the chord keys in the grid
+		playChordPitch( pitches[i] + attr_PIT, in_channel, in_velocity, OFF );
+	}
+
+	if ( hasChord && in_velocity != OFF ){
+
+		SOLO_last_chord = &Chord_palette_repository[MAX_NROF_PALETTE_CHORDS]; // 13th chord is a buffer
+		chord = SOLO_last_chord;
+		chord->chord_id = chord_id;
+		chord->octave = SOLO_scale_chords_octave;
+		chord->pitch = attr_PIT;
+		chord->scale = scale;
+		chord->strum = 9; // TODO STRUM
+		chord->tone = tone;
+		chord->attr_VEL = in_velocity;
+
+		SOLO_scale_chords_modulations = modulationsOfChord( chord_id, SOLO_assistant_page );
+	}
+
+	TEMPO_TIMER = ON;
+	cyg_alarm_initialize(	alarm_hdl,
+							cyg_current_time() + (TIMEOUT_VALUE / 2),
+							0 );
+}
+
+void playNotesInChord( unsigned char in_channel,
+					   unsigned char in_velocity,
+					   unsigned char in_pitch
+					  ){
+
+	signed char idx = in_pitch - (C3 - (OCTAVE * 2)); // C1
+	unsigned char arrayIndex = white_key_pitch_to_array_index[idx];
+
+	if ( idx < 0 || idx >= 35 )
+	{
+		return; // out of chord range
+	}
+
+	unsigned char tone = toneToIndex( G_scale_ndx );
+	Pagestruct* target_page = SOLO_assistant_page;
+	unsigned char chord_id = (idx - arrayIndex) + (SOLO_scale_chords_b * 35);
+	unsigned char scale = currentScaleIndex( target_page );
+
+	if ( scale == NOP ){
+		return;
+	}
+
+	playChord(scale, tone, chord_id, target_page->attr_PIT, in_channel, in_velocity);
+}
+
+void copyArpToSteps(Chordstruct* chord){
+	unsigned char i;
+
+	SOLO_last_chord = chord;
+	SOLO_assistant_page->attr_LEN = MATRIX_NROF_COLUMNS -1;
+
+	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
+
+		noteToStep(chord->Arp[i], SOLO_assistant_page->Step[0][i]);
+		if ( Note_get_status( chord->Arp[i], STEPSTAT_SKIP ) == ON ){
+			SOLO_assistant_page->attr_LEN = i;
+		}
+	}
+}
+
+void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsigned char in_channel, unsigned char play){
+
+	int i;
+	Chordstruct* chord = &Chord_palette_repository[palette_ndx];
+
+	if ( SOLO_scale_chords_prev_palette_ndx != palette_ndx ){
+		// we have changed palette keys so clear the history buffer
+		for (i=0; i < MATRIX_NROF_COLUMNS; i++){
+			Step_init(SOLO_assistant_page->Step[1][i]);
+		}
+		SOLO_assistant_page->Track[1]->attr_STATUS = OFF;
+	}
+	SOLO_scale_chords_prev_palette_ndx = palette_ndx;
+
+	// play the arp if there is one
+	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
+
+		if ( Note_get_status( chord->Arp[i], STEPSTAT_TOGGLE ) == ON ){ // has an arp
+
+			if ( in_velocity == OFF ){
+
+				if ( SOLO_scale_chords_prev_palette_ndx == NOP || SOLO_scale_chords_prev_on_ndx == palette_ndx ){ // key released
+
+					stop_solo_rec(OFF);
+				}
+			}
+			else { // key pressed
+
+				copyArpToSteps(chord);
+				assignLastNotes();
+				SOLO_rec_rehersal = ON;
+				SOLO_scale_chords_prev_on_ndx = palette_ndx;
+				GRID_CURSOR = SOLO_assistant_page->pageNdx;
+
+				if ( G_run_bit == OFF && play == ON ){
+
+					reset_page_cluster( SOLO_assistant_page );
+					sequencer_command_PLAY();
+				}
+			}
+			return;
+		}
+	}
+
+	if ( play == ON ){
+
+		playChord(chord->scale, chord->tone, chord->chord_id, chord->pitch, in_channel, in_velocity);
+	}
+	else {
+		assignLastNotes();
 	}
 }
