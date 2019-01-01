@@ -103,6 +103,8 @@ void cyg_user_start( void ){
 
 			// Inhibit data loading further below
 			G_flashload_flag = FALSE;
+
+			Page_repository_init(); // Everything else has already been initialized
 		}
 
 		else if ( is_pressed_key( KEY_RETURN ) ){

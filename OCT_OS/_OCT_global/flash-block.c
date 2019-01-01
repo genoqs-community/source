@@ -243,6 +243,10 @@ void Flash_read_all_pages( void )
 		}
 	}
 
+	#ifdef FEATURE_SOLO_REC
+	restoreChordPalette();
+	#endif
+
 	G_master_blinker = orgBlinker;
 }
 
@@ -261,6 +265,10 @@ void Flash_write_all_pages( void )
 	// Make sure no lights go off as they should not
 	int orgBlinker = G_master_blinker;
 	G_master_blinker = ON;
+
+	#ifdef FEATURE_SOLO_REC
+	persistChordPalette();
+	#endif
 
 	// Loop through all of the pages, incrementing with FLASH_PAGE_PER_BLOCK_COUNT steps.
 	// This addresses each of the flash blocks that hold pages.

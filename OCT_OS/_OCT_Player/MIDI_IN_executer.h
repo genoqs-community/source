@@ -677,6 +677,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 				}
 			}
 			else {
+
 				if ( G_midi_map_controller_mode == ON ){
 
 					MIDI_NOTE_new( outputMidiBus * 16 + outputMidiChan, scale_pitch(target_page, in_pitch), in_velocity, 0 );

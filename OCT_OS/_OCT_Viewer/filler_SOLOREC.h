@@ -228,6 +228,7 @@
 		MIR_write_dot( LED_PASTE, MIR_GREEN );
 	}
 	else {
+
 		MIR_write_dot( LED_PASTE, MIR_RED ); // Arp shift left
 
 		// Arp presets

@@ -92,6 +92,8 @@ extern unsigned char 	find_record_track_chain_start(Pagestruct* target_page);
 extern unsigned char 	has_valid_record_cluster_format(Pagestruct* target_page);
 extern void 			sequencer_command_PLAY();
 extern unsigned int 	get_chord_projected( Stepstruct* target_step );
+extern void 			persistChordPalette();
+extern void 			restoreChordPalette();
 
 extern void 			modify_scale_composition( Pagestruct* target_page,
 												  unsigned char k,

@@ -143,21 +143,26 @@ void chord_palette_init(){
 	//	validatePitches();
 }
 
-void enterSoloRec(){
+void initAssistantPage(){
 	unsigned char row;
+
+	SOLO_assistant_page->force_to_scale = ON;
+	SOLO_assistant_page->scaleStatus = SCALE_MOD;
+	SOLO_assistant_page->Track[0 /* ARP_TRACK */]->attr_PIT = MIDDLE_C;
+
+	for ( row=1; row<MATRIX_NROF_ROWS; row++ ){ // row zero will play arp patterns
+		// mute all other tracks
+		SET_BIT(SOLO_assistant_page->trackMutepattern, row);
+	}
+}
+
+void enterSoloRec(){
 
 	if ( SOLO_has_scale == OFF ){
 
 		Page_copy(GRID_assistant_page, SOLO_assistant_page);
-		SOLO_assistant_page->force_to_scale = ON;
-		SOLO_assistant_page->scaleStatus = SCALE_MOD;
+		initAssistantPage();
 		SOLO_assistant_page->attr_PIT = OFF;
-		SOLO_assistant_page->Track[0]->attr_PIT -= ( OCTAVE -3 ); // Magic number to align the absolute Note pitches
-
-		for ( row=1; row<MATRIX_NROF_ROWS; row++ ){ // row zero will play arp patterns
-			// mute all other tracks
-			SET_BIT(SOLO_assistant_page->trackMutepattern, row);
-		}
 	}
 	SOLO_has_scale = ON;
 	G_zoom_level = zoomSOLOREC;

@@ -3,6 +3,8 @@
 #define MAX_CHORD_WORD 14
 #define MAX_CHORDS 70
 #define MAX_NOTES 8
+#define ARP_TRACK 0
+#define ARP_BUFFER_TRACK 1
 // The Chromatic scale which includes all keys is not included
 #define SCALE_COUNT 5
 
@@ -4552,7 +4554,7 @@ void clearArpPattern( unsigned char chord_palette_ndx ){
 	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
 
 		initNote(Chord_palette_repository[chord_palette_ndx].Arp[i]);
-		noteToStep(Chord_palette_repository[chord_palette_ndx].Arp[i], SOLO_assistant_page->Step[0][i]);
+		noteToStep(Chord_palette_repository[chord_palette_ndx].Arp[i], SOLO_assistant_page->Step[ARP_TRACK][i]);
 	}
 	SOLO_assistant_page->attr_LEN = MATRIX_NROF_COLUMNS;
 }
@@ -4561,14 +4563,14 @@ void saveArpPattern( unsigned char chord_palette_ndx ){
 	unsigned char i, last = OFF;
 
 	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
-		last = Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_SKIP );
-		noteToStep(Chord_palette_repository[chord_palette_ndx].Arp[i], SOLO_assistant_page->Step[1][i]); // save to row 1
+		last = Step_get_status( SOLO_assistant_page->Step[ARP_TRACK][i], STEPSTAT_SKIP );
+		noteToStep(Chord_palette_repository[chord_palette_ndx].Arp[i], SOLO_assistant_page->Step[ARP_BUFFER_TRACK][i]); // save to row 1
 		if ( last == ON ){
-			Step_set_status( SOLO_assistant_page->Step[1][i], STEPSTAT_SKIP, ON );
+			Step_set_status( SOLO_assistant_page->Step[ARP_BUFFER_TRACK][i], STEPSTAT_SKIP, ON );
 		}
 	}
-	SOLO_assistant_page->Track[1]->attr_LEN = SOLO_assistant_page->attr_LEN;
-	SOLO_assistant_page->Track[1]->attr_STATUS = ON;
+	SOLO_assistant_page->Track[ARP_BUFFER_TRACK]->attr_LEN = SOLO_assistant_page->attr_LEN;
+	SOLO_assistant_page->Track[ARP_BUFFER_TRACK]->attr_STATUS = ON;
 }
 
 void restoreArpPattern( unsigned char chord_palette_ndx ){
@@ -4576,15 +4578,15 @@ void restoreArpPattern( unsigned char chord_palette_ndx ){
 
 	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
 
-		last = Step_get_status( SOLO_assistant_page->Step[1][i], STEPSTAT_SKIP );
-		stepToNote(SOLO_assistant_page->Step[1][i], Chord_palette_repository[chord_palette_ndx].Arp[i]);
-		noteToStep(Chord_palette_repository[chord_palette_ndx].Arp[i], SOLO_assistant_page->Step[0][i]);
+		last = Step_get_status( SOLO_assistant_page->Step[ARP_BUFFER_TRACK][i], STEPSTAT_SKIP );
+		stepToNote(SOLO_assistant_page->Step[ARP_BUFFER_TRACK][i], Chord_palette_repository[chord_palette_ndx].Arp[i]);
+		noteToStep(Chord_palette_repository[chord_palette_ndx].Arp[i], SOLO_assistant_page->Step[ARP_TRACK][i]);
 		if ( last == ON ){
-			Step_set_status( SOLO_assistant_page->Step[0][i], STEPSTAT_SKIP, ON );
+			Step_set_status( SOLO_assistant_page->Step[ARP_TRACK][i], STEPSTAT_SKIP, ON );
 		}
 	}
-	SOLO_assistant_page->attr_LEN = SOLO_assistant_page->Track[1]->attr_LEN;
-	SOLO_assistant_page->Track[1]->attr_STATUS = OFF;
+	SOLO_assistant_page->attr_LEN = SOLO_assistant_page->Track[ARP_BUFFER_TRACK]->attr_LEN;
+	SOLO_assistant_page->Track[ARP_BUFFER_TRACK]->attr_STATUS = OFF;
 }
 
 void assignChordToPalette(unsigned char in_pitch){
@@ -4634,7 +4636,7 @@ void chordPitchToStep( Pagestruct* target_page,
 					   unsigned char note_pitch ){
 
 	Notestruct* note = buildNote(col, note_pitch);
-	Stepstruct* step = target_page->Step[0][col];
+	Stepstruct* step = target_page->Step[ARP_TRACK][col];
 	noteToStep(note, step);
 }
 
@@ -4643,7 +4645,7 @@ void chordPitchAddToStep( Pagestruct* target_page,
 					      unsigned char note_pitch ){
 
 	Notestruct* note = buildNote(col, note_pitch);
-	Stepstruct* step = target_page->Step[0][col];
+	Stepstruct* step = target_page->Step[ARP_TRACK][col];
 
 	if ( Step_get_status( step, STEPSTAT_TOGGLE ) == OFF ){
 		noteToStep(note, step);
@@ -4664,12 +4666,12 @@ void shiftArpPattern( unsigned char direction, unsigned char pressedCol ){
 
 	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
 
-		if ( Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_SKIP ) == ON ){
+		if ( Step_get_status( SOLO_assistant_page->Step[ARP_TRACK][i], STEPSTAT_SKIP ) == ON ){
 
 			stopCol = i;
 			hasStop = ON;
 		}
-		if ( Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_TOGGLE ) == ON ){
+		if ( Step_get_status( SOLO_assistant_page->Step[ARP_TRACK][i], STEPSTAT_TOGGLE ) == ON ){
 
 			hasArp = ON;
 		}
@@ -4686,11 +4688,11 @@ void shiftArpPattern( unsigned char direction, unsigned char pressedCol ){
 
 	if ( direction == NEG ){
 
-		if ( Step_get_status( SOLO_assistant_page->Step[0][pressedCol], STEPSTAT_TOGGLE ) == ON ){ // no skip to the right
+		if ( Step_get_status( SOLO_assistant_page->Step[ARP_TRACK][pressedCol], STEPSTAT_TOGGLE ) == ON ){ // no skip to the right
 
 			for (i=0; i < pressedCol -1; i++){ // are there any steps to the left
 
-				if ( Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_TOGGLE ) == ON ){ // yes
+				if ( Step_get_status( SOLO_assistant_page->Step[ARP_TRACK][i], STEPSTAT_TOGGLE ) == ON ){ // yes
 
 					return; // do nothing
 				}
@@ -4702,7 +4704,7 @@ void shiftArpPattern( unsigned char direction, unsigned char pressedCol ){
 
 	if ( stopCol != 0 && stopCol < ( MATRIX_NROF_COLUMNS -1 ) && direction == POS ){
 
-		Step_set_status( SOLO_assistant_page->Step[0][stopCol +1], STEPSTAT_SKIP, ON ); // show the end of arp LED red
+		Step_set_status( SOLO_assistant_page->Step[ARP_TRACK][stopCol +1], STEPSTAT_SKIP, ON ); // show the end of arp LED red
 		Note_set_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[stopCol +1], STEPSTAT_SKIP, ON );
 		SOLO_assistant_page->attr_LEN = stopCol +1;
 	}
@@ -4713,7 +4715,7 @@ void shiftArpPattern( unsigned char direction, unsigned char pressedCol ){
 
 			if ( i == pressedCol ) break;
 			copyNote(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i-1], Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i]);
-			noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], SOLO_assistant_page->Step[0][i]);
+			noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], SOLO_assistant_page->Step[ARP_TRACK][i]);
 		}
 		else { // push left
 
@@ -4721,39 +4723,39 @@ void shiftArpPattern( unsigned char direction, unsigned char pressedCol ){
 			if ( hasStop == OFF &&
 				 stopCol == ( MATRIX_NROF_COLUMNS -1 ) &&
 				 stopCol == i && // only affect the last column
-				 Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_TOGGLE ) == OFF &&
-				 Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_SKIP ) == OFF){
+				 Step_get_status( SOLO_assistant_page->Step[ARP_TRACK][i], STEPSTAT_TOGGLE ) == OFF &&
+				 Step_get_status( SOLO_assistant_page->Step[ARP_TRACK][i], STEPSTAT_SKIP ) == OFF){
 
 				initNote(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i]);
-				noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], SOLO_assistant_page->Step[0][i]);
-				Step_set_status( SOLO_assistant_page->Step[0][i], STEPSTAT_SKIP, ON );
+				noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], SOLO_assistant_page->Step[ARP_TRACK][i]);
+				Step_set_status( SOLO_assistant_page->Step[ARP_TRACK][i], STEPSTAT_SKIP, ON );
 				Note_set_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], STEPSTAT_SKIP, ON );
 				SOLO_assistant_page->attr_LEN = i;
 				break;
 			}
 
 			// if the current step is empty push the right side step left
-			if ( Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_TOGGLE ) == OFF &&
-				 Step_get_status( SOLO_assistant_page->Step[0][i], STEPSTAT_SKIP ) == OFF ){
+			if ( Step_get_status( SOLO_assistant_page->Step[ARP_TRACK][i], STEPSTAT_TOGGLE ) == OFF &&
+				 Step_get_status( SOLO_assistant_page->Step[ARP_TRACK][i], STEPSTAT_SKIP ) == OFF ){
 
 				// cascade
 				for (j=i; j <= stopCol; j++){
 
-					if ( Step_get_status( SOLO_assistant_page->Step[0][j+1], STEPSTAT_SKIP ) == ON ||
+					if ( Step_get_status( SOLO_assistant_page->Step[ARP_TRACK][j+1], STEPSTAT_SKIP ) == ON ||
 						 j == ( MATRIX_NROF_COLUMNS -1 )){
 
 						// push the end of arp in
 						initNote(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j+1]);
-						noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j+1], SOLO_assistant_page->Step[0][j+1]);
+						noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j+1], SOLO_assistant_page->Step[ARP_TRACK][j+1]);
 						initNote(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j]);
-						noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j], SOLO_assistant_page->Step[0][j]);
-						Step_set_status( SOLO_assistant_page->Step[0][j], STEPSTAT_SKIP, ON );
+						noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j], SOLO_assistant_page->Step[ARP_TRACK][j]);
+						Step_set_status( SOLO_assistant_page->Step[ARP_TRACK][j], STEPSTAT_SKIP, ON );
 						Note_set_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j], STEPSTAT_SKIP, ON );
 						SOLO_assistant_page->attr_LEN = j;
 						break;
 					}
 					copyNote(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j+1], Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j]);
-					noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j], SOLO_assistant_page->Step[0][j]);
+					noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[j], SOLO_assistant_page->Step[ARP_TRACK][j]);
 				}
 				break;
 			}
@@ -4763,7 +4765,7 @@ void shiftArpPattern( unsigned char direction, unsigned char pressedCol ){
 	if ( direction == POS ){
 		// clear the pressed page
 		initNote(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[pressedCol]);
-		noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[pressedCol], SOLO_assistant_page->Step[0][pressedCol]);
+		noteToStep(Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[pressedCol], SOLO_assistant_page->Step[ARP_TRACK][pressedCol]);
 	}
 }
 
@@ -4844,7 +4846,7 @@ void buildPresetArp( unsigned char keyNdx ){
 	if ( size > 0 && size < MATRIX_NROF_COLUMNS ){
 
 		Note_set_status( chord->Arp[j], STEPSTAT_SKIP, ON );
-		noteToStep( chord->Arp[j], SOLO_assistant_page->Step[0][j] );
+		noteToStep( chord->Arp[j], SOLO_assistant_page->Step[ARP_TRACK][j] );
 		SOLO_assistant_page->attr_LEN = j;
 	}
 	else {
@@ -4961,7 +4963,7 @@ void copyArpToSteps(Chordstruct* chord){
 
 	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
 
-		noteToStep(chord->Arp[i], SOLO_assistant_page->Step[0][i]);
+		noteToStep(chord->Arp[i], SOLO_assistant_page->Step[ARP_TRACK][i]);
 		if ( Note_get_status( chord->Arp[i], STEPSTAT_SKIP ) == ON ){
 			SOLO_assistant_page->attr_LEN = i;
 		}
@@ -4976,9 +4978,9 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 	if ( SOLO_scale_chords_prev_palette_ndx != palette_ndx ){
 		// we have changed palette keys so clear the history buffer
 		for (i=0; i < MATRIX_NROF_COLUMNS; i++){
-			Step_init(SOLO_assistant_page->Step[1][i]);
+			Step_init(SOLO_assistant_page->Step[ARP_BUFFER_TRACK][i]);
 		}
-		SOLO_assistant_page->Track[1]->attr_STATUS = OFF;
+		SOLO_assistant_page->Track[ARP_BUFFER_TRACK]->attr_STATUS = OFF;
 	}
 	SOLO_scale_chords_prev_palette_ndx = palette_ndx;
 
@@ -5018,5 +5020,130 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 	}
 	else {
 		assignLastNotes();
+	}
+}
+
+void persistChordPalette(){
+	int i, j;
+	Chordstruct* chord;
+
+	SOLO_arp_pattern_page->attr_mix2edit = ON; // flag to indicate that we have saved before
+	SOLO_arp_pattern_page->attr_PIT = SOLO_scale_chords_pitch_recall;
+	SOLO_arp_pattern_page->attr_STA = SOLO_scale_chords_pitch_prev;
+	SOLO_arp_pattern_page->attr_LEN = (unsigned char) SOLO_scale_chords_octave;
+	SOLO_arp_pattern_page->attr_VEL = (unsigned char) SOLO_scale_chords_program_octave;
+
+	// save 0-9 to SOLO_arp_pattern_page and 10-11 to SOLO_assistant_page
+	for (i=0; i < 10; i++){
+
+		chord = &Chord_palette_repository[i];
+
+		// assistant page overrides
+		SOLO_arp_pattern_page->Track[i]->attr_VEL = chord->chord_id;
+		SOLO_arp_pattern_page->Track[i]->attr_AMT = chord->scale;
+		SOLO_arp_pattern_page->Track[i]->attr_PIT = chord->tone;
+		SOLO_arp_pattern_page->Track[i]->attr_LEN = chord->octave;
+		SOLO_arp_pattern_page->Track[i]->attr_STA = chord->pitch;
+		SOLO_arp_pattern_page->Track[i]->attr_POS = chord->strum;
+		SOLO_arp_pattern_page->Track[i]->attr_DIR = chord->attr_LEN;
+		SOLO_arp_pattern_page->Track[i]->attr_MCC = chord->attr_VEL;
+
+		for (j=0; j < MATRIX_NROF_COLUMNS; j++){
+
+			noteToStep(chord->Arp[j], SOLO_arp_pattern_page->Step[i][j]);
+		}
+	}
+
+	for (i=3; i < 5; i++){ // index 3 and 4
+
+		chord = &Chord_palette_repository[i + 7];
+
+		// assistant page overrides
+		SOLO_assistant_page->Track[i]->attr_VEL = chord->chord_id;
+		SOLO_assistant_page->Track[i]->attr_AMT = chord->scale;
+		SOLO_assistant_page->Track[i]->attr_PIT = chord->tone;
+		SOLO_assistant_page->Track[i]->attr_LEN = chord->octave;
+		SOLO_assistant_page->Track[i]->attr_STA = chord->pitch;
+		SOLO_assistant_page->Track[i]->attr_POS = chord->strum;
+		SOLO_assistant_page->Track[i]->attr_DIR = chord->attr_LEN;
+		SOLO_assistant_page->Track[i]->attr_MCC = chord->attr_VEL;
+
+		for (j=0; j < MATRIX_NROF_COLUMNS; j++){
+
+			noteToStep(chord->Arp[j], SOLO_assistant_page->Step[i][j]);
+		}
+	}
+}
+
+void restoreChordPalette(){
+	int i, j;
+	Chordstruct* chord;
+
+	initAssistantPage();
+
+	// this is is a previously saved page
+	if ( SOLO_arp_pattern_page->attr_mix2edit == ON ){
+
+		SOLO_scale_chords_pitch_recall = SOLO_arp_pattern_page->attr_PIT;
+		SOLO_scale_chords_pitch_prev = SOLO_arp_pattern_page->attr_STA;
+		SOLO_scale_chords_octave = (signed char) SOLO_arp_pattern_page->attr_LEN;
+		SOLO_scale_chords_program_octave = (signed char) SOLO_arp_pattern_page->attr_VEL;
+	}
+
+	// save 0-9 to SOLO_arp_pattern_page and 10-11 to SOLO_assistant_page
+	for (i=0; i < 10; i++){
+
+		chord = &Chord_palette_repository[i];
+		initChord(chord, i);
+		// assistant page overrides
+		chord->chord_id = SOLO_arp_pattern_page->Track[i]->attr_VEL;
+
+		if ( chord->chord_id == NOP || chord->chord_id == 64 /* legacy default */ ){
+
+			initChord(chord, i);
+			continue;
+		}
+
+		chord->scale = SOLO_arp_pattern_page->Track[i]->attr_AMT;
+		chord->tone = SOLO_arp_pattern_page->Track[i]->attr_PIT;
+		chord->octave = SOLO_arp_pattern_page->Track[i]->attr_LEN;
+		chord->pitch = SOLO_arp_pattern_page->Track[i]->attr_STA;
+		chord->strum = SOLO_arp_pattern_page->Track[i]->attr_POS;
+		chord->attr_LEN = SOLO_arp_pattern_page->Track[i]->attr_DIR;
+		chord->attr_VEL = SOLO_arp_pattern_page->Track[i]->attr_MCC;
+
+		for (j=0; j < MATRIX_NROF_COLUMNS; j++){
+
+			stepToNote(SOLO_arp_pattern_page->Step[i][j], chord->Arp[j]);
+		}
+		SOLO_has_scale = ON;
+	}
+
+	for (i=3; i < 5; i++){ // index 3 and 4
+
+		chord = &Chord_palette_repository[i + 7];
+		initChord(chord, i);
+		// assistant page overrides
+		chord->chord_id = SOLO_assistant_page->Track[i]->attr_VEL;
+
+		if ( chord->chord_id == NOP || chord->chord_id == 64 /* legacy default */ ){
+
+			initChord(chord, i);
+			continue;
+		}
+
+		chord->scale = SOLO_assistant_page->Track[i]->attr_AMT;
+		chord->tone = SOLO_assistant_page->Track[i]->attr_PIT;
+		chord->octave = SOLO_assistant_page->Track[i]->attr_LEN;
+		chord->pitch = SOLO_assistant_page->Track[i]->attr_STA;
+		chord->strum = SOLO_assistant_page->Track[i]->attr_POS;
+		chord->attr_LEN = SOLO_assistant_page->Track[i]->attr_DIR;
+		chord->attr_VEL = SOLO_assistant_page->Track[i]->attr_MCC;
+
+		for (j=0; j < MATRIX_NROF_COLUMNS; j++){
+
+			stepToNote(SOLO_assistant_page->Step[i][j], chord->Arp[j]);
+		}
+		SOLO_has_scale = ON;
 	}
 }

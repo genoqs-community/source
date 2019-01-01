@@ -140,6 +140,7 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 
 	//d_iag_printf( "grid-export to %p size=%ld ", targetGridPt, sizeof(GridPersistentV2));
 
+
 	// Init target grid buffer.
 	PersistentV2_GridInit( targetGridPt );
 
@@ -157,7 +158,7 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	targetGridPt->G_TIMER_REFILL = G_TIMER_REFILL;
 	targetGridPt->G_clock_source = G_clock_source;	// Can be any of OFF, INT(ernal), EXT(ernal)
 	// Because zoom level is not used, I will override it to set the CC controller mode - Synth knobs, etc. or MIDI controller.
-	targetGridPt->G_zoom_level |= G_midi_map_controller_mode & 0x1;
+	targetGridPt->G_zoom_level |= !G_midi_map_controller_mode & 0x1;
 	targetGridPt->G_zoom_level |= G_MIDI_B_priority << 1 & 0x2;
 	targetGridPt->G_zoom_level |= G_initZoom << 2 & 0x4;
 	targetGridPt->G_zoom_level |= G_TT_external_latency_offset << 3 & 0x38;
@@ -260,7 +261,6 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	PersistentV2_PageExport( GRID_assistant_page, &targetGridPt->assistant_page );
 
 
-
 	// Calc and set checksum.
 	card8* curPt = (card8*) targetGridPt;
 	card8* endPtEx = curPt + sizeof(GridPersistentV2);
@@ -328,7 +328,7 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 	// Maintain current zoom level.
 	// G_zoom_level = sourceGridPt->G_zoom_level;
 	// Because zoom level is not used, I will override it to set the CC controller mode - Synth knobs, etc. or MIDI controller.
-	G_midi_map_controller_mode = sourceGridPt->G_zoom_level & 0x1; // use only the first bit
+	G_midi_map_controller_mode = !(sourceGridPt->G_zoom_level & 0x1); // use only the first bit
 	G_MIDI_B_priority = sourceGridPt->G_zoom_level >> 1 & 0x1; // shift the second bit
 	G_initZoom = sourceGridPt->G_zoom_level >> 2 & 0x1; // shift the third bit
 	G_TT_external_latency_offset = sourceGridPt->G_zoom_level >> 3 & 0x7;
@@ -436,6 +436,7 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 
 	// Import assistent page embedded in persistent grid object.
 	PersistentV2_PageImport( &sourceGridPt->assistant_page, GRID_assistant_page );
+
 }
 
 
