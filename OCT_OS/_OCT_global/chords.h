@@ -4555,6 +4555,8 @@ void copyChord(Chordstruct* src, Chordstruct* dest){
 
 void enterProgramEditor(){
 
+	if ( G_run_bit == ON ) return;
+
 	SOLO_scale_chords_program = ON; // palette editor enabled
 	SOLO_scale_chords_program_keys = ON;
 	GRID_CURSOR = SOLO_assistant_page->pageNdx;
@@ -4997,8 +4999,18 @@ void record_chord_to_track( Pagestruct* target_page,
 	unsigned char tone = toneToIndex( G_scale_ndx );
 	unsigned char scale = currentScaleIndex( SOLO_assistant_page );
 	unsigned char pitch = (C3 + (OCTAVE * SOLO_scale_chords_octave) + SOLO_assistant_page->attr_PIT);
+ 	unsigned char programOctave = ( MIDDLE_C - OCTAVE ) + ( OCTAVE * SOLO_scale_chords_program_octave );
+ 	unsigned char isProgramKey = ( in_pitch >= programOctave && in_pitch < ( programOctave + OCTAVE ) );
 
-	translateSymbolsToChord(chords[scale][tone][chord_id], pitches);
+ 	if ( isProgramKey ){
+
+ 		// palette chord
+ 		Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
+ 		translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches);
+ 	}
+ 	else {
+ 		translateSymbolsToChord(chords[scale][tone][chord_id], pitches);
+ 	}
 
 	for (i=0; i < MAX_NOTES; i++){
 
@@ -5015,15 +5027,28 @@ void record_chord_to_track( Pagestruct* target_page,
 	}
 }
 
-void record_chord_arp_to_track( Pagestruct* target_page,
+unsigned char record_chord_arp_to_track( Pagestruct* target_page,
 								unsigned char row,
-								unsigned char target_col,
-								unsigned char target_start,
-								unsigned char in_pitch,
-								unsigned char in_velocity
+								unsigned char target_col
 							   ){
 
-	// TODO: use a cursor to track which steps have been written and which to write next
+	// Ignore non-record tracks
+	if ( (Page_getTrackRecPattern(target_page) & (1 << row)) == 0 ) {
+		return OFF;
+	}
+
+	unsigned char arpStep = SOLO_scale_chords_arp_cursor++ % SOLO_assistant_page->attr_LEN;
+
+	Step_copy(SOLO_assistant_page->Step[ARP_TRACK][arpStep], target_page->Step[row][target_col], False);
+	// default page pitch is middle C but solo_assist starts at zero
+	target_page->Step[row][target_col]->attr_PIT -= MIDDLE_C;
+
+	return Step_get_status(target_page->Step[row][target_col] , STEPSTAT_TOGGLE);
+
+	// FIXME: Arp notes not calling capture_note_event()
+	// TODO: Change between two palette arp keys
+	// TODO: Play arp in note-SEL when stopped
+	// FIXME: Bug: 2 arp keys shift right page length run-off
 }
 
 void playNotesInChord( unsigned char in_channel,
@@ -5083,22 +5108,35 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 
 				if ( SOLO_scale_chords_prev_palette_ndx == NOP || SOLO_scale_chords_prev_on_ndx == palette_ndx ){ // key released
 
-					stop_solo_rec(OFF);
+					if ( SOLO_scale_chords_arp_cursor == NOP ){
+
+						stop_solo_rec(OFF);
+					}
+					SOLO_scale_chords_arp_cursor = NOP;
 				}
 			}
 			else { // key pressed
 
 				copyArpToSteps(chord);
-				assignLastNotes();
-				SOLO_rec_rehersal = ON;
 				SOLO_scale_chords_prev_on_ndx = palette_ndx;
-				GRID_CURSOR = SOLO_assistant_page->pageNdx;
 
-				if ( G_run_bit == OFF && play == ON ){
+				if ( G_run_bit == OFF ){
 
-					reset_page_cluster( SOLO_assistant_page );
+					assignLastNotes();
+					SOLO_rec_rehersal = ON;
 					GRID_CURSOR = SOLO_assistant_page->pageNdx;
-					sequencer_command_PLAY();
+				}
+				if ( play == ON ){
+
+					if ( G_run_bit == OFF ){
+
+						reset_page_cluster( SOLO_assistant_page );
+						GRID_CURSOR = SOLO_assistant_page->pageNdx;
+						sequencer_command_PLAY();
+					}
+					else {
+						SOLO_scale_chords_arp_cursor = 0;
+					}
 				}
 			}
 			return;

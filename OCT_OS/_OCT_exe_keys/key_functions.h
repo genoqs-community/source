@@ -1381,6 +1381,7 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
 		Track_hard_init( target_page->Track[row], target_page->Track[row]->trackId );
 		target_page->Track[row]->attr_MCH = SOLO_midi_ch;
+		target_page->Track[row]->attr_PIT = MIDDLE_C;
 	}
 
 	row = grid_row(target_page->pageNdx);

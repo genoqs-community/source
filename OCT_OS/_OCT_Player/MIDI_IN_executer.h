@@ -340,7 +340,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  	unsigned char programOctave = ( MIDDLE_C - OCTAVE ) + ( OCTAVE * SOLO_scale_chords_program_octave );
  	unsigned char isProgramKey = ( in_pitch >= programOctave && in_pitch < ( programOctave + OCTAVE ) );
 
-	if ( SOLO_scale_chords == ON && G_run_bit == OFF ){
+	if ( SOLO_scale_chords == ON ){
 
 		if ( SOLO_scale_chords_program_keys == OFF || ( !isProgramKey && SOLO_scale_chords_program_keys == ON )){
 
@@ -610,14 +610,23 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  					}
 
 					#ifdef FEATURE_SOLO_REC
- 					if ( SOLO_scale_chords == ON ){
+ 					unsigned char hasArp = hasArpPattern(in_pitch % OCTAVE);
+
+ 					if (( SOLO_scale_chords == ON && hasArp == OFF ) ||
+ 					   ( SOLO_scale_chords_program_keys == ON && isProgramKey == ON && hasArp == OFF )
+ 					   ){
+
  						record_chord_to_track( 	target_page, 	target_row, target_col,
  												target_start, 	in_pitch, 	in_velocity );
  					}
  					else {
- 						// Record in notes to the rec enabled track
-						record_note_to_track( 	target_page, 	target_row, target_col,
-												target_start, 	in_pitch, 	in_velocity );
+
+ 						if ( SOLO_scale_chords_program_keys == OFF || isProgramKey == OFF ) {
+
+ 							// Record in notes to the rec enabled track
+							record_note_to_track( 	target_page, 	target_row, target_col,
+													target_start, 	in_pitch, 	in_velocity );
+ 						}
  					}
 					#else
  					// Record in notes to the rec enabled track

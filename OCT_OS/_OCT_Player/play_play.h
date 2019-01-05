@@ -514,12 +514,33 @@ void play_row_ON( 	Pagestruct* 	target_page,
 		} // Track is hyped
 	}
 
+	#ifdef FEATURE_SOLO_REC
+	if ( SOLO_scale_chords_arp_cursor != NOP ){
+
+		if ( record_chord_arp_to_track( target_page, phys_row, locator-1 ) == OFF ){
+
+			if (( bitactivity & (1 << phys_row) ) == 0 ) {
+				return;
+			}
+		}
+	}
+	else {
+
+		// Is the actual Step playing ?? - This check is needed here and not earlier,
+		// ..otherwise the EFF pool will not be filled
+
+		if (( bitactivity & (1 << phys_row) ) == 0 ) {
+			return;
+		}
+	}
+	#else
 	// Is the actual Step playing ?? - This check is needed here and not earlier,
 	// ..otherwise the EFF pool will not be filled
 
 	if (( bitactivity & (1 << phys_row) ) == 0 ) {
 		return;
 	}
+	#endif
 
 
 

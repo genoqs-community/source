@@ -398,11 +398,12 @@ void stop_solo_rec( unsigned char trim ){
 	// Reset all locators in assistant page
 	set_page_locators( SOLO_assistant_page, 0, 0 );
 
-	SOLO_rec_finalized		= ON;
-	G_track_rec_bit 		= OFF;
-	G_measure_locator		= OFF;
-	SOLO_rec_measure_pos 	= OFF;
-	SOLO_rec_rehersal		= OFF;
+	SOLO_rec_finalized				= ON;
+	G_track_rec_bit 				= OFF;
+	G_measure_locator				= OFF;
+	SOLO_rec_measure_pos 			= OFF;
+	SOLO_rec_rehersal				= OFF;
+	SOLO_scale_chords_arp_cursor 	= NOP;
 
 	if ( SOLO_scale_chords_program == ON ){
 		SOLO_rec_measure_hold = OFF;

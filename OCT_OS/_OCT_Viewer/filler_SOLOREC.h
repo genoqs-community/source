@@ -563,7 +563,6 @@
 				MIR_write_lauflicht ();
 			}
 
-			// --------------------------------- XXX
 			if ( SOLO_scale_chords == OFF ){
 
 				MIR_write_dot (LED_SCALE_MYSEL, MIR_GREEN); // Scale
@@ -581,8 +580,10 @@
 				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_octave );
 			}
 			show_SCALE_SELECTOR_scale_selection( SOLO_assistant_page );
-			// --------------------------------- XXX
 
+			if ( SOLO_scale_chords_program_keys == ON ){
+				MIR_write_dot (LED_PROGRAM, MIR_GREEN);
+			}
 		}
 		else if ( SOLO_rec_track_preview == SOLOMCC ){
 			// MATRIX
@@ -599,7 +600,6 @@
 	}
 	else {
 
-		// --------------------------------- XXX
 		if ( SOLO_scale_chords == OFF ){
 
 			MIR_write_dot (LED_SCALE_MYSEL, MIR_GREEN); // Scale

@@ -129,6 +129,7 @@
 		key_ScaleSelector_functions( keyNdx, SOLO_assistant_page );
 
 		if ( keyNdx == KEY_PROGRAM ){
+
 			SOLO_scale_chords_program_keys ^= 1;
 		}
 	}
@@ -137,7 +138,9 @@
 		if ( SOLO_scale_chords_program == ON ){
 
 			if ( keyNdx == KEY_PROGRAM ){
+
 				SOLO_scale_chords_program = OFF;
+				SOLO_scale_chords_program_keys = OFF;
 				SOLO_scale_chords_program_armed = OFF;
 				SOLO_scale_chords_last = OFF;
 				return;
@@ -316,7 +319,7 @@
 				SOLO_scale_chords_program_keys = OFF;
 			}
 			else if ( SOLO_scale_chords_program == OFF ){
-				SOLO_scale_chords_program = ON;
+
 				SOLO_scale_chords_program_keys = ON;
 			}
 		}

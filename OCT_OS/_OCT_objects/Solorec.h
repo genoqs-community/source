@@ -18,6 +18,7 @@ signed char   SOLO_scale_chords_program_octave	= OFF;
 unsigned char SOLO_scale_chords_program			= OFF;
 unsigned char SOLO_scale_chords_program_keys	= OFF;
 unsigned char SOLO_scale_chords_program_armed	= OFF;
+unsigned char SOLO_scale_chords_arp_cursor		= NOP;
 unsigned char SOLO_scale_chords_palette_ndx		= NOP;
 unsigned char SOLO_scale_chords_prev_palette_ndx = NOP;
 unsigned char SOLO_scale_chords_prev_on_ndx		= NOP;
