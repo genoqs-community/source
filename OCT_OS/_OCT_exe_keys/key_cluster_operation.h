@@ -395,6 +395,8 @@ void stop_solo_rec( unsigned char trim ){
 	freeflowOff( trim );
 	sequencer_STOP( true );
 	sequencer_RESET( false );
+	// Reset all locators in assistant page
+	set_page_locators( SOLO_assistant_page, 0, 0 );
 
 	SOLO_rec_finalized		= ON;
 	G_track_rec_bit 		= OFF;

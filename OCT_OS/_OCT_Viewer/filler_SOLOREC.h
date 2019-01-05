@@ -57,7 +57,7 @@
 		MIR_write_dot( LED_STOP, MIR_BLINK );
 	}
 
-	if ( SOLO_has_rec == ON || SOLO_scale_chords_program == ON ){
+	if ( SOLO_has_rec == ON || ( SOLO_scale_chords_program == ON && hasArpPattern( SOLO_scale_chords_palette_ndx ) == ON )){
 		if ( G_track_rec_bit == OFF && SOLO_rec_freeflow == OFF ){
 			if ( G_run_bit == ON ){
 				MIR_write_dot( LED_PLAY1, MIR_GREEN );
@@ -597,7 +597,7 @@
 			show ( ELE_OCTAVE_CIRCLE, G_global_locator_PICTURE );
 		}
 	}
-	else { //if ( SOLO_rec_track_preview == SOLOPAGE || SOLO_scale_chords_program == ON || TEMPO_TIMER == ON ){
+	else {
 
 		// --------------------------------- XXX
 		if ( SOLO_scale_chords == OFF ){
@@ -610,6 +610,10 @@
 			// Show the selected notes in scale. Both in MOD and SEL
 			show_OCTAVE_CIRCLE_scale_selection( SOLO_assistant_page );
 			show_SCALE_SELECTOR_scale_selection( SOLO_assistant_page );
+
+			if ( SOLO_scale_chords_program_keys == ON ){
+				MIR_write_dot (LED_PROGRAM, MIR_GREEN);
+			}
 		}
 		else {
 
@@ -640,13 +644,14 @@
 
 	if ( SOLO_scale_chords_program == ON && SOLO_scale_chords_palette_ndx != NOP ){
 
-		unsigned char len = NOP;
+		unsigned char len = NOP, pressed = FALSE;
 
 		for (i=0; i<MATRIX_NROF_COLUMNS; i++){ // scan arp steps
 
 			if ( Note_get_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], STEPSTAT_TOGGLE ) == ON ){ // there is an arp
 
-				if ( is_pressed_key( 20 + (i * 11)) == TRUE ){ // an Arp step is pressed
+				pressed = is_pressed_key( 20 + (i * 11));
+				if ( pressed == TRUE ){ // an Arp step is pressed
 
 					// show the pressed step length
 					len = Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i]->attr_LEN;
@@ -660,14 +665,26 @@
 		if ( len == NOP ) return; // not an arp
 
 		// LENGTH
-		if ( len == LEGATO ){
+		if ( pressed == TRUE ){
 
-			// Step is set to play legato, show legato flag
-			MIR_write_trackpattern ( 0x0f, 2, MIR_GREEN );
+			if ( len == LEGATO ){
+
+				// Step is set to play legato, show legato flag
+				MIR_write_trackpattern ( 0x0f, 2, MIR_GREEN );
+			}
+			else {
+				// The common case is when the length value is shown
+				MIR_write_length_H( len, 2 );
+			}
 		}
 		else {
-			// The common case is when the length value is shown
-			MIR_write_length_H( len, 2 );
+
+			MIR_point_numeric(
+				len,
+				2,	MIR_GREEN);
+			MIR_point_numeric(
+				len,
+				2,	MIR_RED);
 		}
 	}
 

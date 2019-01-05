@@ -333,10 +333,6 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 	G_initZoom = sourceGridPt->G_zoom_level >> 2 & 0x1; // shift the third bit
 	G_TT_external_latency_offset = sourceGridPt->G_zoom_level >> 3 & 0x7;
 
-	if ( G_flashgridheadersonly_flag == TRUE ){
-		return;
-	}
-
 	GRID_scene = sourceGridPt->GRID_scene;		// Currently selected grid scene for play or storage
 	GRID_switch_mode = sourceGridPt->GRID_switch_mode;
 	GRID_CURSOR = sourceGridPt->GRID_CURSOR;

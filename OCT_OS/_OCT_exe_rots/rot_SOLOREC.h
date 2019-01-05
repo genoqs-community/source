@@ -35,8 +35,15 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 		if ( rotNdx == 3 && Chord_palette_repository[SOLO_scale_chords_palette_ndx].chord_id != NOP ){
 
 			modify_parameter(&Chord_palette_repository[SOLO_scale_chords_palette_ndx].attr_LEN,
-							  LEGATO,
-							  STEP_MAX_LENGTH,
+							  1,
+							  TRACK_MAX_LENGTH,
+							  direction,
+							  OFF,
+							  FIXED);
+
+			modify_parameter(&SOLO_assistant_page->Track[0]->LEN_factor,
+							  1,
+							  TRACK_MAX_LENGTH,
 							  direction,
 							  OFF,
 							  FIXED);

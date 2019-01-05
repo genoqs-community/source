@@ -1148,59 +1148,6 @@ void align_measure_locators(){
 //	G_reset = ON;
 }
 
-void exit_solo_recording()
-{
-	if ( SOLO_rec_page != NULL ){
-		reset_page_cluster( SOLO_rec_page );
-	}
-	// Reset most of the global variables
-	SOLO_quantize_fine_tune_center  	= 1;
-	SOLO_quantize_fine_tune_edge		= 9;
-	SOLO_quantize_fine_tune_drop_edge	= OFF;
-	SOLO_quantize_note 					= OFF;
-	SOLO_strum							= 9; // 9=OFF
-	SOLO_slow_tempo						= OFF;
-	SOLO_rec_page						= NULL;
-//	SOLO_midi_ch						= 1;
-	SOLO_normalize_pitch				= OFF;
-	SOLO_normalize_len					= OFF;
-	SOLO_has_rec						= OFF;
-	SOLO_rec_finalized					= OFF;
-	SOLO_undo_page_col					= NOP;
-	SOLO_undo_page_len					= OFF;
-	SOLO_edit_buffer_volatile			= OFF;
-	SOLO_overdub						= OFF;
-	SOLO_rec_pressed_col				= OFF;
-	SOLO_pos_marker_in					= OFF;
-	SOLO_pos_marker_out					= OFF;
-	SOLO_rec_freeflow					= OFF;
-//	SOLO_rec_ending_flash				= OFF;
-	SOLO_rec_legato						= OFF;
-	SOLO_rec_transpose					= OFF;
-//	SOLO_page_play_along[10];
-	G_measure_locator					= OFF;
-	SOLO_rec_measure_count				= OFF;
-	SOLO_rec_freeflow_measures			= OFF;
-	SOLO_rec_measure_hold				= OFF;
-	GRID_bank_playmodes 				= SOLO_rec_save_playmodes;
-	SOLO_rec_save_playmodes				= OFF;
-	SOLO_rec_has_MCC					= OFF;
-	SOLO_undo_note						= NOP;
-	SOLO_undo_note_page_col				= NOP;
-	//
-	unsigned int i=0;
-	for (i=0; i<MATRIX_NROF_ROWS; i++){
-		if ( SOLO_page_play_along_toggle[i] != NOP ){
-			grid_select( &Page_repository[SOLO_page_play_along_toggle[i]], OFF );
-		}
-	}
-
-	Solorec_init();
-
-	GRID_p_selection_cluster = OFF;
-	G_zoom_level = zoomGRID; // exit the Solo Recording view
-}
-
 void copy_steps_to_recording(Pagestruct* target_page, unsigned char undo){
 	int col, i;
 

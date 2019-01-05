@@ -80,7 +80,7 @@ void executeKey( unsigned int keyNdx ){
 	if ( G_zoom_level == zoomSOLOREC ){
 		if ( keyNdx == KEY_RETURN ){
 			if ( G_run_bit == OFF ){
-				exit_solo_recording();
+				exitSoloRec();
 			}
 			return;
 		}

@@ -52,7 +52,7 @@
 	}
 
 	// MIDI NOTE and CC routing and pass through enabled
-	if ( keyNdx == KEY_ZOOM_MAP ){
+	if ( keyNdx == KEY_ZOOM_MAP && SOLO_scale_chords == OFF ){
 		G_midi_map_controller_mode ^= 1;
 	}
 
@@ -87,7 +87,7 @@
 	}
 
 	if ( keyNdx == KEY_STOP ){
-		if (( G_run_bit == ON && SOLO_rec_page != NULL ) || SOLO_scale_chords_program == ON ){
+		if ( G_run_bit == ON && ( SOLO_rec_page != NULL || SOLO_scale_chords_program == ON )){
 			stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON );
 		}
 		else {
@@ -99,19 +99,49 @@
 	}
 
 	if ( keyNdx == KEY_SCALE_SEL ){
+
 		SOLO_scale_chords ^= 1;
-		if ( SOLO_scale_chords == ON && SOLO_assistant_page->scaleNotes[G_scale_ndx] == SCALE_SIG_CHR ){
-			// There are no scales in Chromatic keys so choose Major
-			SOLO_assistant_page->scaleNotes[G_scale_ndx] = SCALE_SIG_MAJ;
+
+		if ( SOLO_scale_chords == ON ){
+
+			SOLO_last_controller_mode = G_midi_map_controller_mode;
+			G_midi_map_controller_mode = ON;
+
+			if ( SOLO_assistant_page->scaleNotes[G_scale_ndx] == SCALE_SIG_CHR ){
+
+				// There are no scales in Chromatic keys so choose Major
+				SOLO_assistant_page->scaleNotes[G_scale_ndx] = SCALE_SIG_MAJ;
+			}
+		}
+		else {
+			SOLO_scale_chords_program = OFF;
+			SOLO_scale_chords_program_armed = OFF;
+			SOLO_scale_chords_last = OFF;
+
+			if ( SOLO_last_controller_mode != NOP ) {
+
+				G_midi_map_controller_mode = SOLO_last_controller_mode;
+			}
 		}
 	}
 	else if ( SOLO_scale_chords == OFF && SOLO_assistant_page->scaleStatus != OFF ){
 
 		key_ScaleSelector_functions( keyNdx, SOLO_assistant_page );
+
+		if ( keyNdx == KEY_PROGRAM ){
+			SOLO_scale_chords_program_keys ^= 1;
+		}
 	}
 	else {
 
 		if ( SOLO_scale_chords_program == ON ){
+
+			if ( keyNdx == KEY_PROGRAM ){
+				SOLO_scale_chords_program = OFF;
+				SOLO_scale_chords_program_armed = OFF;
+				SOLO_scale_chords_last = OFF;
+				return;
+			}
 
 			if ( row_of(keyNdx) == 9 ){
 
@@ -281,15 +311,13 @@
 
 		if ( keyNdx == KEY_PROGRAM ){
 
-			if ( SOLO_scale_chords_program == ON && SOLO_scale_chords_program_armed == ON ){
-				SOLO_scale_chords_program_armed = OFF;
+			if ( SOLO_scale_chords_program_keys == ON ){
+
+				SOLO_scale_chords_program_keys = OFF;
 			}
 			else if ( SOLO_scale_chords_program == OFF ){
 				SOLO_scale_chords_program = ON;
-			}
-			else {
-				SOLO_scale_chords_last = OFF;
-				SOLO_scale_chords_program = OFF;
+				SOLO_scale_chords_program_keys = ON;
 			}
 		}
 		else if ( SOLO_scale_chords_program == ON ){
@@ -316,11 +344,11 @@
 	if ( SOLO_rec_page != NULL || SOLO_scale_chords_program == ON ){ // A record page cluster is selected
 
 		if ( keyNdx == KEY_PLAY1 ){
-			if ( SOLO_scale_chords_program == ON ){
+			if ( SOLO_scale_chords_program == ON && hasArpPattern( SOLO_scale_chords_palette_ndx ) == ON ){
 
 				SOLO_rec_rehersal = ON;
-				GRID_CURSOR = SOLO_assistant_page->pageNdx;
 				reset_page_cluster( SOLO_assistant_page );
+				GRID_CURSOR = SOLO_assistant_page->pageNdx;
 				sequencer_command_PLAY();
 			}
 			else {

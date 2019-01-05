@@ -196,7 +196,7 @@ void Octopus_recall_flash()
 	if ( G_flashgridheadersonly_flag == FALSE ){
 
 		// Enter the page mode - copied from pressing ESC!
-		target_page = &Page_repository[ GRID_CURSOR];
+		target_page = &Page_repository[ GRID_CURSOR ];
 		target_page->trackSelection = OFF;
 		target_page->trackAttributeSelection = OFF;
 

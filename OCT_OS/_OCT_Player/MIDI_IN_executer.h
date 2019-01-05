@@ -333,6 +333,10 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  	int outputMidiBus  = inputMidiBus; 		// Range [0, 1].
  	int outputMidiChan = inputMidiChan; 	// Range [1, 16].
 	#ifdef FEATURE_SOLO_REC
+ 	if ( G_zoom_level == zoomSOLOREC ){
+ 		outputMidiChan = ((SOLO_midi_ch -1) % 16) +1;
+ 		outputMidiBus = (SOLO_midi_ch -1) / 16;
+ 	}
  	unsigned char programOctave = ( MIDDLE_C - OCTAVE ) + ( OCTAVE * SOLO_scale_chords_program_octave );
  	unsigned char isProgramKey = ( in_pitch >= programOctave && in_pitch < ( programOctave + OCTAVE ) );
 
@@ -367,13 +371,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 						}
 					}
 					else { // after 2s
-						SOLO_scale_chords_program = ON; // palette editor enabled
-						SOLO_scale_chords_program_keys = ON;
-
-						if ( SOLO_last_chord != NULL ){
-
-							SOLO_scale_chords_program_armed = ON;
-						}
+						enterProgramEditor(); // palette editor enabled
 					}
 				}
 				return;
@@ -447,7 +445,10 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 		){
 
 		#ifdef FEATURE_SOLO_REC
-		if ( SOLO_scale_chords_program == OFF ) return;
+		if ( G_zoom_level != zoomSOLOREC ) {
+
+			return;
+		}
 		#else
 		return;
 		#endif
@@ -677,6 +678,17 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 				}
 			}
 			else {
+
+				// Play the chord palette on the normal keyboard
+				if ( isProgramKey == ON && SOLO_scale_chords_program_keys == ON ){
+
+					if ( Chord_palette_repository[in_pitch % OCTAVE].chord_id != NOP ) {
+
+						SOLO_scale_chords_palette_ndx = in_pitch % OCTAVE;
+						playChordstruct(SOLO_scale_chords_palette_ndx, in_velocity, outputMidiBus * 16 + outputMidiChan, ON);
+					}
+					return;
+				}
 
 				if ( G_midi_map_controller_mode == ON ){
 

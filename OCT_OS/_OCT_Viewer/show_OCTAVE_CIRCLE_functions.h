@@ -187,7 +187,7 @@ void show_OCTAVE_CIRCLE_chord_tone_selection( Pagestruct* target_page ){
 			}
 
 			MIR_write_dot( ROT_MCH, MIR_RED );
-			if (! hasArp ){
+			if ( !hasArp ){
 
 				MIR_write_dot( 20, 		MIR_GREEN );
 				MIR_write_dot( 20, 		MIR_RED );
@@ -216,7 +216,10 @@ void show_OCTAVE_CIRCLE_chord_tone_selection( Pagestruct* target_page ){
 
 				MIR_augment_trackpattern( Page_get_skippattern( target_page, 0 ), 9, MIR_RED );
 
-				MIR_write_lauflicht_track( 9, 9 ); // show the Arp chase light
+				if ( GRID_CURSOR == SOLO_assistant_page->pageNdx ){
+
+					MIR_write_lauflicht_track( 9, 9 ); // show the Arp chase light
+				}
 			}
 		}
 

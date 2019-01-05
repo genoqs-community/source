@@ -9,6 +9,7 @@ unsigned char SOLO_quantize_fine_tune_edge		= 9; // switch polarity from the edg
 unsigned char SOLO_quantize_fine_tune_drop_edge	= OFF; // drop edge notes that would otherwise switch polarity
 unsigned char SOLO_quantize_note 				= 0; // 0=OFF, 1=STA4, 2=STA3, 3=STA2, 4=STA1, 5=STA0
 signed char	  SOLO_strum						= 9; // 9=OFF
+unsigned char SOLO_last_controller_mode			= NOP;
 unsigned char SOLO_scale_chords					= OFF;
 unsigned short SOLO_scale_chords_modulations	= OFF;
 unsigned short SOLO_scale_chords_last			= OFF;
@@ -156,6 +157,11 @@ void initAssistantPage(){
 	}
 }
 
+void muteAssistantPage(){
+
+	SET_BIT(SOLO_assistant_page->trackMutepattern, 0); // mute the Arp track
+}
+
 void enterSoloRec(){
 
 	if ( SOLO_has_scale == OFF ){
@@ -164,8 +170,72 @@ void enterSoloRec(){
 		initAssistantPage();
 		SOLO_assistant_page->attr_PIT = OFF;
 	}
+
+	if ( SOLO_rec_page == NULL ){
+
+		GRID_CURSOR = SOLO_assistant_page->pageNdx;
+	}
+
+	CLEAR_BIT(SOLO_assistant_page->trackMutepattern, 0); // un-mute the Arp track
 	SOLO_has_scale = ON;
 	G_zoom_level = zoomSOLOREC;
+}
+
+void exitSoloRec()
+{
+	if ( SOLO_rec_page != NULL ){
+		reset_page_cluster( SOLO_rec_page );
+	}
+	// Reset most of the global variables
+	SOLO_quantize_fine_tune_center  	= 1;
+	SOLO_quantize_fine_tune_edge		= 9;
+	SOLO_quantize_fine_tune_drop_edge	= OFF;
+	SOLO_quantize_note 					= OFF;
+	SOLO_strum							= 9; // 9=OFF
+	SOLO_slow_tempo						= OFF;
+	SOLO_rec_page						= NULL;
+//	SOLO_midi_ch						= 1;
+	SOLO_normalize_pitch				= OFF;
+	SOLO_normalize_len					= OFF;
+	SOLO_has_rec						= OFF;
+	SOLO_rec_finalized					= OFF;
+	SOLO_undo_page_col					= NOP;
+	SOLO_undo_page_len					= OFF;
+	SOLO_edit_buffer_volatile			= OFF;
+	SOLO_overdub						= OFF;
+	SOLO_rec_pressed_col				= OFF;
+	SOLO_pos_marker_in					= OFF;
+	SOLO_pos_marker_out					= OFF;
+	SOLO_rec_freeflow					= OFF;
+//	SOLO_rec_ending_flash				= OFF;
+	SOLO_rec_legato						= OFF;
+	SOLO_rec_transpose					= OFF;
+//	SOLO_page_play_along[10];
+	G_measure_locator					= OFF;
+	SOLO_rec_measure_count				= OFF;
+	SOLO_rec_freeflow_measures			= OFF;
+	SOLO_rec_measure_hold				= OFF;
+	GRID_bank_playmodes 				= SOLO_rec_save_playmodes;
+	SOLO_rec_save_playmodes				= OFF;
+	SOLO_rec_has_MCC					= OFF;
+	SOLO_undo_note						= NOP;
+	SOLO_undo_note_page_col				= NOP;
+	//
+	unsigned int i=0;
+	for (i=0; i<MATRIX_NROF_ROWS; i++){
+		if ( SOLO_page_play_along_toggle[i] != NOP ){
+			grid_select( &Page_repository[SOLO_page_play_along_toggle[i]], OFF );
+		}
+	}
+	if ( SOLO_last_controller_mode != NOP ) {
+
+		G_midi_map_controller_mode = SOLO_last_controller_mode;
+	}
+
+	Solorec_init();
+	muteAssistantPage();
+	GRID_p_selection_cluster = OFF;
+	G_zoom_level = zoomGRID; // exit the Solo Recording view
 }
 
 unsigned char Note_get_status (	Notestruct* target_note,
@@ -406,6 +476,7 @@ void pageClusterEnterSoloRec(unsigned char pageNdx){
 			SOLO_has_rec = ON;
 			SOLO_rec_finalized = ON;
 			SOLO_midi_ch = target_page->Track[start]->attr_MCH;
+			SOLO_assistant_page->Track[0]->attr_MCH = SOLO_midi_ch;
 		}
 		this_ndx += 10;
 	}

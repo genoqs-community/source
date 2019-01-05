@@ -4397,6 +4397,12 @@ void translateSymbolsToChord(const char word[], unsigned char pitches[]){
 	int i, j=0;
 
 //	diag_printf("word:%s\n", word);
+	// short-circuit
+	if (word[0] == '\0'){
+		pitches[0] = 0xFF; // add a terminator
+		return;
+	}
+
 	for (i=0; i < MAX_CHORD_WORD; i++){
 
 		if (word[i] == '\0' || word[i] == ' '){ // delimiters
@@ -4406,7 +4412,6 @@ void translateSymbolsToChord(const char word[], unsigned char pitches[]){
 				pitches[j++] = index_of_key_symbol_sharp(word[i -2]); // sharp
 			}
 			else if (word[i -1] == 'b'){
-
 				pitches[j++] = index_of_key_symbol_flat(word[i -2]); // flat
 			}
 			else {
@@ -4546,6 +4551,31 @@ void copyChord(Chordstruct* src, Chordstruct* dest){
 	dest->tone = src->tone;
 	dest->attr_LEN = src->attr_LEN;
 	dest->attr_VEL = src->attr_VEL;
+}
+
+void enterProgramEditor(){
+
+	SOLO_scale_chords_program = ON; // palette editor enabled
+	SOLO_scale_chords_program_keys = ON;
+	GRID_CURSOR = SOLO_assistant_page->pageNdx;
+
+	if ( SOLO_last_chord != NULL ){
+
+		SOLO_scale_chords_program_armed = ON;
+	}
+}
+
+unsigned char hasArpPattern( unsigned char chord_palette_ndx ){
+	int i;
+
+	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
+
+		if ( Note_get_status( Chord_palette_repository[chord_palette_ndx].Arp[i], STEPSTAT_TOGGLE ) == ON ){
+
+			return ON;
+		}
+	}
+	return OFF;
 }
 
 void clearArpPattern( unsigned char chord_palette_ndx ){
@@ -4936,16 +4966,24 @@ void playNotesInChord( unsigned char in_channel,
 					  ){
 
 	signed char idx = in_pitch - (C3 - (OCTAVE * 2)); // C1
-	unsigned char arrayIndex = white_key_pitch_to_array_index[idx];
 
-	if ( idx < 0 || idx >= 35 )
+	if ( idx < 0 || idx >= (OCTAVE * 7))
 	{
 		return; // out of chord range
 	}
 
+	unsigned char arrayIndex = white_key_pitch_to_array_index[idx];
+	unsigned char cid = idx - arrayIndex;
+	unsigned char chord_id = cid + (SOLO_scale_chords_b * 35);
+
+	if ((chord_id >= 35 && !SOLO_scale_chords_b ) ||
+	    ( SOLO_scale_chords_b == ON && ( chord_id < 35 || chord_id >= 70 ))){
+
+		return; // split the A keyboard at chord 34
+	}
+
 	unsigned char tone = toneToIndex( G_scale_ndx );
 	Pagestruct* target_page = SOLO_assistant_page;
-	unsigned char chord_id = (idx - arrayIndex) + (SOLO_scale_chords_b * 35);
 	unsigned char scale = currentScaleIndex( target_page );
 
 	if ( scale == NOP ){
@@ -4968,6 +5006,7 @@ void copyArpToSteps(Chordstruct* chord){
 			SOLO_assistant_page->attr_LEN = i;
 		}
 	}
+	SOLO_assistant_page->Track[ARP_TRACK]->LEN_factor = chord->attr_LEN;
 }
 
 void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsigned char in_channel, unsigned char play){
@@ -5007,6 +5046,7 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 				if ( G_run_bit == OFF && play == ON ){
 
 					reset_page_cluster( SOLO_assistant_page );
+					GRID_CURSOR = SOLO_assistant_page->pageNdx;
 					sequencer_command_PLAY();
 				}
 			}
