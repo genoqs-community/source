@@ -609,10 +609,22 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  						}
  					}
 
+					#ifdef FEATURE_SOLO_REC
+ 					if ( SOLO_scale_chords == ON ){
+ 						record_chord_to_track( 	target_page, 	target_row, target_col,
+ 												target_start, 	in_pitch, 	in_velocity );
+ 					}
+ 					else {
+ 						// Record in notes to the rec enabled track
+						record_note_to_track( 	target_page, 	target_row, target_col,
+												target_start, 	in_pitch, 	in_velocity );
+ 					}
+					#else
  					// Record in notes to the rec enabled track
- 					record_note_to_track( 	target_page, 	target_row, 		target_col,
+ 					record_note_to_track( 	target_page, 	target_row, target_col,
 											target_start, 	in_pitch, 	in_velocity );
 
+					#endif
  					// Mark the page as touched
  					target_page->page_clear = OFF;
   				}

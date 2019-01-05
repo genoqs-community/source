@@ -113,6 +113,13 @@ extern void 			MIDI_send( 	unsigned char type,
 									unsigned char val1,
 									unsigned char val2 );
 
+extern void record_note_to_track( 	Pagestruct* target_page,
+									unsigned char row,
+									unsigned char target_col,
+									unsigned char target_start,
+									unsigned char in_pitch,
+									unsigned char in_velocity );
+
 extern unsigned char 	grid_row (unsigned char gridNdx);
 extern unsigned char 	grid_col (unsigned char gridNdx);
 extern unsigned char 	grid_ndx (unsigned char grid_row, unsigned char grid_col);

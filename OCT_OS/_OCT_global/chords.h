@@ -4960,16 +4960,13 @@ void playChord( unsigned char scale,
 							0 );
 }
 
-void playNotesInChord( unsigned char in_channel,
-					   unsigned char in_velocity,
-					   unsigned char in_pitch
-					  ){
+unsigned char pitchToChordId( unsigned char in_pitch ){
 
 	signed char idx = in_pitch - (C3 - (OCTAVE * 2)); // C1
 
 	if ( idx < 0 || idx >= (OCTAVE * 7))
 	{
-		return; // out of chord range
+		return NOP; // out of chord range
 	}
 
 	unsigned char arrayIndex = white_key_pitch_to_array_index[idx];
@@ -4977,11 +4974,65 @@ void playNotesInChord( unsigned char in_channel,
 	unsigned char chord_id = cid + (SOLO_scale_chords_b * 35);
 
 	if ((chord_id >= 35 && !SOLO_scale_chords_b ) ||
-	    ( SOLO_scale_chords_b == ON && ( chord_id < 35 || chord_id >= 70 ))){
+		( SOLO_scale_chords_b == ON && ( chord_id < 35 || chord_id >= 70 ))){
 
-		return; // split the A keyboard at chord 34
+		return NOP; // split the A keyboard at chord 34
 	}
 
+	return chord_id;
+}
+
+void record_chord_to_track( Pagestruct* target_page,
+							unsigned char row,
+							unsigned char target_col,
+							unsigned char target_start,
+							unsigned char in_pitch,
+							unsigned char in_velocity
+						   ){
+
+	int i;
+	unsigned char pitches[MAX_NOTES];
+	unsigned char chord_id = pitchToChordId(in_pitch);
+	if ( chord_id == NOP ) return;
+	unsigned char tone = toneToIndex( G_scale_ndx );
+	unsigned char scale = currentScaleIndex( SOLO_assistant_page );
+	unsigned char pitch = (C3 + (OCTAVE * SOLO_scale_chords_octave) + SOLO_assistant_page->attr_PIT);
+
+	translateSymbolsToChord(chords[scale][tone][chord_id], pitches);
+
+	for (i=0; i < MAX_NOTES; i++){
+
+		if (pitches[i] == 0xFF){
+			break;
+		}
+
+		record_note_to_track( target_page,
+							  row,
+							  target_col,
+							  target_start,
+							  (pitches[i] + pitch),
+							  in_velocity );
+	}
+}
+
+void record_chord_arp_to_track( Pagestruct* target_page,
+								unsigned char row,
+								unsigned char target_col,
+								unsigned char target_start,
+								unsigned char in_pitch,
+								unsigned char in_velocity
+							   ){
+
+	// TODO: use a cursor to track which steps have been written and which to write next
+}
+
+void playNotesInChord( unsigned char in_channel,
+					   unsigned char in_velocity,
+					   unsigned char in_pitch
+					  ){
+
+	unsigned char chord_id = pitchToChordId(in_pitch);
+	if ( chord_id == NOP ) return;
 	unsigned char tone = toneToIndex( G_scale_ndx );
 	Pagestruct* target_page = SOLO_assistant_page;
 	unsigned char scale = currentScaleIndex( target_page );

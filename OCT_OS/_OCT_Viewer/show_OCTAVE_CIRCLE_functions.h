@@ -225,7 +225,7 @@ void show_OCTAVE_CIRCLE_chord_tone_selection( Pagestruct* target_page ){
 
 		for (i=0; i<OCTAVE; i++) {
 
-			if ( CHECK_BIT(SOLO_scale_chords_last, i) != OFF ){ // this pitch has a chord note
+			if ( CHECK_BIT(SOLO_scale_chords_last, i) != OFF && G_run_bit == OFF ){ // this pitch has a chord note
 
 				// 33=C, 44=C#, 55=D
 				MIR_write_dot( 33 + (i * 11), 		MIR_GREEN );

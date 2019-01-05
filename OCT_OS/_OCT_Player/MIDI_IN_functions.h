@@ -691,60 +691,8 @@ void force_input_to_scale( 	Pagestruct* target_page,
 		}
 	} // FTS intervention
 
-#ifdef FEATURE_SOLO_REC
-//	diag_printf("Pitch:%d\n", in_pitch);
-//	diag_printf("Note:%d\n", (in_pitch % OCTAVE));
-//	// -------------------------------------------------------- FIXME: this isn't called
-//	if ( SOLO_scale_chords == ON ){
-//
-//		diag_printf("^^^^:%d\n", CHECK_RECALL_BLACK_KEY(in_pitch));
-//		if ( CHECK_RECALL_BLACK_KEY(in_pitch) ){
-//			diag_printf("????\n");
-//			if ( in_velocity != OFF ){
-//
-//				PHRASE_TIMER = ON;
-//				cyg_alarm_initialize(	alarm_hdl,
-//										cyg_current_time() + TIMEOUT_VALUE,
-//										0 );
-//				diag_printf("timer on\n");
-//			}
-//			else { // black tone recall key - note off
-//
-//				if ( PHRASE_TIMER == ON ){
-//					diag_printf("fast\n");
-//					// fast press
-//					SOLO_assistant_page->attr_PIT = SOLO_scale_chords_pitch_recall;
-//				}
-//				else {
-//					diag_printf("slow\n");
-//					SOLO_scale_chords_pitch_recall = SOLO_assistant_page->attr_PIT;
-//				}
-//			}
-//			return;
-//		}
-//
-//		diag_printf("Chord\n");
-//		playNotesInChord(in_channel, in_velocity, (in_pitch % OCTAVE));
-//
-//	}
-//	else {
-//		diag_printf("Keyx\n");
-//		if ( G_zoom_level == zoomSOLOREC ){
-//			diag_printf("?\n");
-//			TEMPO_TIMER = ON;
-//			cyg_alarm_initialize(	alarm_hdl,
-//									cyg_current_time() + (TIMEOUT_VALUE / 2),
-//									0 );
-//		}
-//
-//		// Channel (+1 offset needed), pitch, velocity, trigger time - 0 means NOW
-//		MIDI_NOTE_new ( in_channel, in_pitch, in_velocity, 0 );
-//	}
-#else
-
 	// Channel (+1 offset needed), pitch, velocity, trigger time - 0 means NOW
 	MIDI_NOTE_new ( in_channel, in_pitch, in_velocity, 0 );
-#endif
 
 
 	// Play MIDI queue elements which are due just before current timestamp, including the above..
