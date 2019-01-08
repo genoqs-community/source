@@ -5120,6 +5120,7 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 						stop_solo_rec(OFF);
 					}
 					SOLO_scale_chords_arp_cursor = NOP;
+					SOLO_scale_chords_arp_cursor = 0;
 				}
 				SOLO_scale_chords_prev_on_ndx = palette_ndx;
 			}
@@ -5143,7 +5144,7 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 						sequencer_command_PLAY();
 					}
 					else {
-						SOLO_scale_chords_arp_cursor = 0;
+						SOLO_assistant_page->locator = 0;
 					}
 				}
 			}
