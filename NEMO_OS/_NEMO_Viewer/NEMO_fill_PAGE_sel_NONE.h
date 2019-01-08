@@ -249,16 +249,20 @@
 
 			}
 
-			if ( G_track_page_chain_mod_bit == ON && target_page->OPS_mode != BIRDSEYE )
-			{
-				MIR_write_dot( LED_ZOOM_TRACK,	MIR_RED	);
-			}
-			// on the measure mode
-			else if ( G_track_page_chain_mod_bit == SCALE_MOD && target_page->OPS_mode != BIRDSEYE )
-			{
-				MIR_write_dot( LED_ZOOM_TRACK,	MIR_RED );
-				MIR_write_dot( LED_ZOOM_TRACK,	MIR_GREEN );
-				MIR_write_dot( LED_ZOOM_TRACK,	MIR_BLINK );
+			if ( target_page->OPS_mode != BIRDSEYE ) {
+				if ( CHECK_BIT( G_track_page_chain_mod_bit, ON_THE_MEASURE_MOD ) ) {
+					// On the measure mode
+					MIR_write_dot( LED_ZOOM_TRACK, MIR_BLINK );
+					MIR_write_dot( LED_ZOOM_TRACK, MIR_RED );
+					if ( CHECK_BIT( G_track_page_chain_mod_bit, CLUSTER_MOD ) )	{
+						// On the measure cluster mode
+						MIR_write_dot( LED_ZOOM_TRACK, MIR_GREEN );
+					}
+				}
+				else if ( CHECK_BIT( G_track_page_chain_mod_bit, CLUSTER_MOD ) ) {
+					// Cluster mode
+					MIR_write_dot( LED_ZOOM_TRACK, MIR_RED );
+				}
 			}
 
 			// EDIT MASTER

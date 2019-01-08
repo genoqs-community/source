@@ -139,6 +139,13 @@
 #define 	SCALE_MOD			2
 #define		SCALE_CAD			3
 
+#define 	CLUSTER_MOD			0	// Cluster operation applied immediately flag
+#define		ON_THE_MEASURE_MOD	1	// Operation applied on the measure flag
+
+#define 	OPERATION_MUTE		0 	// On the measure mute operation
+#define 	OPERATION_SOLO		1 	// On the measure solo operation
+#define 	OPERATION_MASK		2 	// On the measure mute / solo mask operation
+
 #define 	LEAD				2	// used when a note in scale selection is the lead tone
 
 #define		CURRENT				0	// Used in player bitpattern creation to differentiate

@@ -233,6 +233,7 @@ cyg_handle_t	UART1_IN_mbox_handle;
 unsigned char G_run_bit 		= OFF;
 unsigned char G_pause_bit 		= OFF;
 unsigned char G_track_page_chain_mod_bit = OFF;
+unsigned char G_on_the_measure_operation = OFF;
 unsigned short G_on_the_measure_trackMutepattern = 0;
 unsigned char G_on_the_measure_trackMutepattern_pageNdx = 0;
 Trackstruct* G_on_the_measure_track[MATRIX_NROF_ROWS];

@@ -144,11 +144,20 @@
 
 		case TRACK_MUTEPATTERN:
 
-			// On the measure mutepattern
-			if (G_on_the_measure_trackMutepattern != 0) {
-				MIR_write_buttool (RHS, G_on_the_measure_trackMutepattern, MIR_RED);
-				MIR_write_buttool (RHS, G_on_the_measure_trackMutepattern, MIR_GREEN);
-				MIR_write_buttool (RHS, G_on_the_measure_trackMutepattern, MIR_BLINK);
+			if ( G_on_the_measure_operation != OFF ) {
+				unsigned short mutePattern = 0;
+				if ( CHECK_BIT( G_on_the_measure_operation, OPERATION_MASK ) ) {
+					mutePattern = CHECK_BIT( G_on_the_measure_operation, OPERATION_MUTE ) ?
+							target_page->trackMutepattern ^ G_on_the_measure_trackMutepattern :
+							target_page->trackSolopattern ^ G_on_the_measure_trackMutepattern;
+				} else {
+					mutePattern = get_otm_track_pattern();
+				}
+				MIR_write_buttool (RHS, mutePattern, MIR_RED);
+				MIR_write_buttool (RHS, mutePattern, MIR_BLINK);
+				if ( CHECK_BIT( G_track_page_chain_mod_bit, CLUSTER_MOD ) ) {
+					MIR_write_buttool (RHS, mutePattern, MIR_GREEN);
+				}
 			}
 
 			MIR_write_buttool (RHS, target_page->trackMutepattern, MIR_RED);

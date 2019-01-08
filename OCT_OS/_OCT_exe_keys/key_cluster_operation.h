@@ -85,25 +85,22 @@ void apply_page_track_mute_toggle( Pagestruct* target_page, Trackstruct* current
 	*trackMutepattern = mutepattern;
 }
 
-// apply a track mute toggle for the entire page cluster
-void apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track ){
+// Computers target page cluster start index (or if not clustered own page index)
+signed short find_cluster_start_index( Pagestruct* target_page ) {
 
-	// select all pages in cluster
 	Pagestruct* temp_page = &Page_repository[ target_page->pageNdx ];
-	Trackstruct* next_track = current_track;
-
 	signed short 	prev_ndx = 0,
 					this_ndx = 0;
 
 	// Compute the index of the right neighbor
 	this_ndx = temp_page->pageNdx;
 	if (Page_repository[this_ndx].page_clear == ON) {
-		return;
+		return this_ndx;
 	}
 
 	prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
 
-	// track back to beginning of cluster selection
+	// Track back to beginning of cluster selection
 	while ( 	(prev_ndx < MAX_NROF_PAGES) &&
 			(Page_repository[prev_ndx].page_clear == OFF)
 	){
@@ -112,14 +109,54 @@ void apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct*
 		prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
 	}
 
+	return this_ndx;
+}
+
+// Apply a track mute toggle for the entire page cluster
+void apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track, unsigned char operation_flags ){
+
+	// select all pages in cluster
+	Pagestruct* temp_page = &Page_repository[ target_page->pageNdx ];
+	Trackstruct* next_track = current_track;
+
+	signed short this_ndx = find_cluster_start_index( temp_page );
+
 	// track forward to set the mute pattern
 	while ( 	(this_ndx < MAX_NROF_PAGES) &&
 			(Page_repository[this_ndx].page_clear == OFF)
 	){
 		temp_page = &Page_repository[ this_ndx ];
 		next_track = temp_page->Track[next_track->trackId % 10];
-		apply_page_track_mute_toggle( temp_page, next_track, &temp_page->trackMutepattern );
-		temp_page->trackMutepatternStored = 0;
+		if ( CHECK_BIT( operation_flags, OPERATION_MUTE ) ) {
+			apply_page_track_mute_toggle( temp_page, next_track, &temp_page->trackMutepattern );
+			temp_page->trackMutepatternStored = temp_page->trackMutepattern;
+		} else {
+			apply_page_track_mute_toggle( temp_page, next_track, &temp_page->trackSolopattern );
+		}
+		this_ndx += 10;
+	}
+}
+
+// Apply a mute pattern for the entire page cluster
+void apply_page_cluster_mute_pattern( Pagestruct* target_page, unsigned short pattern, unsigned char operation_flags ){
+
+	// select all pages in cluster
+	Pagestruct* temp_page = &Page_repository[ target_page->pageNdx ];
+	signed short this_ndx = find_cluster_start_index( temp_page );
+
+	// track forward to set the mute pattern
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+		temp_page = &Page_repository[ this_ndx ];
+		if ( CHECK_BIT( operation_flags, OPERATION_MUTE ) ) {
+			temp_page->trackMutepattern = pattern;
+			if (pattern) {
+				temp_page->trackMutepatternStored = pattern;
+			}
+		} else {
+			temp_page->trackSolopattern = pattern;
+		}
 		this_ndx += 10;
 	}
 }

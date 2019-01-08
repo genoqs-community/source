@@ -356,17 +356,16 @@
 
 		// Clear the solopattern if it exist
 		else if (target_page->trackSolopattern != 0) {
-			target_page->trackSolopattern = 0;
+			apply_page_mute_pattern_operation( target_page, 0x0, OPERATION_SOLO );
 		}
 		else {
 			// Then clear the solopattern
 			if (target_page->trackMutepattern != 0) {
-				target_page->trackMutepattern = 0;
+				apply_page_mute_pattern_operation( target_page, 0x0, OPERATION_MUTE );
 			}
 			else {
 				// Then fill the mutepattern from store
-				target_page->trackMutepattern =
-					target_page->trackMutepatternStored;
+				apply_page_mute_pattern_operation( target_page, target_page->trackMutepatternStored, OPERATION_MUTE );
 			}
 		}
 
@@ -374,7 +373,7 @@
 		if ((DOUBLE_CLICK_TARGET == keyNdx)
 				&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
 			// This is a double click victim - Mute all tracks
-			target_page->trackMutepattern = 0xFF;
+			apply_page_mute_pattern_operation( target_page, 0xFF, OPERATION_MUTE );
 			target_page->trackMutepatternStored = target_page->trackMutepattern;
 		}
 
@@ -433,16 +432,8 @@
 			// If the button pressed falls within the solo pattern, disable its solo status..
 			// ..considering the chaimode settings
 			if ( ((1<<(keyNdx-187)) & target_page->trackSolopattern) != 0 ){
-
-				// Loop through the chain of the selected track and mute all chain tracks
-				// Start with the pressed track
 				current_track = target_page->Track[ keyNdx-187 ];
-				temp = cardinality_of_chain( current_track );
-				for ( i=0; i < temp; i++ ){
-
-					target_page->trackSolopattern ^= ( 1 << row_of_track( target_page, current_track ));
-					current_track = current_track->chain_data[NEXT];
-				}
+				apply_page_track_mute_toggle_operation( target_page, current_track, OPERATION_SOLO );
 
 				// Need to break here, otherwise the key press gets executed further
 				break;
@@ -464,48 +455,7 @@
 
 			// Start with the pressed track.
 			current_track = target_page->Track[ keyNdx-187 ];
-
-			if ( G_track_page_chain_mod_bit == ON ){
-				apply_page_cluster_track_mute_toggle( target_page, current_track );
-			}
-			else if ( G_track_page_chain_mod_bit == SCALE_MOD ){
-				apply_page_track_mute_toggle( target_page, current_track, &G_on_the_measure_trackMutepattern );
-				G_on_the_measure_trackMutepattern_pageNdx = target_page->pageNdx;
-				G_on_the_measure_track[keyNdx-187] = current_track;
-			}
-			else
-			{
-
-				target_page->trackMutepatternStored = target_page->trackMutepattern;
-
-				// Depending on the way we choose the track base..
-				switch( target_page->CHAINS_PLAY_HEAD ){
-
-					case TRUE:
-						// Act as toggle on the full chain
-						// How long is the chain?
-						temp = cardinality_of_chain( current_track );
-
-						// Loop through the chain of the selected track and mute all chain tracks
-						for ( i=0; i < temp; i++ ){
-
-							target_page->trackMutepattern ^= ( 1 << row_of_track( target_page, current_track ));
-							current_track = current_track->chain_data[NEXT];
-						}
-						break;
-
-					// Act only on the individual track
-					case FALSE:
-						target_page->trackMutepattern ^=
-							( 1 << row_of_track( target_page, current_track ));
-						break;
-				}
-
-
-				// Update the stored variable
-				target_page->trackMutepatternStored = target_page->trackMutepattern;
-			}
-
+			apply_page_track_mute_toggle_operation( target_page, current_track, OPERATION_MUTE );
 
 			// D O U B L E - C L I C K
 			if ((DOUBLE_CLICK_TARGET == keyNdx)
@@ -515,17 +465,7 @@
 				// This is a double click victim, so add track to Solopattern,
 				// ..considering the chain mode settings.
 				if ( ((1<<(keyNdx-187)) & target_page->trackMutepattern) == 0 ) {
-
-					// Loop through the chain of the selected track and mute all chain tracks
-					// Start with the pressed track
-					current_track = target_page->Track[ keyNdx-187 ];
-					temp = cardinality_of_chain( current_track );
-					for ( i=0; i < temp; i++ ){
-
-						target_page->trackSolopattern ^= ( 1 << row_of_track( target_page, current_track ));
-						current_track = current_track->chain_data[NEXT];
-					}
-
+					apply_page_track_mute_toggle_operation( target_page, current_track, OPERATION_SOLO );
 				} // double click key was not in mutepattern
 			}// Double click victim.
 
@@ -539,6 +479,7 @@
 							doubleClickAlarm_hdl,
 							cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
 							DOUBLE_CLICK_ALARM_TIME );
+
 			}
 
 		} // No track or step is selected
@@ -552,16 +493,31 @@
 	//
 	key_exe_chainselectors( keyNdx );
 
+	if ( keyNdx == KEY_ZOOM_TRACK ) {
+		// D O U B L E - C L I C K  C O N S T R U C T
+		// DOUBLE CLICK SCENARIO
+		if ((DOUBLE_CLICK_TARGET == keyNdx)
+				&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
 
-	if ( keyNdx == KEY_ZOOM_TRACK ){
-		if ( G_track_page_chain_mod_bit == OFF ){
-			G_track_page_chain_mod_bit = ON;
-		}
-		else if ( G_track_page_chain_mod_bit == ON ){
-			G_track_page_chain_mod_bit = SCALE_MOD;
-		}
-		else {
-			G_track_page_chain_mod_bit = OFF;
+			// Double click code
+			// ...
+			// Enable on the measure operations
+			TOGGLE_BIT( G_track_page_chain_mod_bit, ON_THE_MEASURE_MOD );
+		} // end of double click scenario
+
+		// SINGLE CLICK SCENARIO
+		else if (DOUBLE_CLICK_TARGET == 0) {
+
+				DOUBLE_CLICK_TARGET = keyNdx;
+				DOUBLE_CLICK_TIMER = ON;
+				// Start the Double click Alarm
+				cyg_alarm_initialize(
+						doubleClickAlarm_hdl,
+						cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+						DOUBLE_CLICK_ALARM_TIME );
+
+			// Single click code
+			// ...
 		}
 	}
 

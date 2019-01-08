@@ -69,9 +69,12 @@ extern  void 			MIR_augment_trackpattern(	unsigned int bitpattern,
 extern  void 			MIR_write_lauflicht_track( 	unsigned char trackNdx, unsigned char rowNdx );
 
 
+extern unsigned short 	get_otm_track_pattern();
+extern void 			apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track, unsigned char operation );
+extern void 			apply_page_cluster_mute_pattern( Pagestruct* target_page, unsigned short pattern, unsigned char operation );
+extern void 			apply_page_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track, unsigned short* trackMutepattern );
 extern unsigned int 	is_page_in_cluster( Pagestruct* temp_page, unsigned char pageNdx );
 extern unsigned int 	selected_page_cluster_right_neighbor( Pagestruct* temp_page, unsigned char pageNdx );
-extern void 			apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track );
 extern unsigned char 	selected_solo_rec_page( unsigned char heldNdx, unsigned char pressedNdx );
 extern unsigned char 	selected_page_cluster( unsigned char grid_cursor, unsigned char target_page );
 extern unsigned char 	last_page_in_grid_row( unsigned char target_page );

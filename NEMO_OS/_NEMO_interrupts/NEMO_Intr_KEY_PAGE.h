@@ -109,4 +109,7 @@
 		} // switch target_page->OPS_mode
 
 
-
+		if ( target_page->OPS_mode != BIRDSEYE ) {
+			// KEY_ZOOM_TRACK held track cluster operations
+			SET_BIT_VALUE( G_track_page_chain_mod_bit, CLUSTER_MOD, is_pressed_key( KEY_ZOOM_TRACK ) );
+		}
