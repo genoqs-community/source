@@ -380,11 +380,17 @@
 			unsigned char pressed_ndx = grid_ndx_from_key(pressed_grid);
 			// DEBUG -- see the undo notes in the grid
 //			if ( Rec_repository[grid_col(SOLO_rec_page->pageNdx)].Note[i]->status == ON ){
-			if ( pressed_grid != FALSE && grid_row(pressed_ndx) == SOLO_rec_bank && Rec_repository[grid_col(pressed_ndx)].Note[i]->status == ON ){
+			if ( SOLO_rec_track_preview != SOLOGRID &&
+				 pressed_grid != FALSE &&
+				 grid_row(pressed_ndx) == SOLO_rec_bank &&
+				 Rec_repository[grid_col(pressed_ndx)].Note[i]->status == ON
+			   ){
 
 				// Shot the notes in the pressed page
 				GRID_write_dot( i, MIR_GREEN );
-				GRID_write_dot( i, MIR_RED );
+				if ( is_note_chord(Rec_repository[grid_col(pressed_ndx)].Note[i]) ){
+					GRID_write_dot( i, MIR_RED );
+				}
 			}
 //			if ( is_pressed_pagerange() != FALSE && Rec_undo_repository[grid_col(grid_ndx_from_key(is_pressed_pagerange()))].Note[i]->status == ON ){
 //
@@ -479,28 +485,34 @@
 			unsigned int max = 119;
 			unsigned int result = 0;
 
-			// Show the row zero measure count for the pressed page
-			for( i=min; i <= max; i+=11 ){
-				result = (i - 9) / 11;
+			if ( SOLO_has_rec == TRUE && G_run_bit == OFF ){
+				// Show the page edit warp tunnel
+				MIR_write_dot( LED_ZOOM_PAGE, MIR_RED   );
+				MIR_write_dot( LED_ZOOM_PAGE, MIR_BLINK );
+			}
 
-				if ( SOLO_has_rec == TRUE ){ // has a recording
+			if ( SOLO_rec_track_preview == SOLOGRID || SOLO_has_rec == FALSE ){
 
-					if ( SOLO_rec_page != NULL && Rec_repository[ grid_col(pressedNdx) ].measure_count >= result ){
+				// Show the row zero measure count for the pressed page
+				for( i=min; i <= max; i+=11 ){
+					result = (i - 9) / 11;
 
-						MIR_write_dot( i, MIR_RED );
-						// Show the page edit warp tunnel
-						MIR_write_dot( LED_ZOOM_PAGE, MIR_RED   );
-						MIR_write_dot( LED_ZOOM_PAGE, MIR_BLINK );
+					if ( SOLO_has_rec == TRUE ){ // has a recording
+
+						if ( SOLO_rec_page != NULL && Rec_repository[ grid_col(pressedNdx) ].measure_count >= result ){
+
+							MIR_write_dot( i, MIR_RED );
+						}
 					}
-				}
-				else {
+					else {
 
-					if ( SOLO_rec_page != NULL && Rec_repository[ grid_col(pressedNdx) ].measure_count == result ){
+						if ( SOLO_rec_page != NULL && Rec_repository[ grid_col(pressedNdx) ].measure_count == result ){
 
-						MIR_write_dot( i, MIR_GREEN );
-					}
-					else if ( G_run_bit == OFF ) {
-						MIR_write_dot( i, MIR_RED );
+							MIR_write_dot( i, MIR_GREEN );
+						}
+						else if ( G_run_bit == OFF ) {
+							MIR_write_dot( i, MIR_RED );
+						}
 					}
 				}
 			}
@@ -590,9 +602,13 @@
 			}
 		}
 		else if ( SOLO_rec_track_preview == SOLOMCC ){
+
 			// MATRIX
 			if ( G_run_bit == ON ){
-				show( ELE_MATRIX, LAUFLICHT_BOTTOM );
+
+				// Show the current MCC track chase-light at the bottom
+				unsigned char trackNdx = my_bit2ndx( Page_repository[GRID_CURSOR].priv_track_REC_pattern );
+				MIR_write_lauflicht_track( trackNdx, 9 );
 			}
 			show ( ELE_MATRIX, ATTR_MAP_VALUES );
 		}

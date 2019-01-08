@@ -66,6 +66,7 @@ unsigned short SOLO_pos_marker_out				= OFF; // right cut - SOLO_rec_measure_pos
 Pagestruct*   SOLO_pos_in						= NULL;
 Pagestruct*   SOLO_pos_out						= NULL;
 Chordstruct*  SOLO_last_chord					= NULL;
+Pagestruct*   SOLO_p_selection 		 [GRID_NROF_BANKS];
 
 
 
@@ -78,6 +79,7 @@ void initNote(Notestruct* note){
 	note->attr_STA = STEP_DEF_START;
 	note->attr_PIT = STEP_DEF_PITCH;
 	note->attr_LEN = STEP_DEF_LENGTH;
+	note->attr_MCC = 0;
 }
 
 void initChord(Chordstruct* chord, unsigned char col){
@@ -164,6 +166,7 @@ void muteAssistantPage(){
 }
 
 void enterSoloRec(){
+	int i;
 
 	if ( SOLO_has_scale == OFF ){
 
@@ -177,14 +180,24 @@ void enterSoloRec(){
 		GRID_CURSOR = SOLO_assistant_page->pageNdx;
 	}
 
+	for ( i=0; i < GRID_NROF_BANKS; i++ ){
+		SOLO_p_selection[ i ] = GRID_p_selection[ i ];
+	}
+
 	CLEAR_BIT(SOLO_assistant_page->trackMutepattern, 0); // un-mute the Arp track
 	SOLO_has_scale = ON;
 	G_zoom_level = zoomSOLOREC;
 }
 
-void exitSoloRec()
-{
+void exitSoloRec(){
+	int i;
+	unsigned char row = NOP;
+	Pagestruct* target_page = NULL;
+
 	if ( SOLO_rec_page != NULL ){
+
+		row = grid_row(SOLO_rec_page->pageNdx);
+		target_page = SOLO_rec_page;
 		reset_page_cluster( SOLO_rec_page );
 	}
 	// Reset most of the global variables
@@ -221,8 +234,7 @@ void exitSoloRec()
 	SOLO_rec_has_MCC					= OFF;
 	SOLO_undo_note						= NOP;
 	SOLO_undo_note_page_col				= NOP;
-	//
-	unsigned int i=0;
+
 	for (i=0; i<MATRIX_NROF_ROWS; i++){
 		if ( SOLO_page_play_along_toggle[i] != NOP ){
 			grid_select( &Page_repository[SOLO_page_play_along_toggle[i]], OFF );
@@ -236,6 +248,20 @@ void exitSoloRec()
 	Solorec_init();
 	muteAssistantPage();
 	GRID_p_selection_cluster = OFF;
+
+	for ( i=0; i < GRID_NROF_BANKS; i++ ){
+
+		GRID_p_selection[ i ] = SOLO_p_selection[ i ];
+		GRID_p_preselection[ i ] = SOLO_p_selection[ i ];
+		GRID_p_clock_presel[ i ] = SOLO_p_selection[ i ];
+	}
+	if ( row != NOP ){
+
+		GRID_p_selection[ row ] = target_page;
+		GRID_p_preselection[ row ] = target_page;
+		GRID_p_clock_presel[ row ] = target_page;
+	}
+
 	G_zoom_level = zoomGRID; // exit the Solo Recording view
 }
 
@@ -297,6 +323,7 @@ void copyNote(Notestruct* src, Notestruct* dest){
 	dest->attr_STA = src->attr_STA;
 	dest->attr_PIT = src->attr_PIT;
 	dest->attr_LEN = src->attr_LEN;
+	dest->attr_MCC = src->attr_MCC;
 }
 
 void noteToStep(Notestruct* note, Stepstruct* step){
@@ -308,6 +335,7 @@ void noteToStep(Notestruct* note, Stepstruct* step){
 	step->attr_STA = note->attr_STA;
 	step->attr_PIT = note->attr_PIT;
 	step->attr_LEN = note->attr_LEN;
+	step->attr_MCC = note->attr_MCC;
 
 	// TODO
 	// Enter the step strum level
@@ -327,6 +355,7 @@ void stepToNote(Stepstruct* step, Notestruct* note){
 	note->attr_STA = step->attr_STA;
 	note->attr_PIT = step->attr_PIT;
 	note->attr_LEN = step->attr_LEN;
+	note->attr_MCC = step->attr_MCC;
 }
 
 void recPageCopy( unsigned char source_col, unsigned char dest_col ){
@@ -451,6 +480,7 @@ void pageClusterEnterSoloRec(unsigned char pageNdx){
 	GRID_bank_playmodes = 0;
 	GRID_bank_playmodes |= 1 << grid_row(pageNdx);
 	SOLO_rec_save_playmodes |= 1 << grid_row(pageNdx);
+	SOLO_rec_has_MCC = ON; // we don't know if there is MCC data so make the matrix view available
 
 	// For each page in the record chain
 	// track forward
@@ -545,6 +575,18 @@ void capture_note_event(
 
 	// Quantize notes as they are recorded
 	quantizeStep(target_step, noteRec);
+}
+
+void capture_mcc_event(
+		Stepstruct* target_step,
+		Pagestruct* target_page,
+		unsigned char row,
+		unsigned char step_col ){
+
+
+	unsigned char col = grid_col(target_page->pageNdx);
+	unsigned char idx = grid_ndx(row, step_col);
+	Rec_repository[col].Note[idx]->attr_MCC = target_step->attr_MCC;
 }
 
 void quantize(Pagestruct* target_page){

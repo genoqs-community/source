@@ -299,6 +299,7 @@ extern int 				scale_pitch( Pagestruct* pagePt, int pitch );
 extern unsigned char 	get_chord_cardinality( Stepstruct* target_step, unsigned char octave_mask );
 extern void 			toggle_chord_octave( Stepstruct* target_step, unsigned char note_offset, unsigned char chord_octave_mask );
 extern bool 			is_step_chord( Stepstruct* target_step );
+extern bool 			is_note_chord( Notestruct* target_note );
 extern void 			show_chord_octave( Stepstruct* target_step, unsigned char note_offset, unsigned char chord_octave );
 extern void 			show_chord_octave_first( Stepstruct* target_step, unsigned char note_offset );
 extern unsigned char 	get_current_chord_octave();

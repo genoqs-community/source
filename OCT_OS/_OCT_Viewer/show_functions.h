@@ -844,6 +844,12 @@ bool is_step_chord( Stepstruct* target_step ) {
 	return ( target_step->chord_data & 0x7FF ) || ( target_step->chord_up & 0xFFF0FFF );
 }
 
+// Check if note contains any aux chord note data
+bool is_note_chord( Notestruct* target_note ) {
+
+	return ( target_note->chord_data & 0x7FF ) || ( target_note->chord_up & 0xFFF0FFF );
+}
+
 
 // Show step chord note data for given note offset and viewing octave layer (CHORD_OCTAVE_FIRST, CHORD_OCTAVE_SECOND or CHORD_OCTAVE_THIRD)
 // ORANGE = Note set only in currently viewed Octave

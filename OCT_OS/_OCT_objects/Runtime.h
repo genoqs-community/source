@@ -504,7 +504,7 @@ typedef struct notestruct{
 	  signed char	attr_PIT;
 	unsigned char	attr_LEN;
 	unsigned char	attr_STA;
-	  signed char 	attr_MCC; // TODO
+	  signed char 	attr_MCC;
 
 } Notestruct;
 

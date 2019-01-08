@@ -653,7 +653,7 @@
 			}
 			else { // Has a recording
 
-				if ( keyNdx == KEY_ZOOM_PAGE ){
+				if ( keyNdx == KEY_ZOOM_PAGE && G_run_bit == OFF ){
 					// Enter the page edit warp tunnel
 					GRID_CURSOR = heldNdx;
 					GRID_p_selection[ SOLO_rec_bank ] = &Page_repository[heldNdx];

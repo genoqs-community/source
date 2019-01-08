@@ -819,7 +819,10 @@ void Track_record_CC( 	Pagestruct* 	target_page,
  			target_page->Step[row][target_col]->attr_MCC = controller_value;
  			target_page->page_clear = OFF;
 
+
 			#ifdef FEATURE_SOLO_REC
+			capture_mcc_event(target_page->Step[row][target_col], target_page, row, target_col);
+
  			if ( SOLO_rec_has_MCC == OFF ){
 
  				SOLO_rec_track_preview = SOLOMCC;
