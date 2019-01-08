@@ -87,7 +87,13 @@
 	}
 
 	if ( keyNdx == KEY_STOP ){
-		if ( G_run_bit == ON && ( SOLO_rec_page != NULL || SOLO_scale_chords_program == ON )){
+
+		if ( G_run_bit == ON &&
+		   ( SOLO_rec_page != NULL ||
+		     SOLO_scale_chords_program == ON ||
+		     GRID_CURSOR == SOLO_assistant_page->pageNdx /* Arp */ )
+		   ){
+
 			stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON );
 		}
 		else {

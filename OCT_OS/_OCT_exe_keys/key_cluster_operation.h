@@ -469,8 +469,7 @@ void reset_page_cluster( Pagestruct* temp_page ){
 
 	signed short 	prev_ndx = 0,
 					this_ndx = 0,
-					m,
-					n;
+					m, n, i;
 
 
 	if ( G_run_bit == ON ){
@@ -489,6 +488,14 @@ void reset_page_cluster( Pagestruct* temp_page ){
 	}
 
 	temp_page = &Page_repository[this_ndx];
+
+	// PAGE PLAY from grid selection: each bank has at most one active page
+	for ( i=0; i < GRID_NROF_BANKS; i++ ){
+
+		GRID_p_selection[ i ] = NULL;
+		GRID_p_preselection[ i ] = NULL;
+		GRID_p_clock_presel[ i ] = NULL;
+	}
 
 	GRID_p_selection[ SOLO_rec_bank ] = temp_page;
 	GRID_p_preselection[ SOLO_rec_bank ] = temp_page;

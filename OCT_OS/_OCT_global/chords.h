@@ -5041,14 +5041,15 @@ unsigned char record_chord_arp_to_track( Pagestruct* target_page,
 
 	Step_copy(SOLO_assistant_page->Step[ARP_TRACK][arpStep], target_page->Step[row][target_col], False);
 	// default page pitch is middle C but solo_assist starts at zero
-	target_page->Step[row][target_col]->attr_PIT -= MIDDLE_C;
+	target_page->Step[row][target_col]->attr_PIT -= ( MIDDLE_C - SOLO_assistant_page->attr_PIT /* apply the transpose offset */); // TODO: transpose
+
+	capture_note_event(
+			target_page->Step[row][target_col],
+			target_page,
+			row,
+			target_col);
 
 	return Step_get_status(target_page->Step[row][target_col] , STEPSTAT_TOGGLE);
-
-	// FIXME: Arp notes not calling capture_note_event()
-	// TODO: Change between two palette arp keys
-	// TODO: Play arp in note-SEL when stopped
-	// FIXME: Bug: 2 arp keys shift right page length run-off
 }
 
 void playNotesInChord( unsigned char in_channel,
@@ -5057,7 +5058,11 @@ void playNotesInChord( unsigned char in_channel,
 					  ){
 
 	unsigned char chord_id = pitchToChordId(in_pitch);
-	if ( chord_id == NOP ) return;
+
+	if ( chord_id == NOP ){
+		return;
+	}
+
 	unsigned char tone = toneToIndex( G_scale_ndx );
 	Pagestruct* target_page = SOLO_assistant_page;
 	unsigned char scale = currentScaleIndex( target_page );
@@ -5091,8 +5096,10 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 	Chordstruct* chord = &Chord_palette_repository[palette_ndx];
 
 	if ( SOLO_scale_chords_prev_palette_ndx != palette_ndx ){
+
 		// we have changed palette keys so clear the history buffer
 		for (i=0; i < MATRIX_NROF_COLUMNS; i++){
+
 			Step_init(SOLO_assistant_page->Step[ARP_BUFFER_TRACK][i]);
 		}
 		SOLO_assistant_page->Track[ARP_BUFFER_TRACK]->attr_STATUS = OFF;
@@ -5106,14 +5113,15 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 
 			if ( in_velocity == OFF ){
 
-				if ( SOLO_scale_chords_prev_palette_ndx == NOP || SOLO_scale_chords_prev_on_ndx == palette_ndx ){ // key released
+				if ( SOLO_scale_chords_prev_on_ndx == palette_ndx ){ // key released
 
-					if ( SOLO_scale_chords_arp_cursor == NOP ){
+					if ( SOLO_scale_chords_arp_cursor == NOP || SOLO_scale_chords_program == ON ){
 
 						stop_solo_rec(OFF);
 					}
 					SOLO_scale_chords_arp_cursor = NOP;
 				}
+				SOLO_scale_chords_prev_on_ndx = palette_ndx;
 			}
 			else { // key pressed
 

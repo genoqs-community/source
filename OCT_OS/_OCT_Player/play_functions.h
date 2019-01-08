@@ -143,6 +143,7 @@ void compute_chain_presel( unsigned char target_bank ){
 		// If playmode CHAIN, select the next page for play.
 		// For now take the neighbor to the right, and if none, the furthest left
 		if (GRID_bank_playmodes & ( 1 << target_bank )){
+
 			#ifdef FEATURE_ENABLE_SONG_UPE
 			// Decrease the "repeats" value. If it is not 0, break;
 			if ( !G_save_song_pos ) {
@@ -303,6 +304,7 @@ void compute_chain_presel( unsigned char target_bank ){
 				set_track_locators( GRID_p_selection[target_bank], NULL, 0, 0 );
 			}
 		}
+
 
 	} // bank is active
 

@@ -386,7 +386,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		if ( G_zoom_level == zoomSOLOREC ){
 			if (SOLO_page_play_along[i] == GRID_p_selection[i]->pageNdx || grid_row(SOLO_rec_page->pageNdx) == i ){
 
-				if ( SOLO_scale_chords_program == ON ){
+				if ( SOLO_scale_chords_program == ON || GRID_CURSOR == SOLO_assistant_page->pageNdx /* Arp */ ){
 
 					PLAYER_play_page( SOLO_assistant_page, in_G_TTC_abs_value );
 				}

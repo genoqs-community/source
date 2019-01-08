@@ -189,7 +189,7 @@
 		}
 	}
 
-	if ( SOLO_scale_chords_program == OFF ){
+	if ( SOLO_scale_chords_program == OFF && GRID_CURSOR != SOLO_assistant_page->pageNdx /* Arp */ ){
 
 		// MIX recording split button
 		if ( ROT_INDEX == REC_MEASURES_SPLIT && G_run_bit == OFF ){
@@ -362,7 +362,12 @@
 	}
 
 
-	if ( SOLO_rec_track_preview == SOLOGRID || G_run_bit == OFF || SOLO_scale_chords_program == ON || TEMPO_TIMER == ON ){
+	if ( SOLO_rec_track_preview == SOLOGRID ||
+		 G_run_bit == OFF ||
+		 SOLO_scale_chords_program == ON ||
+		 TEMPO_TIMER == ON ||
+		 GRID_CURSOR == SOLO_assistant_page->pageNdx /* Arp */
+	   ){
 
 		// MATRIX
 		for (i=0; i < MAX_NROF_PAGES; i++) {
@@ -526,7 +531,7 @@
 	if ( G_run_bit == ON ){
 
 		// Show the row zero measure position
-		if ( SOLO_rec_track_preview == SOLOGRID ){
+		if ( SOLO_rec_track_preview == SOLOGRID && GRID_CURSOR != SOLO_assistant_page->pageNdx /* Arp */ ){
 
 			// - and end of recording
 			// measure hold
@@ -552,7 +557,7 @@
 
 		if ( SOLO_rec_track_preview == SOLOPAGE ){
 
-			if ( SOLO_scale_chords_program == OFF ){
+			if ( SOLO_scale_chords_program == OFF && GRID_CURSOR != SOLO_assistant_page->pageNdx /* !Arp */ ){
 
 				// MATRIX
 				show ( ELE_MATRIX, STEP_TOGGLE );
@@ -574,7 +579,6 @@
 				show_OCTAVE_CIRCLE_scale_selection( SOLO_assistant_page );
 			}
 			else {
-
 				// Chord tone select
 				show_OCTAVE_CIRCLE_chord_tone_selection( SOLO_assistant_page );
 				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_octave );
@@ -639,7 +643,6 @@
 				MIR_write_dot( LED_SCALE_MYSEL, MIR_BLINK );
 			}
 		}
-		// --------------------------------- XXX
 	}
 
 	if ( SOLO_scale_chords_program == ON && SOLO_scale_chords_palette_ndx != NOP ){
