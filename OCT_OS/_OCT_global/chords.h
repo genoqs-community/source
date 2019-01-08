@@ -5037,11 +5037,15 @@ unsigned char record_chord_arp_to_track( Pagestruct* target_page,
 		return OFF;
 	}
 
+	unsigned int temp;
 	unsigned char arpStep = SOLO_scale_chords_arp_cursor++ % SOLO_assistant_page->attr_LEN;
 
 	Step_copy(SOLO_assistant_page->Step[ARP_TRACK][arpStep], target_page->Step[row][target_col], False);
 	// default page pitch is middle C but solo_assist starts at zero
 	target_page->Step[row][target_col]->attr_PIT -= ( MIDDLE_C - SOLO_assistant_page->attr_PIT /* apply the transpose offset */); // TODO: transpose
+	temp = (target_page->Step[row][target_col]->attr_LEN * Track_LEN_factor[ SOLO_assistant_page->Track[ARP_TRACK]->LEN_factor ]) / 16;
+	temp = normalize( temp, STEP_MIN_LENGTH, STEP_MAX_LENGTH );
+	target_page->Step[row][target_col]->attr_LEN = (unsigned char) temp;
 
 	capture_note_event(
 			target_page->Step[row][target_col],
@@ -5115,12 +5119,11 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 
 				if ( SOLO_scale_chords_prev_on_ndx == palette_ndx ){ // key released
 
-					if ( SOLO_scale_chords_arp_cursor == NOP || SOLO_scale_chords_program == ON ){
+					if ( G_track_rec_bit == OFF ){
 
 						stop_solo_rec(OFF);
 					}
 					SOLO_scale_chords_arp_cursor = NOP;
-					SOLO_scale_chords_arp_cursor = 0;
 				}
 				SOLO_scale_chords_prev_on_ndx = palette_ndx;
 			}
@@ -5144,7 +5147,14 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 						sequencer_command_PLAY();
 					}
 					else {
-						SOLO_assistant_page->locator = 0;
+
+						if ( G_track_rec_bit == OFF ){
+
+							SOLO_assistant_page->locator = 0;
+						}
+						else {
+							SOLO_scale_chords_arp_cursor = 0;
+						}
 					}
 				}
 			}
