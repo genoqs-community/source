@@ -156,11 +156,6 @@
 
 	if (SOLO_rec_page != NULL && G_run_bit == OFF){
 
-		if ( SOLO_scale_chords_program == OFF ){
-			MIR_write_dot( LED_CLEAR, MIR_RED ); // LEN / clr
-			MIR_write_dot( LED_CLEAR, MIR_GREEN );
-		}
-
 		if ( SOLO_has_rec == ON ){
 
 			// Grid controls
@@ -439,6 +434,7 @@
 
 
 	// Show the GRID cursor
+	unsigned char flashClear = OFF;
 	unsigned int pressed = is_pressed_pagerange();
 	unsigned char pressedNdx = grid_ndx_from_key(pressed); // the key that is pressed FIXME: short circuit
 	unsigned char selRec = selected_solo_rec_page( pressedNdx, pressedNdx );
@@ -451,9 +447,10 @@
 
 		if ( selRec == OFF && SOLO_rec_page != NULL && SOLO_scale_chords_program == OFF ){
 			MIR_write_dot( LED_CLEAR, MIR_BLINK );
+			flashClear = ON;
 		}
 
-		if ( SOLO_rec_finalized == ON ){
+		if ( SOLO_rec_finalized == ON && G_run_bit == OFF ){
 			// do we have enough empty tracks left to double the current track chain
 			if ( (10 / Rec_repository[ grid_col(pressedNdx) ].measure_count) >= 2 ){
 				MIR_write_dot( LED_CHAINMODE_3, MIR_RED   );
@@ -537,6 +534,14 @@
 			else {
 				MIR_write_dot( i, MIR_RED );
 			}
+		}
+	}
+
+	if ( SOLO_rec_page != NULL && G_run_bit == OFF && SOLO_scale_chords_program == OFF ){
+
+		MIR_write_dot( LED_CLEAR, MIR_RED ); // LEN / clr
+		if ( !flashClear ){
+			MIR_write_dot( LED_CLEAR, MIR_GREEN );
 		}
 	}
 

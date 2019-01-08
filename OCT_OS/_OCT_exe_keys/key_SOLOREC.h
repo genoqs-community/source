@@ -686,7 +686,7 @@
 			}
 		}
 
-		if ( SOLO_rec_finalized == ON ){
+		if ( SOLO_rec_finalized == ON && G_run_bit == OFF ){
 
 			if ( keyNdx == LED_CHAINMODE_3 ){
 				// do we have enough empty tracks left to double the current track chain
