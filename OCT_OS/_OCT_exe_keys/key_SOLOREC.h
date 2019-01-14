@@ -690,9 +690,7 @@
 
 			if ( keyNdx == LED_CHAINMODE_3 ){
 				// do we have enough empty tracks left to double the current track chain
-				if ( (10 / Rec_repository[ grid_col(heldNdx) ].measure_count) >= 2 ){
-					duplicate_record_track_chain(&Page_repository[ heldNdx ]);
-				}
+				duplicate_record_track_chain(&Page_repository[ heldNdx ]);
 			}
 
 			if ( keyNdx == LED_CHAINMODE_2 ){

@@ -26,7 +26,6 @@ unsigned char SOLO_scale_chords_pitch_recall	= OFF;
 unsigned char SOLO_scale_chords_pitch_prev		= OFF;
 unsigned char SOLO_scale_chords_b				= OFF;
 unsigned char SOLO_has_scale					= OFF;
-unsigned char SOLO_transpose					= OFF;
 unsigned char SOLO_slow_tempo					= OFF;
 Pagestruct*	  SOLO_rec_page						= NULL;
 unsigned char SOLO_midi_ch						= 1;

@@ -1406,18 +1406,20 @@ unsigned char find_record_track_chain_start(Pagestruct* target_page){
 }
 
 void duplicate_record_track_chain(Pagestruct* target_page){
-	int row, col, j, idx, start;
+	int row, col, idx, j, count, start;
 
 	col = grid_col(target_page->pageNdx);
 	idx = find_record_track_chain_start(target_page);
-	start = idx - Rec_repository[col].measure_count;
 	j = idx;
+	start = idx - Rec_repository[col].measure_count;
+	count = idx - start;
 
-	if (idx == NOP || idx < 5){
+	if (idx == NOP || count > 5){
 		return;
 	}
 
-	for ( row=start; row < idx; row++ ){
+	for ( row=start; row < (start + count); row++ ){
+
 		Track_hard_init( target_page->Track[row], target_page->Track[row]->trackId );
 		Track_copy( target_page, j++, target_page, row );
 	}
@@ -1427,6 +1429,7 @@ void duplicate_record_track_chain(Pagestruct* target_page){
 	Rec_repository[col].measure_count = target_page->attr_STA;
 	Rec_undo_repository[col].measure_count = target_page->attr_STA;
 	copy_steps_to_recording(target_page, OFF);
+	reset_page_cluster( target_page );
 }
 
 void create_page_record_track_chain(Pagestruct* target_page, unsigned int measures){

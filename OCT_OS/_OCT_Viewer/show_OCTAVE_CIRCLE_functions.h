@@ -42,20 +42,26 @@ void show_OCTAVE_CIRCLE_scale_selection( Pagestruct* target_page ){
 		j = target_page-> scaleNotes[G_scale_ndx];
 	}
  
-
-	// Show the SCL_align status - not relevant in GRID mode
-	if ( target_page != GRID_assistant_page ){
+	#ifdef FEATURE_SOLO_REC
+	if ( SOLO_rec_transpose == OFF ){
+	#endif
 		
-		if ( target_page->SCL_align == OFF ){
-		
-			MIR_write_dot( LED_SCALE_CAD, MIR_GREEN );
-		}
-		else{
+		// Show the SCL_align status - not relevant in GRID mode
+		if ( target_page != GRID_assistant_page ){
 
-			MIR_write_dot( LED_SCALE_CAD, MIR_RED );
-			MIR_write_dot( LED_SCALE_CAD, MIR_BLINK );
+			if ( target_page->SCL_align == OFF ){
+
+				MIR_write_dot( LED_SCALE_CAD, MIR_GREEN );
+			}
+			else{
+
+				MIR_write_dot( LED_SCALE_CAD, MIR_RED );
+				MIR_write_dot( LED_SCALE_CAD, MIR_BLINK );
+			}
 		}
+	#ifdef FEATURE_SOLO_REC
 	}
+	#endif
 
 	// ON fields showing first
 	for (i=0; i<12; i++) {
@@ -306,51 +312,144 @@ void show_OCTAVE_CIRCLE_chord_tone_selection( Pagestruct* target_page ){
 		}
 	}
 
-	// UP fields showing first. This shows the scale lead
-	for (i=0; i<12; i++) {
+	if ( SOLO_rec_transpose == ON ){
 
-		if ( SOLO_scale_chords_program == ON ){
+		// Show the selected notes in scale. Both in MOD and SEL
+		show_OCTAVE_CIRCLE_scale_selection( target_page );
+	}
+	else {
 
-			if ( Chord_palette_repository[i].chord_id != NOP ){
+		// UP fields showing first. This shows the scale lead
+		for (i=0; i<12; i++) {
 
-				switch (i) {
-					case 0:
-						MIR_write_dot( LED_NOTE_C, 		MIR_GREEN );
-						break;
-					case 1:
-						MIR_write_dot( LED_NOTE_Cis, 	MIR_GREEN );
-						break;
-					case 2:
-						MIR_write_dot( LED_NOTE_D,	 	MIR_GREEN );
-						break;
-					case 3:
-						MIR_write_dot( LED_NOTE_Dis, 	MIR_GREEN );
-						break;
-					case 4:
-						MIR_write_dot( LED_NOTE_E,	 	MIR_GREEN );
-						break;
-					case 5:
-						MIR_write_dot( LED_NOTE_F,	 	MIR_GREEN );
-						break;
-					case 6:
-						MIR_write_dot( LED_NOTE_Fis, 	MIR_GREEN );
-						break;
-					case 7:
-						MIR_write_dot( LED_NOTE_G,	 	MIR_GREEN );
-						break;
-					case 8:
-						MIR_write_dot( LED_NOTE_Gis, 	MIR_GREEN );
-						break;
-					case 9:
-						MIR_write_dot( LED_NOTE_A, 		MIR_GREEN );
-						break;
-					case 10:
-						MIR_write_dot( LED_NOTE_Ais, 	MIR_GREEN );
-						break;
-					case 11:
-						MIR_write_dot( LED_NOTE_B,	 	MIR_GREEN );
-						break;
+			if ( SOLO_scale_chords_program == ON ){
+
+				if ( Chord_palette_repository[i].chord_id != NOP ){
+
+					switch (i) {
+						case 0:
+							MIR_write_dot( LED_NOTE_C, 		MIR_GREEN );
+							break;
+						case 1:
+							MIR_write_dot( LED_NOTE_Cis, 	MIR_GREEN );
+							break;
+						case 2:
+							MIR_write_dot( LED_NOTE_D,	 	MIR_GREEN );
+							break;
+						case 3:
+							MIR_write_dot( LED_NOTE_Dis, 	MIR_GREEN );
+							break;
+						case 4:
+							MIR_write_dot( LED_NOTE_E,	 	MIR_GREEN );
+							break;
+						case 5:
+							MIR_write_dot( LED_NOTE_F,	 	MIR_GREEN );
+							break;
+						case 6:
+							MIR_write_dot( LED_NOTE_Fis, 	MIR_GREEN );
+							break;
+						case 7:
+							MIR_write_dot( LED_NOTE_G,	 	MIR_GREEN );
+							break;
+						case 8:
+							MIR_write_dot( LED_NOTE_Gis, 	MIR_GREEN );
+							break;
+						case 9:
+							MIR_write_dot( LED_NOTE_A, 		MIR_GREEN );
+							break;
+						case 10:
+							MIR_write_dot( LED_NOTE_Ais, 	MIR_GREEN );
+							break;
+						case 11:
+							MIR_write_dot( LED_NOTE_B,	 	MIR_GREEN );
+							break;
+					}
+
+					switch (i) {
+						case 0:
+							MIR_write_dot( LED_NOTE_C, 		MIR_RED );
+							break;
+						case 1:
+							MIR_write_dot( LED_NOTE_Cis, 	MIR_RED );
+							break;
+						case 2:
+							MIR_write_dot( LED_NOTE_D,	 	MIR_RED );
+							break;
+						case 3:
+							MIR_write_dot( LED_NOTE_Dis, 	MIR_RED );
+							break;
+						case 4:
+							MIR_write_dot( LED_NOTE_E,	 	MIR_RED );
+							break;
+						case 5:
+							MIR_write_dot( LED_NOTE_F,	 	MIR_RED );
+							break;
+						case 6:
+							MIR_write_dot( LED_NOTE_Fis, 	MIR_RED );
+							break;
+						case 7:
+							MIR_write_dot( LED_NOTE_G,	 	MIR_RED );
+							break;
+						case 8:
+							MIR_write_dot( LED_NOTE_Gis, 	MIR_RED );
+							break;
+						case 9:
+							MIR_write_dot( LED_NOTE_A, 		MIR_RED );
+							break;
+						case 10:
+							MIR_write_dot( LED_NOTE_Ais, 	MIR_RED );
+							break;
+						case 11:
+							MIR_write_dot( LED_NOTE_B,	 	MIR_RED );
+							break;
+					}
+
+					if ( SOLO_scale_chords_palette_ndx == i ){
+
+						switch (i) {
+							case 0:
+								MIR_write_dot( LED_NOTE_C, 		MIR_BLINK );
+								break;
+							case 1:
+								MIR_write_dot( LED_NOTE_Cis, 	MIR_BLINK );
+								break;
+							case 2:
+								MIR_write_dot( LED_NOTE_D,	 	MIR_BLINK );
+								break;
+							case 3:
+								MIR_write_dot( LED_NOTE_Dis, 	MIR_BLINK );
+								break;
+							case 4:
+								MIR_write_dot( LED_NOTE_E,	 	MIR_BLINK );
+								break;
+							case 5:
+								MIR_write_dot( LED_NOTE_F,	 	MIR_BLINK );
+								break;
+							case 6:
+								MIR_write_dot( LED_NOTE_Fis, 	MIR_BLINK );
+								break;
+							case 7:
+								MIR_write_dot( LED_NOTE_G,	 	MIR_BLINK );
+								break;
+							case 8:
+								MIR_write_dot( LED_NOTE_Gis, 	MIR_BLINK );
+								break;
+							case 9:
+								MIR_write_dot( LED_NOTE_A, 		MIR_BLINK );
+								break;
+							case 10:
+								MIR_write_dot( LED_NOTE_Ais, 	MIR_BLINK );
+								break;
+							case 11:
+								MIR_write_dot( LED_NOTE_B,	 	MIR_BLINK );
+								break;
+						}
+					}
 				}
+			}
+
+			// If the note is selected as UP
+			else if ( target_page-> scaleLead[G_scale_ndx] & (1 << (11-i) ) ) {
 
 				switch (i) {
 					case 0:
@@ -390,137 +489,51 @@ void show_OCTAVE_CIRCLE_chord_tone_selection( Pagestruct* target_page ){
 						MIR_write_dot( LED_NOTE_B,	 	MIR_RED );
 						break;
 				}
-
-				if ( SOLO_scale_chords_palette_ndx == i ){
-
-					switch (i) {
-						case 0:
-							MIR_write_dot( LED_NOTE_C, 		MIR_BLINK );
-							break;
-						case 1:
-							MIR_write_dot( LED_NOTE_Cis, 	MIR_BLINK );
-							break;
-						case 2:
-							MIR_write_dot( LED_NOTE_D,	 	MIR_BLINK );
-							break;
-						case 3:
-							MIR_write_dot( LED_NOTE_Dis, 	MIR_BLINK );
-							break;
-						case 4:
-							MIR_write_dot( LED_NOTE_E,	 	MIR_BLINK );
-							break;
-						case 5:
-							MIR_write_dot( LED_NOTE_F,	 	MIR_BLINK );
-							break;
-						case 6:
-							MIR_write_dot( LED_NOTE_Fis, 	MIR_BLINK );
-							break;
-						case 7:
-							MIR_write_dot( LED_NOTE_G,	 	MIR_BLINK );
-							break;
-						case 8:
-							MIR_write_dot( LED_NOTE_Gis, 	MIR_BLINK );
-							break;
-						case 9:
-							MIR_write_dot( LED_NOTE_A, 		MIR_BLINK );
-							break;
-						case 10:
-							MIR_write_dot( LED_NOTE_Ais, 	MIR_BLINK );
-							break;
-						case 11:
-							MIR_write_dot( LED_NOTE_B,	 	MIR_BLINK );
-							break;
-					}
-				}
 			}
-		}
+		} // UP field for iterator
 
-		// If the note is selected as UP
-		else if ( target_page-> scaleLead[G_scale_ndx] & (1 << (11-i) ) ) {
+		if ( SOLO_scale_chords_program == OFF ){ // show the pitch
 
-			switch (i) {
+			switch (target_page->attr_PIT % OCTAVE) {
 				case 0:
-					MIR_write_dot( LED_NOTE_C, 		MIR_RED );
+					MIR_write_dot( LED_NOTE_C, 		MIR_GREEN );
 					break;
 				case 1:
-					MIR_write_dot( LED_NOTE_Cis, 	MIR_RED );
+					MIR_write_dot( LED_NOTE_Cis, 	MIR_GREEN );
 					break;
 				case 2:
-					MIR_write_dot( LED_NOTE_D,	 	MIR_RED );
+					MIR_write_dot( LED_NOTE_D,	 	MIR_GREEN );
 					break;
 				case 3:
-					MIR_write_dot( LED_NOTE_Dis, 	MIR_RED );
+					MIR_write_dot( LED_NOTE_Dis, 	MIR_GREEN );
 					break;
 				case 4:
-					MIR_write_dot( LED_NOTE_E,	 	MIR_RED );
+					MIR_write_dot( LED_NOTE_E,	 	MIR_GREEN );
 					break;
 				case 5:
-					MIR_write_dot( LED_NOTE_F,	 	MIR_RED );
+					MIR_write_dot( LED_NOTE_F,	 	MIR_GREEN );
 					break;
 				case 6:
-					MIR_write_dot( LED_NOTE_Fis, 	MIR_RED );
+					MIR_write_dot( LED_NOTE_Fis, 	MIR_GREEN );
 					break;
 				case 7:
-					MIR_write_dot( LED_NOTE_G,	 	MIR_RED );
+					MIR_write_dot( LED_NOTE_G,	 	MIR_GREEN );
 					break;
 				case 8:
-					MIR_write_dot( LED_NOTE_Gis, 	MIR_RED );
+					MIR_write_dot( LED_NOTE_Gis, 	MIR_GREEN );
 					break;
 				case 9:
-					MIR_write_dot( LED_NOTE_A, 		MIR_RED );
+					MIR_write_dot( LED_NOTE_A, 		MIR_GREEN );
 					break;
 				case 10:
-					MIR_write_dot( LED_NOTE_Ais, 	MIR_RED );
+					MIR_write_dot( LED_NOTE_Ais, 	MIR_GREEN );
 					break;
 				case 11:
-					MIR_write_dot( LED_NOTE_B,	 	MIR_RED );
+					MIR_write_dot( LED_NOTE_B,	 	MIR_GREEN );
 					break;
 			}
 		}
-	} // UP field for iterator
-
-	if ( SOLO_scale_chords_program == OFF ){ // show the pitch
-
-		switch (target_page->attr_PIT % OCTAVE) {
-			case 0:
-				MIR_write_dot( LED_NOTE_C, 		MIR_GREEN );
-				break;
-			case 1:
-				MIR_write_dot( LED_NOTE_Cis, 	MIR_GREEN );
-				break;
-			case 2:
-				MIR_write_dot( LED_NOTE_D,	 	MIR_GREEN );
-				break;
-			case 3:
-				MIR_write_dot( LED_NOTE_Dis, 	MIR_GREEN );
-				break;
-			case 4:
-				MIR_write_dot( LED_NOTE_E,	 	MIR_GREEN );
-				break;
-			case 5:
-				MIR_write_dot( LED_NOTE_F,	 	MIR_GREEN );
-				break;
-			case 6:
-				MIR_write_dot( LED_NOTE_Fis, 	MIR_GREEN );
-				break;
-			case 7:
-				MIR_write_dot( LED_NOTE_G,	 	MIR_GREEN );
-				break;
-			case 8:
-				MIR_write_dot( LED_NOTE_Gis, 	MIR_GREEN );
-				break;
-			case 9:
-				MIR_write_dot( LED_NOTE_A, 		MIR_GREEN );
-				break;
-			case 10:
-				MIR_write_dot( LED_NOTE_Ais, 	MIR_GREEN );
-				break;
-			case 11:
-				MIR_write_dot( LED_NOTE_B,	 	MIR_GREEN );
-				break;
-		}
 	}
-
 }
 
 

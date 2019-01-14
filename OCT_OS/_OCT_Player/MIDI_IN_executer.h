@@ -612,8 +612,9 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 					#ifdef FEATURE_SOLO_REC
  					unsigned char hasArp = hasArpPattern(in_pitch % OCTAVE);
 
- 					if (( SOLO_scale_chords == ON && hasArp == OFF ) ||
- 					   ( SOLO_scale_chords_program_keys == ON && isProgramKey == ON && hasArp == OFF )
+ 					if (( SOLO_scale_chords == ON && SOLO_scale_chords_program_keys == OFF ) ||
+ 					    ( SOLO_scale_chords == ON && SOLO_scale_chords_program_keys == ON && !isProgramKey ) ||
+ 					    ( SOLO_scale_chords_program_keys == ON && isProgramKey == ON && hasArp == OFF )
  					   ){
 
  						record_chord_to_track( 	target_page, 	target_row, target_col,

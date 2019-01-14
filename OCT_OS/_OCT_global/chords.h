@@ -4473,7 +4473,7 @@ void modifyChordPitch(signed char val){
 	SOLO_assistant_page->attr_PIT = (unsigned char) (abs(OCTAVE + (pit + val)) % OCTAVE);
 }
 
-void modifyChordTone(signed char val){ // add scale_ndx 2, 3 for chords, program
+void modifyChordTone(signed char val){
 
 	unsigned char toneNdx = my_bit2ndx( SOLO_assistant_page->scaleLead[ G_scale_ndx ] ) + OCTAVE;
 //	diag_printf("tone:%d\n", toneNdx);
