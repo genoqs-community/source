@@ -333,20 +333,35 @@
 
 			if ( keyNdx == KEY_SCALE_CAD && SOLO_scale_chords_program_octave < 3 ){
 
-				SOLO_scale_chords_program_octave++;
+				SOLO_scale_chords_program_octave++; // This is the location of the palette octave on the keyboard
 			}
 			else if ( keyNdx == KEY_SCALE_MOD && SOLO_scale_chords_program_octave > -3 ){
 
 				SOLO_scale_chords_program_octave--;
 			}
 		}
-		else if ( keyNdx == KEY_SCALE_CAD && SOLO_scale_chords_octave < 3 ){
+		else if ( SOLO_rec_transpose != ON ){
 
-			SOLO_scale_chords_octave++;
+			if ( keyNdx == KEY_SCALE_CAD && SOLO_scale_chords_octave < 3 ){
+
+				SOLO_scale_chords_octave++;
+			}
+			else if ( keyNdx == KEY_SCALE_MOD && SOLO_scale_chords_octave > -3 ){
+
+				SOLO_scale_chords_octave--;
+			}
 		}
-		else if ( keyNdx == KEY_SCALE_MOD && SOLO_scale_chords_octave > -3 ){
+	}
 
-			SOLO_scale_chords_octave--;
+	if ( SOLO_rec_transpose == ON ){
+
+		if ( keyNdx == KEY_SCALE_CAD && SOLO_rec_transpose_octave < 2 ){
+
+			transposeTrack(&Page_repository[GRID_CURSOR], ++SOLO_rec_transpose_octave);
+		}
+		else if ( keyNdx == KEY_SCALE_MOD && SOLO_rec_transpose_octave > -2 ){
+
+			transposeTrack(&Page_repository[GRID_CURSOR], --SOLO_rec_transpose_octave);
 		}
 	}
 

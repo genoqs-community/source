@@ -1035,7 +1035,6 @@ void modify_scale_composition( 	Pagestruct* target_page,
 
 	switch( target_page->scaleStatus ){
 
-
 		// Change the SCALE - adding and removing notes from it
 		case SCALE_SEL:
 

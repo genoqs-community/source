@@ -12,7 +12,7 @@
 		}
 	}
 
-	if ( G_run_bit == ON && SOLO_rec_has_MCC == ON ){
+	if ( G_run_bit == ON && SOLO_rec_has_MCC == ON && SOLO_scale_chords_program == OFF ){
 		MIR_write_dot( LED_CHAINER, MIR_GREEN );
 		MIR_write_dot( LED_CHAINER, MIR_RED );
 	}
@@ -154,23 +154,25 @@
 		MIR_write_dot( LED_TEMPO, MIR_RED );
 	}
 
-	if (SOLO_rec_page != NULL && G_run_bit == OFF){
+	if (SOLO_rec_page != NULL){
 
 		if ( SOLO_has_rec == ON ){
 
-			// Grid controls
-			if ( SOLO_scale_chords_program == OFF ){
+			if ( G_run_bit == OFF ){
+				// Grid controls
+				if ( SOLO_scale_chords_program == OFF ){
 
-				MIR_write_dot( LED_TGGL, MIR_RED ); // VEL
-				MIR_write_dot( LED_TGGL, MIR_GREEN );
-			}
+					MIR_write_dot( LED_TGGL, MIR_RED ); // VEL
+					MIR_write_dot( LED_TGGL, MIR_GREEN );
+				}
 
-			// Legato
-			if ( SOLO_rec_legato == ON ){
-				MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
-			}
-			else {
-				MIR_write_dot( LED_ZOOM_STEP, MIR_RED ); // STEP ZOOM for Legato note length toggle
+				// Legato
+				if ( SOLO_rec_legato == ON ){
+					MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+				}
+				else {
+					MIR_write_dot( LED_ZOOM_STEP, MIR_RED ); // STEP ZOOM for Legato note length toggle
+				}
 			}
 
 			// Transpose
@@ -178,7 +180,7 @@
 				MIR_write_dot( LED_ZOOM_PLAY, MIR_GREEN );
 				MIR_write_dot( LED_ZOOM_PLAY, MIR_BLINK );
 			}
-			else {
+			else if ( SOLO_scale_chords_program == OFF ) {
 				MIR_write_dot( LED_ZOOM_PLAY, MIR_RED );
 			}
 		}
@@ -589,8 +591,15 @@
 
 				MIR_write_dot (LED_SCALE_MYSEL, MIR_GREEN); // Scale
 
-				// OCTAVE CIRCLE
-				show_GLOBALS_scale_master( SOLO_assistant_page );
+				if ( SOLO_rec_transpose == ON ){
+
+					show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_rec_transpose_octave );
+					MIR_write_dot( LED_SCALE_SEL, MIR_RED );
+				}
+				else {
+					// OCTAVE CIRCLE
+					show_GLOBALS_scale_master( SOLO_assistant_page );
+				}
 
 				// Show the selected notes in scale. Both in MOD and SEL
 				show_OCTAVE_CIRCLE_scale_selection( SOLO_assistant_page );
@@ -629,8 +638,15 @@
 
 			MIR_write_dot (LED_SCALE_MYSEL, MIR_GREEN); // Scale
 
-			// OCTAVE CIRCLE
-			show_GLOBALS_scale_master( SOLO_assistant_page );
+			if ( SOLO_rec_transpose == ON ){
+
+				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_rec_transpose_octave );
+				MIR_write_dot( LED_SCALE_SEL, MIR_RED );
+			}
+			else {
+				// OCTAVE CIRCLE
+				show_GLOBALS_scale_master( SOLO_assistant_page );
+			}
 
 			// Show the selected notes in scale. Both in MOD and SEL
 			show_OCTAVE_CIRCLE_scale_selection( SOLO_assistant_page );
@@ -647,7 +663,13 @@
 
 			if ( SOLO_scale_chords_program == OFF ){
 
-				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_octave );
+				if ( SOLO_rec_transpose == ON ){
+
+					show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_rec_transpose_octave );
+				}
+				else {
+					show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_octave );
+				}
 				show_SCALE_SELECTOR_scale_selection( SOLO_assistant_page );
 				if ( SOLO_scale_chords_program_keys == ON ){
 					MIR_write_dot (LED_PROGRAM, MIR_GREEN);

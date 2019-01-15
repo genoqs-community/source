@@ -55,20 +55,26 @@ void wire_scale_data( Pagestruct* target_page ){
 		}
 	}
 
+	#ifdef FEATURE_SOLO_REC
+	if ( SOLO_rec_transpose == ON ){
+		return;
+	}
+	#endif
+
 	// Normalize the track pitch offsets and..
 	// .. transform the pitch info into track pitches.
 	for ( i=0; i < MATRIX_NROF_ROWS; i++ ){
 
 		// Move the lead pitch offsets to the scale pitch offsets
-		target_page->Track[i]->scale_pitch_offset += 
+		target_page->Track[i]->scale_pitch_offset +=
 				target_page->Track[i]->lead_pitch_offset;
 
-		// Empty the lead pitch offset 
+		// Empty the lead pitch offset
 		target_page->Track[i]->lead_pitch_offset = 0;
 
 		// THIS IS CORRECT BUT HAS MUCH GREATER IMPLICATIONS. NEEDS BIG REVISION.
 		// Copy this data into the track pitch fields
-		target_page->Track[i]->attr_PIT 
+		target_page->Track[i]->attr_PIT
 			=	36 + target_page->Track[i]->scale_pitch_offset;
 
 		// Empty the scale_pitch_offset;
@@ -106,6 +112,15 @@ void key_ScaleSelector_functions( unsigned int keyNdx, Pagestruct* target_page )
 
 	unsigned int i = 0;
 
+	#ifdef FEATURE_SOLO_REC
+	if ( SOLO_rec_transpose == ON ){
+		// SOLO Transpose
+		target_page = &Page_repository[ GRID_CURSOR ];
+		target_page->scaleStatus = SCALE_MOD;
+		target_page->SCL_align = ON;
+		target_page->force_to_scale = ON;
+	}
+	#endif
 
 	switch( keyNdx ){
 	
@@ -258,6 +273,14 @@ void key_ScaleSelector_functions( unsigned int keyNdx, Pagestruct* target_page )
 void key_ChordScaleSelector( unsigned int keyNdx, Pagestruct* target_page ){
 
 	unsigned int i = 0;
+
+	if ( SOLO_rec_transpose == ON ){
+		// SOLO Transpose
+		target_page = &Page_repository[ GRID_CURSOR ];
+		target_page->scaleStatus = SCALE_MOD;
+		target_page->SCL_align = ON;
+		target_page->force_to_scale = ON;
+	}
 
 	switch( keyNdx ){
 

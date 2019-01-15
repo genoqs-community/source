@@ -610,24 +610,27 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  					}
 
 					#ifdef FEATURE_SOLO_REC
- 					unsigned char hasArp = hasArpPattern(in_pitch % OCTAVE);
+ 					if ( SOLO_rec_transpose == OFF ){
 
- 					if (( SOLO_scale_chords == ON && SOLO_scale_chords_program_keys == OFF ) ||
- 					    ( SOLO_scale_chords == ON && SOLO_scale_chords_program_keys == ON && !isProgramKey ) ||
- 					    ( SOLO_scale_chords_program_keys == ON && isProgramKey == ON && hasArp == OFF )
- 					   ){
+						unsigned char hasArp = hasArpPattern(in_pitch % OCTAVE);
 
- 						record_chord_to_track( 	target_page, 	target_row, target_col,
- 												target_start, 	in_pitch, 	in_velocity );
- 					}
- 					else {
+						if (( SOLO_scale_chords == ON && SOLO_scale_chords_program_keys == OFF ) ||
+							( SOLO_scale_chords == ON && SOLO_scale_chords_program_keys == ON && !isProgramKey ) ||
+							( SOLO_scale_chords_program_keys == ON && isProgramKey == ON && hasArp == OFF )
+						   ){
 
- 						if ( SOLO_scale_chords_program_keys == OFF || isProgramKey == OFF ) {
-
- 							// Record in notes to the rec enabled track
-							record_note_to_track( 	target_page, 	target_row, target_col,
+							record_chord_to_track( 	target_page, 	target_row, target_col,
 													target_start, 	in_pitch, 	in_velocity );
- 						}
+						}
+						else {
+
+							if ( SOLO_scale_chords_program_keys == OFF || isProgramKey == OFF ) {
+
+								// Record in notes to the rec enabled track
+								record_note_to_track( 	target_page, 	target_row, target_col,
+														target_start, 	in_pitch, 	in_velocity );
+							}
+						}
  					}
 					#else
  					// Record in notes to the rec enabled track
@@ -649,72 +652,80 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  			// MIDI_NOTE_new() also uses the internal [1,64] range for MIDI channels.
 
 			#ifdef FEATURE_SOLO_REC
-			if ( SOLO_scale_chords == ON ){
 
-				if ( CHECK_RECALL_BLACK_KEY(in_pitch) && ( SOLO_scale_chords_program_keys == OFF || !isProgramKey )){
+			if ( SOLO_rec_transpose == ON ){
 
-					if ( in_velocity != OFF ){
-
-						PHRASE_TIMER = ON;
-						cyg_alarm_initialize(	alarm_hdl,
-												cyg_current_time() + ( TIMEOUT_VALUE / 2 ), // about 2 seconds
-												0 );
-					}
-					else { // black tone recall key - note off
-
-						if ( PHRASE_TIMER == ON ){ // before 2s
-							// fast press
-							if ( SOLO_assistant_page->attr_PIT != SOLO_scale_chords_pitch_recall ){
-
-								SOLO_assistant_page->attr_PIT = SOLO_scale_chords_pitch_recall;
-							}
-							else {
-								SOLO_assistant_page->attr_PIT = SOLO_scale_chords_pitch_prev;
-							}
-						}
-						else { // after 2s
-							SOLO_scale_chords_pitch_prev = SOLO_scale_chords_pitch_recall;
-							SOLO_scale_chords_pitch_recall = SOLO_assistant_page->attr_PIT;
-						}
-					}
-					return;
-				}
-				else if ( isProgramKey == ON && SOLO_scale_chords_program_keys == ON ){
-
-					if ( SOLO_scale_chords_program_armed == ON && ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){
-
-						assignChordToPalette(in_pitch);
-					}
-					if ( Chord_palette_repository[in_pitch % OCTAVE].chord_id != NOP ) {
-
-						SOLO_scale_chords_palette_ndx = in_pitch % OCTAVE;
-						playChordstruct(SOLO_scale_chords_palette_ndx, in_velocity, outputMidiBus * 16 + outputMidiChan, ON);
-					}
-					return;
-				}
-
-				if ( CHECK_BLACK_KEY(in_pitch) == OFF ){
-
-					SOLO_scale_chords_palette_ndx = NOP;
-					playNotesInChord( outputMidiBus * 16 + outputMidiChan, in_velocity, in_pitch);
-				}
+				modifyChordTone( target_page, in_pitch );
 			}
 			else {
 
-				// Play the chord palette on the normal keyboard
-				if ( isProgramKey == ON && SOLO_scale_chords_program_keys == ON ){
+				if ( SOLO_scale_chords == ON ){
 
-					if ( Chord_palette_repository[in_pitch % OCTAVE].chord_id != NOP ) {
+					if ( CHECK_RECALL_BLACK_KEY(in_pitch) && ( SOLO_scale_chords_program_keys == OFF || !isProgramKey )){
 
-						SOLO_scale_chords_palette_ndx = in_pitch % OCTAVE;
-						playChordstruct(SOLO_scale_chords_palette_ndx, in_velocity, outputMidiBus * 16 + outputMidiChan, ON);
+						if ( in_velocity != OFF ){
+
+							PHRASE_TIMER = ON;
+							cyg_alarm_initialize(	alarm_hdl,
+													cyg_current_time() + ( TIMEOUT_VALUE / 2 ), // about 2 seconds
+													0 );
+						}
+						else { // black tone recall key - note off
+
+							if ( PHRASE_TIMER == ON ){ // before 2s
+								// fast press
+								if ( SOLO_assistant_page->attr_PIT != SOLO_scale_chords_pitch_recall ){
+
+									SOLO_assistant_page->attr_PIT = SOLO_scale_chords_pitch_recall;
+								}
+								else {
+									SOLO_assistant_page->attr_PIT = SOLO_scale_chords_pitch_prev;
+								}
+							}
+							else { // after 2s
+								SOLO_scale_chords_pitch_prev = SOLO_scale_chords_pitch_recall;
+								SOLO_scale_chords_pitch_recall = SOLO_assistant_page->attr_PIT;
+							}
+						}
+						return;
 					}
-					return;
+					else if ( isProgramKey == ON && SOLO_scale_chords_program_keys == ON ){
+
+						if ( SOLO_scale_chords_program_armed == ON && ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){
+
+							assignChordToPalette(in_pitch);
+						}
+						if ( Chord_palette_repository[in_pitch % OCTAVE].chord_id != NOP ) {
+
+							SOLO_scale_chords_palette_ndx = in_pitch % OCTAVE;
+							playChordstruct(SOLO_scale_chords_palette_ndx, in_velocity, outputMidiBus * 16 + outputMidiChan, ON);
+						}
+						return;
+					}
+
+					if ( CHECK_BLACK_KEY(in_pitch) == OFF ){
+
+						SOLO_scale_chords_palette_ndx = NOP;
+						playNotesInChord( outputMidiBus * 16 + outputMidiChan, in_velocity, in_pitch);
+					}
 				}
+				else {
 
-				if ( G_midi_map_controller_mode == ON ){
+					// Play the chord palette on the normal keyboard
+					if ( isProgramKey == ON && SOLO_scale_chords_program_keys == ON ){
 
-					MIDI_NOTE_new( outputMidiBus * 16 + outputMidiChan, scale_pitch(target_page, in_pitch), in_velocity, 0 );
+						if ( Chord_palette_repository[in_pitch % OCTAVE].chord_id != NOP ) {
+
+							SOLO_scale_chords_palette_ndx = in_pitch % OCTAVE;
+							playChordstruct(SOLO_scale_chords_palette_ndx, in_velocity, outputMidiBus * 16 + outputMidiChan, ON);
+						}
+						return;
+					}
+
+					if ( G_midi_map_controller_mode == ON ){
+
+						MIDI_NOTE_new( outputMidiBus * 16 + outputMidiChan, scale_pitch(target_page, in_pitch), in_velocity, 0 );
+					}
 				}
 			}
 			#else

@@ -28,10 +28,15 @@
 
 void show_SCALE_SELECTOR_scale_selection( Pagestruct* target_page ){
 
-	unsigned int j = my_shift_bitpattern( 	target_page-> scaleNotes[G_scale_ndx], 12, INC,
-								my_bit2ndx( target_page-> scaleLead[G_scale_ndx] )+1);
-
 	#ifdef FEATURE_SOLO_REC
+	if ( G_zoom_level == zoomSOLOREC ){
+
+		if ( SOLO_scale_chords_program == ON ) return;
+		if ( SOLO_rec_transpose == ON ){
+
+			target_page = &Page_repository[ GRID_CURSOR ];
+		}
+	}
 	if ( G_zoom_level != zoomSOLOREC ){
 	#endif
 
@@ -46,6 +51,10 @@ void show_SCALE_SELECTOR_scale_selection( Pagestruct* target_page ){
 	
 	#ifdef FEATURE_SOLO_REC
 	}
+
+	unsigned int j = my_shift_bitpattern( target_page-> scaleNotes[G_scale_ndx], 12, INC,
+							  my_bit2ndx( target_page-> scaleLead[G_scale_ndx] )+1);
+
 
 	switch( j ) {
 

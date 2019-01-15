@@ -4473,10 +4473,30 @@ void modifyChordPitch(signed char val){
 	SOLO_assistant_page->attr_PIT = (unsigned char) (abs(OCTAVE + (pit + val)) % OCTAVE);
 }
 
-void modifyChordTone(signed char val){
+void transposeTrack(Pagestruct* target_page, signed char val){
+	unsigned char row;
 
-	unsigned char toneNdx = my_bit2ndx( SOLO_assistant_page->scaleLead[ G_scale_ndx ] ) + OCTAVE;
-//	diag_printf("tone:%d\n", toneNdx);
+	for (row=0; row<MATRIX_NROF_ROWS; row++){
+
+		// Ignore non-record tracks
+		if ( (Page_getTrackRecPattern(target_page) & (1 << row)) == 0 ) {
+			continue;
+		}
+
+		if ( val == 0 ){
+
+			target_page->Track[row]->attr_PIT = MIDDLE_C;
+		}
+		else {
+			target_page->Track[row]->attr_PIT += ( val * OCTAVE );
+		}
+	}
+}
+
+void modifyChordTone(Pagestruct* target_page, signed char val){ // Transpose
+
+	unsigned char toneNdx = my_bit2ndx( target_page->scaleLead[ G_scale_ndx ] ) + OCTAVE;
+	val -= MIDDLE_C;
 
 	// TODO: check min and max octaves
 	if (toneNdx - val > TONE_BTN_OFFSET){ // TODO: count octaves
@@ -4488,8 +4508,17 @@ void modifyChordTone(signed char val){
 //		diag_printf("up octave\n");
 	}
 	else {
-		modify_scale_composition( SOLO_assistant_page, toneNdx - val, G_scale_ndx);
+//		modify_scale_composition( target_page, toneNdx - val, G_scale_ndx);
 	}
+	target_page->scaleStatus = SCALE_MOD;
+	target_page->SCL_align = ON;
+	target_page->force_to_scale = ON;
+// keyNdx_to_noteNdx( keyNdx + toneNdx + val )
+	modify_scale_composition( target_page, toneNdx + val /* FIXME */, G_scale_ndx);
+
+	target_page->SCL_align = OFF;
+	target_page->scaleStatus = OFF;
+
 
 	// XXX
 //	SOLO_assistant_page-> scaleNotes[ G_scale_ndx ] =
@@ -4499,6 +4528,7 @@ void modifyChordTone(signed char val){
 //	keyNdx_to_noteNdx( keyNdx )
 //
 //	key_ChordScaleSelector( keyNdx, SOLO_assistant_page );
+//	force-to-scale()
 }
 
 unsigned char currentScaleIndex( Pagestruct* target_page ){
@@ -5042,7 +5072,7 @@ unsigned char record_chord_arp_to_track( Pagestruct* target_page,
 
 	Step_copy(SOLO_assistant_page->Step[ARP_TRACK][arpStep], target_page->Step[row][target_col], False);
 	// default page pitch is middle C but solo_assist starts at zero
-	target_page->Step[row][target_col]->attr_PIT -= ( MIDDLE_C - SOLO_assistant_page->attr_PIT /* apply the transpose offset */); // TODO: transpose
+	target_page->Step[row][target_col]->attr_PIT -= ( MIDDLE_C - SOLO_assistant_page->attr_PIT /* apply the transpose offset */);
 	temp = (target_page->Step[row][target_col]->attr_LEN * Track_LEN_factor[ SOLO_assistant_page->Track[ARP_TRACK]->LEN_factor ]) / 16;
 	temp = normalize( temp, STEP_MIN_LENGTH, STEP_MAX_LENGTH );
 	target_page->Step[row][target_col]->attr_LEN = (unsigned char) temp;
@@ -5132,7 +5162,7 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 				copyArpToSteps(chord);
 				SOLO_scale_chords_prev_on_ndx = palette_ndx;
 
-				if ( G_run_bit == OFF ){
+				if ( G_run_bit == OFF || SOLO_scale_chords_program == ON ){
 
 					assignLastNotes();
 					SOLO_rec_rehersal = ON;

@@ -43,6 +43,7 @@ unsigned char SOLO_rec_continue_recording		= ON;
 unsigned char SOLO_rec_quantize_first_beat		= ON;
 unsigned char SOLO_rec_legato					= OFF;
 unsigned char SOLO_rec_transpose				= OFF;
+signed char SOLO_rec_transpose_octave			= OFF;
 unsigned char SOLO_rec_measure_hold				= OFF;
 unsigned char SOLO_rec_bank						= OFF;
 unsigned char SOLO_rec_rehersal					= OFF;

@@ -32,16 +32,8 @@ void show_OCTAVE_CIRCLE_scale_selection( Pagestruct* target_page ){
 	unsigned int 	i = 0,
 					j = 0;
 
-	// Determine which scale to show
-	if ( target_page->scaleStatus == OFF ){
-//		j = target_page->current_scale;
 
-		j = target_page-> scaleNotes[G_scale_ndx];
-	}
-	else{
-		j = target_page-> scaleNotes[G_scale_ndx];
-	}
- 
+
 	#ifdef FEATURE_SOLO_REC
 	if ( SOLO_rec_transpose == OFF ){
 	#endif
@@ -51,7 +43,13 @@ void show_OCTAVE_CIRCLE_scale_selection( Pagestruct* target_page ){
 
 			if ( target_page->SCL_align == OFF ){
 
+				#ifdef FEATURE_SOLO_REC
+				if ( G_zoom_level != zoomSOLOREC ){
+					MIR_write_dot( LED_SCALE_CAD, MIR_GREEN );
+				}
+				#else
 				MIR_write_dot( LED_SCALE_CAD, MIR_GREEN );
+				#endif
 			}
 			else{
 
@@ -61,7 +59,22 @@ void show_OCTAVE_CIRCLE_scale_selection( Pagestruct* target_page ){
 		}
 	#ifdef FEATURE_SOLO_REC
 	}
+	else {
+		// SOLO Transpose
+		target_page = &Page_repository[ GRID_CURSOR ];
+	}
 	#endif
+
+
+	// Determine which scale to show
+	if ( target_page->scaleStatus == OFF ){
+//		j = target_page->current_scale;
+
+		j = target_page-> scaleNotes[G_scale_ndx];
+	}
+	else{
+		j = target_page-> scaleNotes[G_scale_ndx];
+	}
 
 	// ON fields showing first
 	for (i=0; i<12; i++) {
@@ -231,7 +244,7 @@ void show_OCTAVE_CIRCLE_chord_tone_selection( Pagestruct* target_page ){
 
 		for (i=0; i<OCTAVE; i++) {
 
-			if ( CHECK_BIT(SOLO_scale_chords_last, i) != OFF && G_run_bit == OFF ){ // this pitch has a chord note
+			if ( CHECK_BIT(SOLO_scale_chords_last, i) != OFF && ( G_run_bit == OFF || SOLO_scale_chords_program == ON )){ // this pitch has a chord note
 
 				// 33=C, 44=C#, 55=D
 				MIR_write_dot( 33 + (i * 11), 		MIR_GREEN );
