@@ -378,6 +378,8 @@ void assign_solorec_track_midi_ch( unsigned char target_page ){
 		}
 		this_ndx += 10;
 	}
+
+	SOLO_assistant_page->Track[ARP_BUFFER_TRACK]->attr_MCH = SOLO_midi_ch;
 }
 
 // Is the cursor a member of the target page cluster

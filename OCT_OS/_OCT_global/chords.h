@@ -5122,6 +5122,7 @@ void copyArpToSteps(Chordstruct* chord){
 		}
 	}
 	SOLO_assistant_page->Track[ARP_TRACK]->LEN_factor = chord->attr_LEN;
+	SOLO_assistant_page->Track[ARP_TRACK]->attr_MCH = SOLO_midi_ch;
 }
 
 void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsigned char in_channel, unsigned char play){

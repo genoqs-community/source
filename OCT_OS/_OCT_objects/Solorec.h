@@ -10,6 +10,7 @@ unsigned char SOLO_quantize_fine_tune_drop_edge	= OFF; // drop edge notes that w
 unsigned char SOLO_quantize_note 				= 0; // 0=OFF, 1=STA4, 2=STA3, 3=STA2, 4=STA1, 5=STA0
 signed char	  SOLO_strum						= 9; // 9=OFF
 unsigned char SOLO_last_controller_mode			= NOP;
+unsigned int  SOLO_last_note_scale				= SCALE_SIG_CHR;
 unsigned char SOLO_scale_chords					= OFF;
 unsigned short SOLO_scale_chords_modulations	= OFF;
 unsigned short SOLO_scale_chords_last			= OFF;
@@ -43,7 +44,7 @@ unsigned char SOLO_rec_continue_recording		= ON;
 unsigned char SOLO_rec_quantize_first_beat		= ON;
 unsigned char SOLO_rec_legato					= OFF;
 unsigned char SOLO_rec_transpose				= OFF;
-signed char SOLO_rec_transpose_octave			= OFF;
+signed char   SOLO_rec_transpose_octave			= OFF;
 unsigned char SOLO_rec_measure_hold				= OFF;
 unsigned char SOLO_rec_bank						= OFF;
 unsigned char SOLO_rec_rehersal					= OFF;

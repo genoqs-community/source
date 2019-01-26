@@ -607,7 +607,7 @@
 			else {
 				// Chord tone select
 				show_OCTAVE_CIRCLE_chord_tone_selection( SOLO_assistant_page );
-				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_octave );
+				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_program_octave );
 			}
 			show_SCALE_SELECTOR_scale_selection( SOLO_assistant_page );
 

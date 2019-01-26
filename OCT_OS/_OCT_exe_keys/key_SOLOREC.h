@@ -57,6 +57,7 @@
 	}
 
 	if ( keyNdx == KEY_SELECT_MASTER ){
+
 		if ( SOLO_scale_chords_program == OFF ){
 			if ( SOLO_rec_has_MCC == OFF ){
 				SOLO_rec_track_preview ^= 1; // toggle grid and page view because we don't have MCC data
@@ -118,16 +119,22 @@
 				// There are no scales in Chromatic keys so choose Major
 				SOLO_assistant_page->scaleNotes[G_scale_ndx] = SCALE_SIG_MAJ;
 			}
+			else {
+				SOLO_last_note_scale = SOLO_assistant_page->scaleNotes[G_scale_ndx];
+			}
 		}
 		else {
 			SOLO_scale_chords_program = OFF;
+			SOLO_scale_chords_program_keys = OFF;
 			SOLO_scale_chords_program_armed = OFF;
 			SOLO_scale_chords_last = OFF;
+			G_midi_map_controller_mode = SOLO_last_controller_mode;
 
-			if ( SOLO_last_controller_mode != NOP ) {
+			if ( SOLO_last_note_scale == SCALE_SIG_CHR ){
 
-				G_midi_map_controller_mode = SOLO_last_controller_mode;
+				SOLO_assistant_page->scaleNotes[G_scale_ndx] = SOLO_last_note_scale;
 			}
+
 		}
 	}
 	else if ( SOLO_scale_chords == OFF && SOLO_assistant_page->scaleStatus != OFF ){
