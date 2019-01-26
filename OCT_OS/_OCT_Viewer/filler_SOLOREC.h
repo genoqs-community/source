@@ -474,7 +474,7 @@
 		}
 
 		// Show the pressed recording page or the page to the right that may become a recording page
-		if ( SOLO_rec_freeflow == OFF || selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) != NOP ){
+		if ( pressed != FALSE && ( SOLO_rec_freeflow == OFF || selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) != NOP )){
 
 			MIR_write_dot( pressed, MIR_RED   );
 			MIR_write_dot( pressed, MIR_GREEN );

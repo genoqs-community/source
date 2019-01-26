@@ -594,6 +594,7 @@
 
 		unsigned char heldCol = grid_col(heldNdx);
 
+//		diag_printf("pressed:%d\n", pressed);
 //		diag_printf("key:%d\n", keyNdx);
 //		diag_printf("heldNdx:%d\n", heldNdx);
 //		diag_printf("is_pressed:%d\n", isPressed);

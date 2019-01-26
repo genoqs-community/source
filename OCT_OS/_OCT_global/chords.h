@@ -26,15 +26,15 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"D E A C", // D7sus2
 			"A C E G", // Am7
 			"A D E G", // A7sus4
-			"C E G", // C\E
-			"C E G", // C\G
 			"C E G A D", // C6/9
 			"D G A C E", // D9sus4
 			"D E A C E", // D9sus2
 			"A C E G D", // Am11
 			"C E G A", // C6\G
 			"C D E G A", // C6/9\E
-			"C D E G A", // C6/9\G
+			"",
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -242,11 +242,6 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"D# G A# C", // D#6
 			"F Bb C Eb", // F7sus4
 			"F G C Eb", // F7sus2
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
-			"C Eb G", // Cm\D#
-			"C Eb G", // Cm\G
-			"C Eb G", // Cm\Eb
 			"C Eb G Bb F", // Cm11
 			"D# G A# C F", // D#6/9
 			"F Bb C Eb G", // F9sus4
@@ -254,6 +249,11 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"C Eb G Bb", // Cm7\D#
 			"C F G Bb", // C7sus4\G
 			"C Eb G Bb", // Cm7\Eb
+			"",
+			"",
+			"",
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -386,12 +386,12 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"F A C D", // F6
 			"G C D F", // G7sus4
 			"G A D F", // G7sus2
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
 			"D F A C G", // Dm11
 			"F A C D G", // F6/9
 			"G C D F A", // G9sus4
 			"G A D F A", // G9sus2
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -746,14 +746,14 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"G Bb D F", // Gm7
 			"G C D F", // G7sus4
 			"A# D F G", // A#6
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
 			"C F G Bb D", // C9sus4
 			"C D G Bb D", // C9sus2
 			"G Bb D F C", // Gm11
 			"A# D F G C", // A#6/9
 			"C F G Bb", // C7sus4\G
 			"C F G Bb D", // C9sus4\G
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -1780,10 +1780,6 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"A D E G", // A7sus4
 			"A B E G", // A7sus2
 			"B D F A", // Bm7b5
-			"C E G", // C\E
-			"C E G", // C\G
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
 			"C E G A D", // C6/9
 			"C E G B D", // Cmaj9
 			"C E G B A", // Cmaj13
@@ -1810,6 +1806,10 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"C D E G A", // C6/9\G
 			"C E G B", // Cmaj7\G
 			"C E G B D", // Cmaj9\E
+			"",
+			"",
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -1996,11 +1996,6 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"A# D F Ab", // A#7
 			"A# D# F Ab", // A#7sus4
 			"A# C F Ab", // A#7sus2
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
-			"C Eb G", // Cm\D#
-			"C Eb G", // Cm\G
-			"C Eb G", // Cm\Eb
 			"C Eb G Bb D", // Cm9
 			"C Eb G Bb F", // Cm11
 			"C F G Bb D", // C9sus4
@@ -2028,6 +2023,11 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"C F G Bb D", // C9sus4\G
 			"C Eb G Bb", // Cm7\Eb
 			"C Eb G Bb D", // Cm9\Eb
+			"",
+			"",
+			"",
+			"",
+			"",
 			"",
 			"",
 			""
@@ -2140,10 +2140,6 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"A D E G", // A7sus4
 			"A# D F G", // A#6
 			"A# D F A", // A#maj7
-			"C E G", // C\E
-			"C E G", // C\G
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
 			"C E G A D", // C6/9
 			"C E G Bb D", // C9
 			"C E G Bb A", // C13
@@ -2175,6 +2171,10 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"C F G Bb D", // C9sus4\G
 			"C E G Bb A", // C13\A#
 			"C E G Bb A", // C13\Bb
+			"",
+			"",
+			"",
+			"",
 		},
 		{ // F#/Gb
 			"C# F G#", // C#
@@ -2284,8 +2284,6 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"A B E G", // A7sus2
 			"B D Gb A", // Bm7
 			"B E Gb A", // B7sus4
-			"C E G", // C\E
-			"C E G", // C\G
 			"C E G A D", // C6/9
 			"C E G B D", // Cmaj9
 			"C E G B A", // Cmaj13
@@ -2312,6 +2310,8 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"C D E G A", // C6/9\G
 			"C E G B", // Cmaj7\G
 			"C E G B D", // Cmaj9\E
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -2356,11 +2356,6 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"A# Db F Ab", // A#m7
 			"A# D# F Ab", // A#7sus4
 			"A# C F Ab", // A#7sus2
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
-			"C Eb G", // Cm\D#
-			"C Eb G", // Cm\G
-			"C Eb G", // Cm\Eb
 			"C# F G# A# D#", // C#6/9
 			"C Eb G Bb F", // Cm11
 			"C# F G# C D#", // C#maj9
@@ -2385,6 +2380,11 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"C Eb G Bb", // Cm7\D#
 			"C F G Bb", // C7sus4\G
 			"C Eb G Bb", // Cm7\Eb
+			"",
+			"",
+			"",
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -2500,11 +2500,6 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"A C Eb G", // Am7b5
 			"A# D F G", // A#6
 			"A# D F A", // A#maj7
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
-			"C Eb G", // Cm\D#
-			"C Eb G", // Cm\G
-			"C Eb G", // Cm\Eb
 			"C Eb G Bb D", // Cm9
 			"C Eb G Bb F", // Cm11
 			"C Eb G Bb A", // Cm13
@@ -2533,6 +2528,11 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"C F G Bb D", // C9sus4\G
 			"C Eb G Bb", // Cm7\Eb
 			"C Eb G Bb D", // Cm9\Eb
+			"",
+			"",
+			"",
+			"",
+			"",
 			"",
 			""
 		},
@@ -2646,11 +2646,6 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"A# D F Ab", // A#7
 			"A# D# F Ab", // A#7sus4
 			"A# C F Ab", // A#7sus2
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
-			"C Eb G", // Cm\D#
-			"C Eb G", // Cm\G
-			"C Eb G", // Cm\Eb
 			"C Eb G Bb D", // Cm9
 			"C Eb G Bb F", // Cm11
 			"C F G Bb D", // C9sus4
@@ -2678,6 +2673,11 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"C F G Bb D", // C9sus4\G
 			"C Eb G Bb", // Cm7\Eb
 			"C Eb G Bb D", // Cm9\Eb
+			"",
+			"",
+			"",
+			"",
+			"",
 			"",
 			"",
 			""
@@ -2790,10 +2790,6 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"A D E G", // A7sus4
 			"A# D F G", // A#6
 			"A# D F A", // A#maj7
-			"C E G", // C\E
-			"C E G", // C\G
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
 			"C E G A D", // C6/9
 			"C E G Bb D", // C9
 			"C E G Bb A", // C13
@@ -2825,6 +2821,10 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"C F G Bb D", // C9sus4\G
 			"C E G Bb A", // C13\A#
 			"C E G Bb A", // C13\Bb
+			"",
+			"",
+			"",
+			"",
 		},
 		{ // D#/Eb
 			"C# F G#", // C#
@@ -2934,8 +2934,6 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"A B E G", // A7sus2
 			"B D Gb A", // Bm7
 			"B E Gb A", // B7sus4
-			"C E G", // C\E
-			"C E G", // C\G
 			"C E G A D", // C6/9
 			"C E G B D", // Cmaj9
 			"C E G B A", // Cmaj13
@@ -2962,6 +2960,8 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"C D E G A", // C6/9\G
 			"C E G B", // Cmaj7\G
 			"C E G B D", // Cmaj9\E
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -3006,11 +3006,6 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"A# Db F Ab", // A#m7
 			"A# D# F Ab", // A#7sus4
 			"A# C F Ab", // A#7sus2
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
-			"C Eb G", // Cm\D#
-			"C Eb G", // Cm\G
-			"C Eb G", // Cm\Eb
 			"C# F G# A# D#", // C#6/9
 			"C Eb G Bb F", // Cm11
 			"C# F G# C D#", // C#maj9
@@ -3035,6 +3030,11 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"C Eb G Bb", // Cm7\D#
 			"C F G Bb", // C7sus4\G
 			"C Eb G Bb", // Cm7\Eb
+			"",
+			"",
+			"",
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -3150,11 +3150,6 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"A C Eb G", // Am7b5
 			"A# D F G", // A#6
 			"A# D F A", // A#maj7
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
-			"C Eb G", // Cm\D#
-			"C Eb G", // Cm\G
-			"C Eb G", // Cm\Eb
 			"C Eb G Bb D", // Cm9
 			"C Eb G Bb F", // Cm11
 			"C Eb G Bb A", // Cm13
@@ -3183,6 +3178,11 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"C F G Bb D", // C9sus4\G
 			"C Eb G Bb", // Cm7\Eb
 			"C Eb G Bb D", // Cm9\Eb
+			"",
+			"",
+			"",
+			"",
+			"",
 			"",
 			""
 		},
@@ -3294,10 +3294,6 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"A D E G", // A7sus4
 			"A B E G", // A7sus2
 			"B D F A", // Bm7b5
-			"C E G", // C\E
-			"C E G", // C\G
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
 			"C E G A D", // C6/9
 			"C E G B D", // Cmaj9
 			"C E G B A", // Cmaj13
@@ -3324,6 +3320,10 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"C D E G A", // C6/9\G
 			"C E G B", // Cmaj7\G
 			"C E G B D", // Cmaj9\E
+			"",
+			"",
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -3507,13 +3507,13 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"B Eb Gb A", // B7
 			"B Eb G A", // B7#5
 			"B D Gb A", // Bm7
-			"C Eb G", // Cm\D#
-			"C Eb G", // Cm\G
-			"C Eb G", // Cm\Eb
 			"D Gb A C B", // D13
 			"G B D Gb A", // Gmaj9
 			"C Eb G A", // Cm6\A
 			"C Eb Gb A", // Cº7\A
+			"",
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -3579,17 +3579,17 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"G# C D# G", // G#maj7
 			"A# Db E Ab", // A#m7b5
 			"A# Db E G", // A#º7
-			"C E G", // C\E
-			"C E G", // C\G
-			"C Eb G", // Cm\D#
-			"C Eb G", // Cm\G
-			"C Eb G", // Cm\Eb
 			"D# G A# Db C", // D#13
 			"G# C D# G A#", // G#maj9
 			"C Eb G Bb", // Cm7\D#
 			"C E G Bb", // C7\G
 			"C E G Bb", // C7\E
 			"C Eb G Bb", // Cm7\Eb
+			"",
+			"",
+			"",
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -3867,14 +3867,14 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"G C D F", // G7sus4
 			"G# B D F", // G#º7
 			"B D F Ab", // Bº7
-			"C E G", // C\E
-			"C E G", // C\G
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
 			"C E G B D", // Cmaj9
 			"G B D F E", // G13
 			"C E G B", // Cmaj7\G
 			"C E G B D", // Cmaj9\E
+			"",
+			"",
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -4227,18 +4227,18 @@ const char chords[SCALE_COUNT][OCTAVE][MAX_CHORDS][MAX_CHORD_WORD] =
 			"A# Db F G", // A#m6
 			"A# Db F A", // A#m(maj7)
 			"A# Db E G", // A#º7
-			"C E G", // C\E
-			"C E G", // C\G
-			"C F G", // Csus4\F
-			"C F G", // Csus4\G
 			"C E G Bb A", // C13
 			"F A C E G", // Fmaj9
 			"C E G A", // C6\G
-			"C E G Bb", // C7\G
 			"C E G Bb", // C7\E
 			"C F G Bb", // C7sus4\G
 			"C E G Bb A", // C13\A#
 			"C E G Bb A", // C13\Bb
+			"",
+			"",
+			"",
+			"",
+			"",
 			"",
 			"",
 			"",
@@ -4994,7 +4994,7 @@ void playChord( unsigned char scale,
 
 unsigned char pitchToChordId( unsigned char in_pitch ){
 
-	signed char idx = in_pitch - (C3 - (OCTAVE * 2)); // C1
+	signed char idx = in_pitch - (MIDDLE_C - (OCTAVE * 2)); // C2
 
 	if ( idx < 0 || idx >= (OCTAVE * 7))
 	{
