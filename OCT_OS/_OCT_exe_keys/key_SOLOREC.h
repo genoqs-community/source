@@ -234,7 +234,7 @@
 								if ( pitches[i] == NOP ) return;
 								if ( pitches[i] == j ){
 
-									chordPitchAddToStep( SOLO_assistant_page, column_of(keyNdx), pitches[i] );
+									chordPitchAddToStep( SOLO_assistant_page, column_of(keyNdx), chord->pitch + pitches[i] );
 									return;
 								}
 							}
@@ -243,11 +243,16 @@
 
 					if ( Step_get_status( SOLO_assistant_page->Step[0][column_of(keyNdx)], STEPSTAT_TOGGLE ) == ON ){
 
+						EDIT_TIMER = ON;
+						cyg_alarm_initialize(	alarm_hdl,
+												cyg_current_time() + TIMEOUT_VALUE,
+												0 );
+
 						PLAYER_preview_step( SOLO_assistant_page, 0, column_of(keyNdx) ); // play the sound with the note length
 					}
 				}
 			}
-			else if ( row_of(keyNdx) == 0 && G_run_bit == OFF ) {
+			else if ( row_of(keyNdx) == 0 ) {
 
 				unsigned char pitches[MAX_NOTES];
 				Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
@@ -258,7 +263,7 @@
 					if ( pitches[i] == NOP ) return;
 					if ( pitches[i] == ( column_of(keyNdx) -2) ){
 
-						playChordPitch( pitches[i], SOLO_midi_ch, TRACK_DEF_VELOCITY, STEP_DEF_LENGTH );
+						playChordPitch( (chord->pitch + pitches[i]), SOLO_midi_ch, TRACK_DEF_VELOCITY, STEP_DEF_LENGTH );
 						return;
 					}
 				}

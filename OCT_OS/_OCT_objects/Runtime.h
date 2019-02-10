@@ -514,7 +514,7 @@ typedef struct chordstruct{
 	unsigned char	scale;
 	unsigned char	tone;
 	unsigned char	octave;
-	unsigned char	pitch;
+	signed char		pitch;
 	unsigned char	strum;
 	signed char		attr_VEL;
 	unsigned char	attr_LEN;

@@ -447,7 +447,7 @@
 	     selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) != NOP
 	))){
 
-		if ( selRec == OFF && SOLO_rec_page != NULL && SOLO_scale_chords_program == OFF ){
+		if ( pressed != OFF && selRec == OFF && SOLO_rec_page != NULL && SOLO_scale_chords_program == OFF ){
 			MIR_write_dot( LED_CLEAR, MIR_BLINK );
 			flashClear = ON;
 		}
@@ -690,6 +690,13 @@
 
 	if ( SOLO_scale_chords_program == ON && SOLO_scale_chords_palette_ndx != NOP ){
 
+		// only show the pitch if it is a breakaway pitch
+		if ( Chord_palette_repository[SOLO_scale_chords_palette_ndx].pitch % OCTAVE != 0 ){
+
+			// show the chord pitch offset
+			MIR_write_pitch_H( Chord_palette_repository[SOLO_scale_chords_palette_ndx].pitch, 1 );
+		}
+
 		unsigned char len = NOP, pressed = FALSE;
 
 		for (i=0; i<MATRIX_NROF_COLUMNS; i++){ // scan arp steps
@@ -723,7 +730,7 @@
 				MIR_write_length_H( len, 2 );
 			}
 		}
-		else {
+		else if ( EDIT_TIMER == OFF ) {
 
 			MIR_point_numeric(
 				len,

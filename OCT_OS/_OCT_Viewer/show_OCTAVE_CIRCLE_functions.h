@@ -509,7 +509,8 @@ void show_OCTAVE_CIRCLE_chord_tone_selection( Pagestruct* target_page ){
 
 			switch (target_page->attr_PIT % OCTAVE) {
 				case 0:
-					MIR_write_dot( LED_NOTE_C, 		MIR_GREEN );
+					// don't show C because it is a null offset - the natural pitch
+//					MIR_write_dot( LED_NOTE_C, 		MIR_GREEN );
 					break;
 				case 1:
 					MIR_write_dot( LED_NOTE_Cis, 	MIR_GREEN );

@@ -4661,6 +4661,7 @@ void assignChordToPalette(unsigned char in_pitch){
 	clearArpPattern(SOLO_scale_chords_palette_ndx);
 	SOLO_scale_chords_palette_ndx = in_pitch % OCTAVE;
 	copyChord(SOLO_last_chord, &Chord_palette_repository[SOLO_scale_chords_palette_ndx]);
+	// store the full pitch offset
 	SOLO_scale_chords_program_armed = OFF;
 }
 
@@ -4688,7 +4689,7 @@ Notestruct* buildNote( unsigned char col, unsigned char note_pitch ){
 	Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
 	Notestruct* note = chord->Arp[col];
 	Note_set_status( note, STEPSTAT_TOGGLE, ON);
-	note->attr_PIT = (C3 + (OCTAVE * SOLO_scale_chords_octave) + note_pitch);
+	note->attr_PIT = note_pitch;
 	note->attr_LEN = chord->attr_LEN;
 	return note;
 }
@@ -4836,6 +4837,7 @@ void buildPresetArp( unsigned char keyNdx ){
 	unsigned char i, j = 0, size = 0, pivot = 0, dir = 0, val, up = 0, down = 0;
 	unsigned char pitches[MAX_NOTES];
 	Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
+	unsigned char base_pitch = chord->pitch;
 
 	translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches);
 
@@ -4854,12 +4856,12 @@ void buildPresetArp( unsigned char keyNdx ){
 		switch (keyNdx) {
 			case KEY_MIXTGT_ATR: // ABC
 
-				chordPitchToStep( SOLO_assistant_page, j, pitches[i] );
+				chordPitchToStep( SOLO_assistant_page, j, base_pitch + pitches[i] );
 				break;
 
 			case KEY_MIXTGT_VOL: // CBA
 
-				chordPitchToStep( SOLO_assistant_page, j, pitches[(size -1) -i] );
+				chordPitchToStep( SOLO_assistant_page, j, base_pitch + pitches[(size -1) -i] );
 				break;
 
 			case KEY_MIXTGT_PAN: // BAC
@@ -4870,7 +4872,7 @@ void buildPresetArp( unsigned char keyNdx ){
 				else val = i;
 				if ( val == 0 ) dir = 1;
 				// down to zero then up past pivot to end
-				chordPitchToStep( SOLO_assistant_page, j, pitches[val] );
+				chordPitchToStep( SOLO_assistant_page, j, base_pitch + pitches[val] );
 				break;
 
 			case KEY_MIXTGT_MOD: // BCA
@@ -4880,7 +4882,7 @@ void buildPresetArp( unsigned char keyNdx ){
 				if ( dir == 0 ) val = pivot +i; // [01234]
 				else val = --pivot;				// [23410]
 				if ( val == size -1 ) dir = 1;
-				chordPitchToStep( SOLO_assistant_page, j, pitches[val] );
+				chordPitchToStep( SOLO_assistant_page, j, base_pitch + pitches[val] );
 				break;
 
 			case KEY_MIXTGT_EXP: // ACB
@@ -4888,7 +4890,7 @@ void buildPresetArp( unsigned char keyNdx ){
 				// outside in start low
 				if ( down == 0 ) down = size -1; 				// [01234]
 				val = ( (dir ^= 1) == 1 ) ? up++ : down--;		// [04132]
-				chordPitchToStep( SOLO_assistant_page, j, pitches[val] );
+				chordPitchToStep( SOLO_assistant_page, j, base_pitch + pitches[val] );
 				break;
 
 			case KEY_MIXTGT_USR0: // CAB
@@ -4896,7 +4898,7 @@ void buildPresetArp( unsigned char keyNdx ){
 				// outside in start high
 				if ( down == 0 ) down = size -1; 				// [01234]
 				val = ( (dir ^= 1) == 0 ) ? up++ : down--;		// [40312]
-				chordPitchToStep( SOLO_assistant_page, j, pitches[val] );
+				chordPitchToStep( SOLO_assistant_page, j, base_pitch + pitches[val] );
 				break;
 
 			default:
@@ -4919,13 +4921,13 @@ void buildPresetArp( unsigned char keyNdx ){
 
 
 
-void playChordPitch( unsigned char in_pitch,
+void playChordPitch( signed char in_pitch,
 					 unsigned char in_channel,
 					 unsigned char in_velocity,
 					 unsigned char in_length
 					){
 
-	unsigned char pitch = (C3 + (OCTAVE * SOLO_scale_chords_octave) + in_pitch);
+	unsigned char pitch = normalize( in_pitch, 0, 127 );
 
 	if ( in_length == OFF ){
 
@@ -4949,7 +4951,7 @@ void playChordPitch( unsigned char in_pitch,
 void playChord( unsigned char scale,
 			    unsigned char tone,
 			    unsigned char chord_id,
-			    unsigned char attr_PIT,
+			    signed char attr_PIT,
 			    unsigned char in_channel,
 			    unsigned char in_velocity
 			   ){
@@ -5028,7 +5030,7 @@ void record_chord_to_track( Pagestruct* target_page,
 	if ( chord_id == NOP ) return;
 	unsigned char tone = toneToIndex( G_scale_ndx );
 	unsigned char scale = currentScaleIndex( SOLO_assistant_page );
-	unsigned char pitch = (C3 + (OCTAVE * SOLO_scale_chords_octave) + SOLO_assistant_page->attr_PIT);
+	signed char pitch = (MIDDLE_C + (OCTAVE * SOLO_scale_chords_octave) + SOLO_assistant_page->attr_PIT);
  	unsigned char programOctave = ( MIDDLE_C - OCTAVE ) + ( OCTAVE * SOLO_scale_chords_program_octave );
  	unsigned char isProgramKey = ( in_pitch >= programOctave && in_pitch < ( programOctave + OCTAVE ) );
 
@@ -5105,7 +5107,12 @@ void playNotesInChord( unsigned char in_channel,
 		return;
 	}
 
-	playChord(scale, tone, chord_id, target_page->attr_PIT, in_channel, in_velocity);
+	playChord(
+			  scale, tone, chord_id,
+			(MIDDLE_C + (OCTAVE * SOLO_scale_chords_octave) + target_page->attr_PIT), // set the octave for the relative pitch
+			  in_channel,
+			  in_velocity
+			 );
 }
 
 void copyArpToSteps(Chordstruct* chord){

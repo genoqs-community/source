@@ -432,7 +432,6 @@
 
 // This is the pitch offset of the middle C. Used at various occasoins
 #define 	MIDDLE_C				60
-#define 	C3						48
 
 
 // This defines the states that the follow variable may take

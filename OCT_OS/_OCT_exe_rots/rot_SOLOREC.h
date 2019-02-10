@@ -48,6 +48,18 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 							  OFF,
 							  FIXED);
 		}
+
+		// modify the chord pitch offset
+		if ( rotNdx == 2 && Chord_palette_repository[SOLO_scale_chords_palette_ndx].chord_id != NOP ){
+
+			modify_parameter(&Chord_palette_repository[SOLO_scale_chords_palette_ndx].pitch,
+							  STEP_DEF_PITCH,
+							  STEP_MAX_PITCH,
+							  direction,
+							  OFF,
+							  FIXED);
+		}
+
 		return;
 	}
 
