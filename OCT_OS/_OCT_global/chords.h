@@ -5216,6 +5216,11 @@ void persistChordPalette(){
 	SOLO_arp_pattern_page->attr_mix2edit = ON; // flag to indicate that we have saved before
 	SOLO_arp_pattern_page->attr_PIT = SOLO_scale_chords_pitch_recall;
 	SOLO_arp_pattern_page->attr_STA = SOLO_scale_chords_pitch_prev;
+	SOLO_arp_pattern_page->scaleLead[8] = SOLO_scale_chords_pitch_recall_scaleLead;
+	SOLO_arp_pattern_page->scaleNotes[8] = SOLO_scale_chords_pitch_recall_scaleNotes;
+	SOLO_arp_pattern_page->scaleLead[7] = SOLO_scale_chords_pitch_prev_scaleLead;
+	SOLO_arp_pattern_page->scaleNotes[7] = SOLO_scale_chords_pitch_prev_scaleNotes;
+
 	SOLO_arp_pattern_page->attr_LEN = (unsigned char) SOLO_scale_chords_octave;
 	SOLO_arp_pattern_page->attr_VEL = (unsigned char) SOLO_scale_chords_program_octave;
 
@@ -5272,6 +5277,15 @@ void restoreChordPalette(){
 
 		SOLO_scale_chords_pitch_recall = SOLO_arp_pattern_page->attr_PIT;
 		SOLO_scale_chords_pitch_prev = SOLO_arp_pattern_page->attr_STA;
+
+		if ( SOLO_arp_pattern_page->scaleNotes[7] != 0xFFF /* chromatic */ ){
+
+			SOLO_scale_chords_pitch_recall_scaleLead = SOLO_arp_pattern_page->scaleLead[8];
+			SOLO_scale_chords_pitch_recall_scaleNotes = SOLO_arp_pattern_page->scaleNotes[8];
+			SOLO_scale_chords_pitch_prev_scaleLead = SOLO_arp_pattern_page->scaleLead[7];
+			SOLO_scale_chords_pitch_prev_scaleNotes = SOLO_arp_pattern_page->scaleNotes[7];
+		}
+
 		SOLO_scale_chords_octave = (signed char) SOLO_arp_pattern_page->attr_LEN;
 		SOLO_scale_chords_program_octave = (signed char) SOLO_arp_pattern_page->attr_VEL;
 	}

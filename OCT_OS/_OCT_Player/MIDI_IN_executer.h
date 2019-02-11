@@ -674,17 +674,30 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 
 							if ( PHRASE_TIMER == ON ){ // before 2s
 								// fast press
-								if ( SOLO_assistant_page->attr_PIT != SOLO_scale_chords_pitch_recall ){
+								if ( SOLO_assistant_page->attr_PIT != SOLO_scale_chords_pitch_recall ||
+									 SOLO_assistant_page->scaleLead[ G_scale_ndx ] != SOLO_scale_chords_pitch_recall_scaleLead ||
+									 SOLO_assistant_page->scaleNotes[ G_scale_ndx ] != SOLO_scale_chords_pitch_recall_scaleNotes
+									){
 
 									SOLO_assistant_page->attr_PIT = SOLO_scale_chords_pitch_recall;
+									SOLO_assistant_page->scaleLead[ G_scale_ndx ] = SOLO_scale_chords_pitch_recall_scaleLead;
+									SOLO_assistant_page->scaleNotes[ G_scale_ndx ] = SOLO_scale_chords_pitch_recall_scaleNotes;
 								}
 								else {
 									SOLO_assistant_page->attr_PIT = SOLO_scale_chords_pitch_prev;
+									if ( SOLO_scale_chords_pitch_prev_scaleLead != OFF ){
+										SOLO_assistant_page->scaleLead[ G_scale_ndx ] = SOLO_scale_chords_pitch_prev_scaleLead;
+										SOLO_assistant_page->scaleNotes[ G_scale_ndx ] = SOLO_scale_chords_pitch_prev_scaleNotes;
+									}
 								}
 							}
 							else { // after 2s
 								SOLO_scale_chords_pitch_prev = SOLO_scale_chords_pitch_recall;
+								SOLO_scale_chords_pitch_prev_scaleLead = SOLO_scale_chords_pitch_recall_scaleLead;
+								SOLO_scale_chords_pitch_prev_scaleNotes = SOLO_scale_chords_pitch_recall_scaleNotes;
 								SOLO_scale_chords_pitch_recall = SOLO_assistant_page->attr_PIT;
+								SOLO_scale_chords_pitch_recall_scaleLead = SOLO_assistant_page->scaleLead[ G_scale_ndx ];
+								SOLO_scale_chords_pitch_recall_scaleNotes = SOLO_assistant_page->scaleNotes[ G_scale_ndx ];
 							}
 						}
 						return;
