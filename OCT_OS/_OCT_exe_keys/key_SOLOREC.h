@@ -320,6 +320,29 @@
 								SOLO_scale_chords_palette_ndx = ndx;
 								playChordstruct(ndx, TRACK_DEF_VELOCITY, SOLO_midi_ch, OFF);
 							}
+							else {
+
+								unsigned char pressed = OFF;
+								if 		( is_pressed_key( KEY_NOTE_C ) 	 == TRUE ) 	pressed = KEY_NOTE_C;
+								else if ( is_pressed_key( KEY_NOTE_Cis ) == TRUE )	pressed = KEY_NOTE_Cis;
+								else if ( is_pressed_key( KEY_NOTE_D )	 == TRUE ) 	pressed = KEY_NOTE_D;
+								else if ( is_pressed_key( KEY_NOTE_Dis ) == TRUE ) 	pressed = KEY_NOTE_Dis;
+								else if ( is_pressed_key( KEY_NOTE_E ) 	 == TRUE ) 	pressed = KEY_NOTE_E;
+								else if ( is_pressed_key( KEY_NOTE_F )	 == TRUE ) 	pressed = KEY_NOTE_F;
+								else if ( is_pressed_key( KEY_NOTE_Fis ) == TRUE ) 	pressed = KEY_NOTE_Fis;
+								else if ( is_pressed_key( KEY_NOTE_G ) 	 == TRUE ) 	pressed = KEY_NOTE_G;
+								else if ( is_pressed_key( KEY_NOTE_Gis ) == TRUE ) 	pressed = KEY_NOTE_Gis;
+								else if ( is_pressed_key( KEY_NOTE_A )	 == TRUE ) 	pressed = KEY_NOTE_A;
+								else if ( is_pressed_key( KEY_NOTE_Ais ) == TRUE ) 	pressed = KEY_NOTE_Ais;
+								else if ( is_pressed_key( KEY_NOTE_B ) 	 == TRUE ) 	pressed = KEY_NOTE_B;
+
+								// a chord button in the circle is held and an empty space was pressed
+								if ( pressed != OFF && Chord_palette_repository[keyNdx_to_ndx(pressed)].chord_id != NOP ){
+
+									copyChord(&Chord_palette_repository[keyNdx_to_ndx(pressed)],
+											  &Chord_palette_repository[ndx]);
+								}
+							}
 						}
 					}
 					break;
