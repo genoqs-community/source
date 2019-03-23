@@ -390,13 +390,19 @@
 
 	if ( SOLO_rec_transpose == ON ){
 
-		if ( keyNdx == KEY_SCALE_CAD && SOLO_rec_transpose_octave < 2 ){
+		signed char octave = SOLO_rec_transpose_octave;
 
-			transposeTrack(&Page_repository[GRID_CURSOR], ++SOLO_rec_transpose_octave);
+		if ( keyNdx == KEY_SCALE_CAD && octave < 2 ){
+
+			transposeTrack(&Page_repository[GRID_CURSOR], ++octave);
 		}
-		else if ( keyNdx == KEY_SCALE_MOD && SOLO_rec_transpose_octave > -2 ){
+		else if ( keyNdx == KEY_SCALE_MOD && octave > -2 ){
 
-			transposeTrack(&Page_repository[GRID_CURSOR], --SOLO_rec_transpose_octave);
+			transposeTrack(&Page_repository[GRID_CURSOR], --octave);
+		}
+		else if ( keyNdx == KEY_SCALE_MOD || keyNdx == KEY_SCALE_CAD ) {
+
+			SOLO_transpose_latch = OFF;
 		}
 	}
 
@@ -408,6 +414,7 @@
 				SOLO_rec_rehersal = ON;
 				reset_page_cluster( SOLO_assistant_page );
 				GRID_CURSOR = SOLO_assistant_page->pageNdx;
+				SOLO_transpose_GRID_CURSOR = GRID_CURSOR;
 				sequencer_command_PLAY();
 			}
 			else {
@@ -466,7 +473,34 @@
 
 		else if ( keyNdx == KEY_EDIT_MASTER ){
 
-			if ( SOLO_edit_buffer_volatile == ON && G_run_bit == OFF ){
+			if ( SOLO_rec_transpose == ON ){
+
+				// DOUBLE CLICK SCENARIO
+				if (	( DOUBLE_CLICK_TARGET == keyNdx )
+					&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+
+					// Double click code
+					// ...
+					clearAllTranspose();
+
+				} // end of double click scenario
+
+				// SINGLE CLICK SCENARIO
+				else if (DOUBLE_CLICK_TARGET == 0) {
+
+					DOUBLE_CLICK_TARGET = keyNdx;
+					DOUBLE_CLICK_TIMER = ON;
+					// Start the Double click Alarm
+					cyg_alarm_initialize(
+							doubleClickAlarm_hdl,
+							cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+							DOUBLE_CLICK_ALARM_TIME );
+
+					undoAllNotes();
+				}
+			}
+			else if ( SOLO_edit_buffer_volatile == ON && G_run_bit == OFF ){
+
 				if ( SOLO_undo_page_col != NOP ){
 
 					unsigned char j=0;
@@ -513,7 +547,20 @@
 
 		// Transpose
 		if ( keyNdx == KEY_ZOOM_PLAY && SOLO_has_rec == ON ){
+
+			saveOrUndoTranspose();
+
 			SOLO_rec_transpose ^= 1; // toggle
+
+			if ( SOLO_rec_transpose == ON ){
+
+				captureTransposeRecTrackUndo();
+				SOLO_undo_note_all = ON;
+			}
+			else {
+
+				SOLO_transpose_latch = OFF;
+			}
 		}
 	}
 

@@ -52,8 +52,17 @@ void show_SCALE_SELECTOR_scale_selection( Pagestruct* target_page ){
 	#ifdef FEATURE_SOLO_REC
 	}
 
+	unsigned char blink = (SOLO_rec_transpose == ON && SOLO_transpose_latch == ON);
+
+	#ifdef FEATURE_SOLO_REC
+
+	unsigned int j = my_shift_bitpattern( track_scale_value(SOLO_transpose_row, target_page-> scaleNotes), 12, INC,
+							  my_bit2ndx( track_scale_value(SOLO_transpose_row, target_page-> scaleLead) )+1);
+
+	#else
 	unsigned int j = my_shift_bitpattern( target_page-> scaleNotes[G_scale_ndx], 12, INC,
 							  my_bit2ndx( target_page-> scaleLead[G_scale_ndx] )+1);
+	#endif
 
 
 	switch( j ) {
@@ -61,36 +70,43 @@ void show_SCALE_SELECTOR_scale_selection( Pagestruct* target_page ){
 		case SCALE_SIG_PEN:
 			MIR_write_dot( LED_SCALE_PEN,	MIR_GREEN );
 			MIR_write_dot( LED_SCALE_PEN,	MIR_RED	);
+			if (blink) MIR_write_dot( LED_SCALE_PEN,	MIR_BLINK );
 			break;
 
 		case SCALE_SIG_WHL:
 			MIR_write_dot( LED_SCALE_WHL,	MIR_GREEN );
 			MIR_write_dot( LED_SCALE_WHL,	MIR_RED	);
+			if (blink) MIR_write_dot( LED_SCALE_WHL,	MIR_BLINK );
 			break;
 
 		case SCALE_SIG_MAJ:
 			MIR_write_dot( LED_SCALE_MAJ,	MIR_GREEN );
 			MIR_write_dot( LED_SCALE_MAJ,	MIR_RED	);
+			if (blink) MIR_write_dot( LED_SCALE_MAJ,	MIR_BLINK );
 			break;
 
 		case SCALE_SIG_MIN:
 			MIR_write_dot( LED_SCALE_MIN,	MIR_GREEN );
 			MIR_write_dot( LED_SCALE_MIN,	MIR_RED	);
+			if (blink) MIR_write_dot( LED_SCALE_MIN,	MIR_BLINK );
 			break;
 
 		case SCALE_SIG_DIM:
 			MIR_write_dot( LED_SCALE_DIM,	MIR_GREEN );
 			MIR_write_dot( LED_SCALE_DIM,	MIR_RED	);
+			if (blink) MIR_write_dot( LED_SCALE_DIM,	MIR_BLINK );
 			break;
 
 		case SCALE_SIG_CHR:
 			MIR_write_dot( LED_SCALE_CHR,	MIR_GREEN );
 			MIR_write_dot( LED_SCALE_CHR,	MIR_RED	);
+			if (blink) MIR_write_dot( LED_SCALE_CHR,	MIR_BLINK );
 			break;
 
 		default:
 			MIR_write_dot( LED_SCALE_MYSEL,	MIR_GREEN );
 			MIR_write_dot( LED_SCALE_MYSEL,	MIR_RED	);
+			if (blink) MIR_write_dot( LED_SCALE_MYSEL,	MIR_BLINK );
 			break;
 	}
 	#else

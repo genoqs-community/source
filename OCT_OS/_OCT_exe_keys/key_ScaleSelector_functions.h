@@ -57,6 +57,8 @@ void wire_scale_data( Pagestruct* target_page ){
 
 	#ifdef FEATURE_SOLO_REC
 	if ( SOLO_rec_transpose == ON ){
+
+		saveTransposeRecTrack( target_page );
 		return;
 	}
 	#endif
@@ -88,7 +90,7 @@ void wire_scale_data( Pagestruct* target_page ){
 //
 // This is the function that exports the selected scale pitches into the tracks
 void program_scale_pitches( Pagestruct* target_page ){
-	
+
 	// Export the scale degrees
 	export_scale_degrees( target_page );
 	
@@ -102,6 +104,45 @@ void program_scale_pitches( Pagestruct* target_page ){
 	wire_scale_data( target_page );
 }
 
+
+unsigned int has_track_scale( unsigned int* scaleVals, unsigned char track_row ){
+
+	return CHECK_BIT(scaleVals[3], (31 - track_row)); // left to right bits 0-9
+}
+
+// Scale indices 4-8 are used to store upper and lower values
+unsigned int track_scale_value( unsigned char track_row, unsigned int *scaleVals ){
+
+	unsigned char row = (track_row / 2) + 4;
+
+	if ( has_track_scale(scaleVals, track_row) == FALSE ){
+		return scaleVals[G_scale_ndx];
+	}
+
+	if ( track_row % 2 == 0 ){ // even
+
+		return scaleVals[row] >> 16 & 0xFFFF;
+	}
+	else { // odd
+		return scaleVals[row] & 0xFFFF;
+	}
+}
+
+void assign_track_scale_value( int val, unsigned char track_row, unsigned int* scaleVals ){
+
+	unsigned char row = (track_row / 2) + 4;
+
+	SET_BIT(scaleVals[3], (31 - track_row)); // left to right bits 0-9
+
+	if ( track_row % 2 == 0 ){ // even
+
+		scaleVals[row] = combine32(val, scaleVals[row] & 0xFFFF); // assign left
+	}
+	else { // odd
+
+		scaleVals[row] = combine32(scaleVals[row] >> 16 & 0xFFFF, val); // assign right
+	}
+}
 
 
 //_________________________________________________________________________________________
@@ -213,6 +254,7 @@ void key_ScaleSelector_functions( unsigned int keyNdx, Pagestruct* target_page )
 		case KEY_SCALE_DIM:
 		case KEY_SCALE_CHR:
 
+
 			// Clear the scale and lead offsets in the tracks
 			for (i=0; i<MATRIX_NROF_ROWS; i++){
 				target_page->Track[i]->scale_pitch_offset = 0;
@@ -240,10 +282,27 @@ void key_ScaleSelector_functions( unsigned int keyNdx, Pagestruct* target_page )
 				case KEY_SCALE_CHR:	target_page-> scaleNotes[G_scale_ndx] = SCALE_SIG_CHR;		break;	
 			} // switch( keyNdx )
 			
+
 			// Shift the signature according to the lead
-			target_page-> scaleNotes[G_scale_ndx] = 
-				my_shift_bitpattern( 	target_page-> scaleNotes[G_scale_ndx], 12, INC, 
+			target_page-> scaleNotes[G_scale_ndx] =
+				my_shift_bitpattern( 	target_page-> scaleNotes[G_scale_ndx], 12, INC,
 										(11 - my_bit2ndx(target_page-> scaleLead[G_scale_ndx] ) )  );
+
+
+			#ifdef FEATURE_SOLO_REC
+			if ( SOLO_rec_transpose == ON ){
+
+				if ( target_page->my_scale_signature == target_page-> scaleNotes[G_scale_ndx] ){
+
+					SOLO_transpose_latch ^= 1; // toggle;
+				}
+				else {
+
+					SOLO_transpose_latch = ON;
+				}
+			}
+			#endif
+
 
 			// Export the changes to the tracks
 			target_page->scaleLead_old = target_page-> scaleLead[G_scale_ndx];

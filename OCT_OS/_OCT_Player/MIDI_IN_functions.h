@@ -1033,6 +1033,20 @@ void modify_scale_composition( 	Pagestruct* target_page,
 								unsigned char scale_ndx ){
 
 
+	#ifdef FEATURE_SOLO_REC
+	if ( SOLO_rec_transpose == ON ){
+
+		if ( track_scale_value(SOLO_transpose_row, target_page->scaleLead) == 1 << (11-note_to_ndx(k)) ){
+
+			SOLO_transpose_latch ^= 1; // toggle
+		}
+		else {
+
+			SOLO_transpose_latch = ON;
+		}
+	}
+	#endif
+
 	switch( target_page->scaleStatus ){
 
 		// Change the SCALE - adding and removing notes from it

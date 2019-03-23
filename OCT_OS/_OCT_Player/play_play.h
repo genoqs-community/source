@@ -515,9 +515,47 @@ void play_row_ON( 	Pagestruct* 	target_page,
 	}
 
 	#ifdef FEATURE_SOLO_REC
+	if ( (Page_getTrackRecPattern(target_page) & (1 << phys_row)) != 0 ) {
+
+		if ( SOLO_transpose_row == NOP || SOLO_transpose_row != (int) phys_row ){
+
+			int prev_row = SOLO_transpose_row;
+			SOLO_transpose_row = (int) phys_row; // remember the current record row for transpose
+
+			if ( prev_row == NOP ){
+
+				prev_row = SOLO_transpose_row;
+			}
+
+			if ( SOLO_transpose_latch == ON ){
+
+				copyTransposeTrack( &Page_repository[ GRID_CURSOR ],
+									&Page_repository[ SOLO_transpose_GRID_CURSOR ], // prev cursor if page has changed
+									SOLO_transpose_row,
+									prev_row );
+
+			}
+
+			if ( SOLO_transpose_GRID_CURSOR != GRID_CURSOR ){
+
+				SOLO_transpose_GRID_CURSOR = GRID_CURSOR; // after the page change
+			}
+
+			// set the circle section
+			Page_repository[ GRID_CURSOR ].scaleLead[G_scale_ndx] = track_scale_value(
+																	SOLO_transpose_row,
+																	Page_repository[ GRID_CURSOR ].scaleLead );
+
+			Page_repository[ GRID_CURSOR ].scaleNotes[G_scale_ndx] = track_scale_value(
+																	 SOLO_transpose_row,
+																	 Page_repository[ GRID_CURSOR ].scaleNotes );
+
+		}
+	}
 	if ( SOLO_scale_chords_arp_cursor != NOP ){
 
-		if ( record_chord_arp_to_track( target_page, phys_row, locator-1 ) == OFF ){
+		if (((Page_getTrackRecPattern(target_page) & (1 << phys_row)) == 0 ) || // Ignore non-record tracks
+			  record_chord_arp_to_track( target_page, phys_row, locator-1 ) == OFF ){
 
 			if (( bitactivity & (1 << phys_row) ) == 0 ) {
 				return;

@@ -248,6 +248,13 @@ unsigned int my_shift_bitpattern (  unsigned int bitpattern,
 }
 
 
+// Combine two 16 bit values into a single int32
+unsigned int combine32( int left, int right ){
+
+	return (left << 16 & 0xFFFF0000) | (right & 0xFFFF);
+}
+
+
 // Takes the natural index of a matrix key (1-160) and returns its machine index.
 unsigned int machine_index_of_key( unsigned int matrix_ndx ){
 

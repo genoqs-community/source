@@ -430,8 +430,10 @@ void stop_solo_rec( unsigned char trim ){
 	}
 
 	flush_note_on_queue( &Page_repository[GRID_CURSOR], SOLO_midi_ch );
-
 	freeflowOff( trim );
+
+	saveOrUndoTranspose();
+
 	sequencer_STOP( true );
 	sequencer_RESET( false );
 	// Reset all locators in assistant page
@@ -443,6 +445,7 @@ void stop_solo_rec( unsigned char trim ){
 	SOLO_rec_measure_pos 			= OFF;
 	SOLO_rec_rehersal				= OFF;
 	SOLO_scale_chords_arp_cursor 	= NOP;
+	SOLO_transpose_latch 			= OFF;
 
 	if ( SOLO_scale_chords_program == ON ){
 		SOLO_rec_measure_hold = OFF;
@@ -509,6 +512,7 @@ void reset_page_cluster( Pagestruct* temp_page ){
 	signed short 	prev_ndx = 0,
 					this_ndx = 0,
 					m, n, i;
+	Pagestruct* first_page;
 
 
 	if ( G_run_bit == ON ){
@@ -527,6 +531,7 @@ void reset_page_cluster( Pagestruct* temp_page ){
 	}
 
 	temp_page = &Page_repository[this_ndx];
+	first_page = temp_page;
 
 	// PAGE PLAY from grid selection: each bank has at most one active page
 	for ( i=0; i < GRID_NROF_BANKS; i++ ){
@@ -540,6 +545,7 @@ void reset_page_cluster( Pagestruct* temp_page ){
 	GRID_p_preselection[ SOLO_rec_bank ] = temp_page;
 	GRID_p_clock_presel[ SOLO_rec_bank ] = temp_page;
 	GRID_CURSOR = temp_page->pageNdx;
+	SOLO_transpose_GRID_CURSOR = GRID_CURSOR;
 	follow_flag = FOLLOW_PAGE;
 
 	// track forward

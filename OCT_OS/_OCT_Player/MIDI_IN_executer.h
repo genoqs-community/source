@@ -344,54 +344,57 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 
 		if ( SOLO_scale_chords_program_keys == OFF || ( !isProgramKey && SOLO_scale_chords_program_keys == ON )){
 
-			// Palette key held for 2s or tap
-			if ( CHECK_PALETTE_BLACK_KEY(in_pitch) ){ // G#
+			if ( SOLO_rec_transpose == OFF ){
 
-				if ( ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){ // not NOTE OFF
+				// Palette key held for 2s or tap
+				if ( CHECK_PALETTE_BLACK_KEY(in_pitch) ){ // G#
 
-					PHRASE_TIMER = ON;
-					cyg_alarm_initialize(	alarm_hdl,
-											cyg_current_time() + ( TIMEOUT_VALUE / 2 ), // about 2 seconds
-											0 );
-				}
-				else { // note off
+					if ( ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){ // not NOTE OFF
 
-					if ( PHRASE_TIMER == ON ){ // before 2s
+						PHRASE_TIMER = ON;
+						cyg_alarm_initialize(	alarm_hdl,
+												cyg_current_time() + ( TIMEOUT_VALUE / 2 ), // about 2 seconds
+												0 );
+					}
+					else { // note off
 
-						if ( SOLO_scale_chords_program_armed == ON ){
+						if ( PHRASE_TIMER == ON ){ // before 2s
 
-							SOLO_scale_chords_program_armed = OFF;
+							if ( SOLO_scale_chords_program_armed == ON ){
+
+								SOLO_scale_chords_program_armed = OFF;
+							}
+							else if ( SOLO_scale_chords_program ==  ON ){
+
+								SOLO_scale_chords_program = OFF;
+							}
+							else {
+								SOLO_scale_chords_program_keys ^= 1; // toggle palette keys enabled
+							}
 						}
-						else if ( SOLO_scale_chords_program ==  ON ){
-
-							SOLO_scale_chords_program = OFF;
-						}
-						else {
-							SOLO_scale_chords_program_keys ^= 1; // toggle palette keys enabled
+						else { // after 2s
+							enterProgramEditor(); // palette editor enabled
 						}
 					}
-					else { // after 2s
-						enterProgramEditor(); // palette editor enabled
+					return;
+				}
+				if ( ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){ // ignore NOTE OFF
+
+					if ( CHECK_UP_TONE_BLACK_KEY(in_pitch) ){
+
+						modifyChordPitch(1);
+						return;
 					}
-				}
-				return;
-			}
-			if ( ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){ // ignore NOTE OFF
+					else if ( CHECK_DOWN_TONE_BLACK_KEY(in_pitch) ){
 
-				if ( CHECK_UP_TONE_BLACK_KEY(in_pitch) ){
+						modifyChordPitch(-1);
+						return;
+					}
+					else if ( CHECK_AB_BLACK_KEY(in_pitch) ){ // 2 black keys
 
-					modifyChordPitch(1);
-					return;
-				}
-				else if ( CHECK_DOWN_TONE_BLACK_KEY(in_pitch) ){
-
-					modifyChordPitch(-1);
-					return;
-				}
-				else if ( CHECK_AB_BLACK_KEY(in_pitch) ){ // 2 black keys
-
-					SOLO_scale_chords_b ^= 1;
-					return;
+						SOLO_scale_chords_b ^= 1;
+						return;
+					}
 				}
 			}
 		}
@@ -661,7 +664,9 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 
 				if ( SOLO_scale_chords == ON ){
 
-					if ( CHECK_RECALL_BLACK_KEY(in_pitch) && ( SOLO_scale_chords_program_keys == OFF || !isProgramKey )){
+					if ( SOLO_rec_transpose == OFF &&
+						 CHECK_RECALL_BLACK_KEY(in_pitch) &&
+					   ( SOLO_scale_chords_program_keys == OFF || !isProgramKey )){
 
 						if ( in_velocity != OFF ){
 

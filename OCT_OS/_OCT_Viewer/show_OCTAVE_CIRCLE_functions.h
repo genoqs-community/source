@@ -32,6 +32,7 @@ void show_OCTAVE_CIRCLE_scale_selection( Pagestruct* target_page ){
 	unsigned int 	i = 0,
 					j = 0;
 
+	unsigned char blink = (SOLO_rec_transpose == ON && SOLO_transpose_latch == ON);
 
 
 	#ifdef FEATURE_SOLO_REC
@@ -57,24 +58,32 @@ void show_OCTAVE_CIRCLE_scale_selection( Pagestruct* target_page ){
 				MIR_write_dot( LED_SCALE_CAD, MIR_BLINK );
 			}
 		}
+
 	#ifdef FEATURE_SOLO_REC
 	}
 	else {
-		// SOLO Transpose
+
 		target_page = &Page_repository[ GRID_CURSOR ];
+	}
+
+	// show the transpose tracks if there are per-track assignments
+	if ( G_run_bit == ON && ( G_zoom_level == zoomSOLOREC || G_zoom_level == zoomPAGE )){
+
+		Pagestruct* temp_page = &Page_repository[ GRID_CURSOR ];
+		short rec_pattern = Page_getTrackRecPattern(temp_page);
+		int row = my_bit2ndx(rec_pattern);
+
+		if ( has_track_scale(temp_page->scaleNotes, row) != FALSE ){
+			target_page = &Page_repository[ GRID_CURSOR ];
+		}
+
+		if ( rec_pattern == OFF ) {
+			SOLO_transpose_row = NOP;
+		}
 	}
 	#endif
 
-
-	// Determine which scale to show
-	if ( target_page->scaleStatus == OFF ){
-//		j = target_page->current_scale;
-
-		j = target_page-> scaleNotes[G_scale_ndx];
-	}
-	else{
-		j = target_page-> scaleNotes[G_scale_ndx];
-	}
+	j = track_scale_value(SOLO_transpose_row, target_page->scaleNotes);
 
 	// ON fields showing first
 	for (i=0; i<12; i++) {
@@ -127,44 +136,56 @@ void show_OCTAVE_CIRCLE_scale_selection( Pagestruct* target_page ){
 	for (i=0; i<12; i++) {
 		
 		// If the note is selected as UP
-		if ( target_page-> scaleLead[G_scale_ndx] & (1 << (11-i) ) ) {							
+		if ( track_scale_value(SOLO_transpose_row, target_page->scaleLead) & (1 << (11-i) ) ) {
 			
 			switch (i) {
 				case 0:
 					MIR_write_dot( LED_NOTE_C, 		MIR_RED );
+					if (blink) MIR_write_dot( LED_NOTE_C, 		MIR_BLINK );
 					break;
 				case 1:
 					MIR_write_dot( LED_NOTE_Cis, 	MIR_RED );
+					if (blink) MIR_write_dot( LED_NOTE_Cis, 	MIR_BLINK );
 					break;
 				case 2:
 					MIR_write_dot( LED_NOTE_D,	 	MIR_RED );
+					if (blink) MIR_write_dot( LED_NOTE_D, 		MIR_BLINK );
 					break;
 				case 3:
 					MIR_write_dot( LED_NOTE_Dis, 	MIR_RED );
+					if (blink) MIR_write_dot( LED_NOTE_Dis, 	MIR_BLINK );
 					break;
 				case 4:
 					MIR_write_dot( LED_NOTE_E,	 	MIR_RED );
+					if (blink) MIR_write_dot( LED_NOTE_E, 		MIR_BLINK );
 					break;
 				case 5:
 					MIR_write_dot( LED_NOTE_F,	 	MIR_RED );
+					if (blink) MIR_write_dot( LED_NOTE_F, 		MIR_BLINK );
 					break;
 				case 6:
 					MIR_write_dot( LED_NOTE_Fis, 	MIR_RED );
+					if (blink) MIR_write_dot( LED_NOTE_Fis, 	MIR_BLINK );
 					break;
 				case 7:
 					MIR_write_dot( LED_NOTE_G,	 	MIR_RED );
+					if (blink) MIR_write_dot( LED_NOTE_G, 		MIR_BLINK );
 					break;
 				case 8:
 					MIR_write_dot( LED_NOTE_Gis, 	MIR_RED );
+					if (blink) MIR_write_dot( LED_NOTE_Gis, 	MIR_BLINK );
 					break;
 				case 9:
 					MIR_write_dot( LED_NOTE_A, 		MIR_RED );
+					if (blink) MIR_write_dot( LED_NOTE_A, 		MIR_BLINK );
 					break;
 				case 10:
 					MIR_write_dot( LED_NOTE_Ais, 	MIR_RED );
+					if (blink) MIR_write_dot( LED_NOTE_Ais, 	MIR_BLINK );
 					break;
 				case 11:
 					MIR_write_dot( LED_NOTE_B,	 	MIR_RED );
+					if (blink) MIR_write_dot( LED_NOTE_B, 		MIR_BLINK );
 					break;									
 			}
 		}
@@ -554,6 +575,29 @@ void show_OCTAVE_CIRCLE_chord_tone_selection( Pagestruct* target_page ){
 // Show the chord tone selection of the given page
 void show_OCTAVE_CIRCLE_chord_octave_transpose_selection( signed char octave ){
 
+	unsigned char blink = OFF;
+
+	if ( SOLO_rec_transpose == ON ){
+
+		Pagestruct* temp_page = &Page_repository[ GRID_CURSOR ];
+		short rec_pattern = Page_getTrackRecPattern(temp_page);
+		int row = my_bit2ndx(rec_pattern);
+
+		if ( rec_pattern != OFF ){
+
+			if ( has_track_scale(temp_page->scaleNotes, row) != FALSE ){
+
+				SOLO_rec_transpose_octave = (signed char) temp_page->Track[row]->lead_pitch_offset / OCTAVE;
+				octave = SOLO_rec_transpose_octave;
+
+				if ( SOLO_transpose_latch == ON ){
+
+					blink = ON;
+				}
+			}
+		}
+	}
+
 
 	switch ( octave ){
 
@@ -586,6 +630,9 @@ void show_OCTAVE_CIRCLE_chord_octave_transpose_selection( signed char octave ){
 			MIR_write_dot (LED_SCALE_MOD, MIR_GREEN);
 			break;
 	}
+
+	if (blink) MIR_write_dot (LED_SCALE_CAD, MIR_BLINK);
+	if (blink) MIR_write_dot (LED_SCALE_MOD, MIR_BLINK);
 }
 
 

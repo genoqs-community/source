@@ -1479,6 +1479,24 @@
 				sequencer_command_STOP();
 				G_pause_bit = pause;
 				break;
+
+			#ifdef FEATURE_SOLO_REC
+			case KEY_PAUSE:
+				// the sequencer is not paused and it is not running, i.e. stopped
+				if ( G_pause_bit == OFF && G_run_bit == OFF ){
+					SOLO_rec_save_playmodes = GRID_bank_playmodes;
+					if ( GRID_p_selection_cluster == ON ){
+						if ( has_valid_record_cluster_format( &Page_repository[GRID_CURSOR] ) == ON ){
+							pageClusterEnterSoloRec( GRID_CURSOR );
+							enterSoloRec();
+						}
+					}
+					else {
+						enterSoloRec();
+					}
+				}
+				break;
+			#endif
 		}
 	}
 

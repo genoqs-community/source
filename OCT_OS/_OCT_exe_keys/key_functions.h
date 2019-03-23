@@ -2199,6 +2199,12 @@ void shift_track_pitches( 	Pagestruct* target_page,
 	// Iterate through the tracks
 	for (row=0; row<MATRIX_NROF_ROWS; row++) {
 
+		#ifdef FEATURE_SOLO_REC
+		if ( SOLO_rec_transpose == ON && SOLO_transpose_row != row ){
+			continue;
+		}
+		#endif
+
 		// Find out the pitch of the track relative to the scale..
 		track_pitch_bit =
 			1 << (11 - ( (
@@ -2430,6 +2436,12 @@ void export_scale_lead ( Pagestruct* target_page ){
 	// Clear the lead offsets in tracks
 	for (row=0; row<MATRIX_NROF_ROWS; row++) {
 
+		#ifdef FEATURE_SOLO_REC
+		if ( SOLO_rec_transpose == ON && SOLO_transpose_row != row ){
+			continue;
+		}
+		#endif
+
 		target_page->Track[row]->lead_pitch_offset = 0;
 		// d_iag_printf( "%d  ", target_page->Track[row]->lead_pitch_offset );
 	}
@@ -2571,6 +2583,12 @@ void export_scale_degrees( Pagestruct* target_page ){
 
 	// Iterate through the tracks of the page and assign pitch by pith to the tracks
 	for ( row = 9; row >= 0; row-- ) {
+
+		#ifdef FEATURE_SOLO_REC
+		if ( SOLO_rec_transpose == ON && SOLO_transpose_row != row ){
+			continue;
+		}
+		#endif
 
 //		 //d_iag_printf( "*export_scale_degrees: scale/Ndx:%d\n", scaleNdx );
 //		 //my_print_bits32( target_page->scaleNotes );

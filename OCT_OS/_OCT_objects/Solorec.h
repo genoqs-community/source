@@ -47,6 +47,9 @@ unsigned char SOLO_rec_ending_flash				= ON;
 unsigned char SOLO_rec_continue_recording		= ON;
 unsigned char SOLO_rec_quantize_first_beat		= ON;
 unsigned char SOLO_rec_legato					= OFF;
+int 		 SOLO_transpose_row				   	= NOP;
+unsigned char SOLO_transpose_latch				= OFF;
+unsigned char SOLO_transpose_GRID_CURSOR		= NOP;
 unsigned char SOLO_rec_transpose				= OFF;
 signed char   SOLO_rec_transpose_octave			= OFF;
 unsigned char SOLO_rec_measure_hold				= OFF;
@@ -239,6 +242,11 @@ void exitSoloRec(){
 	SOLO_rec_has_MCC					= OFF;
 	SOLO_undo_note						= NOP;
 	SOLO_undo_note_page_col				= NOP;
+	SOLO_transpose_row				   	= NOP;
+	SOLO_transpose_latch				= OFF;
+	SOLO_transpose_GRID_CURSOR			= NOP;
+	SOLO_rec_transpose					= OFF;
+	SOLO_rec_transpose_octave			= OFF;
 
 	for (i=0; i<MATRIX_NROF_ROWS; i++){
 		if ( SOLO_page_play_along_toggle[i] != NOP ){
@@ -372,8 +380,11 @@ void recPageCopy( unsigned char source_col, unsigned char dest_col ){
 	dest_rec->measure_count = source_rec->measure_count;
 	copyTracks(source_rec, dest_rec);
 	copyTracks(dest_rec, undo_dest_rec);
+
 	unsigned char j=0;
+
 	for (j = 0; j < MAX_NROF_PAGE_NOTES; j++) {
+
 		copyNote(source_rec->Note[j], dest_rec->Note[j]);
 		copyNote(dest_rec->Note[j], undo_dest_rec->Note[j]); // undo
 	}
@@ -387,6 +398,7 @@ void undoAllNotes(){
 	Notestruct* undo_note;
 	Stepstruct* target_step;
 	Pagestruct* target_page;
+	Recstruct* rec;
 
 	// For each page in the record chain
 	// track forward
@@ -396,6 +408,7 @@ void undoAllNotes(){
 
 		target_page = &Page_repository[this_ndx];
 		col = grid_col(target_page->pageNdx);
+		rec = &Rec_undo_repository[ col ]; // undo
 
 		copyTracks(&Rec_undo_repository[col], &Rec_repository[col]);
 		recToTracks(&Rec_repository[col], target_page);
@@ -408,10 +421,168 @@ void undoAllNotes(){
 			copyNote(undo_note, target_note);
 			noteToStep(target_note, target_step);
 		}
+
 		this_ndx += 10;
 	}
 
-	SOLO_undo_note_all = OFF;
+	if ( SOLO_rec_transpose == ON ){
+
+		resetTransposeRecTrack();
+	}
+	else {
+		SOLO_undo_note_all = OFF;
+	}
+}
+
+void resetTransposeRecTrack(){
+
+	signed short this_ndx = first_page_in_cluster(SOLO_rec_page->pageNdx);
+	Pagestruct* target_page = &Page_repository[this_ndx];
+	SOLO_transpose_row = my_bit2ndx(Page_getTrackRecPattern(target_page));
+	unsigned char col;
+	Recstruct* rec;
+	int i;
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		target_page = &Page_repository[this_ndx];
+		col = grid_col(target_page->pageNdx);
+		rec = &Rec_undo_repository[ col ]; // undo
+
+		for (i=0; i<MATRIX_NROF_ROWS; i++){
+
+			// Clear their scale and lead offsets
+			target_page->Track[i]->scale_pitch_offset = rec->scale_pitch_offset[i];
+			target_page->Track[i]->lead_pitch_offset = rec->lead_pitch_offset[i];
+
+			target_page->scaleLead[i] = rec->scaleLead[i];
+			target_page->scaleNotes[i] = rec->scaleNotes[i];
+
+		}
+
+		this_ndx += 10;
+	}
+}
+
+void saveTransposeRecTrack( Pagestruct* target_page ){
+
+	if ( SOLO_transpose_row == NOP ){
+
+		SOLO_transpose_row = my_bit2ndx(Page_getTrackRecPattern(target_page));
+	}
+
+	// set the circle section
+	assign_track_scale_value( target_page->scaleLead[G_scale_ndx], SOLO_transpose_row, target_page->scaleLead );
+	assign_track_scale_value( target_page->scaleNotes[G_scale_ndx], SOLO_transpose_row, target_page->scaleNotes );
+}
+
+void copyTransposeTrack( Pagestruct* target_page, Pagestruct* prev_page, int target_row, int prev_row ){
+
+	target_page->Track[ target_row ]->scale_pitch_offset = prev_page->Track[ prev_row ]->scale_pitch_offset;
+	target_page->Track[ target_row ]->lead_pitch_offset = prev_page->Track[ prev_row ]->lead_pitch_offset;
+
+	// set the circle section
+	assign_track_scale_value( track_scale_value( prev_row, prev_page->scaleLead ), target_row, target_page->scaleLead );
+	assign_track_scale_value( track_scale_value( prev_row, prev_page->scaleNotes ), target_row, target_page->scaleNotes );
+}
+
+
+void captureTransposeRecTrackUndo(){
+
+	signed short this_ndx = first_page_in_cluster(SOLO_rec_page->pageNdx);
+	int i, col;
+	Pagestruct* target_page;
+	Recstruct* rec;
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		target_page = &Page_repository[this_ndx];
+		col = grid_col(target_page->pageNdx);
+		rec = &Rec_undo_repository[ col ]; // undo
+
+		for (i=0; i<MATRIX_NROF_ROWS; i++){
+
+			// Clear their scale and lead offsets
+			rec->scale_pitch_offset[i] = target_page->Track[i]->scale_pitch_offset;
+			rec->lead_pitch_offset[i] = target_page->Track[i]->lead_pitch_offset;
+
+			// scaleLead and scaleNotes are always assigned together
+			if ( has_track_scale(target_page->scaleLead, i) == FALSE ){
+
+				assign_track_scale_value( SOLO_assistant_page->scaleLead[G_scale_ndx], i, target_page->scaleLead );
+				assign_track_scale_value( SOLO_assistant_page->scaleNotes[G_scale_ndx], i, target_page->scaleNotes );
+			}
+
+			rec->scaleLead[i] = target_page->scaleLead[i];
+			rec->scaleNotes[i] = target_page->scaleNotes[i];
+		}
+
+		this_ndx += 10;
+	}
+}
+
+void clearAllTranspose(){
+
+	signed short this_ndx = first_page_in_cluster(SOLO_rec_page->pageNdx);
+	int i;
+	Pagestruct* target_page;
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		target_page = &Page_repository[this_ndx];
+
+		for (i=0; i<MATRIX_NROF_ROWS; i++){
+
+			// Clear their scale and lead offsets
+			target_page->Track[i]->scale_pitch_offset = OFF;
+			target_page->Track[i]->lead_pitch_offset = OFF;
+		}
+
+		for (i=0; i<9; i++){ // clear the transpose flag and upper/lower parts
+
+			target_page->scaleLead[i] = OFF;
+			target_page->scaleLead[i] = 1 << 11;  // this is equivalent to C
+			target_page->scaleNotes[i] = SCALE_SIG_CHR;
+		}
+
+		this_ndx += 10;
+	}
+
+	target_page = &Page_repository[GRID_CURSOR];
+	target_page->scaleLead[G_scale_ndx] = SOLO_assistant_page->scaleLead[G_scale_ndx];
+	target_page->scaleNotes[G_scale_ndx] = SOLO_assistant_page->scaleNotes[G_scale_ndx];
+
+	captureTransposeRecTrackUndo();
+
+	SOLO_rec_transpose_octave = OFF;
+	SOLO_undo_note_all = ON;
+}
+
+void saveOrUndoTranspose(){
+
+	if ( SOLO_rec_transpose == ON ){
+
+		if ( !G_track_rec_bit ){
+			resetTransposeRecTrack();
+		}
+		else {
+			captureTransposeRecTrackUndo();
+		}
+	}
+
+	SOLO_transpose_row = NOP;
 }
 
 void commitMix(){
@@ -465,6 +636,7 @@ void playSoloRecCluster(){
 			GRID_p_preselection[ SOLO_rec_bank ] = target_page;
 			GRID_p_clock_presel[ SOLO_rec_bank ] = target_page;
 			GRID_CURSOR = target_page->pageNdx;
+			SOLO_transpose_GRID_CURSOR = GRID_CURSOR;
 			col = grid_col(target_page->pageNdx);
 			offset = col - cursor_col;
 

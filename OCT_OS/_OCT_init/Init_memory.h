@@ -771,6 +771,7 @@ void PAGE_init (Pagestruct* target_page, pageid_t pageId, booln firstInitBo ){
 
 	for ( i=0; i< 9; i++){
 		target_page->scaleNotes[i]			= SCALE_SIG_CHR;
+		target_page->scaleLead[i]			= OFF;
 		target_page->scaleLead[i]			= 1 << 11;  // this is equivalent to C
 	}
 

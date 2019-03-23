@@ -434,8 +434,8 @@ typedef struct pagestruct{
 	// Stores the selected notes that make up the scale. Needs 12x2 = 24 bits of storage.
 	// These are BITPATTERNS. Should work Faster and clearer
 	// There are nine pairs that may be used - and eventually selected via numeric quadrant
-	unsigned int 	scaleNotes[9];
-	unsigned int 	scaleLead[9];
+	unsigned int 	scaleNotes[9]; // transpose upper/lower (16 bits) for idx = 4-8
+	unsigned int 	scaleLead[9];  // transpose upper/lower (16 bits) for idx = 4-8
 
 	// Temporary infrastructure variable - stores the scale lead temporarily, used for
 	// ..double click scenario, where the lead needs to be reverted to previous one.
@@ -526,6 +526,10 @@ typedef struct recstruct{
 
 	Notestruct*		Note[MAX_NROF_PAGE_NOTES];
 	unsigned char 	track_pitch[MATRIX_NROF_ROWS];
+	signed char 	scale_pitch_offset[MATRIX_NROF_ROWS];
+	signed char 	lead_pitch_offset[MATRIX_NROF_ROWS];
+	int				scaleLead[MATRIX_NROF_ROWS];
+	int				scaleNotes[MATRIX_NROF_ROWS];
 	unsigned char	measure_count;
 
 } Recstruct;

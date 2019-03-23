@@ -4474,7 +4474,19 @@ void modifyChordPitch(signed char val){
 }
 
 void transposeTrack(Pagestruct* target_page, signed char val){
+
 	unsigned char row;
+
+	if ( SOLO_transpose_latch == OFF ){
+
+		SOLO_transpose_latch = ON;
+	}
+	else {
+		SOLO_transpose_latch = OFF; // disable the latch and return
+		return;
+	}
+
+	SOLO_rec_transpose_octave = val;
 
 	for (row=0; row<MATRIX_NROF_ROWS; row++){
 
@@ -4483,13 +4495,8 @@ void transposeTrack(Pagestruct* target_page, signed char val){
 			continue;
 		}
 
-		if ( val == 0 ){
-
-			target_page->Track[row]->attr_PIT = MIDDLE_C;
-		}
-		else {
-			target_page->Track[row]->attr_PIT += ( val * OCTAVE );
-		}
+		target_page->Track[row]->scale_pitch_offset = target_page->Track[row]->scale_pitch_offset % OCTAVE + ( val * OCTAVE );
+		target_page->Track[row]->lead_pitch_offset = target_page->Track[row]->lead_pitch_offset % OCTAVE + ( val * OCTAVE );
 	}
 }
 
@@ -5063,11 +5070,6 @@ unsigned char record_chord_arp_to_track( Pagestruct* target_page,
 								unsigned char row,
 								unsigned char target_col
 							   ){
-
-	// Ignore non-record tracks
-	if ( (Page_getTrackRecPattern(target_page) & (1 << row)) == 0 ) {
-		return OFF;
-	}
 
 	unsigned int temp;
 	unsigned char arpStep = SOLO_scale_chords_arp_cursor++ % SOLO_assistant_page->attr_LEN;

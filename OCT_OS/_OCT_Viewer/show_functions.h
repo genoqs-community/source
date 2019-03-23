@@ -164,6 +164,28 @@ unsigned int ndx_to_note( unsigned char ndx ){
 	return result;
 }
 
+unsigned int note_to_ndx( unsigned char note ){
+
+	unsigned int result = 0;
+
+	switch( note ){
+		case NOTE_C: 	result = 0; 		break;
+		case NOTE_Cis: 	result = 1; 		break;
+		case NOTE_D: 	result = 2; 		break;
+		case NOTE_Dis: 	result = 3; 		break;
+		case NOTE_E: 	result = 4; 		break;
+		case NOTE_F: 	result = 5; 		break;
+		case NOTE_Fis: 	result = 6; 		break;
+		case NOTE_G: 	result = 7; 		break;
+		case NOTE_Gis: 	result = 8; 		break;
+		case NOTE_A: 	result = 9; 		break;
+		case NOTE_Ais: 	result = 10; 		break;
+		case NOTE_B: 	result = 11; 		break;
+	}
+
+	return result;
+}
+
 
 #ifndef FEATURE_ENABLE_CHORD_OCTAVE
 // Return the chord up status of the step

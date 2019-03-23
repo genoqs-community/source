@@ -97,6 +97,10 @@ extern void 			sequencer_command_PLAY();
 extern unsigned int 	get_chord_projected( Stepstruct* target_step );
 extern void 			persistChordPalette();
 extern void 			restoreChordPalette();
+extern void 			resetTransposeRecTrack();
+extern unsigned int 	has_track_scale( unsigned int* scaleVals, unsigned char track_row );
+extern unsigned int 	track_scale_value( unsigned char track_row, unsigned int* scaleVals );
+extern void 			assign_track_scale_value( int val, unsigned char track_row, unsigned int* scaleVals );
 
 extern void 			modify_scale_composition( Pagestruct* target_page,
 												  unsigned char k,

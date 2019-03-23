@@ -224,6 +224,7 @@ void compute_chain_presel( unsigned char target_bank ){
 				if ( G_zoom_level == zoomSOLOREC && target_bank == SOLO_rec_bank ){
 
 					G_measure_locator = 1; // Reset the measure counter when the page changes
+					SOLO_transpose_GRID_CURSOR = Page_repository[this_ndx].pageNdx; // save the previous grid cursor
 				}
 				#endif
 
@@ -277,6 +278,7 @@ void compute_chain_presel( unsigned char target_bank ){
 					}
 
 					SOLO_rec_finalized = ON;
+					SOLO_transpose_GRID_CURSOR = Page_repository[this_ndx].pageNdx; // save the previous grid cursor
 					G_measure_locator = 1; // Reset the measure counter when the page cluster ends
 					SOLO_rec_measure_pos = 1;
 					Page_repository[next_ndx].repeats_left = Page_repository[next_ndx].attr_STA; // Reset page repeats
