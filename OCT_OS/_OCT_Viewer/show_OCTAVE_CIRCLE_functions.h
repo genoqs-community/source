@@ -587,8 +587,13 @@ void show_OCTAVE_CIRCLE_chord_octave_transpose_selection( signed char octave ){
 
 			if ( has_track_scale(temp_page->scaleNotes, row) != FALSE ){
 
-				SOLO_rec_transpose_octave = (signed char) temp_page->Track[row]->lead_pitch_offset / OCTAVE;
-				octave = SOLO_rec_transpose_octave;
+				if ( temp_page->Track[row]->lead_pitch_offset < 0 ){
+
+					octave = (signed char) ( temp_page->Track[row]->lead_pitch_offset - 11 ) / OCTAVE;
+				}
+				else {
+					octave = (signed char) temp_page->Track[row]->lead_pitch_offset / OCTAVE;
+				}
 
 				if ( SOLO_transpose_latch == ON ){
 

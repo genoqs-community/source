@@ -659,6 +659,11 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 			if ( SOLO_rec_transpose == ON ){
 
 				modifyChordTone( target_page, in_pitch );
+
+				if ( in_velocity == OFF ){ // Note OFF
+
+					SOLO_rec_transpose_prev_pitch = 127;
+				}
 			}
 			else {
 

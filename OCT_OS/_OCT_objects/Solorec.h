@@ -52,6 +52,7 @@ unsigned char SOLO_transpose_latch				= OFF;
 unsigned char SOLO_transpose_GRID_CURSOR		= NOP;
 unsigned char SOLO_rec_transpose				= OFF;
 signed char   SOLO_rec_transpose_octave			= OFF;
+signed char   SOLO_rec_transpose_prev_pitch		= 127;
 unsigned char SOLO_rec_measure_hold				= OFF;
 unsigned char SOLO_rec_bank						= OFF;
 unsigned char SOLO_rec_rehersal					= OFF;

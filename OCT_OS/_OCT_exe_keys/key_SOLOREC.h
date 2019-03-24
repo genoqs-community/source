@@ -390,15 +390,13 @@
 
 	if ( SOLO_rec_transpose == ON ){
 
-		signed char octave = SOLO_rec_transpose_octave;
+		if ( keyNdx == KEY_SCALE_CAD && SOLO_rec_transpose_octave < 2 ){
 
-		if ( keyNdx == KEY_SCALE_CAD && octave < 2 ){
-
-			transposeTrack(&Page_repository[GRID_CURSOR], ++octave);
+			transposeTrack(&Page_repository[GRID_CURSOR], 1);
 		}
-		else if ( keyNdx == KEY_SCALE_MOD && octave > -2 ){
+		else if ( keyNdx == KEY_SCALE_MOD && SOLO_rec_transpose_octave > -2 ){
 
-			transposeTrack(&Page_repository[GRID_CURSOR], --octave);
+			transposeTrack(&Page_repository[GRID_CURSOR], -1);
 		}
 		else if ( keyNdx == KEY_SCALE_MOD || keyNdx == KEY_SCALE_CAD ) {
 

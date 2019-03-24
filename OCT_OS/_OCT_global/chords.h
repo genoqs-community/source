@@ -1,5 +1,4 @@
 
-#define TONE_BTN_OFFSET 23
 #define MAX_CHORD_WORD 14
 #define MAX_CHORDS 70
 #define MAX_NOTES 8
@@ -4486,8 +4485,6 @@ void transposeTrack(Pagestruct* target_page, signed char val){
 		return;
 	}
 
-	SOLO_rec_transpose_octave = val;
-
 	for (row=0; row<MATRIX_NROF_ROWS; row++){
 
 		// Ignore non-record tracks
@@ -4495,47 +4492,34 @@ void transposeTrack(Pagestruct* target_page, signed char val){
 			continue;
 		}
 
-		target_page->Track[row]->scale_pitch_offset = target_page->Track[row]->scale_pitch_offset % OCTAVE + ( val * OCTAVE );
-		target_page->Track[row]->lead_pitch_offset = target_page->Track[row]->lead_pitch_offset % OCTAVE + ( val * OCTAVE );
+		SOLO_rec_transpose_octave += val;
+
+		target_page->Track[row]->scale_pitch_offset = ( target_page->Track[row]->scale_pitch_offset % OCTAVE ) + ( SOLO_rec_transpose_octave * OCTAVE );
+		target_page->Track[row]->lead_pitch_offset  = ( target_page->Track[row]->lead_pitch_offset % OCTAVE ) + ( SOLO_rec_transpose_octave * OCTAVE );
 	}
 }
 
 void modifyChordTone(Pagestruct* target_page, signed char val){ // Transpose
 
-	unsigned char toneNdx = my_bit2ndx( target_page->scaleLead[ G_scale_ndx ] ) + OCTAVE;
+	unsigned char toneNdx = pitch_to_noteNdx(val % OCTAVE);
 	val -= MIDDLE_C;
 
-	// TODO: check min and max octaves
-	if (toneNdx - val > TONE_BTN_OFFSET){ // TODO: count octaves
+	if ( val == SOLO_rec_transpose_prev_pitch ){
 
-//		diag_printf("down octave\n");
+		SOLO_transpose_latch = OFF;
+		return;
 	}
-	else if (toneNdx - val < OCTAVE){ // TODO: count octaves
 
-//		diag_printf("up octave\n");
-	}
-	else {
-//		modify_scale_composition( target_page, toneNdx - val, G_scale_ndx);
-	}
+	SOLO_rec_transpose_prev_pitch = val;
+
 	target_page->scaleStatus = SCALE_MOD;
 	target_page->SCL_align = ON;
-	target_page->force_to_scale = ON;
-// keyNdx_to_noteNdx( keyNdx + toneNdx + val )
-	modify_scale_composition( target_page, toneNdx + val /* FIXME */, G_scale_ndx);
+	modify_scale_composition( target_page, toneNdx, G_scale_ndx);
 
-	target_page->SCL_align = OFF;
-	target_page->scaleStatus = OFF;
+	target_page->Track[SOLO_transpose_row]->scale_pitch_offset = val;
+	target_page->Track[SOLO_transpose_row]->lead_pitch_offset = val;
 
-
-	// XXX
-//	SOLO_assistant_page-> scaleNotes[ G_scale_ndx ] =
-//					my_shift_bitpattern( 	SOLO_assistant_page->scaleNotes_old, 12, INC,
-//											(11 - my_bit2ndx(SOLO_assistant_page-> scaleLead[ G_scale_ndx ] ) )  );
-//	pitch_to_noteNdx(pitch + val);
-//	keyNdx_to_noteNdx( keyNdx )
-//
-//	key_ChordScaleSelector( keyNdx, SOLO_assistant_page );
-//	force-to-scale()
+	SOLO_transpose_latch = ON;
 }
 
 unsigned char currentScaleIndex( Pagestruct* target_page ){
