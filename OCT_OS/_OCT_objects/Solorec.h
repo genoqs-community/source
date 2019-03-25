@@ -54,6 +54,8 @@ unsigned char SOLO_rec_transpose				= OFF;
 signed char   SOLO_rec_transpose_octave			= OFF;
 signed char   SOLO_rec_transpose_prev_pitch		= 127;
 unsigned char SOLO_rec_measure_hold				= OFF;
+unsigned char SOLO_rec_show_strum				= OFF;
+unsigned char SOLO_rec_strum_latch				= OFF;
 unsigned char SOLO_rec_bank						= OFF;
 unsigned char SOLO_rec_rehersal					= OFF;
 unsigned char SOLO_rec_track_preview			= SOLOPAGE;
@@ -248,6 +250,8 @@ void exitSoloRec(){
 	SOLO_transpose_GRID_CURSOR			= NOP;
 	SOLO_rec_transpose					= OFF;
 	SOLO_rec_transpose_octave			= OFF;
+	SOLO_rec_show_strum					= OFF;
+	SOLO_rec_strum_latch				= OFF;
 
 	for (i=0; i<MATRIX_NROF_ROWS; i++){
 		if ( SOLO_page_play_along_toggle[i] != NOP ){
@@ -350,14 +354,6 @@ void noteToStep(Notestruct* note, Stepstruct* step){
 	step->attr_PIT = note->attr_PIT;
 	step->attr_LEN = note->attr_LEN;
 	step->attr_MCC = note->attr_MCC;
-
-	// TODO
-	// Enter the step strum level
-//	temp = ( target_page->Step[row][col]->chord_data & 0xF800 ) >> 11;
-//	modify_parameter( &temp, 0, 18, direction, OFF, FIXED);
-
-	// Enter the step strum level
-	step->chord_data = ( SOLO_strum << 11 ) | ( step->chord_data & 0x7FF );
 }
 
 void stepToNote(Stepstruct* step, Notestruct* note){
@@ -620,6 +616,34 @@ void commitMix(){
 	}
 }
 
+void applyStrumToPageCluster(){
+
+	SOLO_undo_page_col = NOP;
+	SOLO_undo_page_len = OFF;
+
+	// copy all notes to undo_notes
+	signed short this_ndx = first_page_in_cluster(SOLO_rec_page->pageNdx);
+	int i;
+	Stepstruct* target_step;
+	Pagestruct* target_page;
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		target_page = &Page_repository[this_ndx];
+
+		for (i=0; i<MAX_NROF_PAGE_NOTES; i++){
+
+			target_step = target_page->Step[grid_row(i)][grid_col(i)];
+			target_step->chord_data = ( SOLO_strum << 11 ) | ( target_step->chord_data & 0x7FF );
+		}
+		this_ndx += 10;
+	}
+}
+
 void playSoloRecCluster(){
 
 	unsigned int pressed = is_pressed_pagerange();
@@ -745,6 +769,9 @@ void capture_note_event(
 	unsigned char col = grid_col(target_page->pageNdx);
 	unsigned char idx = grid_ndx(row, step_col);
 	Notestruct* noteRec = Rec_repository[col].Note[idx];
+
+	// apply the strum value
+	target_step->chord_data = ( SOLO_strum << 11 ) | ( target_step->chord_data & 0x7FF );
 
 	stepToNote(target_step, noteRec);
 	if ( SOLO_rec_finalized == OFF ){

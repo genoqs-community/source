@@ -6,6 +6,60 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 
 	int i;
 
+	if ( rotNdx == ROT_BIGKNOB )
+	{
+		PhraseEditGlobalStrum( direction );
+		if ( SOLO_rec_strum_latch == ON ){
+
+			if ( G_run_bit == ON && G_track_rec_bit == ON ){
+
+				unsigned int 	current_TTC		= 	G_TTC_abs_value;
+				unsigned char 	row				=	0;
+				unsigned char	target_col		=	0;
+
+				Pagestruct* target_page = &Page_repository[GRID_CURSOR];
+
+				// Iterate through the rows - to enable multi-track recording
+				for ( row = 0; row < MATRIX_NROF_ROWS; row++ ) {
+
+					// If track not record enabled, continue, remember it otherwise
+					if ( (Page_getTrackRecPattern(target_page) & (1 << row)) == 0 ){
+						continue;
+					}
+
+					if ( current_TTC <= 6 ) {
+									// Place step in current column
+						target_col = target_page->Track[row]->attr_LOCATOR -1;
+					}
+					else {
+						// Place step in next column, which may have to wrap- -1 is locator vs col notation offset.
+						target_col = get_next_tracklocator( target_page->Track[row],
+															target_page->Track[row]->attr_LOCATOR ) -1;
+					}
+
+					if ( Step_get_status( target_page->Step[row][target_col], STEPSTAT_TOGGLE ) == ON){
+
+						target_page->Step[row][target_col]->chord_data = ( SOLO_strum << 11 )
+							| ( target_page->Step[row][target_col]->chord_data & 0x7FF );
+
+						stepToNote(target_page->Step[row][target_col],
+								   Rec_repository[grid_col(target_page->pageNdx)].Note[grid_ndx(row, target_col)]);
+
+						if ( SOLO_rec_finalized == TRUE ){
+
+							SOLO_undo_note_all = ON;
+						}
+						SOLO_strum = 9; // reset
+					}
+				}
+			}
+			else {
+
+				applyStrumToPageCluster();
+			}
+		}
+	}
+
 	if ( SOLO_scale_chords_program == ON ){
 
 		for (i=0; i<MATRIX_NROF_COLUMNS; i++) {
@@ -65,11 +119,6 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 
 	if ( G_run_bit == ON ){
 		return; // Don't allow parameter modification while the machine is playing
-	}
-
-	if ( rotNdx == ROT_BIGKNOB && SOLO_has_rec == ON )
-	{
-		PhraseEditGlobalStrum( direction );
 	}
 
 	// Set the timer for the active editor

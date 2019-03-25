@@ -603,7 +603,6 @@ void show_OCTAVE_CIRCLE_chord_octave_transpose_selection( signed char octave ){
 		}
 	}
 
-
 	switch ( octave ){
 
 		case -3:

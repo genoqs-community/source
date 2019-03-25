@@ -41,6 +41,29 @@
 		}
 	}
 
+	if ( keyNdx == KEY_ALIGN ){
+
+		if ( SOLO_scale_chords_program == ON ){
+			return;
+		}
+		if ( SOLO_rec_strum_latch == ON ){
+
+			SOLO_rec_strum_latch = OFF;
+			SOLO_rec_show_strum = OFF;
+
+		} else if ( SOLO_rec_show_strum == ON ) {
+
+			SOLO_rec_strum_latch = ON;
+			if ( G_track_rec_bit == ON ){
+				SOLO_strum = 9; // reset
+			}
+		}
+		else {
+
+			SOLO_rec_show_strum = ON;
+		}
+	}
+
 	if ( keyNdx == KEY_PLAY4 ){ // values = OFF, ON, 1.2.3.
 		if ( ++SOLO_rec_ending_flash == QBIT ){
 			SOLO_rec_ending_flash = OFF;
@@ -433,11 +456,20 @@
 		}
 
 		else if ( keyNdx == KEY_RECORD && SOLO_scale_chords_program == OFF ){ // Record
+
 			G_track_rec_bit ^= 1; // toggle
+
 			if ( SOLO_has_rec == OFF ){
 				SOLO_rec_measure_hold = ON;
 			}
+
 			reset_page_cluster( SOLO_rec_page );
+			commitMix(); // save to the undo buffer
+
+			if ( G_track_rec_bit == ON && SOLO_rec_strum_latch == ON ){
+				SOLO_strum = 9; // reset
+			}
+
 			playSoloRecCluster();
 		}
 
@@ -486,7 +518,7 @@
 				// SINGLE CLICK SCENARIO
 				else if (DOUBLE_CLICK_TARGET == 0) {
 
-					DOUBLE_CLICK_TARGET = keyNdx;
+					DOUBLE_CLICK_TARGET = KEY_EDIT_MASTER;
 					DOUBLE_CLICK_TIMER = ON;
 					// Start the Double click Alarm
 					cyg_alarm_initialize(
@@ -519,6 +551,7 @@
 				SOLO_edit_buffer_volatile ^= 1; // toggle
 			}
 			else if ( SOLO_undo_note != NOP ){
+
 				Notestruct* undoNote = Rec_undo_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
 				Notestruct* note = Rec_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
 				copyNote(undoNote, note);
@@ -530,6 +563,7 @@
 				SOLO_undo_note_page_col = NOP;
 			}
 			else if ( SOLO_undo_note_all == ON ){
+
 				undoAllNotes();
 			}
 		}

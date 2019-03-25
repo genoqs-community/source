@@ -4682,6 +4682,7 @@ Notestruct* buildNote( unsigned char col, unsigned char note_pitch ){
 	Note_set_status( note, STEPSTAT_TOGGLE, ON);
 	note->attr_PIT = note_pitch;
 	note->attr_LEN = chord->attr_LEN;
+	note->chord_data = ( SOLO_strum << 11 )	| ( note->chord_data & 0x7FF );
 	return note;
 }
 
@@ -4972,7 +4973,7 @@ void playChord( unsigned char scale,
 		chord->octave = SOLO_scale_chords_octave;
 		chord->pitch = attr_PIT;
 		chord->scale = scale;
-		chord->strum = 9; // TODO STRUM
+		chord->strum = SOLO_strum;
 		chord->tone = tone;
 		chord->attr_VEL = in_velocity;
 

@@ -976,6 +976,7 @@ void midi_bender_execute( 	unsigned char inputMidiBus,				// Range = [0, 1].
 				&&	( G_zoom_level != zoomMIXMAP	)
 				&& 	( G_zoom_level != zoomTRACK  	)
 				&& 	( G_zoom_level != zoomMAP 	)
+				&& 	( G_zoom_level != zoomSOLOREC 	)
 				)
 
 			// ..the page is not playing in GRID,
@@ -1060,6 +1061,7 @@ void midi_bender_execute( 	unsigned char inputMidiBus,				// Range = [0, 1].
 				break;
 
 			default:
+
 				// Update the controller number in the track MCC and controller value in step MCC
 				target_page->Track[row]->attr_MCC = MIDICC_BENDER;
 				target_page->Track[row]->event_offset[ATTR_MIDICC] = 0;

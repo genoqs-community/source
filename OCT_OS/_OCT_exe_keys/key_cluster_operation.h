@@ -548,6 +548,7 @@ void reset_page_cluster( Pagestruct* temp_page ){
 	SOLO_transpose_GRID_CURSOR = GRID_CURSOR;
 	follow_flag = FOLLOW_PAGE;
 
+
 	// track forward
 	while ( 	(this_ndx < MAX_NROF_PAGES) &&
 			(Page_repository[this_ndx].page_clear == OFF)

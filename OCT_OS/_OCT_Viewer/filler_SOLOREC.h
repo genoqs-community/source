@@ -307,16 +307,24 @@
 
 	// Strum
 	// NUMERIC QUADRANT
-	if ( SOLO_strum != 9 ){ // 9 is the OFF value
+	if ( PHRASE_TIMER == ON || ( SOLO_rec_show_strum == ON && SOLO_scale_chords_program == OFF )){
+		show_strum_in_circle( SOLO_strum );
+
 		MIR_write_dot( LED_ALIGN, MIR_GREEN );
-		MIR_write_dot( LED_ALIGN, MIR_RED );
+		if ( SOLO_strum != 9 ){ // 9 is the OFF value
+			MIR_write_dot( LED_ALIGN, MIR_RED );
+		}
 	}
-	if ( PHRASE_TIMER == ON || is_pressed_key( KEY_ALIGN )){
-		MIR_write_dot( LED_ALIGN, MIR_GREEN );
-		MIR_write_dot( LED_ALIGN, MIR_RED );
+	else if ( SOLO_scale_chords_program == ON && is_pressed_key(KEY_ALIGN) ){
+
 		show_strum_in_circle( SOLO_strum );
 	}
 	else {
+
+		if ( SOLO_strum != 9 ){ // 9 is the OFF value
+			MIR_write_dot( LED_ALIGN, MIR_RED );
+		}
+
 		// Quantize fine tune value
 		// NUMERIC QUADRANT
 		switch (SOLO_quantize_fine_tune_center) {
@@ -356,6 +364,10 @@
 			MIR_write_dot( 215, MIR_RED );
 			break;
 		}
+	}
+
+	if ( SOLO_rec_strum_latch == ON ){
+		MIR_write_dot( LED_ALIGN, MIR_BLINK );
 	}
 
 
@@ -607,7 +619,7 @@
 			else {
 				// Chord tone select
 				show_OCTAVE_CIRCLE_chord_tone_selection( SOLO_assistant_page );
-				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_program_octave );
+				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_octave );
 			}
 			show_SCALE_SELECTOR_scale_selection( SOLO_assistant_page );
 
