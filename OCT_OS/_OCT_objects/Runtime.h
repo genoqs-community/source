@@ -633,6 +633,9 @@ extern unsigned char G_clock_source;
 extern unsigned int G_TIMER_REFILL;
 extern unsigned char G_zoom_level;
 extern signed char SOLO_strum;
+extern unsigned char SOLO_rec_strum_latch;
+extern unsigned char G_run_bit;
+extern unsigned char G_track_rec_bit;
 
 extern unsigned char G_midi_map_controller_mode;
 extern unsigned char G_MIDI_B_priority;

@@ -472,6 +472,11 @@ void PhraseMultiTweakStart( booln editBo )
 void PhraseMultiTweakReset( void )
 {
 	PhraseMultiVal = -1;
+
+	if ( SOLO_rec_strum_latch == ON && G_run_bit == ON && G_track_rec_bit == ON ){
+
+		SOLO_strum = 9; // reset
+	}
 }
 
 
@@ -482,7 +487,7 @@ void PhraseEditGlobalStrum( intn direction )
 
 	// Set the phrase timer. While the timer is ticking the phrase index will be shown in the circle.
 	PHRASE_TIMER = ON;
-	cyg_alarm_initialize(alarm_hdl, cyg_current_time() + TIMEOUT_VALUE, 0);
+	cyg_alarm_initialize(alarm_hdl, cyg_current_time() + (TIMEOUT_VALUE / 6), 0);
 }
 
 

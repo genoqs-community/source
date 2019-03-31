@@ -49,7 +49,6 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 
 							SOLO_undo_note_all = ON;
 						}
-						SOLO_strum = 9; // reset
 					}
 				}
 			}

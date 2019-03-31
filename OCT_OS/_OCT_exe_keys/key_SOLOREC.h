@@ -464,7 +464,6 @@
 			}
 
 			reset_page_cluster( SOLO_rec_page );
-			commitMix(); // save to the undo buffer
 
 			if ( G_track_rec_bit == ON && SOLO_rec_strum_latch == ON ){
 				SOLO_strum = 9; // reset

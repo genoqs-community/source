@@ -640,6 +640,7 @@ void applyStrumToPageCluster(){
 
 			target_step = target_page->Step[grid_row(i)][grid_col(i)];
 			target_step->chord_data = ( SOLO_strum << 11 ) | ( target_step->chord_data & 0x7FF );
+			stepToNote(target_step, Rec_repository[grid_col(target_page->pageNdx)].Note[i]);
 		}
 		this_ndx += 10;
 	}
