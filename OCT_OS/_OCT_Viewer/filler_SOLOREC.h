@@ -165,14 +165,14 @@
 					MIR_write_dot( LED_TGGL, MIR_RED ); // VEL
 					MIR_write_dot( LED_TGGL, MIR_GREEN );
 				}
+			}
 
-				// Legato
-				if ( SOLO_rec_legato == ON ){
-					MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
-				}
-				else {
-					MIR_write_dot( LED_ZOOM_STEP, MIR_RED ); // STEP ZOOM for Legato note length toggle
-				}
+			// Legato
+			if ( SOLO_rec_legato == ON ){
+				MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+			}
+			else {
+				MIR_write_dot( LED_ZOOM_STEP, MIR_RED ); // STEP ZOOM for Legato note length toggle
 			}
 
 			// Transpose

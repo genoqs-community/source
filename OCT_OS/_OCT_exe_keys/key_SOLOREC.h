@@ -573,8 +573,9 @@
 		}
 
 		// Legato
-		if ( keyNdx == KEY_ZOOM_STEP && G_run_bit == OFF &&  SOLO_has_rec == ON ){
+		if ( keyNdx == KEY_ZOOM_STEP && SOLO_has_rec == ON ){
 			SOLO_rec_legato ^= 1; // toggle
+			applyEffects();
 		}
 
 		// Transpose
@@ -676,11 +677,8 @@
 	// Quantize chord buttons
 	else if (keyNdx >= KEY_QUANTIZE_LOW && keyNdx <= KEY_QUANTIZE_HIGH){
 
-		if ((keyNdx - KEY_QUANTIZE_LOW) != SOLO_quantize_note){
-
-			SOLO_quantize_note = keyNdx - KEY_QUANTIZE_LOW;
-			quantize(SOLO_rec_page); // Apply the quantize
-		}
+		SOLO_quantize_note = keyNdx - KEY_QUANTIZE_LOW;
+		applyEffects(); // Apply the quantize
 	}
 	else if ( SOLO_scale_chords_program == OFF &&
 			( is_matrix_key(keyNdx) == TRUE || ( SOLO_rec_freeflow == OFF && keyNdx == KEY_CHAINMODE_4 ) ||

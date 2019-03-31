@@ -428,6 +428,7 @@ void undoAllNotes(){
 	}
 	else {
 		SOLO_undo_note_all = OFF;
+		SOLO_rec_legato = OFF;
 	}
 }
 
@@ -754,9 +755,6 @@ void quantizeStep(Stepstruct* target_step, Notestruct* noteRec){
 
 		target_step->attr_STA = STEP_MIN_START + SOLO_quantize_note;
 	}
-	else {
-		target_step->attr_STA = noteRec->attr_STA;
-	}
 }
 
 void capture_note_event(
@@ -794,34 +792,166 @@ void capture_mcc_event(
 	Rec_repository[col].Note[idx]->attr_MCC = target_step->attr_MCC;
 }
 
-void quantize(Pagestruct* target_page){
+void fineQuantizeStep(Stepstruct* prev_step, Stepstruct* target_step, Notestruct* target_note, Notestruct* next_note){
 
-	// move to beginning of page cluster
-	unsigned short this_ndx = first_page_in_cluster(target_page->pageNdx);
-	unsigned char step_row, step_col = 0;
-	unsigned int i=0;
+}
+
+void applyEffects(){
+
+	if ( SOLO_rec_page == NULL || SOLO_rec_finalized == OFF ){
+
+		return;
+	}
+
+	Stepstruct* target_step = NULL;
+	Stepstruct* prev_step = NULL;
 	Notestruct* target_note;
+	Notestruct next_note; // hasn't been applied to the step yet
+	initNote(&next_note);
+	Pagestruct* target_page = SOLO_rec_page;
+	unsigned int i, j, step_cnt, total_vel, total_len, legato_step_len = 0;
+	unsigned int last_step = NOP, first_step = NOP;
+	unsigned short first_ndx = first_page_in_cluster(target_page->pageNdx);
+	unsigned short this_ndx = first_ndx;
+	unsigned char track_has_step, start_row, step_distance, step_row, prev_STA = 0, first_STA = 0;
+	unsigned char track_cnt = 0;
+	signed char STA_offset = 0, prev_col = 0, step_col = 0;
+
+//	signed char SOLO_len_adjust XXX
+
+	// Use the recorded Note values to apply the effects to the Step
+	//
+	// ==== EFX ORDER ====
+	//
+	// -- FIRST PASS --
+	//
+	// 	1. Quantize
+	//  2. Fine Quantize
+	//  3. Sum LEN and VEL
+	//
+	// -- SECOND PASS --
+	//
+	//  4. LEGATO
+	//  ||
+	//  5. LEN Adjust
+	//  6. LEN Normalize
+	//  &&
+	//  7. VEL Normalize
 
 	// track forward
 	while ((this_ndx < MAX_NROF_PAGES) && (Page_repository[this_ndx].page_clear == OFF)
 	){
 		target_page = &Page_repository[this_ndx];
+		start_row = find_record_track_chain_start(target_page);
 
-		// loop for each note
-		for (i=0; i<MAX_NROF_PAGE_NOTES; i++){
+		for (i=start_row; i<MATRIX_NROF_ROWS; i++){ // Rec rows
 
 			// line up the recording note with the actual step
-			step_row = i / MATRIX_NROF_COLUMNS;
-			step_col = i % MATRIX_NROF_COLUMNS;
-			target_note = Rec_repository[grid_col(target_page->pageNdx)].Note[grid_ndx(step_row, step_col)];
+			step_row = i;
 
-			if ( target_page->Step[step_row][step_col]->attr_STATUS == ON ){
+			for (j=0; j<MATRIX_NROF_COLUMNS; j++){ // Step columns
 
-				quantizeStep(target_page->Step[step_row][step_col], target_note);
+				step_col = j;
+				target_note = Rec_repository[grid_col(target_page->pageNdx)].Note[grid_ndx(step_row, step_col)];
+				target_step = target_page->Step[step_row][step_col];
+
+				if ( target_step->attr_STATUS == ON ){
+
+					step_cnt++;
+					noteToStep(target_note, target_step);
+					quantizeStep(target_step, target_note); // apply Quantize
+					fineQuantizeStep(prev_step, target_step, target_note, &next_note); // apply Fine Quantize
+					total_len += target_step->attr_LEN;
+					total_vel += target_step->attr_VEL;
+				}
 			}
 		}
 
 		this_ndx += 10;
+	}
+
+	this_ndx = first_ndx; // reset to first page
+
+	// track forward
+	while ((this_ndx < MAX_NROF_PAGES) && (Page_repository[this_ndx].page_clear == OFF)
+	){
+		target_page = &Page_repository[this_ndx];
+		start_row = find_record_track_chain_start(target_page);
+
+		for (i=start_row; i<MATRIX_NROF_ROWS; i++){ // Rec rows
+
+			// line up the recording note with the actual step
+			step_row = i;
+			track_has_step = OFF;
+
+			for (j=0; j<MATRIX_NROF_COLUMNS; j++){ // Step columns
+
+				step_col = j;
+				target_note = Rec_repository[grid_col(target_page->pageNdx)].Note[grid_ndx(step_row, step_col)];
+
+				if ( target_page->Step[step_row][step_col]->attr_STATUS == ON ){
+
+					target_step = target_page->Step[step_row][step_col];
+
+					if ( SOLO_rec_legato == ON ){ // LEGATO
+
+						if ( last_step != NOP ){
+
+							if ( track_has_step == OFF && first_step != prev_col ){
+								step_distance = ((MATRIX_NROF_COLUMNS * track_cnt) + ( MATRIX_NROF_COLUMNS - prev_col ) + step_col);
+							}
+							else {
+								step_distance = ((MATRIX_NROF_COLUMNS * track_cnt) + ( step_col - prev_col ));
+							}
+							STA_offset = ( target_step->attr_STA - STEP_DEF_START ) - ( prev_STA - STEP_DEF_START );
+							legato_step_len = (step_distance * STEP_DEF_LENGTH) + STA_offset;
+							prev_step->attr_LEN = (legato_step_len <= STEP_MAX_LENGTH) ? legato_step_len : STEP_MAX_LENGTH;
+						}
+						else {
+
+							last_step = ON;
+							prev_STA = target_step->attr_STA;
+							prev_step = target_step;
+							prev_col = step_col;
+							first_step = step_col;
+							first_STA = target_step->attr_STA;
+							continue;
+						}
+					}
+
+					prev_STA = target_step->attr_STA;
+					prev_step = target_step;
+					prev_col = step_col;
+					track_cnt = 0;
+					track_has_step = ON;
+				}
+				else {
+					// LEN
+				}
+				// TODO: VEL
+			}
+
+			if ( track_has_step == OFF ){
+				track_cnt++;
+			}
+		}
+
+		this_ndx += 10;
+	}
+
+	// LEGATO
+	// last note of legato rolls over to the first note of the first page
+	if ( SOLO_rec_legato == ON ){
+
+		if ( last_step != NOP ){
+
+			step_distance = (MATRIX_NROF_COLUMNS * track_cnt) +
+							(MATRIX_NROF_COLUMNS - prev_col) +
+							first_step;
+			STA_offset = ( first_STA - STEP_DEF_START ) - ( prev_STA - STEP_DEF_START );
+			legato_step_len = (step_distance * STEP_DEF_LENGTH) + STA_offset;
+			target_step->attr_LEN = (legato_step_len <= STEP_MAX_LENGTH) ? legato_step_len : STEP_MAX_LENGTH;
+		}
 	}
 }
 
