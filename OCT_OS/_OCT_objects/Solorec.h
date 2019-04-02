@@ -870,14 +870,14 @@ void applyEffects(){
 					// LEN Adjust
 					if ( SOLO_len_adjust > 10 ){ // after 10 we increase by whole steps
 
-						len_adjust_steps = (SOLO_len_adjust - 10) * STEP_DEF_LENGTH;
+						len_adjust_steps = (( SOLO_len_adjust * 3 ) * 10) + (( SOLO_len_adjust - 10 ) * STEP_DEF_LENGTH);
 					}
 					else if ( SOLO_len_adjust < -10 ){
 
-						len_adjust_steps = (SOLO_len_adjust + 10) * STEP_DEF_LENGTH;
+						len_adjust_steps = (( SOLO_len_adjust * 3 ) * 10) + (( SOLO_len_adjust + 10 ) * STEP_DEF_LENGTH);
 					}
 					else {
-						len_adjust_steps = SOLO_len_adjust;
+						len_adjust_steps = (SOLO_len_adjust * 3); // 1/4 step
 					}
 
 					if ( len_adjust_steps >= STEP_MAX_LENGTH - target_step->attr_LEN ){
