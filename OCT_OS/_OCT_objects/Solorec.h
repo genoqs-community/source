@@ -867,29 +867,32 @@ void applyEffects(){
 					quantizeStep(target_step, target_note); // apply Quantize
 					fineQuantizeStep(prev_step, target_step, target_note, &next_note); // apply Fine Quantize
 
-					// LEN Adjust
-					if ( SOLO_len_adjust > 10 ){ // after 10 we increase by whole steps
+					if ( SOLO_rec_legato == OFF ){
 
-						len_adjust_steps = (( SOLO_len_adjust * 3 ) * 10) + (( SOLO_len_adjust - 10 ) * STEP_DEF_LENGTH);
-					}
-					else if ( SOLO_len_adjust < -10 ){
+						// LEN Adjust
+						if ( SOLO_len_adjust > 10 ){ // after 10 we increase by whole steps
 
-						len_adjust_steps = (( SOLO_len_adjust * 3 ) * 10) + (( SOLO_len_adjust + 10 ) * STEP_DEF_LENGTH);
-					}
-					else {
-						len_adjust_steps = (SOLO_len_adjust * 3); // 1/4 step
-					}
+							len_adjust_steps = (( SOLO_len_adjust * 3 ) * 10) + (( SOLO_len_adjust - 10 ) * STEP_DEF_LENGTH);
+						}
+						else if ( SOLO_len_adjust < -10 ){
 
-					if ( len_adjust_steps >= STEP_MAX_LENGTH - target_step->attr_LEN ){
+							len_adjust_steps = (( SOLO_len_adjust * 3 ) * 10) + (( SOLO_len_adjust + 10 ) * STEP_DEF_LENGTH);
+						}
+						else {
+							len_adjust_steps = (SOLO_len_adjust * 3); // 1/4 step
+						}
 
-						target_step->attr_LEN = STEP_MAX_LENGTH;
-					}
-					else if ( target_step->attr_LEN + len_adjust_steps < STEP_MIN_LENGTH ){
+						if ( len_adjust_steps >= STEP_MAX_LENGTH - target_step->attr_LEN ){
 
-						target_step->attr_LEN = STEP_MIN_LENGTH;
-					}
-					else {
-						target_step->attr_LEN += len_adjust_steps;
+							target_step->attr_LEN = STEP_MAX_LENGTH;
+						}
+						else if ( target_step->attr_LEN + len_adjust_steps < STEP_MIN_LENGTH ){
+
+							target_step->attr_LEN = STEP_MIN_LENGTH;
+						}
+						else {
+							target_step->attr_LEN += len_adjust_steps;
+						}
 					}
 
 					total_len += target_step->attr_LEN;
