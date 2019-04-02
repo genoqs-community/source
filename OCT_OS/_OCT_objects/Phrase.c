@@ -472,18 +472,14 @@ void PhraseMultiTweakStart( booln editBo )
 void PhraseMultiTweakReset( void )
 {
 	PhraseMultiVal = -1;
-
-	if ( SOLO_rec_strum_latch == ON && G_run_bit == ON && G_track_rec_bit == ON ){
-
-		SOLO_strum = 9; // reset
-	}
 }
 
 
 // Change the phrase number of a particular step
 void PhraseEditGlobalStrum( intn direction )
 {
-	modify_parameter( &SOLO_strum, 0, STEP_MAX_GROOVE, direction, OFF, FIXED);
+
+	modify_parameter( &SOLO_strum, 0, STEP_MAX_GROOVE, direction, ON, FIXED);
 
 	// Set the phrase timer. While the timer is ticking the phrase index will be shown in the circle.
 	PHRASE_TIMER = ON;

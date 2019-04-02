@@ -633,7 +633,7 @@
 		){
 
 			selected_page_cluster_clear(SOLO_rec_page->pageNdx);
-			SOLO_normalize_pitch 		= OFF;
+			SOLO_normalize_vel	 		= OFF;
 			SOLO_normalize_len 			= OFF;
 			SOLO_rec_page 				= NULL;
 			SOLO_has_rec 				= OFF;

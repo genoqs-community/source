@@ -164,6 +164,9 @@
 
 					MIR_write_dot( LED_TGGL, MIR_RED ); // VEL
 					MIR_write_dot( LED_TGGL, MIR_GREEN );
+
+					MIR_write_dot( ROT_LEN, MIR_RED ); // LEN ADJUST
+					MIR_write_dot( ROT_LEN, MIR_GREEN );
 				}
 			}
 
@@ -772,7 +775,7 @@
 			( is_pressed_key(KEY_TGGL) || ( EDIT_TIMER == ON && ROT_INDEX == 1 ) ))
 	{
 		MIR_point_numeric(
-			SOLO_normalize_pitch,
+			SOLO_normalize_vel,
 			0,	MIR_GREEN);
 	}
 	else if ( ( SOLO_rec_page != NULL && SOLO_scale_chords_program == OFF ) &&
@@ -781,6 +784,34 @@
 		MIR_point_numeric(
 			SOLO_normalize_len,
 			2,	MIR_GREEN);
+	}
+	else if ( ( SOLO_rec_page != NULL && SOLO_scale_chords_program == OFF ) &&
+			( is_pressed_key(ROT_LEN) || ( EDIT_TIMER == ON && ROT_INDEX == ROT_7 ) ))
+	{
+		if ( SOLO_len_adjust < 0 ){
+
+			MIR_point_numeric(
+			    MATRIX_NROF_COLUMNS - ( MATRIX_NROF_COLUMNS + SOLO_len_adjust ),
+				2,	MIR_RED);
+			if ( SOLO_len_adjust < -10 ){ // blink for whole steps
+				MIR_point_numeric(
+				MATRIX_NROF_COLUMNS - ( MATRIX_NROF_COLUMNS + SOLO_len_adjust ),
+				2,	MIR_BLINK);
+			}
+		}
+		else {
+			MIR_point_numeric(
+				SOLO_len_adjust,
+				2,	MIR_GREEN);
+			MIR_point_numeric(
+				SOLO_len_adjust,
+				2,	MIR_RED);
+			if ( SOLO_len_adjust > 10 ){ // blink for whole steps
+				MIR_point_numeric(
+				SOLO_len_adjust,
+				2,	MIR_BLINK);
+			}
+		}
 	}
 
 	switch (G_TT_external_latency_offset) {

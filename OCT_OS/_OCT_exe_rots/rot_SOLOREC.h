@@ -28,7 +28,7 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 					}
 
 					if ( current_TTC <= 6 ) {
-									// Place step in current column
+						// Place step in current column
 						target_col = target_page->Track[row]->attr_LOCATOR -1;
 					}
 					else {
@@ -116,6 +116,28 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 		return;
 	}
 
+
+	if ( SOLO_has_rec == ON && SOLO_rec_finalized == ON ){
+		// Act according to rot index
+		switch( rotNdx ){
+
+			// EDIT encoders
+			case 1:
+
+				modify_parameter(&SOLO_normalize_vel, 0, MATRIX_NROF_COLUMNS, direction, OFF, FIXED);
+				SOLO_apply_effects_alarm = ON;
+				break;
+			case 3:
+				modify_parameter(&SOLO_normalize_len, 0, MATRIX_NROF_COLUMNS, direction, OFF, FIXED);
+				SOLO_apply_effects_alarm = ON;
+				break;
+			case ROT_7:
+				modify_signed_parameter(&SOLO_len_adjust, -MATRIX_NROF_COLUMNS, MATRIX_NROF_COLUMNS, direction, OFF, FIXED);
+				SOLO_apply_effects_alarm = ON;
+				break;
+		}
+	}
+
 	if ( G_run_bit == ON ){
 		return; // Don't allow parameter modification while the machine is playing
 	}
@@ -123,33 +145,22 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 	// Set the timer for the active editor
 	switch( rotNdx ){
 		// EDIT encoders
-		case 1: case 3:
+		case 1: case 3: case ROT_7:
 		if ( SOLO_has_rec == OFF || G_run_bit == ON ){
 			break;
 		}
-		case 10:
+		default:
 			EDIT_TIMER = ON;
 			ROT_INDEX = rotNdx;
 			// Setup alarm for the EDIT TIMER
 			cyg_alarm_initialize(	alarm_hdl,
-									cyg_current_time() + TIMEOUT_VALUE,
+									cyg_current_time() + TIMEOUT_VALUE / 3,
 									0 );
 	}
 
 	// Act according to rot index
 	switch( rotNdx ){
 
-		// EDIT encoders
-		case 1:
-			if ( SOLO_has_rec == ON && G_run_bit == OFF ){
-				modify_parameter(&SOLO_normalize_pitch, 0, 16, direction, OFF, FIXED);
-			}
-			break;
-		case 3:
-			if ( SOLO_has_rec == ON && G_run_bit == OFF ){
-				modify_parameter(&SOLO_normalize_len, 0, 16, direction, OFF, FIXED);
-			}
-			break;
 		case 10:
 			// Set the MIDI Channel for solo recording
 			modify_parameter(&SOLO_midi_ch, TRACK_MIN_MIDICH, TRACK_MAX_MIDICH, direction, OFF, FIXED);

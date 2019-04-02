@@ -38,6 +38,9 @@ void alarm_handler( cyg_handle_t alarm_handle, cyg_addrword_t data ){
 	PHRASE_TIMER = OFF;
 	ROT_INDEX	= OFF;
 
+	#ifdef FEATURE_SOLO_REC
+	SoloRecRotEffects();
+	#endif
 	PhraseMultiTweakReset();
 
 	// d_iag_printf( "Alarm ringing..%d\n", data );

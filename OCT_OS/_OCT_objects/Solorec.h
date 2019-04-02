@@ -9,6 +9,7 @@ unsigned char SOLO_quantize_fine_tune_edge		= 9; // switch polarity from the edg
 unsigned char SOLO_quantize_fine_tune_drop_edge	= OFF; // drop edge notes that would otherwise switch polarity
 unsigned char SOLO_quantize_note 				= 0; // 0=OFF, 1=STA4, 2=STA3, 3=STA2, 4=STA1, 5=STA0
 signed char	  SOLO_strum						= 9; // 9=OFF
+unsigned char SOLO_apply_effects_alarm			= OFF;
 unsigned char SOLO_last_controller_mode			= NOP;
 unsigned int  SOLO_last_note_scale				= SCALE_SIG_CHR;
 unsigned char SOLO_scale_chords					= OFF;
@@ -34,8 +35,9 @@ unsigned char SOLO_has_scale					= OFF;
 unsigned char SOLO_slow_tempo					= OFF;
 Pagestruct*	  SOLO_rec_page						= NULL;
 unsigned char SOLO_midi_ch						= 1;
-unsigned char SOLO_normalize_pitch				= OFF;
+unsigned char SOLO_normalize_vel				= OFF;
 unsigned char SOLO_normalize_len				= OFF;
+signed char SOLO_len_adjust						= OFF;
 unsigned char SOLO_has_rec						= OFF;
 unsigned char SOLO_rec_finalized				= OFF;
 unsigned char SOLO_edit_buffer_volatile			= OFF;
@@ -217,10 +219,11 @@ void exitSoloRec(){
 	SOLO_quantize_fine_tune_drop_edge	= OFF;
 	SOLO_quantize_note 					= OFF;
 	SOLO_strum							= 9; // 9=OFF
+	SOLO_apply_effects_alarm			= OFF;
 	SOLO_slow_tempo						= OFF;
 	SOLO_rec_page						= NULL;
 //	SOLO_midi_ch						= 1;
-	SOLO_normalize_pitch				= OFF;
+	SOLO_normalize_vel					= OFF;
 	SOLO_normalize_len					= OFF;
 	SOLO_has_rec						= OFF;
 	SOLO_rec_finalized					= OFF;
@@ -252,6 +255,7 @@ void exitSoloRec(){
 	SOLO_rec_transpose_octave			= OFF;
 	SOLO_rec_show_strum					= OFF;
 	SOLO_rec_strum_latch				= OFF;
+	SOLO_len_adjust						= OFF;
 
 	for (i=0; i<MATRIX_NROF_ROWS; i++){
 		if ( SOLO_page_play_along_toggle[i] != NOP ){
@@ -810,15 +814,15 @@ void applyEffects(){
 	Notestruct next_note; // hasn't been applied to the step yet
 	initNote(&next_note);
 	Pagestruct* target_page = SOLO_rec_page;
-	unsigned int i, j, step_cnt, total_vel, total_len, legato_step_len = 0;
+	unsigned int i, j, legato_step_len = 0;
+	double step_cnt = 0, total_vel = 0, total_len = 0;
 	unsigned int last_step = NOP, first_step = NOP;
 	unsigned short first_ndx = first_page_in_cluster(target_page->pageNdx);
 	unsigned short this_ndx = first_ndx;
 	unsigned char track_has_step, start_row, step_distance, step_row, prev_STA = 0, first_STA = 0;
 	unsigned char track_cnt = 0;
 	signed char STA_offset = 0, prev_col = 0, step_col = 0;
-
-//	signed char SOLO_len_adjust XXX
+	signed short len_adjust_steps;
 
 	// Use the recorded Note values to apply the effects to the Step
 	//
@@ -862,6 +866,32 @@ void applyEffects(){
 					noteToStep(target_note, target_step);
 					quantizeStep(target_step, target_note); // apply Quantize
 					fineQuantizeStep(prev_step, target_step, target_note, &next_note); // apply Fine Quantize
+
+					// LEN Adjust
+					if ( SOLO_len_adjust > 10 ){ // after 10 we increase by whole steps
+
+						len_adjust_steps = (SOLO_len_adjust - 10) * STEP_DEF_LENGTH;
+					}
+					else if ( SOLO_len_adjust < -10 ){
+
+						len_adjust_steps = (SOLO_len_adjust + 10) * STEP_DEF_LENGTH;
+					}
+					else {
+						len_adjust_steps = SOLO_len_adjust;
+					}
+
+					if ( len_adjust_steps >= STEP_MAX_LENGTH - target_step->attr_LEN ){
+
+						target_step->attr_LEN = STEP_MAX_LENGTH;
+					}
+					else if ( target_step->attr_LEN + len_adjust_steps < STEP_MIN_LENGTH ){
+
+						target_step->attr_LEN = STEP_MIN_LENGTH;
+					}
+					else {
+						target_step->attr_LEN += len_adjust_steps;
+					}
+
 					total_len += target_step->attr_LEN;
 					total_vel += target_step->attr_VEL;
 				}
@@ -927,9 +957,11 @@ void applyEffects(){
 					track_has_step = ON;
 				}
 				else {
-					// LEN
+					// Normalize LEN
+					target_step->attr_LEN += ((( total_len/step_cnt ) - target_step->attr_LEN ) / MATRIX_NROF_COLUMNS ) * SOLO_normalize_len;
 				}
-				// TODO: VEL
+				// Normalize VEL
+				target_step->attr_VEL += ((( total_vel/step_cnt ) - target_step->attr_VEL ) / MATRIX_NROF_COLUMNS ) * SOLO_normalize_vel;
 			}
 
 			if ( track_has_step == OFF ){
@@ -952,6 +984,23 @@ void applyEffects(){
 			STA_offset = ( first_STA - STEP_DEF_START ) - ( prev_STA - STEP_DEF_START );
 			legato_step_len = (step_distance * STEP_DEF_LENGTH) + STA_offset;
 			target_step->attr_LEN = (legato_step_len <= STEP_MAX_LENGTH) ? legato_step_len : STEP_MAX_LENGTH;
+		}
+	}
+}
+
+void SoloRecRotEffects(){
+
+	if ( G_zoom_level == zoomSOLOREC ){
+
+		if ( SOLO_rec_strum_latch == ON && G_run_bit == ON && G_track_rec_bit == ON ){
+
+			SOLO_strum = 9; // reset
+		}
+
+		if ( SOLO_apply_effects_alarm == ON ){
+
+			SOLO_apply_effects_alarm = OFF;
+			applyEffects();
 		}
 	}
 }
