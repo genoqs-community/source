@@ -95,6 +95,17 @@ void initNote(Notestruct* note){
 	note->attr_MCC = 0;
 }
 
+void clearStepNote(Stepstruct* step){ // don't clear MCC
+
+	step->attr_STATUS = OFF;
+	step->chord_up = 0;
+	step->chord_data = 0;
+	step->attr_VEL = STEP_DEF_VELOCITY;
+	step->attr_STA = STEP_DEF_START;
+	step->attr_PIT = STEP_DEF_PITCH;
+	step->attr_LEN = STEP_DEF_LENGTH;
+}
+
 void initChord(Chordstruct* chord, unsigned char col){
 
 	unsigned char i;
@@ -132,13 +143,13 @@ void Solorec_init(){
 		SOLO_page_play_along_toggle[i] = NOP;
 	}
 
-	for (i=0; i<MAX_NROF_PAGES; i++){
+	for (i=0; i<MAX_NROF_PAGES; i++){ // for each track of each record page
 
 		for ( row=0; row<MATRIX_NROF_ROWS; row++ ){
 			target_rec->track_pitch[row] = 0;
 		}
 
-		for (j=0; j<MATRIX_NROF_COLUMNS; j++){
+		for (j=0; j<MATRIX_NROF_COLUMNS; j++){ // create the track notes
 
 			ndx = (i * MATRIX_NROF_COLUMNS) + j;
 			initNote( &Note_repository[ndx] );
@@ -797,22 +808,248 @@ void capture_mcc_event(
 	Rec_repository[col].Note[idx]->attr_MCC = target_step->attr_MCC;
 }
 
-void fineQuantizeStep(Stepstruct* prev_step, Stepstruct* target_step, Notestruct* target_note, Notestruct* next_note){
+// return TRUE if note was created
+unsigned char pivotStep(
+				 Stepstruct* pivot_step,
+				 Notestruct* target_note,
+				 signed char pivot_track_pitch,
+				 unsigned char sta_offset ){
 
+	if ( pivot_step == NULL ){
+		return FALSE;
+	}
+
+	if ( Step_get_status( pivot_step, STEPSTAT_TOGGLE ) == ON ){ // we need to combine
+
+		make_chord(pivot_step, pivot_track_pitch, target_note->attr_PIT);
+		return FALSE;
+	}
+	else {
+
+		clearStepNote(pivot_step);
+		signed char mcc = pivot_step->attr_MCC;
+		noteToStep(target_note, pivot_step);
+		pivot_step->attr_STA = sta_offset;
+		pivot_step->attr_MCC = mcc; // save the original MCC back
+		return TRUE;
+	}
+}
+
+unsigned char fineQuantizeStep(
+				   Stepstruct* prev_step,
+				   Stepstruct* target_step,
+				   Notestruct* target_note,
+				   Stepstruct* next_step,
+				   unsigned char* combine_next_step,
+				   signed char prev_track_pitch,
+				   signed char next_track_pitch,
+				   double* total_len,
+				   double* total_vel){
+
+	unsigned char center = SOLO_quantize_fine_tune_center -1;
+	unsigned char edge = SOLO_quantize_fine_tune_edge -1;
+	unsigned char sta_offset = 0;
+
+	if ( center == OFF && edge == 8 ){
+
+		return TRUE; // no fine tune filters applied
+	}
+
+	// Is the STA distance close enough to be caught by the center filter?
+	if ( center > OFF ){ // bottom filter
+
+		if ( target_note->attr_STA < STEP_DEF_START ){ // negative STA
+
+			if ( target_note->attr_STA > center ){ // negative STA distance is too far from center
+
+//				1 > 1 FALSE for STA 1
+//				2 > 1 TRUE for STA 2
+//				3 > 1 TRUE for STA 3
+//				1 > 2 FALSE for STA 1
+//				2 > 2 FALSE for STA 2
+//				3 > 2 TRUE for STA 3
+
+				return TRUE; // this is an include from the center out
+			}
+		}
+		else { // positive STA
+
+			if ( target_note->attr_STA - STEP_DEF_START < STEP_DEF_START - center ){ // positive STA distance is too far from center
+
+//				11 - 6 = 5 < 6 - 1 = 5 FALSE for STA 5
+//				10 - 6 = 4 < 6 - 1 = 5 TRUE for STA 4
+//				09 - 6 = 3 < 6 - 1 = 5 TRUE for STA 3
+//				11 - 6 = 5 < 6 - 2 = 4 FALSE for STA 5
+//				10 - 6 = 4 < 6 - 2 = 4 FALSE for STA 4
+//				09 - 6 = 3 < 6 - 2 = 4 TRUE for STA 3
+
+				return TRUE; // this is an include from the center out
+			}
+		}
+	}
+
+	// Are we going to handle the large distance STA steps?
+	if ( SOLO_quantize_fine_tune_edge < 9 ){
+
+		if ( target_note->attr_STA < STEP_DEF_START ){ // negative STA
+
+			if ( target_note->attr_STA <= (8 - edge) ){ // negative STA distance is too far from center
+
+//					1 <= 8 - 7 = 1 TRUE for STA 1
+//					2 <= 8 - 7 = 1 FALSE for STA 2
+//					3 <= 8 - 7 = 1 FALSE for STA 3
+//					1 <= 8 - 6 = 2 TRUE for STA 1
+//					2 <= 8 - 6 = 2 TRUE for STA 2
+//					3 <= 8 - 6 = 2 FALSE for STA 3
+
+				if ( SOLO_quantize_fine_tune_drop_edge == OFF ){ // pivot
+
+					sta_offset = STEP_MAX_START - ((8 - edge) - target_note->attr_STA);
+
+					if ( pivotStep(prev_step, target_note, prev_track_pitch, sta_offset) == TRUE ){
+
+						// the previous note was created so we need to update the totals
+						*total_len += prev_step->attr_LEN;
+						*total_vel += prev_step->attr_VEL;
+					}
+				}
+				clearStepNote(target_step); // always delete the current step
+
+				return FALSE; // do not quantize
+			}
+			else {
+				return TRUE; // not in the filter - do quantize
+			}
+		}
+		else { // positive STA
+
+			if ( STEP_DEF_START - ( target_note->attr_STA - STEP_DEF_START ) <= (8 - edge) ){ // positive STA distance is too far from center
+
+//				6 - (11 - 6 = 5) = 1 <= 8 - 7 = 1 TRUE for STA 11
+//				6 - (10 - 6 = 4) = 2 <= 8 - 7 = 1 FALSE for STA 10
+//				6 - (9 - 6 = 3) = 3 <= 8 - 7 = 1 FALSE for STA 9
+//				6 - (11 - 6 = 5) = 1 <= 8 - 6 = 2 TRUE for STA 11
+//				6 - (10 - 6 = 4) = 2 <= 8 - 6 = 2 TRUE for STA 10
+//				6 - (9 - 6 = 3) = 3 <= 8 - 6 = 2 FALSE for STA 9
+
+				if ( SOLO_quantize_fine_tune_drop_edge == OFF ){ // pivot
+
+					sta_offset = STEP_MIN_START + ((8 - edge) - (STEP_DEF_START - ( target_note->attr_STA - STEP_DEF_START )));
+
+					pivotStep(next_step, target_note, next_track_pitch, sta_offset);
+					*combine_next_step = ON;
+				}
+				clearStepNote(target_step); // always delete the current step
+
+				return FALSE; // do not quantize
+			}
+			else {
+				return TRUE; // not in the filter - do quantize
+			}
+		}
+	}
+
+	return FALSE;
+}
+
+void lengthAdjust(Stepstruct* target_step){
+
+	signed short len_adjust_steps;
+
+	if ( SOLO_rec_legato == OFF ){
+
+		// LEN Adjust
+		if ( SOLO_len_adjust > 10 ){ // after 10 we increase by whole steps
+
+			len_adjust_steps = (( SOLO_len_adjust * 3 ) * 10) + (( SOLO_len_adjust - 10 ) * STEP_DEF_LENGTH);
+		}
+		else if ( SOLO_len_adjust < -10 ){
+
+			len_adjust_steps = (( SOLO_len_adjust * 3 ) * 10) + (( SOLO_len_adjust + 10 ) * STEP_DEF_LENGTH);
+		}
+		else {
+			len_adjust_steps = (SOLO_len_adjust * 3); // 1/4 step
+		}
+
+		if ( len_adjust_steps >= STEP_MAX_LENGTH - target_step->attr_LEN ){
+
+			target_step->attr_LEN = STEP_MAX_LENGTH;
+		}
+		else if ( target_step->attr_LEN + len_adjust_steps < STEP_MIN_LENGTH ){
+
+			target_step->attr_LEN = STEP_MIN_LENGTH;
+		}
+		else {
+			target_step->attr_LEN += len_adjust_steps;
+		}
+	}
+}
+
+Stepstruct* nextStep(Pagestruct* target_page, unsigned char track_row, unsigned char step_col){
+
+	signed short 	this_ndx = 0;
+
+	if (step_col == MATRIX_NROF_COLUMNS - 1){
+
+		this_ndx = target_page->pageNdx;
+
+		// track forward
+		while ( 	(this_ndx < MAX_NROF_PAGES) &&
+				(Page_repository[this_ndx].page_clear == OFF)
+		){
+
+			if ( track_row == MATRIX_NROF_ROWS -1 ){ // last track so flip to the next page
+
+				track_row = -1;
+				this_ndx += 10;
+				continue;
+			}
+
+			return Page_repository[this_ndx].Step[track_row++][0];
+		}
+
+		return NULL;
+	}
+	else {
+
+		return target_page->Step[track_row][step_col + 1];
+	}
+}
+
+Trackstruct* nextTrack(Pagestruct* target_page, unsigned char track_row){
+
+	signed short 	this_ndx = 0;
+
+	this_ndx = target_page->pageNdx;
+
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		if ( track_row == MATRIX_NROF_ROWS -1 ){ // last track so flip to the next page
+
+			track_row = -1;
+			this_ndx += 10;
+			continue;
+		}
+
+		return Page_repository[this_ndx].Track[track_row++];
+	}
+
+	return NULL;
 }
 
 void applyEffects(){
 
-	if ( SOLO_rec_page == NULL || SOLO_rec_finalized == OFF ){
-
-		return;
-	}
-
+	Trackstruct* target_track;
+	Trackstruct* next_track;
 	Stepstruct* target_step = NULL;
 	Stepstruct* prev_step = NULL;
+	Stepstruct* next_step = NULL;
+	Stepstruct temp_step;
 	Notestruct* target_note;
-	Notestruct next_note; // hasn't been applied to the step yet
-	initNote(&next_note);
+	Notestruct* first_note = NULL;
 	Pagestruct* target_page = SOLO_rec_page;
 	unsigned int i, j, legato_step_len = 0;
 	double step_cnt = 0, total_vel = 0, total_len = 0;
@@ -821,8 +1058,12 @@ void applyEffects(){
 	unsigned short this_ndx = first_ndx;
 	unsigned char track_has_step, start_row, step_distance, step_row, prev_STA = 0, first_STA = 0;
 	unsigned char track_cnt = 0;
+	unsigned char skip_quantize = OFF;
+	unsigned char combine_next_step = OFF;
 	signed char STA_offset = 0, prev_col = 0, step_col = 0;
-	signed short len_adjust_steps;
+	signed char prev_track_pitch = 0;
+
+	Step_init(&temp_step);
 
 	// Use the recorded Note values to apply the effects to the Step
 	//
@@ -830,15 +1071,15 @@ void applyEffects(){
 	//
 	// -- FIRST PASS --
 	//
-	// 	1. Quantize
+	//  1. if (!LEGATO) LEN Adjust
 	//  2. Fine Quantize
-	//  3. Sum LEN and VEL
+	// 	3. Quantize
+	//  4. Sum LEN and VEL
 	//
 	// -- SECOND PASS --
 	//
-	//  4. LEGATO
+	//  5. LEGATO
 	//  ||
-	//  5. LEN Adjust
 	//  6. LEN Normalize
 	//  &&
 	//  7. VEL Normalize
@@ -857,47 +1098,83 @@ void applyEffects(){
 			for (j=0; j<MATRIX_NROF_COLUMNS; j++){ // Step columns
 
 				step_col = j;
+				skip_quantize = OFF;
 				target_note = Rec_repository[grid_col(target_page->pageNdx)].Note[grid_ndx(step_row, step_col)];
 				target_step = target_page->Step[step_row][step_col];
+				target_track = target_page->Track[step_row];
 
-				if ( target_step->attr_STATUS == ON ){
+				noteToStep(target_note, target_step); // copy from the recording
+
+				if ( SOLO_rec_page == NULL || SOLO_rec_finalized == OFF ){
+
+					continue;
+				}
+
+				if ( combine_next_step == ON ){
+
+					Step_copy(&temp_step, target_step, TRUE); // delayed write of next step happens now
+					skip_quantize = ON; // don't apply quantize again
+				}
+
+				combine_next_step = OFF;
+
+				if ( Step_get_status( target_step, STEPSTAT_TOGGLE ) == ON ){
 
 					step_cnt++;
-					noteToStep(target_note, target_step);
-					quantizeStep(target_step, target_note); // apply Quantize
-					fineQuantizeStep(prev_step, target_step, target_note, &next_note); // apply Fine Quantize
 
-					if ( SOLO_rec_legato == OFF ){
+					if ( first_note == NULL ){
 
-						// LEN Adjust
-						if ( SOLO_len_adjust > 10 ){ // after 10 we increase by whole steps
+						first_note = target_note;
+						prev_track_pitch = target_track->lead_pitch_offset;
+					}
 
-							len_adjust_steps = (( SOLO_len_adjust * 3 ) * 10) + (( SOLO_len_adjust - 10 ) * STEP_DEF_LENGTH);
-						}
-						else if ( SOLO_len_adjust < -10 ){
+					next_step = nextStep(target_page, step_row, step_col);
 
-							len_adjust_steps = (( SOLO_len_adjust * 3 ) * 10) + (( SOLO_len_adjust + 10 ) * STEP_DEF_LENGTH);
-						}
-						else {
-							len_adjust_steps = (SOLO_len_adjust * 3); // 1/4 step
-						}
+					if ( next_step != NULL ){
 
-						if ( len_adjust_steps >= STEP_MAX_LENGTH - target_step->attr_LEN ){
+						Step_copy(next_step, &temp_step, TRUE);
 
-							target_step->attr_LEN = STEP_MAX_LENGTH;
-						}
-						else if ( target_step->attr_LEN + len_adjust_steps < STEP_MIN_LENGTH ){
+						if (step_col == MATRIX_NROF_COLUMNS - 1){ // current step is at the end of the track
 
-							target_step->attr_LEN = STEP_MIN_LENGTH;
+							next_track = nextTrack(target_page, step_row);
 						}
 						else {
-							target_step->attr_LEN += len_adjust_steps;
+							next_track = target_track;
+						}
+					}
+					else {
+						// we are at the end of the recording and this nextTrack will be ignored anyway
+						next_track = target_track;
+					}
+
+					lengthAdjust(target_step); // adjust step length by offset
+
+					if ( skip_quantize == OFF ){
+
+						if ( fineQuantizeStep(prev_step,
+											  target_step,
+											  target_note,
+											  next_step != NULL ? &temp_step : NULL,
+											  &combine_next_step,
+											  prev_track_pitch,
+											  next_track->lead_pitch_offset,
+											  &total_len,
+											  &total_vel) == TRUE ){
+
+							quantizeStep(target_step, target_note); // apply Quantize
 						}
 					}
 
-					total_len += target_step->attr_LEN;
-					total_vel += target_step->attr_VEL;
+					// Fine Quantize may have removed the current step so check again
+					if ( Step_get_status( target_step, STEPSTAT_TOGGLE ) == ON ){
+
+						total_len += target_step->attr_LEN;
+						total_vel += target_step->attr_VEL;
+					}
 				}
+
+				prev_step = target_step;
+				prev_track_pitch = target_track->lead_pitch_offset;
 			}
 		}
 
@@ -923,7 +1200,7 @@ void applyEffects(){
 				step_col = j;
 				target_note = Rec_repository[grid_col(target_page->pageNdx)].Note[grid_ndx(step_row, step_col)];
 
-				if ( target_page->Step[step_row][step_col]->attr_STATUS == ON ){
+				if ( Step_get_status( target_page->Step[step_row][step_col], STEPSTAT_TOGGLE ) == ON ){
 
 					target_step = target_page->Step[step_row][step_col];
 

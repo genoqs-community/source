@@ -845,6 +845,7 @@
 				SOLO_quantize_fine_tune_edge = xdx;
 			}
 		}
+		applyEffects();
 	}
 
 	if ( G_run_bit == OFF ){
