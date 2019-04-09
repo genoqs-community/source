@@ -39,7 +39,7 @@
 #include "../_OCT_objects/NOTE_ON_queue.h"
 #include "../_OCT_objects/Grid.h"
 #include "../_OCT_objects/Solorec.h"
-#include "../_OCT_objects/chords.h"
+#include "../_OCT_objects/Chords.h"
 #ifdef FEATURE_ENABLE_DICE
 #include "../_OCT_objects/Dice.h"
 #endif
