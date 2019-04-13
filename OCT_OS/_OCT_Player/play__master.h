@@ -242,6 +242,24 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		if ( G_global_locator == 1 ) {
 
 			#ifdef FEATURE_SOLO_REC
+			if ( OTM_CC_type != OFF ){
+
+				MIDI_send( OTM_CC_type, OTM_CC_val0, OTM_CC_val1, OTM_CC_val2 );
+				OTM_CC_type = OFF;
+				OTM_CC_val0 = OFF;
+				OTM_CC_val1 = OFF;
+				OTM_CC_val2 = OFF;
+
+				if ( delay_CC_type != OFF ){
+
+					EDIT_TIMER = ON;
+					cyg_alarm_initialize(	alarm_hdl,
+											cyg_current_time() + TIMEOUT_VALUE / 4,
+											0 );
+
+				}
+			}
+
 			// Don't advance the grid locator if measure hold is on
 			if ( SOLO_rec_measure_hold == ON ) {
 				// Send the ALL NOTES OFF message

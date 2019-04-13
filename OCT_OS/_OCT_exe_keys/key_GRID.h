@@ -45,9 +45,8 @@
 
 
 	// GRID PAGE CLUSTER SELECTIONS
-	if ( ( (keyNdx > 10 && keyNdx < 187)
-	) ) {
-
+	// MATRIX KEYS pressed
+	if ( (keyNdx > 10) && (keyNdx < 186) && (((keyNdx-10) % 11) != 0) ) {
 
 		temp = row_of(keyNdx) + (10 * column_of (keyNdx));
 		GRID_CURSOR = temp;
@@ -341,6 +340,11 @@
 		#endif
 
 		#ifdef FEATURE_SOLO_REC
+		if ( keyNdx == KEY_MIX_MASTER ){
+
+			GRID_CC_events ^= 1;
+		}
+
 		// Grid Scene change note event send on-the-measure
 		if ( keyNdx == 10 ){ // grid selection row 0 button
 
@@ -723,6 +727,86 @@
 			||	( (keyNdx == KEY_MIXTGT_USR5) )
 			){
 
+			#ifdef FEATURE_SOLO_REC
+			if ( GRID_CC_events == ON ) {
+
+				unsigned char status = !is_pressed_key( KEY_CLEAR );
+				unsigned char mixtgt = OFF;
+				unsigned char i;
+				Trackstruct* ccTrack;
+
+				switch( keyNdx ){
+
+					case KEY_MIXTGT_USR1: 	mixtgt = MIXTGT_USR1; 	break;
+					case KEY_MIXTGT_USR2: 	mixtgt = MIXTGT_USR2; 	break;
+					case KEY_MIXTGT_USR3: 	mixtgt = MIXTGT_USR3; 	break;
+					case KEY_MIXTGT_USR4: 	mixtgt = MIXTGT_USR4; 	break;
+					case KEY_MIXTGT_USR5: 	mixtgt = MIXTGT_USR5; 	break;
+				}
+
+				if ( mixtgt != OFF ){
+
+					ccTrack = SOLO_assistant_page->Track[4 + mixtgt];
+
+					if ( status == FALSE ){
+
+						Track_soft_init(ccTrack);
+						ccTrack->attr_STATUS = OFF;
+						ccTrack->attr_VEL = OFF;
+					}
+					else if ( ccTrack->attr_STATUS == ON ) {
+
+						for (i=0; i<2; i++){
+
+							if ( Step_get_status( SOLO_assistant_page->Step[4 + mixtgt][i], STEPSTAT_TOGGLE ) == ON ){
+
+								if ( i == 1 ){ // There is a second event
+
+									delay_CC_type = MIDI_CC;
+									delay_CC_val0 = ccTrack->attr_MCH;
+									delay_CC_val1 = ccTrack->attr_MCC;
+									delay_CC_val2 = SOLO_assistant_page->Step[4 + mixtgt][i]->attr_MCC;
+
+									if ( G_run_bit == OFF ){
+
+										EDIT_TIMER = ON;
+										cyg_alarm_initialize(	alarm_hdl,
+																cyg_current_time() + TIMEOUT_VALUE / 4,
+																0 );
+									}
+									break;
+								}
+
+								if ( G_run_bit == OFF ){
+
+									// send the event
+									MIDI_send( MIDI_CC, ccTrack->attr_MCH, ccTrack->attr_MCC, SOLO_assistant_page->Step[4 + mixtgt][i]->attr_MCC );
+								}
+								else {
+									// On-The-Measure
+									OTM_CC_type = MIDI_CC;
+									OTM_CC_val0 = ccTrack->attr_MCH;
+									OTM_CC_val1 = ccTrack->attr_MCC;
+									OTM_CC_val2 = SOLO_assistant_page->Step[4 + mixtgt][i]->attr_MCC;
+								}
+							}
+						}
+
+						ccTrack->attr_VEL ^= 1; // toggle event status
+
+					}
+					else if ( GRID_p_selection_cluster == ON ) {
+
+						// SOLO_assistant_page->Track[5] to [9] store CC tracks from selection
+						Pagestruct* target_page = &Page_repository[ PREV_GRID_CURSOR ];
+						Track_copy( target_page, 0, SOLO_assistant_page, 4 + mixtgt);
+						ccTrack->attr_STATUS = ON;
+						ccTrack->attr_VEL = OFF;
+						GRID_p_selection_cluster = OFF;
+					}
+				}
+			} else
+			#endif
 			// D O U B L E - C L I C K  C O N S T R U C T
 			// DOUBLE CLICK SCENARIO
 			if ((DOUBLE_CLICK_TARGET == keyNdx)

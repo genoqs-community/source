@@ -137,6 +137,41 @@ void show (unsigned int target, unsigned int content) {
 				case zoomGRID:
 					i = GRID_assistant_page->mixTarget;
 
+					#ifdef FEATURE_SOLO_REC
+					if ( GRID_CC_events == ON ) {
+
+						if ( SOLO_assistant_page->Track[4 + MIXTGT_USR1]->attr_STATUS == ON ) MIR_write_dot( LED_MIXTGT_USR1, MIR_GREEN );
+						if ( SOLO_assistant_page->Track[4 + MIXTGT_USR2]->attr_STATUS == ON ) MIR_write_dot( LED_MIXTGT_USR2, MIR_GREEN );
+						if ( SOLO_assistant_page->Track[4 + MIXTGT_USR3]->attr_STATUS == ON ) MIR_write_dot( LED_MIXTGT_USR3, MIR_GREEN );
+						if ( SOLO_assistant_page->Track[4 + MIXTGT_USR4]->attr_STATUS == ON ) MIR_write_dot( LED_MIXTGT_USR4, MIR_GREEN );
+						if ( SOLO_assistant_page->Track[4 + MIXTGT_USR5]->attr_STATUS == ON ) MIR_write_dot( LED_MIXTGT_USR5, MIR_GREEN );
+
+						if ( SOLO_assistant_page->Track[4 + MIXTGT_USR1]->attr_VEL == ON ) MIR_write_dot( LED_MIXTGT_USR1, MIR_RED );
+						if ( SOLO_assistant_page->Track[4 + MIXTGT_USR2]->attr_VEL == ON ) MIR_write_dot( LED_MIXTGT_USR2, MIR_RED );
+						if ( SOLO_assistant_page->Track[4 + MIXTGT_USR3]->attr_VEL == ON ) MIR_write_dot( LED_MIXTGT_USR3, MIR_RED );
+						if ( SOLO_assistant_page->Track[4 + MIXTGT_USR4]->attr_VEL == ON ) MIR_write_dot( LED_MIXTGT_USR4, MIR_RED );
+						if ( SOLO_assistant_page->Track[4 + MIXTGT_USR5]->attr_VEL == ON ) MIR_write_dot( LED_MIXTGT_USR5, MIR_RED );
+
+						if ( EDIT_TIMER == ON || OTM_CC_type != OFF ){
+
+							if ( SOLO_assistant_page->Track[4 + MIXTGT_USR1]->attr_STATUS == ON ) MIR_write_dot( LED_MIXTGT_USR1, MIR_BLINK );
+							if ( SOLO_assistant_page->Track[4 + MIXTGT_USR2]->attr_STATUS == ON ) MIR_write_dot( LED_MIXTGT_USR2, MIR_BLINK );
+							if ( SOLO_assistant_page->Track[4 + MIXTGT_USR3]->attr_STATUS == ON ) MIR_write_dot( LED_MIXTGT_USR3, MIR_BLINK );
+							if ( SOLO_assistant_page->Track[4 + MIXTGT_USR4]->attr_STATUS == ON ) MIR_write_dot( LED_MIXTGT_USR4, MIR_BLINK );
+							if ( SOLO_assistant_page->Track[4 + MIXTGT_USR5]->attr_STATUS == ON ) MIR_write_dot( LED_MIXTGT_USR5, MIR_BLINK );
+						}
+
+						MIR_write_dot( LED_CLEAR, MIR_GREEN );
+						MIR_write_dot( LED_CLEAR, MIR_RED );
+						if ( is_pressed_key( KEY_CLEAR ) ){
+
+							MIR_write_dot( LED_CLEAR, MIR_BLINK );
+						}
+
+						break;
+					}
+					#endif
+
 					if ( content == OPTIONS ) {
 
 						// Show what's available
@@ -150,6 +185,9 @@ void show (unsigned int target, unsigned int content) {
 					break;
 			}
 
+			#ifdef FEATURE_SOLO_REC
+			if ( GRID_CC_events == ON ) break;
+			#endif
 
 			switch( i ) {
 
@@ -188,7 +226,6 @@ void show (unsigned int target, unsigned int content) {
 					j = LED_MIXTGT_USR5;
 					break;
 			}
-
 
 			// Show selection
 			MIR_write_dot (j, MIR_RED);

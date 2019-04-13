@@ -81,6 +81,16 @@ Pagestruct*   SOLO_pos_out						= NULL;
 Chordstruct*  SOLO_last_chord					= NULL;
 Pagestruct*   SOLO_p_selection 		 [GRID_NROF_BANKS];
 
+unsigned char OTM_CC_type						= OFF;
+unsigned char OTM_CC_val0						= OFF;
+unsigned char OTM_CC_val1						= OFF;
+unsigned char OTM_CC_val2						= OFF;
+
+unsigned char delay_CC_type						= OFF;
+unsigned char delay_CC_val0						= OFF;
+unsigned char delay_CC_val1						= OFF;
+unsigned char delay_CC_val2						= OFF;
+
 
 
 void initNote(Notestruct* note){
@@ -1282,6 +1292,15 @@ void SoloRecRotEffects(){
 			SOLO_apply_effects_alarm = OFF;
 			applyEffects();
 		}
+	}
+
+	if ( delay_CC_type != OFF ){
+
+		MIDI_send( delay_CC_type, delay_CC_val0, delay_CC_val1, delay_CC_val2 );
+		delay_CC_type = OFF;
+		delay_CC_val0 = OFF;
+		delay_CC_val1 = OFF;
+		delay_CC_val2 = OFF;
 	}
 }
 

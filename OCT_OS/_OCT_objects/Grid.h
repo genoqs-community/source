@@ -191,6 +191,9 @@ unsigned char CC_resolution_delay	[8][6] =
 unsigned char MIDICLOCK_PASSTHROUGH = FALSE;
 
 
+#ifdef FEATURE_SOLO_REC
+unsigned char GRID_CC_events = OFF;
+#endif
 
 
 #ifdef NEMO
