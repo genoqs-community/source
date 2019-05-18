@@ -760,7 +760,6 @@ void breakSoloRecordingMeasureHold(){
 		 SOLO_rec_rehearsal == OFF
 	   ){
 
-		SOLO_rec_measure_pos = 1;
 		SOLO_has_rec = ON;
 		SOLO_rec_measure_hold = OFF;
 	}
