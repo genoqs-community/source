@@ -4,7 +4,7 @@
 
 		// Record button
 		MIR_write_dot( LED_RECORD, MIR_RED );
-		if ( G_run_bit == ON && G_track_rec_bit == ON ){
+		if ( G_track_rec_bit == ON ){
 			if ( SOLO_rec_rehearsal == OFF ){
 				MIR_write_dot( LED_RECORD, MIR_GREEN );
 			}
@@ -79,7 +79,7 @@
 	if ( SOLO_rec_page != NULL ) { // No recording yet
 
 		// Rehearsal
-		if ( SOLO_rec_rehearsal == OFF ){
+		if ( SOLO_rec_rehearsal == OFF && !( G_clock_source == EXT && G_track_rec_bit == OFF )){
 			MIR_write_dot( LED_PLAY1, MIR_RED );
 		}
 		else {
@@ -823,6 +823,47 @@
 			MIR_write_dot( LED_MIXTGT_USR5,	MIR_RED);
 			break;
 		default:
+			break;
+	}
+
+	switch( G_clock_source ){
+
+		case EXT:
+
+			// Blink when sequencer running
+			 if (G_run_bit == ON) {
+				// MIR_write_dot( LED_CLOCK, MIR_BLINK );
+				MIR_write_dot( LED_TEMPO, MIR_BLINK );
+			 }
+
+			// Show the status of the MIDICLOCK PASSTHROUGH
+			switch( MIDICLOCK_PASSTHROUGH ){
+
+				case TRUE:
+					MIR_write_dot( LED_CLOCK, MIR_RED );
+					break;
+
+				case FALSE:
+					MIR_write_dot( LED_CLOCK, MIR_GREEN );
+					break;
+			}
+
+			break;
+
+		case INT:
+			// Visible/available only when the sequencer is not running.
+			// if (G_run_bit == OFF) {
+				MIR_write_dot( LED_CLOCK, MIR_GREEN );
+				MIR_write_dot( LED_CLOCK, MIR_RED 	);
+			// }
+			break;
+
+		case OFF:
+			// Visible/available only when the sequencer is not running.
+			if (G_run_bit == OFF) {
+				// MIR_write_dot( LED_CLOCK, MIR_GREEN );
+				// ..nothing really to do
+			}
 			break;
 	}
 

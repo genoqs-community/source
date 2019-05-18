@@ -184,7 +184,46 @@ void G_midi_interpret_REALTIME( unsigned char midi_byte ){
 			midi_clock_in_counter++;
 
 			// Jumpstart the sequencer
+			#ifdef FEATURE_SOLO_REC
+			if ( G_zoom_level == zoomSOLOREC ){
+
+				if ( SOLO_rec_page != NULL || SOLO_scale_chords_program == ON ){ // A record page cluster is selected
+
+					if ( SOLO_scale_chords_program == ON && hasArpPattern( SOLO_scale_chords_palette_ndx ) == ON ){
+
+						SOLO_rec_rehearsal = ON;
+						reset_page_cluster( SOLO_assistant_page );
+						GRID_CURSOR = SOLO_assistant_page->pageNdx;
+						SOLO_transpose_GRID_CURSOR = GRID_CURSOR;
+						sequencer_command_PLAY();
+					}
+					else if ( G_track_rec_bit == OFF ) { // rehearse
+
+						SOLO_rec_rehearsal = ON;
+
+						if ( SOLO_has_rec == OFF ){
+							SOLO_rec_measure_hold = ON;
+						}
+
+						if ( G_run_bit == OFF ){
+
+							reset_page_cluster( SOLO_rec_page );
+							playSoloRecCluster();
+							sequencer_command_PLAY();
+						}
+					}
+					else { // record
+
+						sequencer_command_PLAY();
+					}
+				}
+			}
+			else {
+				sequencer_START();
+			}
+			#else
 			sequencer_START();
+			#endif
 			break;
 
 

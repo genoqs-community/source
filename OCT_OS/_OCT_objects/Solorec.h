@@ -702,7 +702,10 @@ void playSoloRecCluster(){
 			}
 		}
 	}
-	sequencer_command_PLAY();
+
+	if ( G_clock_source != EXT ){
+		sequencer_command_PLAY();
+	}
 }
 
 void pageClusterEnterSoloRec(unsigned char pageNdx){
