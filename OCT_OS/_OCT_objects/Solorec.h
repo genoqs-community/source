@@ -59,7 +59,7 @@ unsigned char SOLO_rec_measure_hold				= OFF;
 unsigned char SOLO_rec_show_strum				= OFF;
 unsigned char SOLO_rec_strum_latch				= OFF;
 unsigned char SOLO_rec_bank						= OFF;
-unsigned char SOLO_rec_rehersal					= OFF;
+unsigned char SOLO_rec_rehearsal				= OFF;
 unsigned char SOLO_rec_track_preview			= SOLOPAGE;
 unsigned char SOLO_rec_has_MCC					= OFF;
 unsigned char SOLO_undo_note					= NOP;
@@ -220,6 +220,10 @@ void enterSoloRec(){
 
 	CLEAR_BIT(SOLO_assistant_page->trackMutepattern, 0); // un-mute the Arp track
 	SOLO_has_scale = ON;
+	SOLO_scale_chords = OFF;
+	SOLO_scale_chords_program = OFF;
+	SOLO_scale_chords_program_keys = OFF;
+	SOLO_scale_chords_program_armed = OFF;
 	G_zoom_level = zoomSOLOREC;
 }
 
@@ -243,6 +247,7 @@ void exitSoloRec(){
 	SOLO_apply_effects_alarm			= OFF;
 	SOLO_slow_tempo						= OFF;
 	SOLO_rec_page						= NULL;
+	SOLO_rec_rehearsal					= OFF;
 //	SOLO_midi_ch						= 1;
 	SOLO_normalize_vel					= OFF;
 	SOLO_normalize_len					= OFF;
@@ -749,7 +754,7 @@ void breakSoloRecordingMeasureHold(){
 	if ( SOLO_rec_page != NULL &&
 		 G_run_bit == ON &&
 		 SOLO_rec_measure_hold == ON &&
-		 SOLO_rec_rehersal == OFF
+		 SOLO_rec_rehearsal == OFF
 	   ){
 
 		SOLO_rec_measure_pos = 1;

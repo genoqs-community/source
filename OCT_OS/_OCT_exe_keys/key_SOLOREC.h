@@ -432,32 +432,35 @@
 		if ( keyNdx == KEY_PLAY1 ){
 			if ( SOLO_scale_chords_program == ON && hasArpPattern( SOLO_scale_chords_palette_ndx ) == ON ){
 
-				SOLO_rec_rehersal = ON;
+				SOLO_rec_rehearsal = ON;
 				reset_page_cluster( SOLO_assistant_page );
 				GRID_CURSOR = SOLO_assistant_page->pageNdx;
 				SOLO_transpose_GRID_CURSOR = GRID_CURSOR;
 				sequencer_command_PLAY();
 			}
-			else {
+			else if ( SOLO_rec_rehearsal == OFF ) {
 
-				if ( SOLO_has_rec == ON && G_run_bit == OFF ){
-					G_track_rec_bit = OFF;
+				G_track_rec_bit = OFF;
+				SOLO_rec_rehearsal = ON;
+
+				if ( SOLO_has_rec == OFF ){
+					SOLO_rec_measure_hold = ON;
+				}
+
+				if ( G_run_bit == OFF ){
+
 					reset_page_cluster( SOLO_rec_page );
 					playSoloRecCluster();
-				}
-				if ( SOLO_rec_measure_hold == ON && G_run_bit == ON ){
-					SOLO_rec_rehersal ^= 1;
-				}
-				// secret way to toggle record back to play
-				else if ( G_run_bit == ON && G_track_rec_bit == ON ) {
-					G_track_rec_bit ^= 1; // toggle
 				}
 			}
 		}
 
-		else if ( keyNdx == KEY_RECORD && SOLO_scale_chords_program == OFF ){ // Record
+		else if ( keyNdx == KEY_RECORD &&
+				( G_track_rec_bit == OFF || SOLO_rec_rehearsal == ON ) &&
+				  SOLO_scale_chords_program == OFF ){ // Record
 
-			G_track_rec_bit ^= 1; // toggle
+			G_track_rec_bit = ON;
+			SOLO_rec_rehearsal = OFF;
 
 			if ( SOLO_has_rec == OFF ){
 				SOLO_rec_measure_hold = ON;
@@ -482,6 +485,8 @@
 				SOLO_pos_marker_out = OFF;
 				SOLO_rec_finalized = OFF;
 				SOLO_rec_has_MCC = OFF;
+				SOLO_rec_measure_hold = ON;
+				SOLO_rec_rehearsal = OFF;
 				SOLO_rec_track_preview = SOLOPAGE;
 				// Clear the pages
 				clear_page_record_track_chain(SOLO_rec_page);

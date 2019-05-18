@@ -5,7 +5,7 @@
 		// Record button
 		MIR_write_dot( LED_RECORD, MIR_RED );
 		if ( G_run_bit == ON && G_track_rec_bit == ON ){
-			if ( SOLO_rec_rehersal == OFF ){
+			if ( SOLO_rec_rehearsal == OFF ){
 				MIR_write_dot( LED_RECORD, MIR_GREEN );
 			}
 			MIR_write_dot( LED_RECORD, MIR_BLINK );
@@ -58,14 +58,7 @@
 	}
 
 	if ( SOLO_has_rec == ON || ( SOLO_scale_chords_program == ON && hasArpPattern( SOLO_scale_chords_palette_ndx ) == ON )){
-		if ( G_track_rec_bit == OFF && SOLO_rec_freeflow == OFF ){
-			if ( G_run_bit == ON ){
-				MIR_write_dot( LED_PLAY1, MIR_GREEN );
-			}
-			else {
-				MIR_write_dot( LED_PLAY1, MIR_RED );
-			}
-		}
+
 		if ( SOLO_scale_chords_program == OFF ){
 			if ( SOLO_overdub == OFF ){
 				MIR_write_dot( LED_FOLLOW, MIR_GREEN );
@@ -82,16 +75,15 @@
 			}
 		}
 	}
-	else { // No recording yet
 
-		// Rehersal
-		if ( SOLO_rec_rehersal == OFF && SOLO_rec_measure_hold == ON ){
+	if ( SOLO_rec_page != NULL ) { // No recording yet
+
+		// Rehearsal
+		if ( SOLO_rec_rehearsal == OFF ){
 			MIR_write_dot( LED_PLAY1, MIR_RED );
 		}
-		else if ( SOLO_rec_rehersal == ON ){
+		else {
 			MIR_write_dot( LED_PLAY1, MIR_GREEN );
-			MIR_write_dot( LED_PLAY1, MIR_RED );
-			MIR_write_dot( LED_PLAY1, MIR_BLINK );
 		}
 	}
 

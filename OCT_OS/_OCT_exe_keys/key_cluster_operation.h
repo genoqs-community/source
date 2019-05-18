@@ -443,7 +443,7 @@ void stop_solo_rec( unsigned char trim ){
 	G_track_rec_bit 				= OFF;
 	G_measure_locator				= OFF;
 	SOLO_rec_measure_pos 			= OFF;
-	SOLO_rec_rehersal				= OFF;
+	SOLO_rec_rehearsal				= OFF;
 	SOLO_scale_chords_arp_cursor 	= NOP;
 	SOLO_transpose_latch 			= OFF;
 

@@ -5160,7 +5160,7 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 				if ( G_run_bit == OFF || SOLO_scale_chords_program == ON ){
 
 					assignLastNotes();
-					SOLO_rec_rehersal = ON;
+					SOLO_rec_rehearsal = ON;
 					GRID_CURSOR = SOLO_assistant_page->pageNdx;
 				}
 				if ( play == ON ){
