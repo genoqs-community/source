@@ -218,12 +218,19 @@ void enterSoloRec(){
 		SOLO_p_selection[ i ] = GRID_p_selection[ i ];
 	}
 
+	for ( i=0; i< 9; i++){
+		SOLO_assistant_page->scaleNotes[i]			= SCALE_SIG_MAJ;
+		SOLO_assistant_page->scaleLead[i]			= OFF;
+		SOLO_assistant_page->scaleLead[i]			= 1 << 11;  // this is equivalent to C
+	}
+
 	CLEAR_BIT(SOLO_assistant_page->trackMutepattern, 0); // un-mute the Arp track
 	SOLO_has_scale = ON;
 	SOLO_scale_chords = OFF;
 	SOLO_scale_chords_program = OFF;
 	SOLO_scale_chords_program_keys = OFF;
 	SOLO_scale_chords_program_armed = OFF;
+	SOLO_scale_chords_octave = OFF;
 	G_zoom_level = zoomSOLOREC;
 }
 
