@@ -43,6 +43,7 @@ unsigned char SOLO_rec_finalized				= OFF;
 unsigned char SOLO_edit_buffer_volatile			= OFF;
 unsigned char SOLO_overdub						= OFF;
 unsigned char SOLO_rec_pressed_col				= OFF;
+unsigned char SOLO_rec_is_tape					= OFF;
 unsigned char SOLO_rec_freeflow					= OFF; // This was renamed to Tape Recording in the manual
 unsigned char SOLO_rec_freeflow_trim			= OFF;
 unsigned char SOLO_rec_ending_flash				= ON;
@@ -289,6 +290,7 @@ void exitSoloRec(){
 	SOLO_rec_show_strum					= OFF;
 	SOLO_rec_strum_latch				= OFF;
 	SOLO_len_adjust						= OFF;
+	SOLO_rec_is_tape					= OFF;
 
 	for (i=0; i<MATRIX_NROF_ROWS; i++){
 		if ( SOLO_page_play_along_toggle[i] != NOP ){

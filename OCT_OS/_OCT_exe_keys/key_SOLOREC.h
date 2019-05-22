@@ -491,6 +491,22 @@
 				// Clear the pages
 				clear_page_record_track_chain(SOLO_rec_page);
 
+				if ( SOLO_rec_is_tape == ON ){
+
+					selected_page_cluster_clear(SOLO_rec_page->pageNdx);
+					SOLO_has_rec 				= OFF;
+					Solorec_init();
+					unsigned char col = grid_col(GRID_CURSOR);
+
+					// Free Flow!
+					GRID_CURSOR = SOLO_rec_page->pageNdx;
+					Rec_repository[col].measure_count = MATRIX_NROF_ROWS;
+					Rec_undo_repository[col].measure_count = MATRIX_NROF_ROWS;
+					create_next_freeflow_page_cluster(GRID_CURSOR);
+					SOLO_rec_freeflow_measures = count_to_last_page_in_grid_row(col) * MATRIX_NROF_ROWS;
+					reset_page_cluster( SOLO_rec_page );
+				}
+
 				MIX_TIMER = ON;
 				// Setup alarm for the MIX TIMER
 				cyg_alarm_initialize(	alarm_hdl,
@@ -656,6 +672,7 @@
 			SOLO_pos_out 				= NULL;
 			SOLO_rec_has_MCC			= OFF;
 			SOLO_rec_track_preview		= SOLOPAGE;
+			SOLO_rec_is_tape			= OFF;
 			G_measure_locator 			= OFF;
 			Solorec_init();
 		}
@@ -740,12 +757,13 @@
 			if ( !SOLO_has_rec ){ // does not have a recording yet
 
 				if ( has_empty_grid_row_ahead(heldNdx) == TRUE && keyNdx == KEY_CHAINMODE_4 &&
-					 SOLO_rec_page == NULL && Page_repository[heldNdx].page_clear == ON ){
+					SOLO_rec_page == NULL && Page_repository[heldNdx].page_clear == ON ){
 
 					// Free Flow!
 					SOLO_rec_page = &Page_repository[heldNdx];
 					GRID_CURSOR = SOLO_rec_page->pageNdx;
 					SOLO_rec_freeflow = ON;
+					SOLO_rec_is_tape = ON;
 					Rec_repository[heldCol].measure_count = MATRIX_NROF_ROWS;
 					Rec_undo_repository[heldCol].measure_count = MATRIX_NROF_ROWS;
 					create_next_freeflow_page_cluster(heldNdx);
