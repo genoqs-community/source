@@ -688,11 +688,12 @@
 				MIR_write_dot (LED_PROGRAM, MIR_BLINK);
 				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_program_octave );
 			}
-			if ( SOLO_scale_chords_program_armed == ON ){
-				MIR_write_dot( LED_SCALE_MYSEL, MIR_RED );
-				MIR_write_dot( LED_SCALE_MYSEL, MIR_BLINK );
-			}
 		}
+	}
+
+	if ( SOLO_scale_chords_program_armed == ON && SOLO_scale_chords == ON ){
+		MIR_write_dot( LED_SCALE_MYSEL, MIR_RED );
+		MIR_write_dot( LED_SCALE_MYSEL, MIR_BLINK );
 	}
 
 	if ( SOLO_scale_chords_program == ON && SOLO_scale_chords_palette_ndx != NOP ){

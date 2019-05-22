@@ -4576,16 +4576,17 @@ void copyChord(Chordstruct* src, Chordstruct* dest){
 
 void enterProgramEditor(){
 
-	if ( G_run_bit == ON ) return;
-
-	SOLO_scale_chords_program = ON; // palette editor enabled
-	SOLO_scale_chords_program_keys = ON;
-	GRID_CURSOR = SOLO_assistant_page->pageNdx;
-
 	if ( SOLO_last_chord != NULL ){
 
 		SOLO_scale_chords_program_armed = ON;
 	}
+
+	SOLO_scale_chords_program_keys = ON;
+
+	if ( G_run_bit == ON ) return;
+
+	SOLO_scale_chords_program = ON; // palette editor enabled
+	GRID_CURSOR = SOLO_assistant_page->pageNdx;
 }
 
 unsigned char hasArpPattern( unsigned char chord_palette_ndx ){
