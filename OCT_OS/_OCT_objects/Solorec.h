@@ -77,6 +77,8 @@ unsigned short SOLO_rec_freeflow_measures		= OFF;
 unsigned short SOLO_rec_measure_pos				= OFF;
 unsigned short SOLO_pos_marker_in				= OFF; // left cut -  SOLO_rec_measure_pos
 unsigned short SOLO_pos_marker_out				= OFF; // right cut - SOLO_rec_measure_pos
+unsigned char SOLO_orig_GRID_CURSOR				= NOP;
+
 Pagestruct*   SOLO_pos_in						= NULL;
 Pagestruct*   SOLO_pos_out						= NULL;
 Chordstruct*  SOLO_last_chord					= NULL;
@@ -203,6 +205,8 @@ void muteAssistantPage(){
 void enterSoloRec(){
 	int i;
 
+	SOLO_orig_GRID_CURSOR = GRID_CURSOR;
+
 	if ( SOLO_has_scale == OFF ){
 
 		Page_copy(GRID_assistant_page, SOLO_assistant_page);
@@ -245,6 +249,7 @@ void exitSoloRec(){
 		row = grid_row(SOLO_rec_page->pageNdx);
 		target_page = SOLO_rec_page;
 		reset_page_cluster( SOLO_rec_page );
+		SOLO_orig_GRID_CURSOR = SOLO_rec_page->pageNdx;
 	}
 	// Reset most of the global variables
 	SOLO_quantize_fine_tune_center  	= 1;
@@ -318,6 +323,8 @@ void exitSoloRec(){
 		GRID_p_preselection[ row ] = target_page;
 		GRID_p_clock_presel[ row ] = target_page;
 	}
+
+	GRID_CURSOR = SOLO_orig_GRID_CURSOR;
 
 	G_zoom_level = zoomGRID; // exit the Solo Recording view
 }
