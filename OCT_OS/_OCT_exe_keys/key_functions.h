@@ -1369,6 +1369,10 @@ unsigned char find_record_track_chain_start(Pagestruct* target_page){
 	// Compute the green pattern - all tracks in chain
 	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
 
+		if ( current_track->chain_data[NEXT] != target_page->Track[row] ){
+			in_chain = FALSE;
+		}
+
 		// Find head chains larger than one track
 		if ( current_track != current_track->chain_data[NEXT] ){ // not a standalone track
 
