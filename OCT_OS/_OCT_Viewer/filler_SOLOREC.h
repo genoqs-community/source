@@ -595,6 +595,7 @@
 
 				// MATRIX
 				show ( ELE_MATRIX, STEP_TOGGLE );
+				show ( ELE_MATRIX, STEP_SKIPS );
 
 				// Show the REC status of tracks
 				show( ELE_TRACK_SELECTORS, TRACK_REC_STATUS );
