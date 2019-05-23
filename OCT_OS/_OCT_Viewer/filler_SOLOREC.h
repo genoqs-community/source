@@ -373,7 +373,9 @@
 		 GRID_CURSOR == SOLO_assistant_page->pageNdx /* Arp */
 	   ){
 
-		// MATRIX
+		unsigned char showing_page_notes = OFF;
+
+		// MATRIX NOTE PRESS
 		for (i=0; i < MAX_NROF_PAGES; i++) {
 
 			if (( TEMPO_TIMER == ON && grid_row(i) == 0 ) || SOLO_scale_chords_program == ON ){
@@ -390,17 +392,23 @@
 				 Rec_repository[grid_col(pressed_ndx)].Note[i]->status == ON
 			   ){
 
-				// Shot the notes in the pressed page
+				// Show the notes in the pressed page
 				GRID_write_dot( i, MIR_GREEN );
 				if ( is_note_chord(Rec_repository[grid_col(pressed_ndx)].Note[i]) ){
 					GRID_write_dot( i, MIR_RED );
 				}
+
+				showing_page_notes = ON;
 			}
 //			if ( is_pressed_pagerange() != FALSE && Rec_undo_repository[grid_col(grid_ndx_from_key(is_pressed_pagerange()))].Note[i]->status == ON ){
 //
 //				GRID_write_dot( i, MIR_RED );
 //				GRID_write_dot( i, MIR_BLINK );
 //			}
+		}
+
+		// MATRIX
+		for (i=0; i < MAX_NROF_PAGES; i++) {
 
 			// Page has contents and is not one of the row zero
 			if (	(Page_repository[i].page_clear != ON)  &&	( grid_row(i) != 9 )){
@@ -422,7 +430,7 @@
 						GRID_write_dot( i, MIR_RED );
 					}
 				}
-				else {
+				else if ( showing_page_notes == OFF ) {
 
 					if ( SOLO_page_play_along[grid_row(i)] == i ){
 						GRID_write_dot( i, MIR_GREEN );
