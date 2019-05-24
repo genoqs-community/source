@@ -147,20 +147,24 @@ void Solorec_init(){
 	unsigned char i=0, j=0, row;
 	unsigned short ndx=0;
 	Recstruct* target_rec = NULL;
+	Recstruct* undo_rec = NULL;
 
 	for (i=0; i<MATRIX_NROF_COLUMNS; i++){
 
 		target_rec = &Rec_repository[i];
+		undo_rec = &Rec_undo_repository[i];
 		target_rec->measure_count = 0;
+		undo_rec->measure_count = 0;
 		SOLO_page_play_along[i] = NOP;
 		SOLO_page_play_along_toggle[i] = NOP;
+
+		for ( row=0; row<MATRIX_NROF_ROWS; row++ ){
+			target_rec->track_pitch[row] = TRACK_DEF_PITCH;
+			undo_rec->track_pitch[row] = TRACK_DEF_PITCH;
+		}
 	}
 
 	for (i=0; i<MAX_NROF_PAGES; i++){ // for each track of each record page
-
-		for ( row=0; row<MATRIX_NROF_ROWS; row++ ){
-			target_rec->track_pitch[row] = 0;
-		}
 
 		for (j=0; j<MATRIX_NROF_COLUMNS; j++){ // create the track notes
 
@@ -828,6 +832,9 @@ void capture_note_event(
 	unsigned char col = grid_col(target_page->pageNdx);
 	unsigned char idx = grid_ndx(row, step_col);
 	Notestruct* noteRec = Rec_repository[col].Note[idx];
+
+	Rec_repository[col].track_pitch[row] = target_page->Track[row]->attr_PIT;
+	Rec_undo_repository[col].track_pitch[row] = target_page->Track[row]->attr_PIT;
 
 	// apply the strum value
 	target_step->chord_data = ( SOLO_strum << 11 ) | ( target_step->chord_data & 0x7FF );
