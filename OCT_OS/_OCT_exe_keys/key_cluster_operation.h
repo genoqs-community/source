@@ -430,7 +430,10 @@ void stop_solo_rec( unsigned char trim ){
 	}
 
 	flush_note_on_queue( &Page_repository[GRID_CURSOR], SOLO_midi_ch );
-	freeflowOff( trim );
+
+	if ( SOLO_rec_rehearsal == OFF ){
+		freeflowOff( trim );
+	}
 
 	saveOrUndoTranspose();
 

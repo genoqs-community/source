@@ -679,7 +679,11 @@
 		}
 	}
 
-	else if ( keyNdx == KEY_MIX_MASTER && SOLO_rec_finalized == ON && G_run_bit == ON && SOLO_scale_chords_program == OFF && G_track_rec_bit == OFF ){
+	else if ( keyNdx == KEY_MIX_MASTER &&
+			  SOLO_rec_finalized == ON &&
+			  G_run_bit == ON &&
+			  SOLO_scale_chords_program == OFF &&
+			  G_track_rec_bit == OFF ){
 
 		if ( SOLO_pos_marker_in == OFF ){
 			SOLO_pos_marker_in = SOLO_rec_measure_pos;

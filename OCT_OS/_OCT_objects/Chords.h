@@ -5070,6 +5070,11 @@ unsigned char record_chord_arp_to_track( Pagestruct* target_page,
 	}
 	else { // record
 
+		if ( Step_get_status(SOLO_assistant_page->Step[ARP_TRACK][arpStep], STEPSTAT_TOGGLE) == OFF ){
+
+			return OFF;
+		}
+
 		Step_copy(SOLO_assistant_page->Step[ARP_TRACK][arpStep], target_page->Step[row][target_col], False);
 		// default page pitch is middle C but solo_assist starts at zero
 		target_page->Step[row][target_col]->attr_PIT -= ( MIDDLE_C - SOLO_assistant_page->attr_PIT /* apply the transpose offset */);
@@ -5134,6 +5139,7 @@ void copyArpToSteps(Chordstruct* chord){
 void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsigned char in_channel, unsigned char play){
 
 	int i;
+	unsigned char trim = SOLO_rec_freeflow_trim;
 	Chordstruct* chord = &Chord_palette_repository[palette_ndx];
 
 	if ( SOLO_scale_chords_prev_palette_ndx != palette_ndx ){
@@ -5161,6 +5167,7 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 						if ( SOLO_scale_chords_program == ON || SOLO_assistant_page->pageNdx == GRID_CURSOR ){
 
 							stop_solo_rec(OFF);
+							SOLO_rec_freeflow_trim = trim;
 						}
 					}
 					SOLO_scale_chords_arp_cursor = NOP;
