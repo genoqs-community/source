@@ -646,6 +646,7 @@ void selected_page_cluster_move( unsigned char grid_cursor, unsigned char prev_g
 	Pagestruct* temp_page = &Page_repository[ prev_grid_cursor ];
 	Pagestruct* cursor_page = &Page_repository[ grid_cursor ];
 
+	unsigned char 	i;
 	unsigned char 	orig_grid_cursor = grid_cursor;
 	unsigned char 	last_cpy_prev_on = OFF;
 	signed short 	prev_ndx = 0,
@@ -696,6 +697,16 @@ void selected_page_cluster_move( unsigned char grid_cursor, unsigned char prev_g
 			set_track_locators( &Page_repository[ grid_cursor ], NULL, 0, 0 );
 			select_page_preselections();
 		}
+
+		// Clear the GRID set for this page if it was selected
+		for (i=0; i < GRID_NROF_SETS; i++){
+
+			if ( GRID_p_set[i][grid_row(this_ndx)]->pageNdx == prev_grid_cursor ){
+
+				GRID_p_set[i][grid_row(this_ndx)] = NULL;
+			}
+		}
+
 		// clear the old locator
 		if ( this_ndx%10 != grid_cursor%10 ) {
 			GRID_p_selection_buffer[ this_ndx%10 ] = NULL;
