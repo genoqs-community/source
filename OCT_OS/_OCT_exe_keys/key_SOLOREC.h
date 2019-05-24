@@ -271,7 +271,7 @@
 												cyg_current_time() + TIMEOUT_VALUE,
 												0 );
 
-						PLAYER_preview_step( SOLO_assistant_page, 0, column_of(keyNdx) ); // play the sound with the note length
+						PLAYER_preview_step( SOLO_assistant_page, ARP_TRACK, column_of(keyNdx) ); // play the sound with the note length
 					}
 				}
 			}
@@ -674,6 +674,7 @@
 			SOLO_rec_track_preview		= SOLOPAGE;
 			SOLO_rec_is_tape			= OFF;
 			G_measure_locator 			= OFF;
+			SOLO_rec_transpose			= OFF;
 			Solorec_init();
 		}
 	}

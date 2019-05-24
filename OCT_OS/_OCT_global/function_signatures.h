@@ -170,6 +170,9 @@ extern 	unsigned int 	mirror (				unsigned int input,
 extern 	void 			VIEWER_show_MIR();
 extern 	void 			initMIR();
 extern 	void 			PLAYER_updateTrackLocators();
+extern  void			PLAYER_preview_step( 	Pagestruct* target_page,
+												unsigned char row,
+												unsigned char col);
 extern 	void			MIR_write_GRID();
 extern 	void 			GRID_write_dot( 		unsigned int ndx,
 												unsigned char color);
