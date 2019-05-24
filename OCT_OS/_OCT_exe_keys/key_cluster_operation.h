@@ -518,6 +518,13 @@ void reset_page_cluster( Pagestruct* temp_page ){
 	if ( G_run_bit == ON ){
 		return;
 	}
+
+	// Remove the pause	state for good;
+	G_pause_bit 	= OFF;
+
+	// Reset the global locator
+	G_global_locator = 0;
+
 	this_ndx = temp_page->pageNdx;
 	prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;
 
@@ -565,6 +572,7 @@ void reset_page_cluster( Pagestruct* temp_page ){
 		Page_setTrackRecPattern(temp_page, 0);
 
 		temp_page->trackSelection = 0;
+		set_page_locators( temp_page, 0, 0 );
 
 		m = MATRIX_NROF_ROWS - temp_page->attr_STA; // from the bottom up
 

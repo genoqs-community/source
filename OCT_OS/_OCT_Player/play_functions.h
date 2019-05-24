@@ -204,9 +204,11 @@ void compute_chain_presel( unsigned char target_bank ){
 
 			#ifdef FEATURE_SOLO_REC
 			// Free Flow recording -- add a page to the end of the cluster
-			if ( G_zoom_level == zoomSOLOREC && SOLO_rec_freeflow == ON &&
-				 next_ndx < MAX_NROF_PAGES && Page_repository[next_ndx].page_clear == ON)
-			{
+			if ( G_zoom_level == zoomSOLOREC &&
+				 SOLO_assistant_page->pageNdx != GRID_CURSOR && // only the Arp plays on the assistant page
+				 SOLO_rec_freeflow == ON &&
+				 next_ndx < MAX_NROF_PAGES && Page_repository[next_ndx].page_clear == ON ){
+
 				create_next_freeflow_page_cluster(next_ndx);
 				G_measure_locator = 1;
 			}

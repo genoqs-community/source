@@ -261,7 +261,9 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 			}
 
 			// Don't advance the grid locator if measure hold is on
-			if ( SOLO_rec_measure_hold == ON ) {
+			if ( SOLO_rec_measure_hold == ON &&
+				 SOLO_assistant_page->pageNdx != GRID_CURSOR // only the Arp plays on the assistant page
+			){
 				// Send the ALL NOTES OFF message
 				send_ALL_NOTES_OFF();
 				G_MIDI_timestamp = 0;
@@ -367,7 +369,9 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		}
 
 		#ifdef FEATURE_SOLO_REC
-		if ( SOLO_rec_measure_hold == ON ){
+		if ( SOLO_rec_measure_hold == ON &&
+			 SOLO_assistant_page->pageNdx != GRID_CURSOR // only the Arp plays on the assistant page
+		){
 			return;
 		}
 		#endif
