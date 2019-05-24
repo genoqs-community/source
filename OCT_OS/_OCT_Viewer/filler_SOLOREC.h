@@ -190,9 +190,11 @@
 		}
 
 		if ( SOLO_rec_finalized == ON && G_run_bit == ON ){
-			MIR_write_dot( LED_MIX_MASTER, MIR_RED );
+
 			// The recording is playing and not recording so enable split markers using POS
 			if ( G_run_bit == ON && G_track_rec_bit == OFF ){
+
+				MIR_write_dot( LED_MIX_MASTER, MIR_RED );
 				MIR_write_dot( LED_MIX_MASTER, MIR_GREEN );
 				if ( SOLO_pos_marker_in != OFF ){
 					MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );

@@ -65,7 +65,6 @@ void show_OCTAVE_CIRCLE_scale_selection( Pagestruct* target_page ){
 
 		target_page = &Page_repository[ GRID_CURSOR ];
 	}
-	diag_printf("%d\n", target_page->pageNdx);
 
 	// show the transpose tracks if there are per-track assignments
 	if ( G_run_bit == ON && ( G_zoom_level == zoomSOLOREC || G_zoom_level == zoomPAGE )){

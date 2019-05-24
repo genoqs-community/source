@@ -39,16 +39,23 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 
 					if ( Step_get_status( target_page->Step[row][target_col], STEPSTAT_TOGGLE ) == ON){
 
+						if ( SOLO_rec_finalized == TRUE ){
+
+							if ( SOLO_undo_note_all == OFF ){
+
+								// save the undo notes
+								commitMix();
+							}
+
+							SOLO_undo_note_all = ON;
+						}
+
 						target_page->Step[row][target_col]->chord_data = ( SOLO_strum << 11 )
 							| ( target_page->Step[row][target_col]->chord_data & 0x7FF );
 
 						stepToNote(target_page->Step[row][target_col],
 								   Rec_repository[grid_col(target_page->pageNdx)].Note[grid_ndx(row, target_col)]);
 
-						if ( SOLO_rec_finalized == TRUE ){
-
-							SOLO_undo_note_all = ON;
-						}
 					}
 				}
 			}

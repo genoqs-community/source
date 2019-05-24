@@ -442,6 +442,7 @@ void undoAllNotes(){
 	Stepstruct* target_step;
 	Pagestruct* target_page;
 	Recstruct* rec;
+	unsigned char start_row = NOP;
 
 	// For each page in the record chain
 	// track forward
@@ -452,11 +453,17 @@ void undoAllNotes(){
 		target_page = &Page_repository[this_ndx];
 		col = grid_col(target_page->pageNdx);
 		rec = &Rec_undo_repository[ col ]; // undo
+		if ( SOLO_undo_note_all == ON ){
+			start_row = find_record_track_chain_start(target_page);
+		}
 
 		copyTracks(&Rec_undo_repository[col], &Rec_repository[col]);
 		recToTracks(&Rec_repository[col], target_page);
 
 		for (i=0; i<MAX_NROF_PAGE_NOTES; i++){
+
+			if ( start_row != NOP && grid_row(i) < start_row ) continue;
+
 			// copy up from undo
 			target_note = Rec_repository[col].Note[i];
 			undo_note = Rec_undo_repository[col].Note[i];
@@ -661,6 +668,9 @@ void commitMix(){
 		}
 		this_ndx += 10;
 	}
+
+	SOLO_edit_buffer_volatile = OFF;
+	SOLO_undo_note_all = OFF;
 }
 
 void applyStrumToPageCluster(){
