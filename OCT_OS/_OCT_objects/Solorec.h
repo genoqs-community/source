@@ -659,6 +659,8 @@ void commitMix(){
 
 		tracksToRec(target_page, &Rec_repository[col]);
 		copyTracks(&Rec_repository[col], &Rec_undo_repository[col]);
+		Rec_repository[col].measure_count = target_page->attr_STA;
+		Rec_undo_repository[col].measure_count = target_page->attr_STA;
 
 		for (i=0; i<MAX_NROF_PAGE_NOTES; i++){
 
