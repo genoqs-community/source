@@ -235,11 +235,6 @@ void enterSoloRec(){
 
 	CLEAR_BIT(SOLO_assistant_page->trackMutepattern, 0); // un-mute the Arp track
 	SOLO_has_scale = ON;
-	SOLO_scale_chords = OFF;
-	SOLO_scale_chords_program = OFF;
-	SOLO_scale_chords_program_keys = OFF;
-	SOLO_scale_chords_program_armed = OFF;
-	SOLO_scale_chords_octave = OFF;
 	G_zoom_level = zoomSOLOREC;
 }
 
@@ -300,6 +295,11 @@ void exitSoloRec(){
 	SOLO_rec_strum_latch				= OFF;
 	SOLO_len_adjust						= OFF;
 	SOLO_rec_is_tape					= OFF;
+	SOLO_scale_chords = OFF;
+	SOLO_scale_chords_program = OFF;
+	SOLO_scale_chords_program_keys = OFF;
+	SOLO_scale_chords_program_armed = OFF;
+	SOLO_scale_chords_octave = OFF;
 
 	for (i=0; i<MATRIX_NROF_ROWS; i++){
 		if ( SOLO_page_play_along_toggle[i] != NOP ){
