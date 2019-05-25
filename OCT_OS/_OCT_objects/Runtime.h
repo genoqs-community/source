@@ -531,6 +531,7 @@ typedef struct recstruct{
 	int				scaleLead[MATRIX_NROF_ROWS];
 	int				scaleNotes[MATRIX_NROF_ROWS];
 	unsigned char	measure_count;
+	unsigned char	pitch_offset;
 
 } Recstruct;
 

@@ -250,7 +250,7 @@
 
 							unsigned char pitches[MAX_NOTES];
 							Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
-							translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches);
+							translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches, ON);
 
 							for (i=0; i < MAX_NOTES; i++){
 
@@ -279,7 +279,7 @@
 
 				unsigned char pitches[MAX_NOTES];
 				Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
-				translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches);
+				translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches, ON);
 
 				for (i=0; i < MAX_NOTES; i++){
 

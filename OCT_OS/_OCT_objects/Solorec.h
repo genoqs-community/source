@@ -828,7 +828,6 @@ void capture_note_event(
 		unsigned char row,
 		unsigned char step_col ){
 
-
 	unsigned char col = grid_col(target_page->pageNdx);
 	unsigned char idx = grid_ndx(row, step_col);
 	Notestruct* noteRec = Rec_repository[col].Note[idx];

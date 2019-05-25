@@ -81,7 +81,7 @@ void MIDI_send( 	unsigned char type,
 					unsigned char val0, 
 					unsigned char val1, 
 					unsigned char val2 ){
-	
+
 	// Initialize to something other than 0, where it can't do damage
 	unsigned char i = 200;	
 	unsigned char j = 200;
@@ -89,7 +89,6 @@ void MIDI_send( 	unsigned char type,
 	// Assume target_UART to be 0, may change as we go.
 	unsigned char target_UART = 0;
 
-	//diag_printf("t:%d\n", type);
 	// UART selection depends on the type of MIDI message. Note does differently
 	// ..than MIDI CLOCK for example.	
 	switch( type ){

@@ -4392,7 +4392,23 @@ unsigned char index_of_key_symbol_flat(char symbol){
 	return 0;
 }
 
-void translateSymbolsToChord(const char word[], unsigned char pitches[]){
+void insertionSort(unsigned char arr[], int n)
+{
+    int i, key, j;
+    for (i = 1; i < n; i++){
+
+    	key = arr[i];
+        j = i - 1;
+
+        while (j >= 0 && arr[j] > key){
+            arr[j + 1] = arr[j];
+            j = j - 1;
+        }
+        arr[j + 1] = key;
+    }
+}
+
+void translateSymbolsToChord(const char word[], unsigned char pitches[], unsigned char sort){
 	int i, j=0;
 
 //	diag_printf("word:%s\n", word);
@@ -4421,6 +4437,11 @@ void translateSymbolsToChord(const char word[], unsigned char pitches[]){
 			break;
 		}
 	}
+
+	if ( sort == ON ){
+		insertionSort(pitches, j); // always play chords from lowest pitch to highest
+	}
+
 	pitches[j] = 0xFF; // add a terminator
 }
 
@@ -4431,7 +4452,7 @@ void translateSymbolsToChord(const char word[], unsigned char pitches[]){
 //
 //	for (i=0; i < MAX_CHORDS; i++){
 //
-//		translateSymbolsToChord(chords[0][0][i], pitches);
+//		translateSymbolsToChord(chords[0][0][i], pitches, ON);
 //
 //		diag_printf("chord:%d", i);
 //		for (j=0; j < MAX_NOTES; j++){
@@ -4664,7 +4685,7 @@ void assignLastNotes(){
 	Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
 	SOLO_scale_chords_last = OFF;
 
-	translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches);
+	translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches, OFF);
 
 	for (i=0; i < MAX_NOTES; i++){
 
@@ -4832,7 +4853,7 @@ void buildPresetArp( unsigned char keyNdx ){
 	Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
 	unsigned char base_pitch = chord->pitch;
 
-	translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches);
+	translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches, OFF);
 
 	for (i=0; i < MAX_NOTES; i++){
 
@@ -4954,7 +4975,7 @@ void playChord( unsigned char scale,
 	Chordstruct* chord ;
 	SOLO_scale_chords_last = OFF; // reset
 
-	translateSymbolsToChord(chords[scale][tone][chord_id], pitches);
+	translateSymbolsToChord(chords[scale][tone][chord_id], pitches, ON);
 
 	for (i=0; i < MAX_NOTES; i++){
 
@@ -5014,7 +5035,8 @@ void record_chord_to_track( Pagestruct* target_page,
 							unsigned char target_col,
 							unsigned char target_start,
 							unsigned char in_pitch,
-							unsigned char in_velocity
+							unsigned char in_velocity,
+							unsigned char midi_ch
 						   ){
 
 	int i;
@@ -5030,11 +5052,12 @@ void record_chord_to_track( Pagestruct* target_page,
  	if ( isProgramKey ){
 
  		// palette chord
- 		Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
- 		translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches);
+ 		Chordstruct* chord = &Chord_palette_repository[in_pitch % OCTAVE];
+ 		translateSymbolsToChord(chords[chord->scale][chord->tone][chord->chord_id], pitches, ON);
+ 		pitch = chord->pitch;
  	}
  	else {
- 		translateSymbolsToChord(chords[scale][tone][chord_id], pitches);
+ 		translateSymbolsToChord(chords[scale][tone][chord_id], pitches, ON);
  	}
 
 	for (i=0; i < MAX_NOTES; i++){
@@ -5049,6 +5072,10 @@ void record_chord_to_track( Pagestruct* target_page,
 							  target_start,
 							  (pitches[i] + pitch),
 							  in_velocity );
+
+		if ( in_velocity == OFF ){
+			break; // only send one note OFF
+		}
 	}
 }
 

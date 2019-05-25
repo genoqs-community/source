@@ -362,6 +362,7 @@ void make_chord( Stepstruct* target_step, signed char track_pitch, signed char i
 
 			// Add the lowest pitch to the chord
 			if ( lowest_pitch != 200 ){
+
 				make_chord( target_step, track_pitch, lowest_pitch );
 			}
 		}
@@ -715,7 +716,9 @@ void record_note_to_track( 	Pagestruct* target_page,
 	NOTEeventstruct* off_event = NULL;
 	signed short in_pitch_delta = 0;
 
-	if ( SOLO_rec_measure_hold ) return;
+	#ifdef FEATURE_SOLO_REC
+	if ( SOLO_rec_measure_hold == ON ) return;
+	#endif
 
 	// Validate the target column number and stop if column is strange
 	if ( target_col > 15 ) return;
@@ -766,7 +769,9 @@ void record_note_to_track( 	Pagestruct* target_page,
 			// Get new event from stack
 			on_event = NOTE_stack_pop();
 
-			if ( on_event == NULL ) break;
+			if ( on_event == NULL ) {
+				break;
+			}
 
 			// PITCH - Fill the simple step pitch or build chord
 			switch( is_step_queued( target_page->Step[row][target_col] ) ){
@@ -776,6 +781,7 @@ void record_note_to_track( 	Pagestruct* target_page,
 					// Add the incoming pitch to the chord structure of the step
 					make_chord( target_page->Step[row][target_col],
 								target_page->Track[row]->attr_PIT, in_pitch );
+
 					break;
 
 				case FALSE:
@@ -818,11 +824,6 @@ void record_note_to_track( 	Pagestruct* target_page,
 					break;
 			}
 
-			#ifdef FEATURE_SOLO_REC
-			SOLO_undo_note_all = SOLO_rec_finalized;
-			capture_note_event(target_page->Step[row][target_col], target_page, row, target_col);
-			#endif
-
 			// Fill the on-event with the current step data
 			NOTEevent_fill( 	on_event, 	target_page->Step[row][target_col],
 											target_page->Track[row],
@@ -839,6 +840,11 @@ void record_note_to_track( 	Pagestruct* target_page,
 			break;
 
 	} // switch( in_velocity )
+
+	#ifdef FEATURE_SOLO_REC
+	SOLO_undo_note_all = SOLO_rec_finalized;
+	capture_note_event(target_page->Step[row][target_col], target_page, row, target_col);
+	#endif
 }
 
 

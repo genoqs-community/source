@@ -623,7 +623,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 						   ){
 
 							record_chord_to_track( 	target_page, 	target_row, target_col,
-													target_start, 	in_pitch, 	in_velocity );
+													target_start, 	in_pitch, 	in_velocity, outputMidiBus * 16 + outputMidiChan );
 						}
 						else {
 
