@@ -57,6 +57,7 @@ unsigned char SOLO_rec_transpose				= OFF;
 signed char   SOLO_rec_transpose_octave			= OFF;
 signed char   SOLO_rec_transpose_prev_pitch		= 127;
 unsigned char SOLO_rec_measure_hold				= OFF;
+unsigned char SOLO_rec_measure_hold_OTM			= OFF;
 unsigned char SOLO_rec_show_strum				= OFF;
 unsigned char SOLO_rec_strum_latch				= OFF;
 unsigned char SOLO_rec_bank						= OFF;
@@ -788,12 +789,14 @@ void breakSoloRecordingMeasureHold(){
 
 	if ( SOLO_rec_page != NULL &&
 		 G_run_bit == ON &&
-		 SOLO_rec_measure_hold == ON &&
+		 SOLO_rec_measure_hold != OFF &&
+		 SOLO_rec_measure_hold_OTM == OFF &&
 		 SOLO_rec_rehearsal == OFF
 	   ){
 
 		SOLO_has_rec = ON;
 		SOLO_rec_measure_hold = OFF;
+		SOLO_rec_measure_hold_OTM = ON;
 	}
 }
 

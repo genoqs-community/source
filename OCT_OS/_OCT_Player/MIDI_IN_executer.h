@@ -607,8 +607,15 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  						// May need to record in a different row, if next column is part of a wrap
  						// row = ... // this is the known LDT bug. Dirty fix now. Breaks on skipped rows.
  						if ( target_col < target_page->Track[row]->attr_LOCATOR-1 ){
- 							// There was a wrap, lookup the next row to record
+
+							#ifdef FEATURE_SOLO_REC
+							if ( SOLO_rec_measure_hold_OTM != ON ){
+								target_row = row_of_track( target_page, target_page->Track[row]->chain_data[NEXT] );
+							}
+							#else
+							// There was a wrap, lookup the next row to record
  							target_row = row_of_track( target_page, target_page->Track[row]->chain_data[NEXT] );
+							#endif
  						}
  					}
 

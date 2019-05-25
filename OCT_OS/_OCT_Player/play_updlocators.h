@@ -149,7 +149,7 @@ void update_trackchain_PLAY( 	Pagestruct* target_page,
 								Trackstruct* new_PLAY_track ){
 
 	#ifdef FEATURE_SOLO_REC
-	if ( SOLO_rec_measure_hold == ON && G_run_bit == ON ){
+	if (( SOLO_rec_measure_hold == ON || SOLO_rec_measure_hold_OTM == ON ) && G_run_bit == ON ){
 		return;
 	}
 	#endif

@@ -242,7 +242,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		if ( G_global_locator == 1 ) {
 
 			#ifdef FEATURE_SOLO_REC
-			if ( OTM_CC_type != OFF ){
+			if ( OTM_CC_type != OFF && G_zoom_level != zoomSOLOREC ){
 
 				MIDI_send( OTM_CC_type, OTM_CC_val0, OTM_CC_val1, OTM_CC_val2 );
 				OTM_CC_type = OFF;
@@ -273,6 +273,11 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 			G_measure_locator++;
 			SOLO_rec_measure_pos++;
+
+			if ( SOLO_rec_measure_hold_OTM == ON ){
+				SOLO_rec_measure_hold_OTM = OFF;
+				return;
+			}
 			#endif
 
 			for ( i=0; i < GRID_NROF_BANKS; i++ ){
@@ -369,8 +374,8 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		}
 
 		#ifdef FEATURE_SOLO_REC
-		if ( SOLO_rec_measure_hold == ON &&
-			 SOLO_assistant_page->pageNdx != GRID_CURSOR // only the Arp plays on the assistant page
+		if (( SOLO_rec_measure_hold == ON || SOLO_rec_measure_hold_OTM == ON ) &&
+		      SOLO_assistant_page->pageNdx != GRID_CURSOR // only the Arp plays on the assistant page
 		){
 			return;
 		}
