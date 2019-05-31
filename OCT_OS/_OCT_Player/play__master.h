@@ -275,8 +275,9 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 			SOLO_rec_measure_pos++;
 
 			if ( SOLO_rec_measure_hold_OTM == ON ){
+
 				SOLO_rec_measure_hold_OTM = OFF;
-				return;
+				SOLO_rec_page->repeats_left = SOLO_rec_page->attr_STA;
 			}
 			#endif
 
@@ -371,15 +372,29 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 					GRID_p_set_note_presel = 255;
 				}
 			}
-		}
 
-		#ifdef FEATURE_SOLO_REC
-		if (( SOLO_rec_measure_hold == ON || SOLO_rec_measure_hold_OTM == ON ) &&
-		      SOLO_assistant_page->pageNdx != GRID_CURSOR // only the Arp plays on the assistant page
-		){
-			return;
+
+			#ifdef FEATURE_SOLO_REC
+			if (( SOLO_rec_measure_hold == ON || SOLO_rec_measure_hold_OTM == ON ) &&
+				  SOLO_assistant_page->pageNdx != GRID_CURSOR // only the Arp plays on the assistant page
+			){
+
+				stop_playing_page( SOLO_rec_page,	G_TTC_abs_value );
+
+				// ..and set its locators to 0 for the next round of play.
+				set_track_locators( SOLO_rec_page, NULL, 0, 0 );
+
+				// Set the page locator to 0, just to be consistent with using
+				// a locator of 0 to indicate that page or track is not playing.
+				SOLO_rec_page->locator = 0;
+
+				// Advance its locators once, moving them from 0 to 1, indicating activity
+				advance_page_locators( SOLO_rec_page );
+
+				return;
+			}
+			#endif
 		}
-		#endif
 
 		// PAGE PRESELECTION
 		// Preselect pages as appropriate in every bank ..supports variable page lengths.
