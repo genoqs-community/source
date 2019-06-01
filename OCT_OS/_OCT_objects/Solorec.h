@@ -797,6 +797,7 @@ void breakSoloRecordingMeasureHold(){
 		SOLO_has_rec = ON;
 		SOLO_rec_measure_hold = OFF;
 		SOLO_rec_measure_hold_OTM = ON;
+		SOLO_rec_has_MCC = ON;
 	}
 }
 

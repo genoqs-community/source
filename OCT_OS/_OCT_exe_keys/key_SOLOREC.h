@@ -500,11 +500,14 @@
 
 					// Free Flow!
 					GRID_CURSOR = SOLO_rec_page->pageNdx;
+					col = grid_col(GRID_CURSOR);
 					Rec_repository[col].measure_count = MATRIX_NROF_ROWS;
 					Rec_undo_repository[col].measure_count = MATRIX_NROF_ROWS;
 					create_next_freeflow_page_cluster(GRID_CURSOR);
 					SOLO_rec_freeflow_measures = count_to_last_page_in_grid_row(col) * MATRIX_NROF_ROWS;
 					reset_page_cluster( SOLO_rec_page );
+					SOLO_rec_freeflow = ON;
+					SOLO_rec_is_tape = ON;
 				}
 
 				MIX_TIMER = ON;
