@@ -5000,12 +5000,12 @@ void playChord( unsigned char scale,
 		chord->attr_VEL = in_velocity;
 
 		SOLO_scale_chords_modulations = modulationsOfChord( chord_id, SOLO_assistant_page );
-	}
 
-	TEMPO_TIMER = ON;
-	cyg_alarm_initialize(	alarm_hdl,
-							cyg_current_time() + (TIMEOUT_VALUE / 2),
-							0 );
+		TEMPO_TIMER = ON;
+		cyg_alarm_initialize(	alarm_hdl,
+								cyg_current_time() + (TIMEOUT_VALUE / 2),
+								0 );
+	}
 }
 
 unsigned char pitchToChordId( unsigned char in_pitch ){
