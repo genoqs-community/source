@@ -314,16 +314,8 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 	unsigned char	target_col		=	0;
 	int				offset_TTC		=	current_TTC;
 
-	if ( G_MIDI_timestamp > G_TT_external_latency_offset ){
-		offset_TTC = current_TTC;
-		offset_TTC -= G_TT_external_latency_offset;
-
-		#ifdef FEATURE_SOLO_REC
-		if ( G_MIDI_timestamp <= 16 && SOLO_rec_quantize_first_beat == ON && offset_TTC <= 0 ){
-			offset_TTC = 1; // NOTE at first 1/16th has a STA > 0
-		}
-		#endif
-	}
+	offset_TTC = current_TTC;
+	offset_TTC -= G_TT_external_latency_offset;
 
 	// Only work on the current page.
 	Pagestruct* target_page 		= &Page_repository[GRID_CURSOR];
@@ -587,6 +579,19 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  				if ( (G_run_bit == ON) && (G_track_rec_bit == ON) ) {
 
  					unsigned char target_row = row;
+
+					#ifdef FEATURE_SOLO_REC
+					if ( SOLO_rec_measure_hold_OTM == ON &&
+						 SOLO_rec_quantize_first_beat == ON &&
+						 offset_TTC > STEP_DEF_START && // negative STA
+						 ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF && // Note ON
+						 ( target_page->Track[row]->attr_LOCATOR -1 ) == 15 ){ // last column
+
+						offset_TTC = STEP_MAX_START + 2; // NOTE at first 1/16th has a STA > 0
+					}
+					// ignore non-first note using G_MIDI_timestamp % (192 * 16)
+					#endif
+
  					// Compute the coordinates of the step to be activated
  					// Adjust the step start value according to current TTC. Logic: see book p.189
  					if ( offset_TTC <= STEP_DEF_START ) {
