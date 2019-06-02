@@ -431,7 +431,7 @@ void stop_solo_rec( unsigned char trim ){
 
 	flush_note_on_queue( &Page_repository[GRID_CURSOR], SOLO_midi_ch );
 
-	if ( SOLO_rec_rehearsal == OFF ){
+	if ( SOLO_rec_rehearsal == OFF && SOLO_rec_measure_hold == OFF ){
 		freeflowOff( trim );
 	}
 
