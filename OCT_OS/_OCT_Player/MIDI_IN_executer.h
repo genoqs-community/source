@@ -589,7 +589,11 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 
 						offset_TTC = STEP_MAX_START + 2; // NOTE at first 1/16th has a STA > 0
 					}
-					// ignore non-first note using G_MIDI_timestamp % (192 * 16)
+					else if ( SOLO_rec_measure_hold_OTM == ON &&
+						    ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){ // Note ON
+
+						SOLO_rec_measure_hold_OTM = OFF; // an earlier step has released the measure-hold
+					}
 					#endif
 
  					// Compute the coordinates of the step to be activated
