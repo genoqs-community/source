@@ -138,7 +138,7 @@ void play_MIDI_queue( unsigned int in_G_MIDI_timestamp ){
 		// Get the next event at current timestamp
 		queue_event = MIDI_queue_remove( in_G_MIDI_timestamp );
 
-		// d_iag_printf( "MIDI off event at ts:%d\n", G_MIDI_timestamp );
+//		 diag_printf( "MIDI off event at ts:%d - %d - %d\n", G_MIDI_timestamp, (validate_MIDIevent_NOTEOFF(queue_event) == NULL), queue_event->val2 );
 		// MIDIevent_print( off_event );
 
 		// No off events left, so move on.
@@ -262,7 +262,8 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 			// Don't advance the grid locator if measure hold is on
 			if ( SOLO_rec_measure_hold == ON &&
-				 SOLO_assistant_page->pageNdx != GRID_CURSOR // only the Arp plays on the assistant page
+				 SOLO_assistant_page->pageNdx != GRID_CURSOR && // only the Arp plays on the assistant page
+				 SEQUENCER_JUST_STARTED == OFF
 			){
 				// Send the ALL NOTES OFF message
 				send_ALL_NOTES_OFF();
@@ -276,7 +277,6 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 			if ( SOLO_rec_measure_hold_OTM == ON ){
 
-				SOLO_rec_measure_hold_OTM = OFF;
 				SOLO_rec_page->repeats_left = SOLO_rec_page->attr_STA;
 
 				stop_playing_page( SOLO_rec_page,	G_TTC_abs_value );
@@ -290,6 +290,8 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 				// Advance its locators once, moving them from 0 to 1, indicating activity
 				advance_page_locators( SOLO_rec_page );
+
+				SOLO_rec_measure_hold_OTM = OFF;
 
 				return;
 			}

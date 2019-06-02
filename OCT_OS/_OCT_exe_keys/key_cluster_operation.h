@@ -449,6 +449,7 @@ void stop_solo_rec( unsigned char trim ){
 	SOLO_rec_rehearsal				= OFF;
 	SOLO_scale_chords_arp_cursor 	= NOP;
 	SOLO_transpose_latch 			= OFF;
+	SOLO_rec_measure_hold_latch		= OFF;
 
 	if ( SOLO_scale_chords_program == ON ){
 		SOLO_rec_measure_hold = OFF;

@@ -171,8 +171,18 @@
 			case LEGATO:	length = def_TIMESTAMP_MAX;		break;
 			default:		length = start_offset + length;	break;
 		}
-		// diag_printf("len:%d\n", length);
+
+		#ifdef FEATURE_SOLO_REC
+		if ( SOLO_rec_measure_hold_latch == OFF ){
+
+			MIDI_OFF_build_new ( midiCH, pitch, length );
+		}
+		else {
+			SOLO_rec_measure_hold_latch = OFF;
+		}
+		#else
 		MIDI_OFF_build_new ( midiCH, pitch, length );
+		#endif
 
 
 

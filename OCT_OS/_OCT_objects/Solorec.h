@@ -58,6 +58,7 @@ signed char   SOLO_rec_transpose_octave			= OFF;
 signed char   SOLO_rec_transpose_prev_pitch		= 127;
 unsigned char SOLO_rec_measure_hold				= OFF;
 unsigned char SOLO_rec_measure_hold_OTM			= OFF;
+unsigned char SOLO_rec_measure_hold_latch		= OFF;
 unsigned char SOLO_rec_show_strum				= OFF;
 unsigned char SOLO_rec_strum_latch				= OFF;
 unsigned char SOLO_rec_bank						= OFF;
@@ -298,6 +299,7 @@ void exitSoloRec(){
 	SOLO_len_adjust						= OFF;
 	SOLO_rec_is_tape					= OFF;
 	SOLO_rec_MCC_enabled				= ON;
+	SOLO_rec_measure_hold_latch			= OFF;
 	SOLO_scale_chords = OFF;
 	SOLO_scale_chords_program = OFF;
 	SOLO_scale_chords_program_keys = OFF;

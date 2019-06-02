@@ -588,6 +588,8 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 						 ( target_page->Track[row]->attr_LOCATOR -1 ) == 15 ){ // last column
 
 						offset_TTC = STEP_MAX_START + 2; // NOTE at first 1/16th has a STA > 0
+						G_MIDI_timestamp = 0;
+						SOLO_rec_measure_hold_latch = ON;
 					}
 					else if ( SOLO_rec_measure_hold_OTM == ON &&
 						    ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){ // Note ON
