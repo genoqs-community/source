@@ -45,6 +45,12 @@
  */
 void G_midi_interpret_CONTROL( unsigned char midi_byte, unsigned char UART_ndx ){
 
+	#ifdef FEATURE_SOLO_REC
+	if ( G_zoom_level == zoomSOLOREC && SOLO_rec_MCC_enabled == OFF ){
+		return;
+	}
+	#endif
+
 	// If data byte was received without prior status byte, fill in the running status
 	// but only if the runnig status is valid..
 	if ( G_midi_controller_ndx == 0 ){
@@ -338,6 +344,12 @@ void G_midi_interpret_NOTE_ON( unsigned char midi_byte, unsigned char UART_ndx )
  * Data:	Two data bytes follow the Status. They are combined to a 14-bit value see above.
  */
 void G_midi_interpret_BENDER( unsigned char midi_byte, unsigned char UART_ndx ){
+
+	#ifdef FEATURE_SOLO_REC
+	if ( G_zoom_level == zoomSOLOREC && SOLO_rec_MCC_enabled == OFF ){
+		return;
+	}
+	#endif
 
 	// If data byte was received without prior status byte, fill in the running status
 	if ( G_midi_bender_ndx == 0 ){

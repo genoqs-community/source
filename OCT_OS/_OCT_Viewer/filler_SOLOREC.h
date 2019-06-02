@@ -838,6 +838,15 @@
 			break;
 	}
 
+	if ( SOLO_rec_MCC_enabled == ON ){
+
+		MIR_write_dot( KEY_MIXTGT_USR0,	MIR_GREEN);
+		MIR_write_dot( KEY_MIXTGT_USR0,	MIR_RED);
+	}
+	else {
+		MIR_write_dot( KEY_MIXTGT_USR0,	MIR_RED);
+	}
+
 	switch( G_clock_source ){
 
 		case EXT:

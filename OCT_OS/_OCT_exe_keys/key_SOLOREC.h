@@ -897,6 +897,9 @@
 			case KEY_MIXTGT_USR5:
 				latencyOffset = 5;// toggle 5
 				break;
+			case KEY_MIXTGT_USR0:
+				SOLO_rec_MCC_enabled ^= 1; // toggle MCC enabled
+				break;
 			default:
 			break;
 		}

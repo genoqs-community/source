@@ -64,6 +64,7 @@ unsigned char SOLO_rec_bank						= OFF;
 unsigned char SOLO_rec_rehearsal				= OFF;
 unsigned char SOLO_rec_track_preview			= SOLOPAGE;
 unsigned char SOLO_rec_has_MCC					= OFF;
+unsigned char SOLO_rec_MCC_enabled				= ON;
 unsigned char SOLO_undo_note					= NOP;
 unsigned char SOLO_undo_note_all				= OFF;
 unsigned char SOLO_undo_note_page_col			= NOP;
@@ -296,6 +297,7 @@ void exitSoloRec(){
 	SOLO_rec_strum_latch				= OFF;
 	SOLO_len_adjust						= OFF;
 	SOLO_rec_is_tape					= OFF;
+	SOLO_rec_MCC_enabled				= ON;
 	SOLO_scale_chords = OFF;
 	SOLO_scale_chords_program = OFF;
 	SOLO_scale_chords_program_keys = OFF;
