@@ -625,6 +625,9 @@
 		// Compute Step coordinates
 		unsigned char row = row_of( keyNdx );
 		unsigned char col = column_of( keyNdx );
+		unsigned char orig_row = row;
+		unsigned char orig_col = col;
+		signed char lead_pitch_offset;
 
 		if ( Step_get_status(target_page->Step[row][col], STEPSTAT_TOGGLE) == ON ){
 
@@ -633,16 +636,66 @@
 			}
 
 			Pagestruct* target_page = &Page_repository[GRID_CURSOR];
+
+			SOLO_undo_note = grid_ndx_from_key( keyNdx );
+			SOLO_undo_note_page_col = grid_col(target_page->pageNdx);
+			Notestruct* undoNote = Rec_undo_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
+			Notestruct* note = Rec_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
+
+			if ( is_pressed_key( KEY_MIXTGT_ATR )) {
+
+				if ( col == 0 && row == 0 ) return; // against the top left page edge
+
+				if ( col == 0 ) {
+					col = 15;
+					row--;
+				}
+				else {
+					col--;
+				}
+
+				if ( 9 - row >= target_page->attr_STA ){
+					return;
+				}
+
+				lead_pitch_offset = target_page->Track[orig_row]->lead_pitch_offset;
+				pivotStep(target_page->Step[row][col], note, lead_pitch_offset, STEP_MAX_START);
+				clearStepNote(target_page->Step[orig_row][orig_col]);
+				initNote(note); // clear the previous note
+				note = Rec_repository[SOLO_undo_note_page_col].Note[grid_ndx(row, col)];
+				stepToNote(target_page->Step[row][col], note);
+
+				return;
+			}
+			else if ( is_pressed_key( KEY_MIXTGT_VOL )) {
+
+				if ( col == 15 && row == 9 ) return; // against the bottom right page edge
+
+				if ( col == 15 ) {
+					col = 0;
+					row++;
+				}
+				else {
+					col++;
+				}
+
+				lead_pitch_offset = target_page->Track[orig_row]->lead_pitch_offset;
+				pivotStep(target_page->Step[row][col], note, lead_pitch_offset, STEP_MIN_START);
+				clearStepNote(target_page->Step[orig_row][orig_col]);
+				initNote(note); // clear the previous note
+				note = Rec_repository[SOLO_undo_note_page_col].Note[grid_ndx(row, col)];
+				stepToNote(target_page->Step[row][col], note);
+
+				return;
+			}
+
 			// Turns the step selection off
 			interpret_matrix_stepkey( row, col, target_page );
 
 			if ( SOLO_undo_note != NOP ){
 				SOLO_undo_note_all = ON;
 			}
-			SOLO_undo_note = grid_ndx_from_key( keyNdx );
-			SOLO_undo_note_page_col = grid_col(target_page->pageNdx);
-			Notestruct* undoNote = Rec_undo_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
-			Notestruct* note = Rec_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
+
 			copyNote(note, undoNote);
 			initNote(note);
 		}

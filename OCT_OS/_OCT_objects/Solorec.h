@@ -882,7 +882,6 @@ unsigned char pivotStep(
 		return FALSE;
 	}
 	else {
-
 		clearStepNote(pivot_step);
 		signed char mcc = pivot_step->attr_MCC;
 		noteToStep(target_note, pivot_step);

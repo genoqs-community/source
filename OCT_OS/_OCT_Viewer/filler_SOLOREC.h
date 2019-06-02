@@ -847,6 +847,18 @@
 		MIR_write_dot( KEY_MIXTGT_USR0,	MIR_RED);
 	}
 
+	if ( SOLO_rec_track_preview == SOLOPAGE && G_run_bit == ON && SOLO_has_rec == ON ){
+
+		if ( is_pressed_key( KEY_MIXTGT_ATR )) {
+			MIR_write_dot( LED_MIXTGT_ATR,	MIR_GREEN);
+		}
+		else if ( is_pressed_key( KEY_MIXTGT_VOL )) {
+			MIR_write_dot( LED_MIXTGT_VOL,	MIR_GREEN);
+		}
+		MIR_write_dot( LED_MIXTGT_ATR,	MIR_RED); // step nudge left
+		MIR_write_dot( LED_MIXTGT_VOL,	MIR_RED); // step nudge right
+	}
+
 	switch( G_clock_source ){
 
 		case EXT:
