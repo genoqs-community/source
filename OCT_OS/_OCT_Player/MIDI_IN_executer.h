@@ -582,12 +582,16 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 
 					#ifdef FEATURE_SOLO_REC
 					if ( SOLO_rec_measure_hold_OTM == ON &&
-						 SOLO_rec_quantize_first_beat == ON &&
+//						 SOLO_rec_quantize_first_beat == ON &&
 						 offset_TTC > STEP_DEF_START && // negative STA
 						 ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF && // Note ON
 						 ( target_page->Track[row]->attr_LOCATOR -1 ) == 15 ){ // last column
 
-						offset_TTC = STEP_MAX_START + 2; // NOTE at first 1/16th has a STA > 0
+						if ( SOLO_rec_quantize_first_beat == ON ){
+
+							offset_TTC = STEP_MAX_START + 2; // NOTE at first 1/16th has a STA > 0
+						}
+
 						G_MIDI_timestamp = 0;
 						SOLO_rec_measure_hold_latch = ON;
 					}
