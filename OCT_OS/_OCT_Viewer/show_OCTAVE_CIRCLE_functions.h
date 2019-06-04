@@ -526,7 +526,7 @@ void show_OCTAVE_CIRCLE_chord_tone_selection( Pagestruct* target_page ){
 			}
 		} // UP field for iterator
 
-		if ( SOLO_scale_chords_program == OFF ){ // show the pitch
+		if ( SOLO_scale_chords_program == OFF && TEMPO_TIMER == OFF ){ // show the pitch
 
 			switch (target_page->attr_PIT % OCTAVE) {
 				case 0:

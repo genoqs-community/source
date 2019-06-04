@@ -26,6 +26,8 @@ unsigned char SOLO_scale_chords_prev_palette_ndx = NOP;
 unsigned char SOLO_scale_chords_prev_on_ndx		= NOP;
 unsigned char SOLO_scale_chords_pitch_recall	= OFF;
 unsigned char SOLO_scale_chords_pitch_prev		= OFF;
+unsigned char SOLO_scale_chords_pitch_recall_octave	   = OFF;
+unsigned char SOLO_scale_chords_pitch_prev_octave      = OFF;
 unsigned int SOLO_scale_chords_pitch_recall_scaleLead  = OFF;
 unsigned int SOLO_scale_chords_pitch_prev_scaleLead    = OFF;
 unsigned int SOLO_scale_chords_pitch_recall_scaleNotes = OFF;
@@ -235,6 +237,9 @@ void enterSoloRec(){
 		SOLO_assistant_page->scaleLead[i]			= OFF;
 		SOLO_assistant_page->scaleLead[i]			= 1 << 11;  // this is equivalent to C
 	}
+	SOLO_scale_chords_pitch_recall_scaleLead = SOLO_assistant_page->scaleLead[ G_scale_ndx ];
+	SOLO_scale_chords_pitch_recall_scaleNotes = SOLO_assistant_page->scaleNotes[ G_scale_ndx ];
+	SOLO_scale_chords_pitch_recall = SOLO_assistant_page->attr_PIT;
 
 	CLEAR_BIT(SOLO_assistant_page->trackMutepattern, 0); // un-mute the Arp track
 	SOLO_has_scale = ON;

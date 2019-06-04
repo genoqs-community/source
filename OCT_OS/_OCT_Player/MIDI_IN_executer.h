@@ -582,7 +582,6 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 
 					#ifdef FEATURE_SOLO_REC
 					if ( SOLO_rec_measure_hold_OTM == ON &&
-//						 SOLO_rec_quantize_first_beat == ON &&
 						 offset_TTC > STEP_DEF_START && // negative STA
 						 ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF && // Note ON
 						 ( target_page->Track[row]->attr_LOCATOR -1 ) == 15 ){ // last column
@@ -705,6 +704,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 						else { // black tone recall key - note off
 
 							if ( PHRASE_TIMER == ON ){ // before 2s
+
 								// fast press
 								if ( SOLO_assistant_page->attr_PIT != SOLO_scale_chords_pitch_recall ||
 									 SOLO_assistant_page->scaleLead[ G_scale_ndx ] != SOLO_scale_chords_pitch_recall_scaleLead ||
@@ -712,12 +712,16 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 									){
 
 									SOLO_assistant_page->attr_PIT = SOLO_scale_chords_pitch_recall;
+									SOLO_scale_chords_octave = SOLO_scale_chords_pitch_recall_octave;
 									SOLO_assistant_page->scaleLead[ G_scale_ndx ] = SOLO_scale_chords_pitch_recall_scaleLead;
 									SOLO_assistant_page->scaleNotes[ G_scale_ndx ] = SOLO_scale_chords_pitch_recall_scaleNotes;
 								}
 								else {
+
 									SOLO_assistant_page->attr_PIT = SOLO_scale_chords_pitch_prev;
+									SOLO_scale_chords_octave = SOLO_scale_chords_pitch_prev_octave;
 									if ( SOLO_scale_chords_pitch_prev_scaleLead != OFF ){
+
 										SOLO_assistant_page->scaleLead[ G_scale_ndx ] = SOLO_scale_chords_pitch_prev_scaleLead;
 										SOLO_assistant_page->scaleNotes[ G_scale_ndx ] = SOLO_scale_chords_pitch_prev_scaleNotes;
 									}
@@ -727,9 +731,11 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 								SOLO_scale_chords_pitch_prev = SOLO_scale_chords_pitch_recall;
 								SOLO_scale_chords_pitch_prev_scaleLead = SOLO_scale_chords_pitch_recall_scaleLead;
 								SOLO_scale_chords_pitch_prev_scaleNotes = SOLO_scale_chords_pitch_recall_scaleNotes;
+								SOLO_scale_chords_pitch_prev_octave = SOLO_scale_chords_pitch_recall_octave;
 								SOLO_scale_chords_pitch_recall = SOLO_assistant_page->attr_PIT;
 								SOLO_scale_chords_pitch_recall_scaleLead = SOLO_assistant_page->scaleLead[ G_scale_ndx ];
 								SOLO_scale_chords_pitch_recall_scaleNotes = SOLO_assistant_page->scaleNotes[ G_scale_ndx ];
+								SOLO_scale_chords_pitch_recall_octave = SOLO_scale_chords_octave;
 							}
 						}
 						return;
