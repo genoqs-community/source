@@ -663,6 +663,10 @@
 				clearStepNote(target_page->Step[orig_row][orig_col]);
 				initNote(note); // clear the previous note
 				note = Rec_repository[SOLO_undo_note_page_col].Note[grid_ndx(row, col)];
+				// adjust LEN since we're moving back one column
+				target_page->Step[row][col]->attr_LEN = normalize(target_page->Step[row][col]->attr_LEN + STEP_DEF_LENGTH,
+																  STEP_MIN_LENGTH,
+																  STEP_MAX_LENGTH);
 				stepToNote(target_page->Step[row][col], note);
 
 				return;
@@ -682,7 +686,7 @@
 				lead_pitch_offset = target_page->Track[orig_row]->lead_pitch_offset;
 				pivotStep(target_page->Step[row][col], note, lead_pitch_offset, STEP_MIN_START);
 				clearStepNote(target_page->Step[orig_row][orig_col]);
-				initNote(note); // clear the previous note
+				initNote(note); // clear the next note
 				note = Rec_repository[SOLO_undo_note_page_col].Note[grid_ndx(row, col)];
 				stepToNote(target_page->Step[row][col], note);
 

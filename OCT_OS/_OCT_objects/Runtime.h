@@ -498,6 +498,7 @@ typedef struct pagestruct{
 typedef struct notestruct{
 
 	unsigned char	status;
+	unsigned char	event_data;
 	unsigned int 	chord_up;
 	unsigned short  chord_data;
 	  signed char	attr_VEL;

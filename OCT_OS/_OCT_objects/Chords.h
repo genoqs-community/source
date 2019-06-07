@@ -5035,8 +5035,7 @@ void record_chord_to_track( Pagestruct* target_page,
 							unsigned char target_col,
 							unsigned char target_start,
 							unsigned char in_pitch,
-							unsigned char in_velocity,
-							unsigned char midi_ch
+							unsigned char in_velocity
 						   ){
 
 	int i;
@@ -5049,7 +5048,7 @@ void record_chord_to_track( Pagestruct* target_page,
  	unsigned char programOctave = ( MIDDLE_C - OCTAVE ) + ( OCTAVE * SOLO_scale_chords_program_octave );
  	unsigned char isProgramKey = ( in_pitch >= programOctave && in_pitch < ( programOctave + OCTAVE ) );
 
- 	if ( isProgramKey ){
+ 	if ( isProgramKey && SOLO_scale_chords_program_keys ){
 
  		// palette chord
  		Chordstruct* chord = &Chord_palette_repository[in_pitch % OCTAVE];

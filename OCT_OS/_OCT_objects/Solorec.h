@@ -395,6 +395,7 @@ void copyTracks(Recstruct* src, Recstruct* dest){
 void copyNote(Notestruct* src, Notestruct* dest){
 
 	dest->status = src->status;
+	dest->event_data = src->event_data;
 	dest->chord_up = src->chord_up;
 	dest->chord_data = src->chord_data;
 	dest->attr_VEL = src->attr_VEL;
@@ -407,6 +408,7 @@ void copyNote(Notestruct* src, Notestruct* dest){
 void noteToStep(Notestruct* note, Stepstruct* step){
 
 	step->attr_STATUS = note->status;
+	step->event_data = note->event_data;
 	step->chord_up = note->chord_up;
 	step->chord_data = note->chord_data;
 	step->attr_VEL = note->attr_VEL;
@@ -419,6 +421,7 @@ void noteToStep(Notestruct* note, Stepstruct* step){
 void stepToNote(Stepstruct* step, Notestruct* note){
 
 	note->status = step->attr_STATUS;
+	note->event_data = step->event_data;
 	note->chord_up = step->chord_up;
 	note->chord_data = step->chord_data;
 	note->attr_VEL = step->attr_VEL;
@@ -852,7 +855,10 @@ void capture_note_event(
 	target_step->chord_data = ( SOLO_strum << 11 ) | ( target_step->chord_data & 0x7FF );
 
 	stepToNote(target_step, noteRec);
+
+//	diag_printf("cap r:%d c:%d l:%d off:%d\n", row, step_col, target_step->attr_LEN, target_step->attr_VEL);
 	if ( SOLO_rec_finalized == OFF ){
+//		diag_printf("undo\n");
 		copyNote(noteRec, Rec_undo_repository[col].Note[idx]); // undo
 	}
 
@@ -891,6 +897,7 @@ unsigned char pivotStep(
 	else {
 		clearStepNote(pivot_step);
 		signed char mcc = pivot_step->attr_MCC;
+//		diag_printf("N:%d %d S:%d %d\n", target_note->attr_LEN, target_note->attr_PIT, pivot_step->attr_LEN, pivot_step->attr_PIT);
 		noteToStep(target_note, pivot_step);
 		pivot_step->attr_STA = sta_offset;
 		pivot_step->attr_MCC = mcc; // save the original MCC back
@@ -970,6 +977,11 @@ unsigned char fineQuantizeStep(
 					sta_offset = STEP_MAX_START - ((8 - edge) - target_note->attr_STA);
 
 					if ( pivotStep(prev_step, target_note, prev_track_pitch, sta_offset) == TRUE ){
+
+						// adjust the LEN since we're moving one column back
+						prev_step->attr_LEN = normalize(prev_step->attr_LEN + STEP_DEF_LENGTH,
+														STEP_MIN_LENGTH,
+														STEP_MAX_LENGTH);
 
 						// the previous note was created so we need to update the totals
 						*total_len += prev_step->attr_LEN;

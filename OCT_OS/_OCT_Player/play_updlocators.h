@@ -105,6 +105,49 @@ void update_trackchain_HEAD( 	Pagestruct* target_page,
 
 
 
+// Sequential search, very slow
+Pagestruct* page_of_step( Pagestruct* target_page, Stepstruct* target_step ){
+
+	unsigned char row, col;
+	unsigned char this_ndx = first_page_in_cluster(target_page->pageNdx);
+
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
+
+			for ( col=0; col < MATRIX_NROF_COLUMNS; col++ ){
+
+				if ( target_step == target_page->Step[row][col] ){
+
+					return target_page;
+				}
+			}
+		}
+
+		this_ndx += 10;
+	}
+	return NULL;
+}
+
+
+
+unsigned char column_of_step( Pagestruct* target_page, Stepstruct* target_step, unsigned char row ){
+
+	unsigned char col=0;
+
+	for ( col=0; col < MATRIX_NROF_COLUMNS; col++ ){
+
+		if ( target_step == target_page->Step[row][col] ){
+			break;
+		}
+	}
+	return col;
+}
+
+
 
 // Take a page and a track pointer and return the row index of the given track
 unsigned char row_of_track( Pagestruct* target_page, Trackstruct* target_track ){

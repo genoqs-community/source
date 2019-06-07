@@ -602,6 +602,18 @@ void G_midi_insert_event( 	NOTEeventstruct* in_event,
 	// START
 	in_event->target_step->attr_STA = in_event->start;
 
+	#ifdef FEATURE_SOLO_REC
+	if ( G_zoom_level == zoomSOLOREC ){
+
+		Pagestruct* source_page = page_of_step(target_page, in_event->target_step);
+		if ( source_page == NULL ){
+			return;
+		}
+		unsigned char source_row = row_of_track(source_page, in_event->target_track);
+		unsigned char source_col = column_of_step(source_page, in_event->target_step, source_row);
+		capture_note_event(in_event->target_step, source_page, source_row, source_col);
+	}
+	#endif
 
 	// STATUS adjustment: turn on Step under the locator (adjusted by 1)
 	Step_set_status( in_event->target_step, STEPSTAT_TOGGLE, ON );
@@ -843,7 +855,10 @@ void record_note_to_track( 	Pagestruct* target_page,
 
 	#ifdef FEATURE_SOLO_REC
 	SOLO_undo_note_all = SOLO_rec_finalized;
-	capture_note_event(target_page->Step[row][target_col], target_page, row, target_col);
+
+	if ( in_velocity != OFF ){
+		capture_note_event(target_page->Step[row][target_col], target_page, row, target_col);
+	}
 	#endif
 }
 
