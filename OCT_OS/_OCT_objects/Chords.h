@@ -5072,9 +5072,6 @@ void record_chord_to_track( Pagestruct* target_page,
 							  (pitches[i] + pitch),
 							  in_velocity );
 
-		if ( in_velocity == OFF ){
-			break; // only send one note OFF
-		}
 	}
 }
 

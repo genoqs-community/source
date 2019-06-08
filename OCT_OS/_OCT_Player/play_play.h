@@ -1325,6 +1325,11 @@ Trackstruct* TTC_trigger_track( 	Pagestruct* target_page,
 		return target_track;
 	}
 	#endif
+	#ifdef FEATURE_SOLO_REC
+	if ( SOLO_rec_measure_hold_latch == ON ){
+		return target_track;
+	}
+	#endif
 	// Measure CPU load. If we hit the max load, set the CPU monitor to MIR_RED.
 	// The MIR_RED state will prevent any following tracks from being played.
 	// The CPU load value and the overload LEDs will be reset in cpu_load_reset() in kickSequencerThread().
