@@ -110,6 +110,7 @@ void initNote(Notestruct* note){
 	note->attr_STA = STEP_DEF_START;
 	note->attr_PIT = STEP_DEF_PITCH;
 	note->attr_LEN = STEP_DEF_LENGTH;
+	note->event_data = 0;
 	note->attr_MCC = 0;
 }
 
@@ -118,6 +119,7 @@ void clearStepNote(Stepstruct* step){ // don't clear MCC
 	step->attr_STATUS = OFF;
 	step->chord_up = 0;
 	step->chord_data = 0;
+	step->event_data = 0;
 	step->attr_VEL = STEP_DEF_VELOCITY;
 	step->attr_STA = STEP_DEF_START;
 	step->attr_PIT = STEP_DEF_PITCH;

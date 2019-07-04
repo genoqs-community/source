@@ -183,6 +183,9 @@
 				SOLO_rec_measure_hold_latch = OFF;
 			}
 		}
+		else {
+			MIDI_OFF_build_new ( midiCH, pitch, length );
+		}
 		#else
 		MIDI_OFF_build_new ( midiCH, pitch, length );
 		#endif
