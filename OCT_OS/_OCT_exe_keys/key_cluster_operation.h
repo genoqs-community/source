@@ -547,6 +547,10 @@ void reset_page_cluster( Pagestruct* temp_page ){
 	// PAGE PLAY from grid selection: each bank has at most one active page
 	for ( i=0; i < GRID_NROF_BANKS; i++ ){
 
+		if ( SOLO_page_play_along[ i ] != NOP ){
+			continue;
+		}
+
 		GRID_p_selection[ i ] = NULL;
 		GRID_p_preselection[ i ] = NULL;
 		GRID_p_clock_presel[ i ] = NULL;

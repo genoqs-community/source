@@ -731,7 +731,7 @@
 			SOLO_pos_in 				= NULL;
 			SOLO_pos_out 				= NULL;
 			SOLO_rec_has_MCC			= OFF;
-			SOLO_rec_track_preview		= SOLOPAGE;
+			SOLO_rec_track_preview		= SOLOGRID;
 			SOLO_rec_is_tape			= OFF;
 			G_measure_locator 			= OFF;
 			SOLO_rec_transpose			= OFF;
@@ -890,10 +890,14 @@
 					(( grid_row(SOLO_page_play_along[keyRow]) == keyRow ) && // a page in a play along row was pressed
 					( SOLO_page_play_along[keyRow] != heldNdx) // and - this page was not already the play along page
 				)){
+
 				SOLO_page_play_along[keyRow] = heldNdx;
-				if ( GRID_p_selection[ grid_row(heldNdx) ] != &Page_repository[heldNdx] ){
+
+				if ( GRID_p_selection[ keyRow ] != &Page_repository[heldNdx] ){
+
 					SOLO_page_play_along_toggle[keyRow] = heldNdx;
 				}
+
 				grid_select( &Page_repository[heldNdx], ON );
 			}
 			else {
@@ -914,7 +918,6 @@
 				}
 			}
 		}
-
 	}
 
 	// Fine tune quantize
