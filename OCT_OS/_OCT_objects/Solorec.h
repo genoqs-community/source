@@ -83,6 +83,7 @@ unsigned short SOLO_rec_measure_pos				= OFF;
 unsigned short SOLO_pos_marker_in				= OFF; // left cut -  SOLO_rec_measure_pos
 unsigned short SOLO_pos_marker_out				= OFF; // right cut - SOLO_rec_measure_pos
 unsigned char SOLO_orig_GRID_CURSOR				= NOP;
+unsigned char SOLO_orig_G_clock_source			= NOP;
 
 Pagestruct*   SOLO_pos_in						= NULL;
 Pagestruct*   SOLO_pos_out						= NULL;
@@ -216,14 +217,21 @@ void muteAssistantPage(){
 void enterSoloRec(){
 	int i;
 
+	SOLO_orig_G_clock_source = NOP;
+	if ( G_clock_source == EXT ){
+
+		SOLO_orig_G_clock_source = G_clock_source;
+		G_clock_source = OFF;
+	}
+
 	SOLO_orig_GRID_CURSOR = GRID_CURSOR;
 
 	if ( SOLO_has_scale == OFF ){
 
 		Page_copy(GRID_assistant_page, SOLO_assistant_page);
 		initAssistantPage();
-		SOLO_assistant_page->attr_PIT = OFF;
 	}
+	SOLO_assistant_page->attr_PIT = OFF;
 
 	if ( SOLO_rec_page == NULL ){
 
@@ -260,6 +268,13 @@ void exitSoloRec(){
 		reset_page_cluster( SOLO_rec_page );
 		SOLO_orig_GRID_CURSOR = SOLO_rec_page->pageNdx;
 	}
+
+	if ( SOLO_orig_G_clock_source != NOP ){
+
+		G_clock_source = SOLO_orig_G_clock_source;
+		SOLO_orig_G_clock_source = NOP;
+	}
+
 	// Reset most of the global variables
 	SOLO_quantize_fine_tune_center  	= 1;
 	SOLO_quantize_fine_tune_edge		= 9;
