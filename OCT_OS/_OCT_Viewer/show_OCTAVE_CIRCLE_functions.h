@@ -301,7 +301,7 @@ void show_OCTAVE_CIRCLE_chord_tone_selection( Pagestruct* target_page ){
 			}
 
 			// Display the chord modulations
-			if ( CHECK_BIT(SOLO_scale_chords_modulations, i) == OFF || SOLO_scale_chords_program_keys == ON ){
+			if ( CHECK_BIT(SOLO_scale_chords_modulations, i) == OFF || SOLO_scale_chords_program == ON ){
 
 				continue;
 			}

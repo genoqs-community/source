@@ -409,46 +409,49 @@
 //			}
 		}
 
-		// MATRIX
-		for (i=0; i < MAX_NROF_PAGES; i++) {
+		if (TEMPO_TIMER != ON && !( SOLO_scale_chords_program == ON && SOLO_scale_chords_palette_ndx != NOP )){
 
-			// Page has contents and is not one of the row zero
-			if (	(Page_repository[i].page_clear != ON)  &&	( grid_row(i) != 9 )){
-				// This is our Solo Recording cluster
-				if ( SOLO_rec_page != NULL && selected_page_cluster( i, SOLO_rec_page->pageNdx ) != NOP ){
-					// Page PLAYING - i.e. selected in GRID
-					if ( is_selected_in_GRID( &Page_repository[i] ) ){
+			// MATRIX
+			for (i=0; i < MAX_NROF_PAGES; i++) {
 
-						// Show it in GREEN
-						GRID_write_dot( i, MIR_GREEN );
+				// Page has contents and is not one of the row zero
+				if (	(Page_repository[i].page_clear != ON)  &&	( grid_row(i) != 9 )){
+					// This is our Solo Recording cluster
+					if ( SOLO_rec_page != NULL && selected_page_cluster( i, SOLO_rec_page->pageNdx ) != NOP ){
+						// Page PLAYING - i.e. selected in GRID
+						if ( is_selected_in_GRID( &Page_repository[i] ) ){
 
-						// Flash for Free Flow
-						if ( SOLO_rec_freeflow == ON ){
+							// Show it in GREEN
+							GRID_write_dot( i, MIR_GREEN );
+
+							// Flash for Free Flow
+							if ( SOLO_rec_freeflow == ON ){
+								GRID_write_dot( i, MIR_RED );
+								GRID_write_dot( i, MIR_BLINK );
+							}
+						}
+						else {
 							GRID_write_dot( i, MIR_RED );
-							GRID_write_dot( i, MIR_BLINK );
 						}
 					}
-					else {
-						GRID_write_dot( i, MIR_RED );
-					}
-				}
-				else if ( showing_page_notes == OFF ) {
+					else if ( showing_page_notes == OFF ) {
 
-					if ( SOLO_page_play_along[grid_row(i)] == i ){
-						GRID_write_dot( i, MIR_GREEN );
-						GRID_write_dot( i, MIR_BLINK );
+						if ( SOLO_page_play_along[grid_row(i)] == i ){
+							GRID_write_dot( i, MIR_GREEN );
+							GRID_write_dot( i, MIR_BLINK );
+						}
+						else {
+							// This is a muted page in the grid
+							GRID_write_dot( i, MIR_RED );
+						}
 					}
-					else {
-						// This is a muted page in the grid
-						GRID_write_dot( i, MIR_RED );
-					}
-				}
-			} // page_clear != ON
-		} // page iterator
+				} // page_clear != ON
+			} // page iterator
 
 
-		// Write Grid to MIR
-		MIR_write_GRID ();
+			// Write Grid to MIR
+			MIR_write_GRID ();
+		}
 	}
 
 
