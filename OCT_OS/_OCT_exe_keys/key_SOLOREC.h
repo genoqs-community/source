@@ -430,6 +430,11 @@
 	if ( SOLO_rec_page != NULL || SOLO_scale_chords_program == ON ){ // A record page cluster is selected
 
 		if ( keyNdx == KEY_PLAY1 ){
+
+			if ( SOLO_rec_freeflow == ON && SOLO_rec_measure_hold == OFF ){
+				return; // disable play for Freeflow, once measure hold is broken
+			}
+
 			if ( SOLO_scale_chords_program == ON && hasArpPattern( SOLO_scale_chords_palette_ndx ) == ON ){
 
 				SOLO_rec_rehearsal = ON;
@@ -828,6 +833,7 @@
 					SOLO_rec_page = &Page_repository[heldNdx];
 					GRID_CURSOR = SOLO_rec_page->pageNdx;
 					SOLO_rec_freeflow = ON;
+					SOLO_rec_measure_hold = ON;
 					SOLO_rec_is_tape = ON;
 					Rec_repository[heldCol].measure_count = MATRIX_NROF_ROWS;
 					Rec_undo_repository[heldCol].measure_count = MATRIX_NROF_ROWS;

@@ -80,7 +80,13 @@
 
 		// Rehearsal
 		if ( SOLO_rec_rehearsal == OFF && !( G_clock_source == EXT && G_track_rec_bit == OFF )){
-			MIR_write_dot( LED_PLAY1, MIR_RED );
+
+			if ( SOLO_rec_freeflow == OFF ){
+				MIR_write_dot( LED_PLAY1, MIR_RED );
+			}
+			else if ( SOLO_rec_measure_hold == ON ){ // in Freeflow don't show [PLAY] once measure hold is broken
+				MIR_write_dot( LED_PLAY1, MIR_RED );
+			}
 		}
 		else {
 			MIR_write_dot( LED_PLAY1, MIR_GREEN );
