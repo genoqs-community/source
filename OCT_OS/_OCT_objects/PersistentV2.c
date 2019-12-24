@@ -162,6 +162,7 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	targetGridPt->G_zoom_level |= G_MIDI_B_priority << 1 & 0x2;
 	targetGridPt->G_zoom_level |= G_initZoom << 2 & 0x4;
 	targetGridPt->G_zoom_level |= G_TT_external_latency_offset << 3 & 0x38;
+	targetGridPt->G_zoom_level |= G_LED_metronome << 6 & 0x40;
 
 	targetGridPt->GRID_scene = GRID_scene;		// Currently selected grid scene for play or storage
 
@@ -332,6 +333,7 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 	G_MIDI_B_priority = sourceGridPt->G_zoom_level >> 1 & 0x1; // shift the second bit
 	G_initZoom = sourceGridPt->G_zoom_level >> 2 & 0x1; // shift the third bit
 	G_TT_external_latency_offset = sourceGridPt->G_zoom_level >> 3 & 0x7;
+	G_LED_metronome = sourceGridPt->G_zoom_level >> 6 & 0x1;
 
 	GRID_scene = sourceGridPt->GRID_scene;		// Currently selected grid scene for play or storage
 	GRID_switch_mode = sourceGridPt->GRID_switch_mode;

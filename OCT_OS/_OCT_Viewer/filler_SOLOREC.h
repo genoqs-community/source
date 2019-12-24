@@ -97,10 +97,16 @@
 	if ( SOLO_rec_freeflow == ON ){
 
 		// Flash every 4 measures when in Free Flow recording
-		if ( (SOLO_rec_measure_pos % 4) == 0 && G_run_bit == ON ){
+		if ( G_run_bit == ON ){
 
-			MIR_write_dot( LED_CHAINMODE_4, MIR_RED );
-			MIR_write_dot( LED_CHAINMODE_4, MIR_BLINK );
+			if ( (SOLO_rec_measure_pos % 4) == 0 ){
+				MIR_write_dot( LED_CHAINMODE_4, MIR_RED );
+			}
+			if ( (SOLO_rec_measure_pos % 4) == 3 ){
+				MIR_write_dot( LED_CHAINMODE_4, MIR_RED   );
+				MIR_write_dot( LED_CHAINMODE_4, MIR_GREEN );
+				MIR_write_dot( LED_CHAINMODE_4, MIR_BLINK );
+			}
 		}
 		else {
 			MIR_write_dot( LED_CHAINMODE_4, MIR_RED   );
@@ -287,6 +293,34 @@
 				MIR_write_dot( i, MIR_GREEN );
 			}
 			MIR_write_dot( i, MIR_BLINK );
+		}
+	}
+	else if ( G_run_bit == ON && SOLO_rec_ending_flash != OFF && G_LED_metronome == ON ){
+
+		if ( (SOLO_rec_measure_pos % 4) == 0 ){ // 4
+			for (i=LED_QUANTIZE_FIRST + 3; i <= LED_QUANTIZE_HIGH; i++) {
+				MIR_write_dot( i, MIR_RED );
+			}
+			MIR_write_dot( LED_QUANTIZE_FIRST +3, MIR_BLINK );
+		}
+		else if ( (SOLO_rec_measure_pos % 4) == 3 ){ // 3
+			for (i=LED_QUANTIZE_FIRST + 5; i <= LED_QUANTIZE_HIGH; i++) {
+				MIR_write_dot( i, MIR_GREEN );
+			}
+			MIR_write_dot( LED_QUANTIZE_FIRST +4, MIR_RED );
+			MIR_write_dot( LED_QUANTIZE_FIRST +4, MIR_GREEN );
+			MIR_write_dot( LED_QUANTIZE_FIRST +4, MIR_BLINK );
+		}
+		else if ( (SOLO_rec_measure_pos % 4) == 2 ){ // 2
+			for (i=LED_QUANTIZE_FIRST + 6; i <= LED_QUANTIZE_HIGH; i++) {
+				MIR_write_dot( i, MIR_GREEN );
+			}
+			MIR_write_dot( LED_QUANTIZE_FIRST +5, MIR_GREEN );
+			MIR_write_dot( LED_QUANTIZE_FIRST +5, MIR_BLINK );
+		}
+		else { // 1
+			MIR_write_dot( LED_QUANTIZE_FIRST +6, MIR_GREEN );
+			MIR_write_dot( LED_QUANTIZE_FIRST +6, MIR_BLINK );
 		}
 	}
 	else {

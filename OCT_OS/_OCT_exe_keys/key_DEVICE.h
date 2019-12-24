@@ -74,6 +74,12 @@
 						G_midi_map_controller_mode ^= 1; // toggle
 						Flash_write_grid();
 					}
+					#ifdef FEATURE_SOLO_REC
+					else if ( keyNdx == KEY_QUANTIZE_HIGH ){
+						G_LED_metronome ^= 1; // toggle
+						Flash_write_grid();
+					}
+					#endif
 
 					unsigned char latencyOffset = 0;
 					switch (keyNdx) {

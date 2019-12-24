@@ -644,6 +644,7 @@ extern unsigned char G_MIDI_B_priority;
 extern unsigned char G_TT_external_latency_offset;
 extern unsigned char G_flashgridheadersonly_flag;
 extern unsigned char G_initZoom;
+extern unsigned char G_LED_metronome;
 
 // From init_memory.h
 extern Pagestruct* GRID_assistant_page;

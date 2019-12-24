@@ -489,10 +489,12 @@
 				SOLO_pos_marker_in = OFF;
 				SOLO_pos_marker_out = OFF;
 				SOLO_rec_finalized = OFF;
+				if ( SOLO_rec_has_MCC == ON && SOLO_rec_track_preview == SOLOMCC ){
+					SOLO_rec_track_preview = SOLOPAGE;
+				}
 				SOLO_rec_has_MCC = OFF;
 				SOLO_rec_measure_hold = ON;
 				SOLO_rec_rehearsal = OFF;
-				SOLO_rec_track_preview = SOLOPAGE;
 				// Clear the pages
 				clear_page_record_track_chain(SOLO_rec_page);
 

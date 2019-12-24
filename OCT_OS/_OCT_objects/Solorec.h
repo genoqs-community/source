@@ -217,6 +217,10 @@ void muteAssistantPage(){
 void enterSoloRec(){
 	int i;
 
+	G_measure_locator = OFF;
+	SOLO_rec_measure_count = OFF;
+	SOLO_rec_measure_pos = OFF;
+
 	SOLO_orig_G_clock_source = NOP;
 	if ( G_clock_source == EXT ){
 

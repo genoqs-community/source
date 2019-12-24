@@ -64,6 +64,16 @@
 					MIR_write_dot (LED_ZOOM_MAP, MIR_RED);
 					MIR_write_dot (LED_ZOOM_MAP, MIR_BLINK);
 				}
+
+				#ifdef FEATURE_SOLO_REC
+				// LED Metronome using Chord section
+				if ( G_LED_metronome == ON ){
+					MIR_write_dot (LED_QUANTIZE_HIGH, MIR_RED);
+				}
+				else {
+					MIR_write_dot (LED_QUANTIZE_HIGH, MIR_GREEN);
+				}
+				#endif
 		
 				// Show the RETURN key
 				MIR_write_dot( LED_RETURN,			MIR_GREEN);
