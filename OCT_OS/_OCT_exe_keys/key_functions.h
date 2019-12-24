@@ -918,6 +918,14 @@ void sequencer_RESET( unsigned char force_stop ){
 
 	unsigned char 	i 	= 0;
 
+	#ifdef FEATURE_SOLO_REC
+	if ( G_pause_bit == OFF ){
+		G_measure_locator = OFF;
+		SOLO_rec_measure_count = OFF;
+		SOLO_rec_measure_pos = OFF;
+	}
+	#endif
+
 	// Remove the pause	state for good;
 	G_pause_bit 	= OFF;
 

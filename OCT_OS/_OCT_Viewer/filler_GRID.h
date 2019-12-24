@@ -135,7 +135,7 @@
 
 	// Show the LED metronome in the Chord section
 	#ifdef FEATURE_SOLO_REC
-	if ( G_run_bit == ON && G_LED_metronome == ON ){
+	if ( (G_run_bit == ON || G_pause_bit == ON) && G_LED_metronome == ON ){
 
 		if ( (SOLO_rec_measure_pos % 4) == 0 ){ // 4
 			for (i=LED_QUANTIZE_FIRST + 3; i <= LED_QUANTIZE_HIGH; i++) {
