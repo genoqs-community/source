@@ -485,6 +485,7 @@
 
 				SOLO_edit_buffer_volatile ^= 1; // toggle
 				SOLO_has_rec = OFF;
+				SOLO_rec_legato = OFF;
 				freeflowOff(FALSE);
 				SOLO_pos_marker_in = OFF;
 				SOLO_pos_marker_out = OFF;
@@ -721,6 +722,7 @@
 		){
 
 			selected_page_cluster_clear(SOLO_rec_page->pageNdx);
+			SOLO_rec_legato				= OFF;
 			SOLO_normalize_vel	 		= OFF;
 			SOLO_normalize_len 			= OFF;
 			SOLO_rec_page 				= NULL;
@@ -737,8 +739,10 @@
 			SOLO_pos_marker_out 		= OFF;
 			SOLO_pos_in 				= NULL;
 			SOLO_pos_out 				= NULL;
+			if ( SOLO_rec_has_MCC == ON && SOLO_rec_track_preview == SOLOMCC ){
+				SOLO_rec_track_preview		= SOLOPAGE;
+			}
 			SOLO_rec_has_MCC			= OFF;
-			SOLO_rec_track_preview		= SOLOGRID;
 			SOLO_rec_is_tape			= OFF;
 			G_measure_locator 			= OFF;
 			SOLO_rec_transpose			= OFF;
