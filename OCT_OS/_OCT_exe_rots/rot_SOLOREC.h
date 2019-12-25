@@ -74,7 +74,7 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 				 Note_get_status( Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i], STEPSTAT_TOGGLE ) == ON
 			   ){ // an Arp step is pressed
 
-				modify_parameter(&SOLO_assistant_page->Step[0][i]->attr_LEN,
+				modify_parameter(&SOLO_assistant_page->Step[ARP_TRACK][i]->attr_LEN,
 								  LEGATO,
 								  STEP_MAX_LENGTH,
 								  direction,
@@ -87,6 +87,7 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 								  direction,
 								  OFF,
 								  FIXED);
+
 				return;
 			}
 		}
@@ -101,16 +102,19 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 							  OFF,
 							  FIXED);
 
-			modify_parameter(&SOLO_assistant_page->Track[0]->LEN_factor,
+			modify_parameter(&SOLO_assistant_page->Track[ARP_TRACK]->LEN_factor,
 							  1,
 							  TRACK_MAX_LENGTH,
 							  direction,
 							  OFF,
 							  FIXED);
+
 		}
 
 		// modify the chord pitch offset
 		if ( rotNdx == 2 && Chord_palette_repository[SOLO_scale_chords_palette_ndx].chord_id != NOP ){
+
+			MIDI_send( MIDI_CC, SOLO_midi_ch, 123, 0 ); // All Notes Off for this instrument
 
 			modify_parameter(&Chord_palette_repository[SOLO_scale_chords_palette_ndx].pitch,
 							  STEP_DEF_PITCH,
@@ -169,6 +173,8 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 	switch( rotNdx ){
 
 		case 10:
+			MIDI_send( MIDI_CC, SOLO_midi_ch, 123, 0 ); // All Notes Off for this instrument
+
 			// Set the MIDI Channel for solo recording
 			modify_parameter(&SOLO_midi_ch, TRACK_MIN_MIDICH, TRACK_MAX_MIDICH, direction, OFF, FIXED);
 			assign_solorec_track_midi_ch( SOLO_rec_page->pageNdx );

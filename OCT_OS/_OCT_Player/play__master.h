@@ -391,8 +391,9 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 
 			#ifdef FEATURE_SOLO_REC
-			if (( SOLO_rec_measure_hold == ON || SOLO_rec_measure_hold_OTM == ON ) &&
-				  SOLO_assistant_page->pageNdx != GRID_CURSOR // only the Arp plays on the assistant page
+			if ( SOLO_rec_page != NULL &&
+			   ( SOLO_rec_measure_hold == ON || SOLO_rec_measure_hold_OTM == ON ) &&
+				 SOLO_assistant_page->pageNdx != GRID_CURSOR // only the Arp plays on the assistant page
 			){
 
 				stop_playing_page( SOLO_rec_page,	G_TTC_abs_value );
@@ -469,6 +470,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		#ifdef FEATURE_SOLO_REC
 		// Solo Recording - Skip pages that are not selected to play along
 		if ( G_zoom_level == zoomSOLOREC ){
+
 			if (SOLO_page_play_along[i] == GRID_p_selection[i]->pageNdx || grid_row(SOLO_rec_page->pageNdx) == i ){
 
 				if ( SOLO_scale_chords_program == ON || GRID_CURSOR == SOLO_assistant_page->pageNdx /* Arp */ ){

@@ -295,7 +295,7 @@
 			MIR_write_dot( i, MIR_BLINK );
 		}
 	}
-	else if ( G_run_bit == ON && SOLO_rec_ending_flash != OFF && G_LED_metronome == ON ){
+	else if ( G_run_bit == ON && SOLO_rec_ending_flash != OFF && G_LED_metronome == ON && SOLO_scale_chords_program == OFF ){
 
 		if ( (SOLO_rec_measure_pos % 4) == 0 ){ // 4
 			for (i=LED_QUANTIZE_FIRST + 3; i <= LED_QUANTIZE_HIGH; i++) {
@@ -307,7 +307,6 @@
 			for (i=LED_QUANTIZE_FIRST + 5; i <= LED_QUANTIZE_HIGH; i++) {
 				MIR_write_dot( i, MIR_GREEN );
 			}
-			MIR_write_dot( LED_QUANTIZE_FIRST +4, MIR_RED );
 			MIR_write_dot( LED_QUANTIZE_FIRST +4, MIR_GREEN );
 			MIR_write_dot( LED_QUANTIZE_FIRST +4, MIR_BLINK );
 		}
@@ -610,27 +609,40 @@
 	if ( G_run_bit == ON ){
 
 		// Show the row zero measure position
-		if ( SOLO_rec_track_preview == SOLOGRID && GRID_CURSOR != SOLO_assistant_page->pageNdx /* Arp */ ){
+		if ( SOLO_rec_track_preview == SOLOGRID ){
 
-			// - and end of recording
-			// measure hold
+			if ( GRID_CURSOR != SOLO_assistant_page->pageNdx /* !Arp */ ){
+				// - and end of recording
+				// measure hold
 
-			unsigned int min = 20;
-			unsigned int max = 119;
-			unsigned int result = 0;
+				unsigned int min = 20;
+				unsigned int max = 119;
+				unsigned int result = 0;
 
-			// Show the row zero measure count for the pressed page
-			for( i=min; i <= max; i+=11 ){
-				result = (i - 9) / 11;
+				// Show the row zero measure count for the pressed page
+				for( i=min; i <= max; i+=11 ){
+					result = (i - 9) / 11;
 
-				if ( SOLO_rec_page != NULL && result == G_measure_locator ){ // Show current measure
+					if ( SOLO_rec_page != NULL && result == G_measure_locator ){ // Show current measure
 
-					MIR_write_dot( i, MIR_GREEN );
-					MIR_write_dot( i, MIR_BLINK );
+						MIR_write_dot( i, MIR_GREEN );
+						MIR_write_dot( i, MIR_BLINK );
+					}
+					else if ( result <= GRID_p_selection[SOLO_rec_bank]->attr_STA ) {
+						MIR_write_dot( i, MIR_RED );
+					}
 				}
-				else if ( result <= GRID_p_selection[SOLO_rec_bank]->attr_STA ) {
-					MIR_write_dot( i, MIR_RED );
-				}
+			}
+			else if ( SOLO_scale_chords == ON )
+			{
+				// Chord tone select
+				show_OCTAVE_CIRCLE_chord_tone_selection( SOLO_assistant_page );
+				show_OCTAVE_CIRCLE_chord_octave_transpose_selection( SOLO_scale_chords_octave );
+			}
+			show_SCALE_SELECTOR_scale_selection( SOLO_assistant_page );
+
+			if ( SOLO_scale_chords_program_keys == ON ){
+				MIR_write_dot (LED_PROGRAM, MIR_GREEN);
 			}
 		}
 

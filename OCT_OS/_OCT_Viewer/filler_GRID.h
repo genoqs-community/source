@@ -147,7 +147,6 @@
 			for (i=LED_QUANTIZE_FIRST + 5; i <= LED_QUANTIZE_HIGH; i++) {
 				MIR_write_dot( i, MIR_GREEN );
 			}
-			MIR_write_dot( LED_QUANTIZE_FIRST +4, MIR_RED );
 			MIR_write_dot( LED_QUANTIZE_FIRST +4, MIR_GREEN );
 			MIR_write_dot( LED_QUANTIZE_FIRST +4, MIR_BLINK );
 		}

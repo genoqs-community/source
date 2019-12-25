@@ -5142,7 +5142,7 @@ void playNotesInChord( unsigned char in_channel,
 			 );
 }
 
-void copyArpToSteps(Chordstruct* chord){
+void copyArpToSteps(Chordstruct* chord, unsigned char in_velocity){
 	unsigned char i;
 
 	SOLO_last_chord = chord;
@@ -5151,10 +5151,16 @@ void copyArpToSteps(Chordstruct* chord){
 	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
 
 		noteToStep(chord->Arp[i], SOLO_assistant_page->Step[ARP_TRACK][i]);
+
+		if ( in_velocity != NOP ){
+			SOLO_assistant_page->Step[ARP_TRACK][i]->attr_VEL = in_velocity;
+		}
+
 		if ( Note_get_status( chord->Arp[i], STEPSTAT_SKIP ) == ON ){
 			SOLO_assistant_page->attr_LEN = i;
 		}
 	}
+
 	SOLO_assistant_page->Track[ARP_TRACK]->LEN_factor = chord->attr_LEN;
 	SOLO_assistant_page->Track[ARP_TRACK]->attr_MCH = SOLO_midi_ch;
 }
@@ -5162,7 +5168,6 @@ void copyArpToSteps(Chordstruct* chord){
 void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsigned char in_channel, unsigned char play){
 
 	int i;
-	unsigned char trim = SOLO_rec_freeflow_trim;
 	Chordstruct* chord = &Chord_palette_repository[palette_ndx];
 
 	if ( SOLO_scale_chords_prev_palette_ndx != palette_ndx ){
@@ -5185,21 +5190,13 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 
 				if ( SOLO_scale_chords_prev_on_ndx == palette_ndx ){ // key released
 
-					if ( G_track_rec_bit == OFF ){ // we are not recording
-
-						if ( SOLO_scale_chords_program == ON || SOLO_assistant_page->pageNdx == GRID_CURSOR ){
-
-							stop_solo_rec(OFF);
-							SOLO_rec_freeflow_trim = trim;
-						}
-					}
 					SOLO_scale_chords_arp_cursor = NOP;
 				}
 				SOLO_scale_chords_prev_on_ndx = palette_ndx;
 			}
 			else { // key pressed
 
-				copyArpToSteps(chord);
+				copyArpToSteps(chord, in_velocity);
 				SOLO_scale_chords_prev_on_ndx = palette_ndx;
 
 				if ( G_run_bit == OFF || SOLO_scale_chords_program == ON ){
@@ -5218,10 +5215,6 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 					}
 					else {
 
-						if ( G_track_rec_bit == OFF ){
-
-							SOLO_assistant_page->locator = 0;
-						}
 						SOLO_scale_chords_arp_cursor = 0;
 					}
 				}

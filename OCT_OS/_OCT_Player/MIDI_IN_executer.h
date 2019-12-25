@@ -352,7 +352,12 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 
 						if ( PHRASE_TIMER == ON ){ // before 2s
 
-							if ( SOLO_scale_chords_program_armed == ON ){
+							// the Arp is playing so turn it off
+							if ( G_run_bit == ON && GRID_CURSOR == SOLO_assistant_page->pageNdx && SOLO_scale_chords_program_keys ){
+
+								stop_solo_rec(OFF);
+							}
+							else if ( SOLO_scale_chords_program_armed == ON ){
 
 								SOLO_scale_chords_program_armed = OFF;
 							}

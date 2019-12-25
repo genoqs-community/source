@@ -126,7 +126,6 @@
 		}
 
 		// LENGTH
-
 		// Apply LEN factor to the step length
 		temp 	= (	( ( target_page->Step[phys_row][locator-1]->attr_LEN
 					// Dice - flow shape length
