@@ -355,7 +355,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 							// the Arp is playing so turn it off
 							if ( G_run_bit == ON && GRID_CURSOR == SOLO_assistant_page->pageNdx && SOLO_scale_chords_program_keys ){
 
-								stop_solo_rec(OFF);
+								stop_solo_rec(OFF, OFF);
 							}
 							else if ( SOLO_scale_chords_program_armed == ON ){
 
@@ -1292,6 +1292,45 @@ void midi_PGMCH_execute( unsigned char midi_byte, unsigned char UART_ndx ){
 #ifdef NEMO
 	return;
 #endif
+
+	#ifdef FEATURE_SOLO_REC
+	// - DOUBLE CLICK DOWN TO SILENCE ALL MACHINES -
+	// D O U B L E - C L I C K  C O N S T R U C T
+	// DOUBLE CLICK SCENARIO
+	// + 1 because the previous click was a higher value, i.e. down is pressed twice
+	if (	( DOUBLE_CLICK_TARGET == 1000 + midi_byte + 1 )
+		&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+
+		// Double click code
+		// ...
+
+		// TODO: if  midi_byte < prev
+		flush_note_on_queue( &Page_repository[GRID_CURSOR], SOLO_midi_ch );
+		send_ALL_NOTES_OFF();
+		send_RESET_ALL_CONTROLLERS();
+
+	} // end of double click scenario
+
+	// SINGLE CLICK SCENARIO
+	else if (DOUBLE_CLICK_TARGET == 0) {
+
+			DOUBLE_CLICK_TARGET = 1000 + midi_byte;
+			DOUBLE_CLICK_TIMER = ON;
+			// Start the Double click Alarm
+			cyg_alarm_initialize(
+					doubleClickAlarm_hdl,
+					cyg_current_time() + (DOUBLE_CLICK_ALARM_TIME * 4), // extra time because this is a foot controller
+					DOUBLE_CLICK_ALARM_TIME * 2 );
+
+		// Single click code
+		// ...
+
+
+	}
+//		if ( G_zoom_level == zoomSOLOREC ){
+				//diag_printf("b:%d\n", midi_byte);
+	//}
+	#endif
 
 	// Only act when REC bit is on..
 	if ( GRID_assistant_page->REC_bit == OFF ) return;

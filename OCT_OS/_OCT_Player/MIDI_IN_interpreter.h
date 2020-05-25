@@ -401,6 +401,11 @@ void G_midi_interpret_BENDER( unsigned char midi_byte, unsigned char UART_ndx ){
  */
 void G_midi_interpret_PRESSURE( unsigned char midi_byte, unsigned char UART_ndx ){
 
+	#ifdef FEATURE_SOLO_REC
+	if ( G_zoom_level == zoomSOLOREC && SOLO_rec_MCC_enabled == OFF ){
+		return;
+	}
+	#endif
 	// If data byte was received without prior status byte, fill in the running status
 	if ( G_midi_pressure_ndx == 0 ){
 

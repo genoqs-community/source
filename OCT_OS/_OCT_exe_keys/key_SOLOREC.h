@@ -118,7 +118,7 @@
 		     GRID_CURSOR == SOLO_assistant_page->pageNdx /* Arp */ )
 		   ){
 
-			stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON );
+			stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON, ON );
 		}
 		else {
 			send_ALL_NOTES_OFF();
@@ -435,6 +435,8 @@
 				return; // disable play for Freeflow, once measure hold is broken
 			}
 
+			SOLO_rec_track_preview = SOLOPAGE;
+
 			if ( SOLO_scale_chords_program == ON && hasArpPattern( SOLO_scale_chords_palette_ndx ) == ON ){
 
 				SOLO_rec_rehearsal = ON;
@@ -471,19 +473,23 @@
 				SOLO_rec_measure_hold = ON;
 			}
 
-			reset_page_cluster( SOLO_rec_page );
+			if ( G_run_bit == OFF ){
+				reset_page_cluster( SOLO_rec_page );
+			}
 
 			if ( G_track_rec_bit == ON && SOLO_rec_strum_latch == ON ){
 				SOLO_strum = 9; // reset
 			}
 
+			SOLO_rec_track_preview = SOLOPAGE;
+
 			playSoloRecCluster();
 		}
 
 		else if ( keyNdx == KEY_CHAINER && SOLO_scale_chords_program == OFF ){ // Clear recording
-			if ( G_run_bit == OFF && SOLO_has_rec == ON ){
+			if ( SOLO_has_rec == ON ){
 
-				SOLO_edit_buffer_volatile ^= 1; // toggle
+				SOLO_edit_buffer_volatile = ON; // toggle
 				SOLO_has_rec = OFF;
 				SOLO_rec_legato = OFF;
 				freeflowOff(FALSE);
@@ -560,7 +566,7 @@
 					undoAllNotes();
 				}
 			}
-			else if ( SOLO_edit_buffer_volatile == ON && G_run_bit == OFF ){
+			else if ( SOLO_edit_buffer_volatile == ON ){
 
 				if ( SOLO_undo_page_col != NOP ){
 
@@ -761,7 +767,7 @@
 			SOLO_pos_in = &Page_repository[GRID_CURSOR];
 		}
 		else {
-			stop_solo_rec(FALSE);
+			stop_solo_rec(FALSE, OFF);
 		}
 
 		ROT_INDEX = REC_MEASURES_SPLIT;

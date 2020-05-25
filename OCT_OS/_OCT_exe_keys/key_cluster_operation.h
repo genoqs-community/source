@@ -422,7 +422,7 @@ unsigned char selected_page_cluster( unsigned char grid_cursor, unsigned char ta
 	return NOP;
 }
 
-void stop_solo_rec( unsigned char trim ){
+void stop_solo_rec( unsigned char trim, unsigned char stop ){
 
 	if ( SOLO_pos_marker_in != OFF ){
 		SOLO_pos_marker_out = SOLO_rec_measure_pos;
@@ -437,10 +437,19 @@ void stop_solo_rec( unsigned char trim ){
 
 	saveOrUndoTranspose();
 
-	sequencer_STOP( true );
-	sequencer_RESET( false );
-	// Reset all locators in assistant page
-	set_page_locators( SOLO_assistant_page, 0, 0 );
+	if (stop){
+		sequencer_STOP( true );
+		sequencer_RESET( false );
+		// Reset all locators in assistant page
+		set_page_locators( SOLO_assistant_page, 0, 0 );
+	} else {
+		play_MIDI_queue( G_MIDI_timestamp );
+		send_ALL_NOTES_OFF();
+		rebuild_undo_using_rec_notes();
+		if ( SOLO_rec_page ){
+			SOLO_edit_buffer_volatile = OFF;
+		}
+	}
 
 	SOLO_rec_finalized				= ON;
 	G_track_rec_bit 				= OFF;
@@ -450,6 +459,7 @@ void stop_solo_rec( unsigned char trim ){
 	SOLO_scale_chords_arp_cursor 	= NOP;
 	SOLO_transpose_latch 			= OFF;
 	SOLO_rec_measure_hold_latch		= OFF;
+	SOLO_rec_track_preview			= SOLOGRID;
 
 	if ( SOLO_scale_chords_program == ON ){
 		SOLO_rec_measure_hold = OFF;
@@ -457,7 +467,7 @@ void stop_solo_rec( unsigned char trim ){
 	}
 
 	// Reset the grid cursor for the recording page cluster
-	if ( SOLO_rec_page != NULL ){
+	if ( SOLO_rec_page != NULL && stop ){
 		reset_page_cluster( SOLO_rec_page );
 	}
 

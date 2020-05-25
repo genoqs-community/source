@@ -274,9 +274,9 @@ void compute_chain_presel( unsigned char target_bank ){
 					    (SOLO_rec_freeflow == ON && SOLO_rec_finalized == OFF))
 						)){
 
-						SOLO_rec_measure_pos--; // Move back one measure because we already incremented
-						stop_solo_rec(FALSE); // We have reached the end of the recording so stop
-						return;
+						//SOLO_rec_measure_pos--; // Move back one measure because we already incremented - (not needed for continuous rec)
+						stop_solo_rec(FALSE, OFF); // We have reached the end of the recording so stop
+						//return; - (not needed for continuous rec)
 					}
 
 					SOLO_rec_finalized = ON;

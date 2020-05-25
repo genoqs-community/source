@@ -917,6 +917,11 @@ void send_note_off_full_range( unsigned char channel, unsigned char pitch_segmen
 	}
 	// Play MIDI queue elements which are due just before current timestamp, including the above..
 	play_MIDI_queue( G_MIDI_timestamp );
+
+	send_ALL_NOTES_OFF();
+
+	// Possibly: send the ALL CONTROLLERS OFF message
+	send_RESET_ALL_CONTROLLERS();
 }
 
 

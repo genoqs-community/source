@@ -82,7 +82,7 @@ extern unsigned char 	last_page_in_cluster( unsigned char target_page );
 extern unsigned char 	has_empty_grid_row_ahead( unsigned char target_page );
 extern unsigned char 	first_page_in_cluster( unsigned char target_page );
 extern  void 			reset_page_cluster( Pagestruct* target_page );
-extern 	void 			stop_solo_rec( unsigned char trim );
+extern 	void 			stop_solo_rec( unsigned char trim, unsigned char stop );
 extern  void			copy_page_cluster_to_recording();
 extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
 extern	void 			align_measure_locators();
@@ -278,6 +278,7 @@ extern void 			PAGE_init(Pagestruct* target_page, pageid_t pageId, booln firstIn
 extern void 			MIDI_init();
 extern void 			NOTE_IN_init();
 extern void 			send_ALL_NOTES_OFF();
+extern void 			send_RESET_ALL_CONTROLLERS();
 extern unsigned short 	extract_current_scale( Pagestruct* target_page );
 extern void 			grid_select( Pagestruct* target_page, unsigned char target_status );
 extern void 			extract_scale_and_lead( Pagestruct* target_page );

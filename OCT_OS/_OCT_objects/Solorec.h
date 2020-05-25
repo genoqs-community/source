@@ -49,7 +49,7 @@ unsigned char SOLO_rec_is_tape					= OFF;
 unsigned char SOLO_rec_freeflow					= OFF; // This was renamed to Tape Recording in the manual
 unsigned char SOLO_rec_freeflow_trim			= OFF;
 unsigned char SOLO_rec_ending_flash				= ON;
-unsigned char SOLO_rec_continue_recording		= ON;
+unsigned char SOLO_rec_continue_recording		= OFF;
 unsigned char SOLO_rec_quantize_first_beat		= ON;
 unsigned char SOLO_rec_legato					= OFF;
 int 		 SOLO_transpose_row				   	= NOP;
@@ -65,9 +65,9 @@ unsigned char SOLO_rec_show_strum				= OFF;
 unsigned char SOLO_rec_strum_latch				= OFF;
 unsigned char SOLO_rec_bank						= OFF;
 unsigned char SOLO_rec_rehearsal				= OFF;
-unsigned char SOLO_rec_track_preview			= SOLOGRID;
+unsigned char SOLO_rec_track_preview			= SOLOPAGE;
 unsigned char SOLO_rec_has_MCC					= OFF;
-unsigned char SOLO_rec_MCC_enabled				= ON;
+unsigned char SOLO_rec_MCC_enabled				= OFF;
 unsigned char SOLO_undo_note					= NOP;
 unsigned char SOLO_undo_note_all				= OFF;
 unsigned char SOLO_undo_note_page_col			= NOP;
@@ -84,6 +84,7 @@ unsigned short SOLO_pos_marker_in				= OFF; // left cut -  SOLO_rec_measure_pos
 unsigned short SOLO_pos_marker_out				= OFF; // right cut - SOLO_rec_measure_pos
 unsigned char SOLO_orig_GRID_CURSOR				= NOP;
 unsigned char SOLO_orig_G_clock_source			= NOP;
+unsigned char SOLO_PGM_last 					= NOP;
 
 Pagestruct*   SOLO_pos_in						= NULL;
 Pagestruct*   SOLO_pos_out						= NULL;
@@ -520,6 +521,45 @@ void undoAllNotes(){
 	else {
 		SOLO_undo_note_all = OFF;
 		SOLO_rec_legato = OFF;
+		SOLO_has_rec = ON;
+		SOLO_rec_measure_hold = OFF;
+		SOLO_rec_finalized = ON;
+	}
+}
+
+void rebuild_undo_using_rec_notes(){
+	signed short this_ndx = first_page_in_cluster(SOLO_rec_page->pageNdx);
+	int i, col;
+	Notestruct* target_note;
+	Notestruct* undo_note;
+	Pagestruct* target_page;
+	Recstruct* rec;
+	unsigned char start_row = NOP;
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		target_page = &Page_repository[this_ndx];
+		col = grid_col(target_page->pageNdx);
+		rec = &Rec_undo_repository[ col ]; // undo
+		start_row = find_record_track_chain_start(target_page);
+
+		copyTracks(&Rec_repository[col], &Rec_undo_repository[col]);
+
+		for (i=0; i<MAX_NROF_PAGE_NOTES; i++){
+
+			if ( start_row != NOP && grid_row(i) < start_row ) continue;
+
+			// copy up from undo
+			target_note = Rec_repository[col].Note[i];
+			undo_note = Rec_undo_repository[col].Note[i];
+			copyNote(target_note, undo_note);
+		}
+
+		this_ndx += 10;
 	}
 }
 
@@ -830,7 +870,7 @@ void breakSoloRecordingMeasureHold(){
 		SOLO_has_rec = ON;
 		SOLO_rec_measure_hold = OFF;
 		SOLO_rec_measure_hold_OTM = ON;
-		SOLO_rec_has_MCC = ON;
+		//SOLO_rec_has_MCC = ON;
 	}
 }
 

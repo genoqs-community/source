@@ -70,9 +70,7 @@
 			}
 
 			// Clear recording
-			if ( G_run_bit == OFF ){
-				MIR_write_dot( LED_CHAINER, MIR_RED );
-			}
+			MIR_write_dot( LED_CHAINER, MIR_RED );
 		}
 	}
 
@@ -115,7 +113,7 @@
 	}
 
 	// Undo Edit buffer
-	if ( SOLO_edit_buffer_volatile == ON && G_run_bit == OFF ){
+	if ( SOLO_edit_buffer_volatile == ON ){
 		MIR_write_dot( LED_EDIT_MASTER, MIR_RED );
 		MIR_write_dot( LED_EDIT_MASTER, MIR_GREEN );
 		if ( MIX_TIMER == ON ){
