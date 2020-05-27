@@ -112,6 +112,11 @@
 		}
 	}
 
+	if ( SOLO_rec_finalized == ON && has_space_to_copy_page_cluster_right( GRID_CURSOR ) ){
+		MIR_write_dot( LED_ZOOM_TRACK, MIR_RED );
+		MIR_write_dot( LED_ZOOM_TRACK, MIR_BLINK );
+	}
+
 	// Undo Edit buffer
 	if ( SOLO_edit_buffer_volatile == ON ){
 		MIR_write_dot( LED_EDIT_MASTER, MIR_RED );

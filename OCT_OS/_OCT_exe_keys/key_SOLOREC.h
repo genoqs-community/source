@@ -64,6 +64,10 @@
 		}
 	}
 
+	if ( keyNdx == KEY_ZOOM_TRACK && SOLO_rec_finalized == ON && has_space_to_copy_page_cluster_right( GRID_CURSOR ) ){
+		saveRec();
+	}
+
 	if ( keyNdx == KEY_PLAY4 ){ // values = OFF, ON, 1.2.3.
 		if ( ++SOLO_rec_ending_flash == QBIT ){
 			SOLO_rec_ending_flash = OFF;
@@ -906,8 +910,10 @@
 			if ((( SOLO_page_play_along[keyRow] == NOP && grid_row(SOLO_rec_page->pageNdx) != keyRow ))
 				|| // or
 					(( grid_row(SOLO_page_play_along[keyRow]) == keyRow ) && // a page in a play along row was pressed
-					( SOLO_page_play_along[keyRow] != heldNdx) // and - this page was not already the play along page
-				)){
+					( SOLO_page_play_along[keyRow] != heldNdx) && // and - this page was not already the play along page
+					( grid_row(SOLO_rec_page->pageNdx) != keyRow )
+				)
+				){
 
 				SOLO_page_play_along[keyRow] = heldNdx;
 

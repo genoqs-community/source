@@ -261,6 +261,16 @@ void enterSoloRec(){
 	G_zoom_level = zoomSOLOREC;
 }
 
+void saveRec(){
+	G_measure_locator = 0;
+	selected_page_cluster_copy(GRID_CURSOR + 20, GRID_CURSOR);
+	SOLO_rec_page = &Page_repository[GRID_CURSOR + 20];
+	reset_page_cluster( SOLO_rec_page );
+	GRID_p_clock_presel[ SOLO_rec_bank ] = SOLO_rec_page;
+	pageClusterEnterSoloRec(GRID_CURSOR + 20);
+	SOLO_page_play_along[grid_row(SOLO_rec_page->pageNdx)] = NOP;
+}
+
 void exitSoloRec(){
 	int i;
 	unsigned char row = NOP;
@@ -820,10 +830,12 @@ void pageClusterEnterSoloRec(unsigned char pageNdx){
 	unsigned char start, col;
 	Pagestruct* target_page;
 
-	GRID_bank_playmodes = 0;
-	GRID_bank_playmodes |= 1 << grid_row(pageNdx);
-	SOLO_rec_save_playmodes |= 1 << grid_row(pageNdx);
-	SOLO_rec_has_MCC = ON; // we don't know if there is MCC data so make the matrix view available
+	if ( G_run_bit == OFF ){
+		GRID_bank_playmodes = 0;
+		GRID_bank_playmodes |= 1 << grid_row(pageNdx);
+		SOLO_rec_save_playmodes |= 1 << grid_row(pageNdx);
+		SOLO_rec_has_MCC = ON; // we don't know if there is MCC data so make the matrix view available
+	}
 
 	// For each page in the record chain
 	// track forward

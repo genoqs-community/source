@@ -327,6 +327,12 @@ unsigned char has_empty_grid_row_ahead( unsigned char target_page ){
 	return this_ndx == last_page;
 }
 
+unsigned char has_space_to_copy_page_cluster_right ( unsigned char target_page ){
+	unsigned char start = grid_col(first_page_in_cluster(target_page));
+	unsigned char end = grid_col(last_page_in_cluster(target_page));
+	return end + 1 + (end - start) < 15;
+}
+
 unsigned char first_page_in_cluster( unsigned char target_page ){
 
 	Pagestruct* temp_page = &Page_repository[ target_page ];
