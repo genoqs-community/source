@@ -60,7 +60,7 @@ unsigned int 		G_scan_cycle = 0;
 unsigned char 	 	G_master_tempo 		= DEF_TEMPO; 	//120 default
 unsigned char		G_clock_source		= OFF;	// Can be any of OFF, INT(ernal), EXT(ernal)
 
-unsigned char G_midi_map_controller_mode = ON;
+unsigned char 		G_midi_map_controller_mode = ON;
 
 // G_master_blinker is used to control LED blinking activities
 unsigned char 		G_master_blinker		= 0;
@@ -72,6 +72,8 @@ unsigned char 		G_CPU_load_monitor		= MIR_GREEN;
 unsigned char		G_MIDI_B_priority		= FALSE;
 unsigned char		G_initZoom				= FALSE;
 unsigned char		G_LED_metronome			= FALSE;
+unsigned char		G_PGMCH_val				= NOP;
+unsigned char		G_prev_PGMCH_val		= NOP;
 
 // CPU load percentage, between 0-100%. We have overload at 100%.
 unsigned char  		G_cpu_load_perc = 0;

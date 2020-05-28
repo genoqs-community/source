@@ -65,6 +65,12 @@ void doubleClickAlarm_handler( cyg_handle_t alarm_handle, cyg_addrword_t data ){
 			// And disable the alarm
 			cyg_alarm_disable( doubleClickAlarm_hdl );
 
+			#ifdef FEATURE_SOLO_REC
+			if ( G_zoom_level == zoomSOLOREC ){
+				externalMIDI_PGMCH();
+			}
+			#endif
+
 			// Check if we need to send some PgmCh data from a page.
 			// This is set in the GRID PLAY mode - Klaus Gstettner input
 			if ( G_pgmch_pending_page != NULL ){

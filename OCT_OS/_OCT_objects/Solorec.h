@@ -271,6 +271,164 @@ void saveRec(){
 	SOLO_page_play_along[grid_row(SOLO_rec_page->pageNdx)] = NOP;
 }
 
+void clearRec(){
+	if ( SOLO_has_rec == ON ){
+
+		SOLO_edit_buffer_volatile = ON; // toggle
+		SOLO_has_rec = OFF;
+		SOLO_rec_legato = OFF;
+		freeflowOff(FALSE);
+		SOLO_pos_marker_in = OFF;
+		SOLO_pos_marker_out = OFF;
+		SOLO_rec_finalized = OFF;
+		if ( SOLO_rec_has_MCC == ON && SOLO_rec_track_preview == SOLOMCC ){
+			SOLO_rec_track_preview = SOLOPAGE;
+		}
+		SOLO_rec_has_MCC = OFF;
+		SOLO_rec_measure_hold = ON;
+		SOLO_rec_rehearsal = OFF;
+		// Clear the pages
+		clear_page_record_track_chain(SOLO_rec_page);
+
+		if ( SOLO_rec_is_tape == ON ){
+
+			selected_page_cluster_clear(SOLO_rec_page->pageNdx);
+			SOLO_has_rec 				= OFF;
+			Solorec_init();
+			unsigned char col = grid_col(GRID_CURSOR);
+
+			// Free Flow!
+			GRID_CURSOR = SOLO_rec_page->pageNdx;
+			col = grid_col(GRID_CURSOR);
+			Rec_repository[col].measure_count = MATRIX_NROF_ROWS;
+			Rec_undo_repository[col].measure_count = MATRIX_NROF_ROWS;
+			create_next_freeflow_page_cluster(GRID_CURSOR);
+			SOLO_rec_freeflow_measures = count_to_last_page_in_grid_row(col) * MATRIX_NROF_ROWS;
+			reset_page_cluster( SOLO_rec_page );
+			SOLO_rec_freeflow = ON;
+			SOLO_rec_is_tape = ON;
+		}
+
+		MIX_TIMER = ON;
+		// Setup alarm for the MIX TIMER
+		cyg_alarm_initialize(	alarm_hdl,
+								cyg_current_time() + TIMEOUT_VALUE,
+								0 );
+	}
+	// Clear the MCC data
+	else if ( G_run_bit == ON && SOLO_rec_has_MCC == ON ){
+		clear_page_record_mcc_data(SOLO_rec_page);
+		SOLO_rec_has_MCC = OFF;
+		SOLO_rec_track_preview = SOLOPAGE;
+	}
+}
+
+void externalMIDI_PGMCH(){
+
+	if ( G_prev_PGMCH_val == G_PGMCH_val + 1 ){ // down
+
+		if ( G_track_rec_bit ){ // running, stop
+			stop_solo_rec(FALSE, OFF);
+		}
+		else if ( SOLO_edit_buffer_volatile == OFF ){ // has undo - clear data
+			clearRec();
+		}
+		else {
+			undoRec(NOP); // undo
+		}
+	}
+
+	if ( G_prev_PGMCH_val == G_PGMCH_val - 1 && G_run_bit ){ // up
+		if ( G_track_rec_bit == OFF ){
+			if ( SOLO_rec_finalized == OFF ){
+				SOLO_rec_measure_hold = ON;
+			}
+			G_track_rec_bit = ON;
+			SOLO_rec_track_preview = SOLOPAGE;
+			SOLO_rec_rehearsal = OFF;
+		}
+		else if ( G_track_rec_bit ){ // recording, overdub / punch - toggle
+			if ( SOLO_rec_measure_hold == ON ){
+				SOLO_rec_rehearsal = ON;
+				G_track_rec_bit = OFF;
+			}
+			else {
+				SOLO_overdub ^= 1; // toggle
+			}
+		}
+		else{
+			SOLO_rec_track_preview = SOLOPAGE;
+			G_track_rec_bit = OFF;
+		}
+	}
+}
+
+void undoRec( unsigned char keyNdx ){
+	if ( SOLO_rec_transpose == ON ){
+
+		// DOUBLE CLICK SCENARIO
+		if (	( DOUBLE_CLICK_TARGET == keyNdx )
+			&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+
+			// Double click code
+			// ...
+			clearAllTranspose();
+
+		} // end of double click scenario
+
+		// SINGLE CLICK SCENARIO
+		else if (DOUBLE_CLICK_TARGET == 0) {
+
+			DOUBLE_CLICK_TARGET = KEY_EDIT_MASTER;
+			DOUBLE_CLICK_TIMER = ON;
+			// Start the Double click Alarm
+			cyg_alarm_initialize(
+					doubleClickAlarm_hdl,
+					cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+					DOUBLE_CLICK_ALARM_TIME );
+
+			undoAllNotes();
+		}
+	}
+	else if ( SOLO_edit_buffer_volatile == ON ){
+
+		if ( SOLO_undo_page_col != NOP ){
+
+			unsigned char j=0;
+			for (j = 0; j < SOLO_undo_page_len; j++) {
+
+				Page_repository[grid_ndx(SOLO_rec_bank, ( SOLO_undo_page_col + j ))].page_clear = OFF;
+				Rec_repository[SOLO_undo_page_col + j].measure_count = Rec_undo_repository[SOLO_undo_page_col + j].measure_count;
+			}
+			SOLO_rec_measure_count = SOLO_rec_undo_measure_count;
+			SOLO_rec_undo_measure_count = OFF;
+			SOLO_undo_page_col = NOP;
+			SOLO_undo_page_len = OFF;;
+		}
+		undoAllNotes();
+		SOLO_has_rec = ON;
+		SOLO_rec_finalized = ON;
+		reset_page_cluster( SOLO_rec_page );
+		SOLO_edit_buffer_volatile ^= 1; // toggle
+	}
+	else if ( SOLO_undo_note != NOP ){
+
+		Notestruct* undoNote = Rec_undo_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
+		Notestruct* note = Rec_repository[SOLO_undo_note_page_col].Note[SOLO_undo_note];
+		copyNote(undoNote, note);
+		Pagestruct* page = &Page_repository[grid_ndx(SOLO_rec_bank, SOLO_undo_note_page_col)];
+		Stepstruct* step = page->Step[grid_row(SOLO_undo_note)][grid_col(SOLO_undo_note)];
+		noteToStep(note, step);
+		Step_set_status( step, STEPSTAT_TOGGLE, ON );
+		SOLO_undo_note = NOP;
+		SOLO_undo_note_page_col = NOP;
+	}
+	else if ( SOLO_undo_note_all == ON ){
+
+		undoAllNotes();
+	}
+}
+
 void exitSoloRec(){
 	int i;
 	unsigned char row = NOP;
