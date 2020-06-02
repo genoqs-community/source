@@ -5185,7 +5185,7 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 
 	if ( hasArpPattern(palette_ndx) ){
 
-		if ( in_velocity == OFF && SOLO_scale_chords_program == OFF ){//&& SOLO_assistant_page->pageNdx != GRID_CURSOR ){
+		if ( in_velocity == OFF && SOLO_scale_chords_program == OFF ){
 
 				if ( SOLO_scale_chords_prev_on_ndx == palette_ndx ){ // key released
 					SOLO_scale_chords_arp_cursor = NOP;

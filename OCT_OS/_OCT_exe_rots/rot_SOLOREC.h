@@ -75,14 +75,14 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 			   ){ // an Arp step is pressed
 
 				modify_parameter(&SOLO_assistant_page->Step[ARP_TRACK][i]->attr_LEN,
-								  LEGATO,
+								  1,
 								  STEP_MAX_LENGTH,
 								  direction,
 								  OFF,
 								  FIXED);
 
 				modify_parameter(&Chord_palette_repository[SOLO_scale_chords_palette_ndx].Arp[i]->attr_LEN,
-								  LEGATO,
+								  1,
 								  STEP_MAX_LENGTH,
 								  direction,
 								  OFF,
