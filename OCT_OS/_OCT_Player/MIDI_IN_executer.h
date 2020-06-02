@@ -334,6 +334,17 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 
 	if ( SOLO_scale_chords == ON ){
 
+		if ( G_run_bit == ON &&
+		   ( SOLO_scale_chords_program == ON && !hasArpPattern( SOLO_scale_chords_palette_ndx )) // not an adjacent arp key
+		   ){
+
+			SOLO_scale_chords_prev_on_ndx = NOP;
+			stop_solo_rec(OFF, ON);
+			play_MIDI_queue( G_MIDI_timestamp );
+			send_ALL_NOTES_OFF();
+			return;
+		}
+
 		if ( SOLO_scale_chords_program_keys == OFF || ( !isProgramKey && SOLO_scale_chords_program_keys == ON )){
 
 			if ( SOLO_rec_transpose == OFF ){
@@ -355,7 +366,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 							// the Arp is playing so turn it off
 							if ( G_run_bit == ON && GRID_CURSOR == SOLO_assistant_page->pageNdx && SOLO_scale_chords_program_keys ){
 
-								stop_solo_rec(OFF, OFF);
+								stop_solo_rec(OFF, ON);
 							}
 							else if ( SOLO_scale_chords_program_armed == ON ){
 

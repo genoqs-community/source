@@ -466,6 +466,7 @@ void stop_solo_rec( unsigned char trim, unsigned char stop ){
 	SOLO_transpose_latch 			= OFF;
 	SOLO_rec_measure_hold_latch		= OFF;
 	SOLO_rec_track_preview			= SOLOGRID;
+	SOLO_scale_chords_prev_on_ndx	= NOP;
 
 	if ( SOLO_scale_chords_program == ON ){
 		SOLO_rec_measure_hold = OFF;

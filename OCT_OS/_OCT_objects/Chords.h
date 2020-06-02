@@ -4602,6 +4602,8 @@ void enterProgramEditor(){
 		SOLO_scale_chords_program_armed = ON;
 	}
 
+	SOLO_scale_chords_prev_on_ndx = NOP;
+	SOLO_scale_chords_prev_palette_ndx = NOP;
 	SOLO_scale_chords_program_keys = ON;
 
 	if ( G_run_bit == ON ) return;
@@ -5181,45 +5183,40 @@ void playChordstruct(unsigned char palette_ndx, unsigned char in_velocity, unsig
 	}
 	SOLO_scale_chords_prev_palette_ndx = palette_ndx;
 
-	// play the arp if there is one
-	for (i=0; i < MATRIX_NROF_COLUMNS; i++){
+	if ( hasArpPattern(palette_ndx) ){
 
-		if ( Note_get_status( chord->Arp[i], STEPSTAT_TOGGLE ) == ON ){ // has an arp
-
-			if ( in_velocity == OFF ){
+		if ( in_velocity == OFF && SOLO_scale_chords_program == OFF ){//&& SOLO_assistant_page->pageNdx != GRID_CURSOR ){
 
 				if ( SOLO_scale_chords_prev_on_ndx == palette_ndx ){ // key released
 					SOLO_scale_chords_arp_cursor = NOP;
+					return;
 				}
-				SOLO_scale_chords_prev_on_ndx = palette_ndx;
-			}
-			else { // key pressed
-
-				copyArpToSteps(chord, in_velocity);
-				SOLO_scale_chords_prev_on_ndx = palette_ndx;
-
-				if ( G_run_bit == OFF || SOLO_scale_chords_program == ON ){
-
-					assignLastNotes();
-					SOLO_rec_rehearsal = ON;
-					GRID_CURSOR = SOLO_assistant_page->pageNdx;
-				}
-				if ( play == ON ){
-
-					if ( G_run_bit == OFF ){
-
-						reset_page_cluster( SOLO_assistant_page );
-						GRID_CURSOR = SOLO_assistant_page->pageNdx;
-						sequencer_command_PLAY();
-					}
-					else {
-
-						SOLO_scale_chords_arp_cursor = 0;
-					}
-				}
-			}
-			return;
 		}
+
+		if ( SOLO_scale_chords_program == ON && SOLO_scale_chords_prev_on_ndx == palette_ndx ) return; // same key pressed again
+
+		copyArpToSteps(chord, in_velocity);
+		SOLO_scale_chords_prev_on_ndx = palette_ndx;
+
+		if ( play == ON ){
+
+			if ( G_run_bit == OFF ){
+
+				reset_page_cluster( SOLO_assistant_page );
+				SOLO_rec_rehearsal = ON;
+				GRID_CURSOR = SOLO_assistant_page->pageNdx;
+				if ( SOLO_scale_chords_program == ON ){
+					sequencer_command_PLAY();
+				}
+				else if ( SOLO_rec_page != NULL ){
+					reset_page_cluster( SOLO_rec_page );
+					playSoloRecCluster();
+				}
+			}
+
+			SOLO_scale_chords_arp_cursor = 0;
+		}
+		return;
 	}
 
 	if ( play == ON ){
