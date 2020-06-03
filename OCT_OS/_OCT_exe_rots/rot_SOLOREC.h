@@ -149,15 +149,11 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 		}
 	}
 
-	if ( G_run_bit == ON ){
-		return; // Don't allow parameter modification while the machine is playing
-	}
-
 	// Set the timer for the active editor
 	switch( rotNdx ){
 		// EDIT encoders
 		case 1: case 3: case ROT_7:
-		if ( SOLO_has_rec == OFF || G_run_bit == ON ){
+		if ( SOLO_has_rec == OFF ){
 			break;
 		}
 		default:
@@ -167,6 +163,10 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 			cyg_alarm_initialize(	alarm_hdl,
 									cyg_current_time() + TIMEOUT_VALUE / 3,
 									0 );
+	}
+
+	if ( G_run_bit == ON ){
+		return; // Don't allow parameter modification while the machine is playing
 	}
 
 	// Act according to rot index

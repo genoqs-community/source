@@ -653,14 +653,15 @@
 			  SOLO_rec_finalized == ON &&
 			  G_run_bit == ON &&
 			  SOLO_scale_chords_program == OFF &&
-			  G_track_rec_bit == OFF ){
+			  G_track_rec_bit == OFF &&
+			  SOLO_prev_stop == ON ){
 
 		if ( SOLO_pos_marker_in == OFF ){
 			SOLO_pos_marker_in = SOLO_rec_measure_pos;
 			SOLO_pos_in = &Page_repository[GRID_CURSOR];
 		}
 		else {
-			stop_solo_rec(FALSE, OFF);
+			stop_solo_rec(FALSE, ON);
 		}
 
 		ROT_INDEX = REC_MEASURES_SPLIT;

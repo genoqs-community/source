@@ -84,7 +84,7 @@ unsigned short SOLO_pos_marker_in				= OFF; // left cut -  SOLO_rec_measure_pos
 unsigned short SOLO_pos_marker_out				= OFF; // right cut - SOLO_rec_measure_pos
 unsigned char SOLO_orig_GRID_CURSOR				= NOP;
 unsigned char SOLO_orig_G_clock_source			= NOP;
-unsigned char SOLO_PGM_last 					= NOP;
+unsigned char SOLO_prev_stop					= ON;
 
 Pagestruct*   SOLO_pos_in						= NULL;
 Pagestruct*   SOLO_pos_out						= NULL;
@@ -262,6 +262,9 @@ void enterSoloRec(){
 }
 
 void saveRec(){
+
+	if (SOLO_rec_finalized == OFF ) return;
+
 	G_measure_locator = 0;
 	selected_page_cluster_copy(GRID_CURSOR + 20, GRID_CURSOR);
 	SOLO_rec_page = &Page_repository[GRID_CURSOR + 20];
@@ -324,6 +327,8 @@ void clearRec(){
 }
 
 void externalMIDI_PGMCH(){
+
+	if ( SOLO_rec_freeflow == ON ) return;
 
 	if ( G_prev_PGMCH_val == G_PGMCH_val + 1 ){ // down
 
@@ -976,6 +981,8 @@ void playSoloRecCluster(){
 			}
 		}
 	}
+
+	SOLO_prev_stop = SOLO_rec_finalized;
 
 	if ( G_clock_source != EXT ){
 		sequencer_command_PLAY();

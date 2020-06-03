@@ -165,7 +165,7 @@
 
 		if ( SOLO_has_rec == ON ){
 
-			if ( G_run_bit == OFF ){
+//			if ( G_run_bit == OFF ){
 				// Grid controls
 				if ( SOLO_scale_chords_program == OFF ){
 
@@ -175,7 +175,7 @@
 					MIR_write_dot( ROT_LEN, MIR_RED ); // LEN ADJUST
 					MIR_write_dot( ROT_LEN, MIR_GREEN );
 				}
-			}
+//			}
 
 			// Legato
 			if ( SOLO_rec_legato == ON ){
@@ -204,7 +204,7 @@
 			MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
 		}
 
-		if ( SOLO_rec_finalized == ON && G_run_bit == ON ){
+		if ( SOLO_rec_finalized == ON && G_run_bit == ON && SOLO_prev_stop == ON ){
 
 			// The recording is playing and not recording so enable split markers using POS
 			if ( G_run_bit == ON && G_track_rec_bit == OFF ){

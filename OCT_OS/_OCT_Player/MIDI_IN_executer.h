@@ -1305,54 +1305,55 @@ void midi_PGMCH_execute( unsigned char midi_byte, unsigned char UART_ndx ){
 #endif
 
 	#ifdef FEATURE_SOLO_REC
-	// - DOUBLE CLICK DOWN TO SILENCE ALL MACHINES -
-	// D O U B L E - C L I C K  C O N S T R U C T
-	// DOUBLE CLICK SCENARIO
-	// + 1 because the previous click was a higher value, i.e. down is pressed twice
-	if (	( DOUBLE_CLICK_TARGET == midi_byte + 1 )
-		&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+	if ( SOLO_rec_freeflow != ON ){
+		// - DOUBLE CLICK DOWN TO SILENCE ALL MACHINES -
+		// D O U B L E - C L I C K  C O N S T R U C T
+		// DOUBLE CLICK SCENARIO
+		// + 1 because the previous click was a higher value, i.e. down is pressed twice
+		if (	( DOUBLE_CLICK_TARGET == midi_byte + 1 )
+			&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
 
-		// Double click code
-		// ...
+			// Double click code
+			// ...
 
-		flush_note_on_queue( &Page_repository[GRID_CURSOR], SOLO_midi_ch );
-		send_ALL_NOTES_OFF();
-		send_RESET_ALL_CONTROLLERS();
+			flush_note_on_queue( &Page_repository[GRID_CURSOR], SOLO_midi_ch );
+			send_ALL_NOTES_OFF();
+			send_RESET_ALL_CONTROLLERS();
 
-		G_PGMCH_val = NOP;
+			G_PGMCH_val = NOP;
 
+		}
+		// - DOUBLE CLICK UP TO SAVE AND COPY RECORDING -
+		else if (	( DOUBLE_CLICK_TARGET == midi_byte - 1 )
+					&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY )
+					&&  ( G_zoom_level == zoomSOLOREC ) ) {
+
+			// Double click code
+			// ...
+			saveRec();
+
+			G_PGMCH_val = NOP;
+		}
+
+		// SINGLE CLICK SCENARIO
+		else if (DOUBLE_CLICK_TARGET == 0) {
+
+				DOUBLE_CLICK_TARGET = midi_byte;
+				DOUBLE_CLICK_TIMER = ON;
+				// Start the Double click Alarm
+				cyg_alarm_initialize(
+						doubleClickAlarm_hdl,
+						cyg_current_time() + (DOUBLE_CLICK_ALARM_TIME * 4), // extra time because this is a foot controller
+						DOUBLE_CLICK_ALARM_TIME * 2 );
+			// Single click code
+		}
+		G_prev_PGMCH_val = G_PGMCH_val;
+		G_PGMCH_val = midi_byte; // store the last click value
 	}
-	// - DOUBLE CLICK UP TO SAVE AND COPY RECORDING -
-	else if (	( DOUBLE_CLICK_TARGET == midi_byte - 1 )
-				&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY )
-				&&  ( G_zoom_level == zoomSOLOREC ) ) {
-
-		// Double click code
-		// ...
-		saveRec();
-
-		G_PGMCH_val = NOP;
-	}
-
-	// SINGLE CLICK SCENARIO
-	else if (DOUBLE_CLICK_TARGET == 0) {
-
-			DOUBLE_CLICK_TARGET = midi_byte;
-			DOUBLE_CLICK_TIMER = ON;
-			// Start the Double click Alarm
-			cyg_alarm_initialize(
-					doubleClickAlarm_hdl,
-					cyg_current_time() + (DOUBLE_CLICK_ALARM_TIME * 4), // extra time because this is a foot controller
-					DOUBLE_CLICK_ALARM_TIME * 2 );
-		// Single click code
-	}
-	G_prev_PGMCH_val = G_PGMCH_val;
-	G_PGMCH_val = midi_byte; // store the last click value
-	#endif
 
 	// Only act when REC bit is on..
 	if ( GRID_assistant_page->REC_bit == OFF ) return;
-
+	#endif
 
 	// Determine channel
 	channel = ( G_running_status_byte_IN_UART[ UART_ndx ] & 0x0F ) + 1;
