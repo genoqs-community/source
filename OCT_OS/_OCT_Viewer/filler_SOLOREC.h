@@ -270,9 +270,10 @@
 	unsigned short measures = (SOLO_rec_freeflow == OFF) ? SOLO_rec_measure_count : SOLO_rec_freeflow_measures;
 
 	// Flash the end of recording indicator using the CHORD LEDs
-	if ( SOLO_rec_ending_flash == ON && G_run_bit == ON &&
-		 SOLO_rec_measure_pos == measures &&
-		 measures > 1 ){ // Flash the last measure
+	if ( SOLO_rec_ending_flash == ON
+	     && G_run_bit == ON
+	     && SOLO_rec_measure_pos == measures
+	     && measures > 1 ){ // Flash the last measure
 
 		for (i=LED_QUANTIZE_FIRST; i <= LED_QUANTIZE_HIGH; i++) {
 			MIR_write_dot( i, MIR_RED );
@@ -280,10 +281,10 @@
 			MIR_write_dot( i, MIR_BLINK );
 		}
 	}
-	else if ( SOLO_rec_ending_flash > ON && G_run_bit == ON &&
-			  SOLO_rec_measure_pos > (measures - 3) &&
-			  measures > 3 ){ // 3 - 2 - 1 ... Flash the measure count down
-
+	else if ( SOLO_rec_ending_flash > ON
+			  && G_run_bit == ON
+			  && SOLO_rec_measure_pos > (measures - 3) // 3 - 2 - 1 ... Flash the measure count down
+			){
 		for (i=LED_QUANTIZE_FIRST; i <= LED_QUANTIZE_HIGH; i++) {
 			if ( SOLO_rec_measure_pos == measures - 2 ){
 				MIR_write_dot( i, MIR_RED );
@@ -298,7 +299,13 @@
 			MIR_write_dot( i, MIR_BLINK );
 		}
 	}
-	else if ( G_run_bit == ON && SOLO_rec_ending_flash != OFF && G_LED_metronome == ON && SOLO_scale_chords_program == OFF ){
+	else if ( G_run_bit == ON
+			  && SOLO_rec_ending_flash != OFF
+			  && G_LED_metronome == ON
+			  && SOLO_scale_chords_program == OFF
+			  && SOLO_rec_measure_hold == OFF
+			  && (SOLO_rec_measure_pos % 4 != 1 || G_measure_locator > 1)
+			){
 
 		if ( (SOLO_rec_measure_pos % 4) == 0 ){ // 4
 			for (i=LED_QUANTIZE_FIRST + 3; i <= LED_QUANTIZE_HIGH; i++) {
