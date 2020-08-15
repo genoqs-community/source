@@ -265,8 +265,6 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 				 SOLO_assistant_page->pageNdx != GRID_CURSOR && // only the Arp plays on the assistant page
 				 SEQUENCER_JUST_STARTED == OFF
 			){
-				// Send the ALL NOTES OFF message
-				send_ALL_NOTES_OFF();
 				G_MIDI_timestamp = 0;
 				G_measure_locator = OFF;
 				SOLO_rec_measure_pos = OFF;
