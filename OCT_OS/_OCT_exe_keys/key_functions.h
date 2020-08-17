@@ -1499,6 +1499,8 @@ void clear_page_record_track_chain(Pagestruct* target_page){
 	signed short this_ndx = first_page_in_cluster(target_page->pageNdx);
 	unsigned char page_col;
 
+	clearAllTranspose();
+
 	// For each page in the record chain
 	// track forward
 	while ( 	(this_ndx < MAX_NROF_PAGES) &&
