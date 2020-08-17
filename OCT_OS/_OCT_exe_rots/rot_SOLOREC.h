@@ -165,10 +165,6 @@ void rot_exec_SOLOREC( 	Pagestruct* target_page,
 									0 );
 	}
 
-	if ( G_run_bit == ON ){
-		return; // Don't allow parameter modification while the machine is playing
-	}
-
 	// Act according to rot index
 	switch( rotNdx ){
 
