@@ -79,6 +79,10 @@
 						G_LED_metronome ^= 1; // toggle
 						Flash_write_grid();
 					}
+					else if ( keyNdx == KEY_RECORD ){
+						G_PGMCH_foot_control ^= 1; // toggle
+						Flash_write_grid();
+					}
 					#endif
 
 					unsigned char latencyOffset = 0;

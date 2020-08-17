@@ -1305,7 +1305,7 @@ void midi_PGMCH_execute( unsigned char midi_byte, unsigned char UART_ndx ){
 #endif
 
 	#ifdef FEATURE_SOLO_REC
-	if ( SOLO_rec_freeflow != ON ){
+	if ( SOLO_rec_freeflow != ON && G_PGMCH_foot_control == ON ){
 		// - DOUBLE CLICK DOWN TO SILENCE ALL MACHINES -
 		// D O U B L E - C L I C K  C O N S T R U C T
 		// DOUBLE CLICK SCENARIO
@@ -1343,7 +1343,7 @@ void midi_PGMCH_execute( unsigned char midi_byte, unsigned char UART_ndx ){
 				// Start the Double click Alarm
 				cyg_alarm_initialize(
 						doubleClickAlarm_hdl,
-						cyg_current_time() + (DOUBLE_CLICK_ALARM_TIME * 4), // extra time because this is a foot controller
+						cyg_current_time() + (DOUBLE_CLICK_ALARM_TIME * 3), // extra time because this is a foot controller
 						DOUBLE_CLICK_ALARM_TIME * 2 );
 			// Single click code
 		}

@@ -114,6 +114,10 @@
 		}
 	}
 
+	if ( keyNdx == KEY_MUTE_MASTER ){
+		SOLO_mute ^= 1;
+	}
+
 	if ( keyNdx == KEY_STOP ){
 
 		if ( G_run_bit == ON &&

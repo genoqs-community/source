@@ -571,6 +571,9 @@ void play_row_ON( 	Pagestruct* 	target_page,
 			return;
 		}
 	}
+	if ( G_zoom_level == zoomSOLOREC && SOLO_mute == ON ){
+		return;
+	}
 	#else
 	// Is the actual Step playing ?? - This check is needed here and not earlier,
 	// ..otherwise the EFF pool will not be filled

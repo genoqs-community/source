@@ -85,6 +85,7 @@ unsigned short SOLO_pos_marker_out				= OFF; // right cut - SOLO_rec_measure_pos
 unsigned char SOLO_orig_GRID_CURSOR				= NOP;
 unsigned char SOLO_orig_G_clock_source			= NOP;
 unsigned char SOLO_prev_stop					= ON;
+unsigned char SOLO_mute							= OFF;
 
 Pagestruct*   SOLO_pos_in						= NULL;
 Pagestruct*   SOLO_pos_out						= NULL;
@@ -218,6 +219,7 @@ void muteAssistantPage(){
 void enterSoloRec(){
 	int i;
 
+	SOLO_mute = OFF;
 	G_measure_locator = OFF;
 	SOLO_rec_measure_count = OFF;
 	SOLO_rec_measure_pos = OFF;
@@ -331,7 +333,7 @@ void clearRec(){
 
 void externalMIDI_PGMCH(){
 
-	if ( SOLO_rec_freeflow == ON ) return;
+	if ( SOLO_rec_freeflow == ON || G_PGMCH_foot_control == OFF ) return;
 
 	if ( G_prev_PGMCH_val == G_PGMCH_val + 1 ){ // down
 
@@ -346,12 +348,13 @@ void externalMIDI_PGMCH(){
 		}
 	}
 
-	if ( G_prev_PGMCH_val == G_PGMCH_val - 1 && G_run_bit ){ // up
+	if (( G_prev_PGMCH_val == G_PGMCH_val - 1 ) && G_run_bit == ON ){ // up
 		if ( G_track_rec_bit == OFF ){
 			if ( SOLO_rec_finalized == OFF ){
 				SOLO_rec_measure_hold = ON;
 			}
 			G_track_rec_bit = ON;
+			SOLO_rec_rehearsal = OFF;
 			SOLO_rec_track_preview = SOLOPAGE;
 			SOLO_rec_rehearsal = OFF;
 		}
@@ -508,6 +511,7 @@ void exitSoloRec(){
 	SOLO_scale_chords_program_keys = OFF;
 	SOLO_scale_chords_program_armed = OFF;
 	SOLO_scale_chords_octave = OFF;
+	SOLO_mute = OFF;
 
 	for (i=0; i<MATRIX_NROF_ROWS; i++){
 		if ( SOLO_page_play_along_toggle[i] != NOP ){

@@ -146,6 +146,15 @@
 		}
 	}
 
+	if ( SOLO_mute == OFF ){
+		MIR_write_dot( LED_MUTE_MASTER, MIR_GREEN );
+		MIR_write_dot( LED_MUTE_MASTER, MIR_RED );
+	}
+	else {
+		MIR_write_dot( LED_MUTE_MASTER, MIR_RED );
+		MIR_write_dot( LED_MUTE_MASTER, MIR_BLINK );
+	}
+
 	// ESC
 	if ( G_run_bit == OFF ){
 		MIR_write_dot( LED_RETURN, MIR_GREEN );

@@ -72,6 +72,7 @@ unsigned char 		G_CPU_load_monitor		= MIR_GREEN;
 unsigned char		G_MIDI_B_priority		= FALSE;
 unsigned char		G_initZoom				= FALSE;
 unsigned char		G_LED_metronome			= FALSE;
+unsigned char		G_PGMCH_foot_control	= FALSE;
 unsigned char		G_PGMCH_val				= NOP;
 unsigned char		G_prev_PGMCH_val		= NOP;
 
