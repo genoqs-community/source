@@ -217,7 +217,7 @@
 					case 4:			MIR_write_dot( LED_NOTE_Cis, 		j );
 					case 3:			MIR_write_dot( LED_NOTE_C, 			j );
 					case 2:			MIR_write_dot( LED_SCALE_MOD, 		j );
-					case 1:			MIR_write_dot( LED_SCALE_SEL, 		j );
+					case 1:
 					case 0:			// Show nothing
 						break;
 
