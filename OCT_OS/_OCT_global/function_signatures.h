@@ -108,7 +108,7 @@ extern  void 			cut_freeflow_track_chain(Pagestruct* target_page, unsigned char 
 extern  void			shift_down_freeflow_track_chain(Pagestruct* target_page, unsigned char measures, unsigned char count);
 extern  void 			trim_freeflow_track_chain(Pagestruct* target_page, unsigned char measures);
 extern unsigned char 	find_record_track_chain_start(Pagestruct* target_page);
-extern unsigned char 	has_valid_record_cluster_format(Pagestruct* target_page);
+extern unsigned char 	has_valid_record_cluster_format(Pagestruct* target_page, unsigned char press);
 extern void 			sequencer_command_PLAY();
 extern unsigned int 	get_chord_projected( Stepstruct* target_step );
 extern void 			persistChordPalette();

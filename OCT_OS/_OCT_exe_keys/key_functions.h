@@ -1340,9 +1340,9 @@ void trim_freeflow_track_chain(Pagestruct* target_page, unsigned char measureNdx
 	Rec_undo_repository[grid_col(target_page->pageNdx)].measure_count = measureCnt;
 }
 
-unsigned char has_valid_record_cluster_format(Pagestruct* target_page){
+unsigned char has_valid_record_cluster_format(Pagestruct* target_page, unsigned char press){
 
-	if ( GRID_p_selection_cluster == OFF ){
+	if ( press == OFF && GRID_p_selection_cluster == OFF ){
 
 		return FALSE;
 	}

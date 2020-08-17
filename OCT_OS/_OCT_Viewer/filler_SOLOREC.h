@@ -519,6 +519,20 @@
 	unsigned char pressedNdx = grid_ndx_from_key(pressed); // the key that is pressed FIXME: short circuit
 	unsigned char selRec = selected_solo_rec_page( pressedNdx, pressedNdx );
 
+	if ( pressed != OFF
+		 && G_run_bit == OFF
+		 && has_valid_record_cluster_format( &Page_repository[ pressedNdx ], ON ) == ON
+		 && Page_repository[ pressedNdx ].page_clear == OFF
+		 && selRec == OFF
+		 && (
+			  SOLO_rec_page == NULL ||
+			  selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) == NOP
+		 )
+	   ){
+		MIR_write_dot( LED_PAUSE, MIR_GREEN );
+		MIR_write_dot( LED_PAUSE, MIR_BLINK );
+	}
+
 	if ( SOLO_scale_chords_program == OFF &&
 	   ( selRec == ON ||
 	   ( SOLO_rec_page != NULL &&

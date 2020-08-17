@@ -904,4 +904,24 @@
 			break;
 	}
 
+	if ( G_run_bit == OFF && keyNdx == KEY_PAUSE ){
 
+		unsigned int pressed = is_pressed_pagerange();
+		unsigned char pressedNdx = grid_ndx_from_key(pressed);
+		unsigned char selRec = selected_solo_rec_page( pressedNdx, pressedNdx );
+
+		if ( pressed != OFF
+			 && has_valid_record_cluster_format( &Page_repository[ pressedNdx ], ON ) == ON
+			 && Page_repository[ pressedNdx ].page_clear == OFF
+			 && selRec == OFF
+			 && (
+				  SOLO_rec_page == NULL ||
+				  selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) == NOP
+			 )
+		   ){
+
+			exitSoloRec();
+			pageClusterEnterSoloRec(pressedNdx);
+			enterSoloRec();
+		}
+	}

@@ -1533,7 +1533,7 @@
 				if ( G_pause_bit == OFF && G_run_bit == OFF ){
 					SOLO_rec_save_playmodes = GRID_bank_playmodes;
 					if ( GRID_p_selection_cluster == ON ){
-						if ( has_valid_record_cluster_format( &Page_repository[GRID_CURSOR] ) == ON ){
+						if ( has_valid_record_cluster_format( &Page_repository[GRID_CURSOR], OFF ) == ON ){
 							pageClusterEnterSoloRec( GRID_CURSOR );
 							enterSoloRec();
 						}
@@ -1570,7 +1570,7 @@
 				if ( G_run_bit == OFF ){
 					SOLO_rec_save_playmodes = GRID_bank_playmodes;
 					if ( GRID_p_selection_cluster == ON ){
-						if ( has_valid_record_cluster_format( &Page_repository[GRID_CURSOR] ) == ON ){
+						if ( has_valid_record_cluster_format( &Page_repository[GRID_CURSOR], OFF ) == ON ){
 							pageClusterEnterSoloRec( GRID_CURSOR );
 							enterSoloRec();
 						}

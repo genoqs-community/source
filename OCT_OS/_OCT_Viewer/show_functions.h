@@ -39,7 +39,7 @@ void page_cluster_selection( unsigned char grid_cursor ){
 	GRID_write_dot (this_ndx, MIR_BLINK);
 
 	if ( G_run_bit == OFF ){
-		is_solo_rec = has_valid_record_cluster_format( &Page_repository[ this_ndx ] );
+		is_solo_rec = has_valid_record_cluster_format( &Page_repository[ this_ndx ], OFF );
 	}
 
 	// RIGHT neighbor exists and has some content
