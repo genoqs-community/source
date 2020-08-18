@@ -1433,12 +1433,12 @@ void duplicate_record_track_chain(Pagestruct* target_page){
 	for ( row=start; row < (start + count); row++ ){
 
 		Track_hard_init( target_page->Track[row], target_page->Track[row]->trackId );
-		Track_copy( target_page, j++, target_page, row );
+		Track_copy( target_page, j, target_page, row );
 
-		target_page->scaleLead[row] = OFF;
-		target_page->scaleLead[row] = target_page->scaleLead[start - count];
-		target_page->scaleNotes[row] = target_page->scaleNotes[start - count];
+		assign_track_scale_value( track_scale_value( j, target_page->scaleLead ), row, target_page->scaleLead );
+		assign_track_scale_value( track_scale_value( j, target_page->scaleNotes ), row, target_page->scaleNotes );
 
+		j++;
 	}
 
 	target_page->attr_STA = target_page->attr_STA * 2;
