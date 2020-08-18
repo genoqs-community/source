@@ -1434,6 +1434,11 @@ void duplicate_record_track_chain(Pagestruct* target_page){
 
 		Track_hard_init( target_page->Track[row], target_page->Track[row]->trackId );
 		Track_copy( target_page, j++, target_page, row );
+
+		target_page->scaleLead[row] = OFF;
+		target_page->scaleLead[row] = target_page->scaleLead[start - count];
+		target_page->scaleNotes[row] = target_page->scaleNotes[start - count];
+
 	}
 
 	target_page->attr_STA = target_page->attr_STA * 2;
