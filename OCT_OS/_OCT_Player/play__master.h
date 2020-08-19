@@ -211,6 +211,12 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 	}
 	#endif
 
+	#ifdef FEATURE_SOLO_REC
+	if ( G_track_rec_bit_latch == ON ){
+		G_track_rec_bit_latch = OFF;
+		G_track_rec_bit = OFF;
+	}
+	#endif
 
 	// Play MIDI queue elements which are due at current timestamp
 	play_MIDI_queue( G_MIDI_timestamp );
@@ -273,21 +279,22 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 			G_measure_locator++;
 			SOLO_rec_measure_pos++;
 
+
 			if ( SOLO_rec_measure_hold_OTM == ON ){
 
 				SOLO_rec_page->repeats_left = SOLO_rec_page->attr_STA;
 
-				stop_playing_page( SOLO_rec_page,	G_TTC_abs_value );
+				stop_playing_page( &Page_repository[GRID_CURSOR],	G_TTC_abs_value );
 
 				// ..and set its locators to 0 for the next round of play.
-				set_track_locators( SOLO_rec_page, NULL, 0, 0 );
+				set_track_locators( &Page_repository[GRID_CURSOR], NULL, 0, 0 );
 
 				// Set the page locator to 0, just to be consistent with using
 				// a locator of 0 to indicate that page or track is not playing.
-				SOLO_rec_page->locator = 0;
+				Page_repository[GRID_CURSOR].locator = 0;
 
 				// Advance its locators once, moving them from 0 to 1, indicating activity
-				advance_page_locators( SOLO_rec_page );
+				advance_page_locators( &Page_repository[GRID_CURSOR] );
 
 				SOLO_rec_measure_hold_OTM = OFF;
 
@@ -394,17 +401,17 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 				 SOLO_assistant_page->pageNdx != GRID_CURSOR // only the Arp plays on the assistant page
 			){
 
-				stop_playing_page( SOLO_rec_page,	G_TTC_abs_value );
+				stop_playing_page( &Page_repository[GRID_CURSOR],	G_TTC_abs_value );
 
 				// ..and set its locators to 0 for the next round of play.
-				set_track_locators( SOLO_rec_page, NULL, 0, 0 );
+				set_track_locators( &Page_repository[GRID_CURSOR], NULL, 0, 0 );
 
 				// Set the page locator to 0, just to be consistent with using
 				// a locator of 0 to indicate that page or track is not playing.
-				SOLO_rec_page->locator = 0;
+				Page_repository[GRID_CURSOR].locator = 0;
 
 				// Advance its locators once, moving them from 0 to 1, indicating activity
-				advance_page_locators( SOLO_rec_page );
+				advance_page_locators( &Page_repository[GRID_CURSOR] );
 
 				return;
 			}

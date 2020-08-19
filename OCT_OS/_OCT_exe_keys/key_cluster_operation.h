@@ -448,17 +448,17 @@ void stop_solo_rec( unsigned char trim, unsigned char stop ){
 		sequencer_RESET( false );
 		// Reset all locators in assistant page
 		set_page_locators( SOLO_assistant_page, 0, 0 );
+		G_track_rec_bit = OFF;
 	} else {
 		play_MIDI_queue( G_MIDI_timestamp );
-		send_ALL_NOTES_OFF();
 		rebuild_undo_using_rec_notes();
 		if ( SOLO_rec_page ){
 			SOLO_edit_buffer_volatile = OFF;
 		}
+		G_track_rec_bit_latch = ON;
 	}
 
 	SOLO_rec_finalized				= ON;
-	G_track_rec_bit 				= OFF;
 	G_measure_locator				= OFF;
 	SOLO_rec_measure_pos 			= OFF;
 	SOLO_rec_rehearsal				= OFF;

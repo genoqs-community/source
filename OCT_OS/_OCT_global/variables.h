@@ -253,6 +253,7 @@ unsigned char G_align_bit		= OFF;
 #endif
 // This indicates the global track record mode.
 unsigned char G_track_rec_bit = OFF;
+unsigned char G_track_rec_bit_latch = OFF;
 
 // This is the midi counter flag
 unsigned char G_MIDI_tick_counter = 0;

@@ -619,11 +619,16 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 
  					// Compute the coordinates of the step to be activated
  					// Adjust the step start value according to current TTC. Logic: see book p.189
- 					if ( offset_TTC <= STEP_DEF_START ) {
+ 					if ( offset_TTC <= STEP_DEF_START
+						 #ifdef FEATURE_SOLO_REC
+ 					     && G_zoom_level != zoomSOLOREC
+						 #endif
+ 					   ){
 
  						// Place step in current column
  						target_col 		= target_page->Track[row]->attr_LOCATOR -1;
  						target_start 	= offset_TTC-1 + 6;
+
  					}
  					else {
 
@@ -650,6 +655,17 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  					}
 
 					#ifdef FEATURE_SOLO_REC
+					// Handle 1-shot recording end of loop
+					// don't wrap an extra note at the end of the loop when STA < 0
+					if ( G_zoom_level == zoomSOLOREC
+						 && SOLO_rec_continue_recording == OFF
+						 && target_col == 0
+						 && G_MIDI_timestamp > 11 // make sure the sequencer hasn't just started
+						 && target_page->pageNdx == first_page_in_cluster(GRID_CURSOR)
+						 && target_row == find_record_track_chain_start(target_page)
+					   ) return;
+
+
  					if ( SOLO_rec_transpose == OFF ){
 
 						unsigned char hasArp = hasArpPattern(in_pitch % OCTAVE);
