@@ -729,7 +729,12 @@ void record_note_to_track( 	Pagestruct* target_page,
 	signed short in_pitch_delta = 0;
 
 	#ifdef FEATURE_SOLO_REC
-	if ( SOLO_rec_measure_hold == ON ) return;
+	if ( SOLO_rec_measure_hold == ON ){
+		if ( target_col == 0 ){
+			row = find_record_track_chain_start(target_page); // chain start
+		}
+//		return;
+	}
 	#endif
 
 	// Validate the target column number and stop if column is strange

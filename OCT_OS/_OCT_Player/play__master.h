@@ -212,6 +212,18 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 	#endif
 
 	#ifdef FEATURE_SOLO_REC
+	if ( G_zoom_level == zoomSOLOREC
+		 && SOLO_rec_record_OTM == ON
+		 && G_global_locator == 16
+	   ){
+
+		SOLO_rec_record_OTM = OFF;
+		SOLO_rec_measure_hold_OTM = ON;
+		G_track_rec_bit = ON;
+		SOLO_rec_rehearsal = OFF;
+		G_MIDI_timestamp = 0;
+	}
+
 	if ( G_track_rec_bit_latch == ON ){
 		G_track_rec_bit_latch = OFF;
 		G_track_rec_bit = OFF;

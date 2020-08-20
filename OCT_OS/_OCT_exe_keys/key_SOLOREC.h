@@ -474,8 +474,16 @@
 				( G_track_rec_bit == OFF || SOLO_rec_rehearsal == ON ) &&
 				  SOLO_scale_chords_program == OFF ){ // Record
 
-			G_track_rec_bit = ON;
-			SOLO_rec_rehearsal = OFF;
+			SOLO_rec_record_OTM = OFF;
+
+			if ( is_pressed_key(KEY_PLAY1) )
+			{
+				SOLO_rec_record_OTM = ON;
+			}
+			else {
+				G_track_rec_bit = ON;
+				SOLO_rec_rehearsal = OFF;
+			}
 
 			if ( SOLO_has_rec == OFF ){
 				SOLO_rec_measure_hold = ON;

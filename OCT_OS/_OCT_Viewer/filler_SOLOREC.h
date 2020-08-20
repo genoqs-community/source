@@ -10,6 +10,9 @@
 			}
 			MIR_write_dot( LED_RECORD, MIR_BLINK );
 		}
+		else if ( SOLO_rec_record_OTM == ON ){
+			MIR_write_dot( LED_RECORD, MIR_BLINK );
+		}
 	}
 
 	if ( G_run_bit == ON && SOLO_rec_has_MCC == ON && SOLO_scale_chords_program == OFF ){

@@ -267,23 +267,30 @@ void compute_chain_presel( unsigned char target_bank ){
 
 				#ifdef FEATURE_SOLO_REC
 				if ( G_zoom_level == zoomSOLOREC ){
-					if ( SOLO_pos_marker_in != OFF ||
-						(G_track_rec_bit == ON &&
-						 target_bank == SOLO_rec_bank &&
-					   ((SOLO_rec_continue_recording == OFF && SOLO_rec_finalized == OFF) ||
-					    (SOLO_rec_freeflow == ON && SOLO_rec_finalized == OFF))
-						)){
 
-						//SOLO_rec_measure_pos--; // Move back one measure because we already incremented - (not needed for continuous rec)
-						stop_solo_rec(FALSE, OFF); // We have reached the end of the recording so stop
-						//return; - (not needed for continuous rec)
+					if ( SOLO_rec_record_OTM_latch == ON ){
+						SOLO_rec_record_OTM_latch = OFF;
 					}
+					else {
 
-					SOLO_rec_finalized = ON;
-					SOLO_transpose_GRID_CURSOR = Page_repository[this_ndx].pageNdx; // save the previous grid cursor
-					G_measure_locator = 1; // Reset the measure counter when the page cluster ends
-					SOLO_rec_measure_pos = 1;
-					Page_repository[next_ndx].repeats_left = Page_repository[next_ndx].attr_STA; // Reset page repeats
+						if ( SOLO_pos_marker_in != OFF ||
+							(G_track_rec_bit == ON &&
+							 target_bank == SOLO_rec_bank &&
+						   ((SOLO_rec_continue_recording == OFF && SOLO_rec_finalized == OFF) ||
+							(SOLO_rec_freeflow == ON && SOLO_rec_finalized == OFF))
+							)){
+
+							//SOLO_rec_measure_pos--; // Move back one measure because we already incremented - (not needed for continuous rec)
+							stop_solo_rec(FALSE, OFF); // We have reached the end of the recording so stop
+							//return; - (not needed for continuous rec)
+						}
+
+						SOLO_rec_finalized = ON;
+						SOLO_transpose_GRID_CURSOR = Page_repository[this_ndx].pageNdx; // save the previous grid cursor
+						G_measure_locator = 1; // Reset the measure counter when the page cluster ends
+						SOLO_rec_measure_pos = 1;
+						Page_repository[next_ndx].repeats_left = Page_repository[next_ndx].attr_STA; // Reset page repeats
+					}
 				}
 				#endif
 
