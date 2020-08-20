@@ -599,6 +599,9 @@ void reset_page_cluster( Pagestruct* temp_page ){
 		temp_page->trackSelection = 0;
 		set_page_locators( temp_page, 0, 0 );
 
+		set_track_locators( temp_page, NULL, 0, 0 );
+		temp_page->locator = 0;
+
 		m = MATRIX_NROF_ROWS - temp_page->attr_STA; // from the bottom up
 
 		for (n=9; n >= m; --n) { // each measure
