@@ -619,6 +619,8 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 							SOLO_rec_measure_hold_OTM = OFF; // an earlier step has released the measure-hold
 						}
 						else {
+							SOLO_rec_measure_hold_latch = OFF;
+							SOLO_rec_measure_hold = OFF;
 							force_note = ON;
 						}
 					}
