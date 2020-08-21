@@ -409,6 +409,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 			#ifdef FEATURE_SOLO_REC
 			if ( SOLO_rec_page != NULL &&
+				 G_zoom_level == zoomSOLOREC &&
 			   ( SOLO_rec_measure_hold == ON || SOLO_rec_measure_hold_OTM == ON ) &&
 				 SOLO_assistant_page->pageNdx != GRID_CURSOR // only the Arp plays on the assistant page
 			){

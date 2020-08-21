@@ -405,6 +405,13 @@ void play_row_ON( 	Pagestruct* 	target_page,
 {
 	Stepstruct*		stepPt 			= target_page->Step[phys_row][locator-1];
 
+	#ifdef FEATURE_SOLO_REC
+	if ( G_skip_step == stepPt ){
+		G_skip_step = NULL;
+		return;
+	}
+	#endif
+
 	if( 	( ( which_col == CURRENT )
 		&&	( stepPt->attr_STA < STEP_DEF_START ) )
 		||	( ( which_col == NEXT )

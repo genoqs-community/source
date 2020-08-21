@@ -813,6 +813,7 @@ void record_note_to_track( 	Pagestruct* target_page,
 						// Add the incoming pitch to the chord structure of the step
 						make_chord( target_page->Step[row][target_col],
 									target_page->Track[row]->attr_PIT, in_pitch );
+
 					}
 					else{
 
@@ -837,6 +838,11 @@ void record_note_to_track( 	Pagestruct* target_page,
 
 						// STATUS - Turn the Step on
 						Step_set_status( target_page->Step[row][target_col], STEPSTAT_TOGGLE, ON );
+
+						#ifdef FEATURE_SOLO_REC
+						if ( G_zoom_level == zoomSOLOREC && target_start > STEP_DEF_START )
+						G_skip_step = target_page->Step[row][target_col];
+						#endif
 					}
 					break;
 			}

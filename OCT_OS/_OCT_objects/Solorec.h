@@ -226,6 +226,7 @@ void enterSoloRec(){
 	G_measure_locator = OFF;
 	SOLO_rec_measure_count = OFF;
 	SOLO_rec_measure_pos = OFF;
+	G_skip_step = NULL;
 
 	SOLO_orig_G_clock_source = NOP;
 	if ( G_clock_source == EXT ){
@@ -516,6 +517,7 @@ void exitSoloRec(){
 	SOLO_scale_chords_program_armed = OFF;
 	SOLO_scale_chords_octave = OFF;
 	SOLO_mute = OFF;
+	G_skip_step = NULL;
 
 	for (i=0; i<MATRIX_NROF_ROWS; i++){
 		if ( SOLO_page_play_along_toggle[i] != NOP ){
@@ -993,6 +995,7 @@ void playSoloRecCluster(){
 		}
 	}
 
+	G_skip_step = NULL;
 	SOLO_prev_stop = SOLO_rec_finalized;
 
 	if ( G_clock_source != EXT ){
