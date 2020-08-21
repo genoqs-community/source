@@ -20,7 +20,7 @@
 		MIR_write_dot( LED_CHAINER, MIR_RED );
 	}
 
-	if ( SOLO_has_rec == OFF && SOLO_rec_freeflow == OFF ){
+	if ( SOLO_rec_freeflow == OFF ){
 		if ( SOLO_rec_continue_recording == ON ){
 			MIR_write_dot( LED_PLAY2, MIR_GREEN );
 		}

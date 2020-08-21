@@ -35,7 +35,7 @@
 		}
 	}
 
-	if ( SOLO_has_rec == OFF && SOLO_rec_freeflow == OFF ){
+	if ( SOLO_rec_freeflow == OFF ){
 		if ( keyNdx == KEY_PLAY2 ){ // ON = continue playing after the loop after recording
 			SOLO_rec_continue_recording ^= 1; // toggle
 		}

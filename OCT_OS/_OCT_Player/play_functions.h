@@ -282,6 +282,8 @@ void compute_chain_presel( unsigned char target_bank ){
 
 							//SOLO_rec_measure_pos--; // Move back one measure because we already incremented - (not needed for continuous rec)
 							stop_solo_rec(FALSE, OFF); // We have reached the end of the recording so stop
+							SOLO_rec_record_OTM = OFF;
+							SOLO_rec_rehearsal = ON;
 							//return; - (not needed for continuous rec)
 						}
 

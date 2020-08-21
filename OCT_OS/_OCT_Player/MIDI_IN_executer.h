@@ -622,6 +622,14 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 							SOLO_rec_measure_hold_latch = OFF;
 							SOLO_rec_measure_hold = OFF;
 							force_note = ON;
+
+							unsigned char i=0;
+							for ( i=0; i < MATRIX_NROF_COLUMNS; i++){
+								if ( Step_get_status( target_page->Step[row][i], STEPSTAT_TOGGLE ) == ON ){
+									SOLO_rec_measure_hold_OTM = OFF;
+									break;
+								}
+							}
 						}
 					}
 					#endif
