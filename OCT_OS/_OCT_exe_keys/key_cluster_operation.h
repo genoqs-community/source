@@ -469,6 +469,7 @@ void stop_solo_rec( unsigned char trim, unsigned char stop ){
 	SOLO_scale_chords_prev_on_ndx	= NOP;
 	G_skip_step = NULL;
 	SOLO_rec_CLOCKSTART_OTM			= OFF;
+	SOLO_rec_record_OTM				= OFF;
 
 	if ( SOLO_scale_chords_program == ON ){
 		SOLO_rec_measure_hold = OFF;

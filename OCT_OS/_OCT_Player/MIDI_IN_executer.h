@@ -663,7 +663,8 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 							#ifdef FEATURE_SOLO_REC
 							if ( SOLO_rec_measure_hold_OTM != ON || force_note == ON ){
 								target_row = row_of_track( target_page, target_page->Track[row]->chain_data[NEXT] );
-								if ( force_note == ON ){
+
+								if ( force_note == ON && Rec_repository[grid_col(GRID_CURSOR)].measure_count > 1 ){
 									target_row--; // late note at the end of the measure just as hold is released
 								}
 							}
@@ -680,11 +681,14 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 					if ( G_zoom_level == zoomSOLOREC
 						 && SOLO_rec_continue_recording == OFF
 						 && target_col == 0
-						 && G_MIDI_timestamp > 11 // make sure the sequencer hasn't just started
+						 && G_MIDI_timestamp >= 12 // make sure the sequencer hasn't just started
+						 && G_track_rec_bit_latch == ON
 						 && force_note == OFF
 						 && target_page->pageNdx == first_page_in_cluster(GRID_CURSOR)
 						 && target_row == find_record_track_chain_start(target_page)
-					   ) return;
+					   ){
+						return;
+					}
 
 
  					if ( SOLO_rec_transpose == OFF ){
