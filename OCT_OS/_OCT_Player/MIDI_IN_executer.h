@@ -597,6 +597,8 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  					unsigned char target_row = row;
 
 					#ifdef FEATURE_SOLO_REC
+ 					unsigned char force_note = OFF;
+
 					if ( SOLO_rec_measure_hold_OTM == ON &&
 						 offset_TTC > STEP_DEF_START && // negative STA
 						 ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF && // Note ON
@@ -613,7 +615,12 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 					else if ( SOLO_rec_measure_hold_OTM == ON &&
 						    ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){ // Note ON
 
-						SOLO_rec_measure_hold_OTM = OFF; // an earlier step has released the measure-hold
+						if ( offset_TTC > STEP_DEF_START ){
+							SOLO_rec_measure_hold_OTM = OFF; // an earlier step has released the measure-hold
+						}
+						else {
+							force_note = ON;
+						}
 					}
 					#endif
 
@@ -644,8 +651,11 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  						if ( target_col < target_page->Track[row]->attr_LOCATOR-1 ){
 
 							#ifdef FEATURE_SOLO_REC
-							if ( SOLO_rec_measure_hold_OTM != ON ){
+							if ( SOLO_rec_measure_hold_OTM != ON || force_note == ON ){
 								target_row = row_of_track( target_page, target_page->Track[row]->chain_data[NEXT] );
+								if ( force_note == ON ){
+									target_row--; // late note at the end of the measure just as hold is released
+								}
 							}
 							#else
 							// There was a wrap, lookup the next row to record
@@ -661,6 +671,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 						 && SOLO_rec_continue_recording == OFF
 						 && target_col == 0
 						 && G_MIDI_timestamp > 11 // make sure the sequencer hasn't just started
+						 && force_note == OFF
 						 && target_page->pageNdx == first_page_in_cluster(GRID_CURSOR)
 						 && target_row == find_record_track_chain_start(target_page)
 					   ) return;
