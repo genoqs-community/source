@@ -796,8 +796,18 @@ void sequencer_START() {
 				&&	MIDICLOCK_PASSTHROUGH == TRUE )
 		){
 
+		#ifdef FEATURE_SOLO_REC
+		if ( G_zoom_level == zoomSOLOREC && SOLO_rec_record_OTM == ON ){
+			SOLO_rec_CLOCKSTART_OTM = ON;
+		}
+		else {
+			// Start external device
+			MIDI_send( MIDI_CLOCK, MIDICLOCK_START, 0, 0);
+		}
+		#else
 		// Start external device
 		MIDI_send( MIDI_CLOCK, MIDICLOCK_START, 0, 0);
+		#endif
 	}
 
 	// Start the sequencer thread.

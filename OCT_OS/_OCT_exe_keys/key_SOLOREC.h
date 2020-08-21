@@ -476,7 +476,7 @@
 
 			SOLO_rec_record_OTM = OFF;
 
-			if ( is_pressed_key(KEY_PLAY1) )
+			if ( is_pressed_key(KEY_PLAY1) || G_run_bit == OFF )
 			{
 				SOLO_rec_record_OTM = ON;
 			}

@@ -467,6 +467,8 @@ void stop_solo_rec( unsigned char trim, unsigned char stop ){
 	SOLO_rec_measure_hold_latch		= OFF;
 //	SOLO_rec_track_preview			= SOLOGRID;
 	SOLO_scale_chords_prev_on_ndx	= NOP;
+	G_skip_step = NULL;
+	SOLO_rec_CLOCKSTART_OTM			= OFF;
 
 	if ( SOLO_scale_chords_program == ON ){
 		SOLO_rec_measure_hold = OFF;
@@ -545,6 +547,8 @@ void reset_page_cluster( Pagestruct* temp_page ){
 
 	// Reset the global locator
 	G_global_locator = 0;
+
+	SOLO_rec_CLOCKSTART_OTM = OFF;
 
 	this_ndx = temp_page->pageNdx;
 	prev_ndx = (this_ndx >= 10) ?  this_ndx - 10 : 255;

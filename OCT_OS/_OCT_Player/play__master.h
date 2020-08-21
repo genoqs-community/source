@@ -222,6 +222,12 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		G_track_rec_bit = ON;
 		SOLO_rec_rehearsal = OFF;
 		G_MIDI_timestamp = 0;
+
+		if ( SOLO_rec_CLOCKSTART_OTM == ON ){
+			SOLO_rec_CLOCKSTART_OTM = OFF;
+			// Start external device
+			MIDI_send( MIDI_CLOCK, MIDICLOCK_START, 0, 0);
+		}
 	}
 
 	if ( G_track_rec_bit_latch == ON ){

@@ -68,6 +68,7 @@ unsigned char SOLO_rec_rehearsal				= OFF;
 unsigned char SOLO_rec_rehearsal_OTM			= OFF;
 unsigned char SOLO_rec_record_OTM				= OFF;
 unsigned char SOLO_rec_record_OTM_latch			= OFF;
+unsigned char SOLO_rec_CLOCKSTART_OTM			= OFF;
 unsigned char SOLO_rec_track_preview			= SOLOPAGE;
 unsigned char SOLO_rec_has_MCC					= OFF;
 unsigned char SOLO_rec_MCC_enabled				= OFF;
@@ -227,6 +228,7 @@ void enterSoloRec(){
 	SOLO_rec_measure_count = OFF;
 	SOLO_rec_measure_pos = OFF;
 	G_skip_step = NULL;
+	SOLO_rec_CLOCKSTART_OTM = OFF;
 
 	SOLO_orig_G_clock_source = NOP;
 	if ( G_clock_source == EXT ){
@@ -359,11 +361,10 @@ void externalMIDI_PGMCH(){
 				SOLO_rec_measure_hold = ON;
 			}
 			G_track_rec_bit = ON;
-			SOLO_rec_rehearsal = OFF;
 			SOLO_rec_track_preview = SOLOPAGE;
 			SOLO_rec_rehearsal = OFF;
 		}
-		else if ( G_track_rec_bit ){ // recording, overdub / punch - toggle
+		else { // recording, overdub / punch - toggle
 			if ( SOLO_rec_measure_hold == ON ){
 				SOLO_rec_rehearsal = ON;
 				G_track_rec_bit = OFF;
@@ -371,10 +372,6 @@ void externalMIDI_PGMCH(){
 			else {
 				SOLO_overdub ^= 1; // toggle
 			}
-		}
-		else{
-			SOLO_rec_track_preview = SOLOPAGE;
-			G_track_rec_bit = OFF;
 		}
 	}
 }
@@ -518,6 +515,7 @@ void exitSoloRec(){
 	SOLO_scale_chords_octave = OFF;
 	SOLO_mute = OFF;
 	G_skip_step = NULL;
+	SOLO_rec_CLOCKSTART_OTM = OFF;
 
 	for (i=0; i<MATRIX_NROF_ROWS; i++){
 		if ( SOLO_page_play_along_toggle[i] != NOP ){
