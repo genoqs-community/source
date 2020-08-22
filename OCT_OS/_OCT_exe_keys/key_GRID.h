@@ -1539,6 +1539,7 @@
 						}
 					}
 					else {
+						Solorec_init();
 						enterSoloRec();
 					}
 				}
@@ -1576,6 +1577,7 @@
 						}
 					}
 					else {
+						Solorec_init();
 						enterSoloRec();
 					}
 				}

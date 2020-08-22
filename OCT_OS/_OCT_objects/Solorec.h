@@ -228,6 +228,7 @@ void enterSoloRec(){
 	SOLO_rec_measure_pos = OFF;
 	G_skip_step = NULL;
 	SOLO_rec_CLOCKSTART_OTM = OFF;
+	G_track_rec_bit = OFF;
 
 	SOLO_orig_G_clock_source = NOP;
 	if ( G_clock_source == EXT ){
@@ -505,7 +506,6 @@ void exitSoloRec(){
 	SOLO_rec_strum_latch				= OFF;
 	SOLO_len_adjust						= OFF;
 	SOLO_rec_is_tape					= OFF;
-	SOLO_rec_MCC_enabled				= ON;
 	SOLO_rec_measure_hold_latch			= OFF;
 	SOLO_scale_chords = OFF;
 	SOLO_scale_chords_program = OFF;
