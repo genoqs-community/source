@@ -484,8 +484,6 @@ void stop_solo_rec( unsigned char trim, unsigned char stop ){
 	if ( SOLO_pos_marker_in != OFF ){
 		cut_by_pos_markers();
 	}
-
-	SOLO_has_rec = ON;
 }
 
 void clear_pages_left( Pagestruct* temp_page ){

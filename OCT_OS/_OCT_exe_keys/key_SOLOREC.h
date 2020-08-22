@@ -457,6 +457,7 @@
 
 				G_track_rec_bit = OFF;
 				SOLO_rec_rehearsal = ON;
+				SOLO_rec_record_OTM = OFF;
 
 				if ( SOLO_has_rec == OFF ){
 					SOLO_rec_measure_hold = ON;
@@ -471,6 +472,7 @@
 		}
 
 		else if ( keyNdx == KEY_RECORD &&
+				  SOLO_rec_record_OTM == OFF &&
 				( G_track_rec_bit == OFF || SOLO_rec_rehearsal == ON ) &&
 				  SOLO_scale_chords_program == OFF ){ // Record
 

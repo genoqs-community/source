@@ -65,7 +65,6 @@ unsigned char SOLO_rec_show_strum				= OFF;
 unsigned char SOLO_rec_strum_latch				= OFF;
 unsigned char SOLO_rec_bank						= OFF;
 unsigned char SOLO_rec_rehearsal				= OFF;
-unsigned char SOLO_rec_rehearsal_OTM			= OFF;
 unsigned char SOLO_rec_record_OTM				= OFF;
 unsigned char SOLO_rec_record_OTM_latch			= OFF;
 unsigned char SOLO_rec_CLOCKSTART_OTM			= OFF;
@@ -1051,6 +1050,7 @@ void breakSoloRecordingMeasureHold(){
 
 	if ( SOLO_rec_page != NULL &&
 		 G_run_bit == ON &&
+		 ( G_track_rec_bit == ON || G_track_rec_bit_latch == ON ) &&
 		 SOLO_rec_measure_hold != OFF &&
 		 SOLO_rec_measure_hold_OTM == OFF &&
 		 SOLO_rec_rehearsal == OFF
@@ -1114,6 +1114,8 @@ void capture_note_event(
 
 	// Quantize notes as they are recorded
 	quantizeStep(target_step, noteRec);
+
+	SOLO_has_rec = ON;
 }
 
 void capture_mcc_event(
@@ -1126,6 +1128,8 @@ void capture_mcc_event(
 	unsigned char col = grid_col(target_page->pageNdx);
 	unsigned char idx = grid_ndx(row, step_col);
 	Rec_repository[col].Note[idx]->attr_MCC = target_step->attr_MCC;
+
+	SOLO_has_rec = ON;
 }
 
 // return TRUE if note was created
