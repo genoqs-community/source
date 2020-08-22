@@ -148,7 +148,7 @@ void initChord(Chordstruct* chord, unsigned char col){
 
 	for (i=0; i<MATRIX_NROF_COLUMNS; i++){
 
-		target_note = &Arp_pattern_repository[(col * MAX_NROF_PALETTE_CHORDS) + i];
+		target_note = &Arp_pattern_repository[(col * MATRIX_NROF_COLUMNS) + i];
 		initNote(target_note);
 		chord->Arp[i] = target_note;
 	}

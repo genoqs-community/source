@@ -929,16 +929,18 @@
 			break;
 	}
 
-	if ( SOLO_rec_MCC_enabled == ON ){
+	if ( SOLO_scale_chords_program == OFF ){
+		if ( SOLO_rec_MCC_enabled == ON ){
 
-		MIR_write_dot( KEY_MIXTGT_USR0,	MIR_GREEN);
-		MIR_write_dot( KEY_MIXTGT_USR0,	MIR_RED);
-	}
-	else {
-		MIR_write_dot( KEY_MIXTGT_USR0,	MIR_RED);
+			MIR_write_dot( KEY_MIXTGT_USR0,	MIR_GREEN);
+			MIR_write_dot( KEY_MIXTGT_USR0,	MIR_RED);
+		}
+		else {
+			MIR_write_dot( KEY_MIXTGT_USR0,	MIR_RED);
+		}
 	}
 
-	if ( SOLO_rec_track_preview == SOLOPAGE && G_run_bit == ON && SOLO_has_rec == ON ){
+	if ( SOLO_rec_track_preview == SOLOPAGE && G_run_bit == ON && SOLO_has_rec == ON && SOLO_scale_chords_program == OFF ){
 
 		if ( is_pressed_key( KEY_MIXTGT_ATR )) {
 			MIR_write_dot( LED_MIXTGT_ATR,	MIR_GREEN);

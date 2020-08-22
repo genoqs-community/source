@@ -556,7 +556,7 @@ extern Recstruct			Rec_undo_repository[MATRIX_NROF_COLUMNS];
 extern Notestruct			Note_repository[MAX_NROF_REC_NOTES];
 extern Notestruct			Note_undo_repository[MAX_NROF_REC_NOTES];
 extern Chordstruct			Chord_palette_repository[MAX_NROF_PALETTE_CHORDS + 1];
-extern Notestruct			Arp_pattern_repository[MATRIX_NROF_COLUMNS * MAX_NROF_PALETTE_CHORDS];
+extern Notestruct			Arp_pattern_repository[MATRIX_NROF_COLUMNS *  (MAX_NROF_PALETTE_CHORDS + 1)];
 
 
 

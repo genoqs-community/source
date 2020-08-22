@@ -82,7 +82,7 @@ Recstruct			Rec_undo_repository	[MATRIX_NROF_COLUMNS];
 
 Chordstruct			Chord_palette_repository[MAX_NROF_PALETTE_CHORDS + 1 /* last chord played */];
 
-Notestruct			Arp_pattern_repository[MATRIX_NROF_COLUMNS * MAX_NROF_PALETTE_CHORDS];
+Notestruct			Arp_pattern_repository[MATRIX_NROF_COLUMNS * (MAX_NROF_PALETTE_CHORDS + 1)];
 
 
 #ifdef FEATURE_ENABLE_DICE

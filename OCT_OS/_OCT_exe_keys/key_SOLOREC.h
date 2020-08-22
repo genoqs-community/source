@@ -867,37 +867,37 @@
 		applyEffects();
 	}
 
-	if ( G_run_bit == OFF ){
-		unsigned char latencyOffset = 0;
-		switch (keyNdx) {
-			case KEY_MIXTGT_USR1:
-				latencyOffset = 1; // toggle 1
-				break;
-			case KEY_MIXTGT_USR2:
-				latencyOffset = 2;// toggle 2
-				break;
-			case KEY_MIXTGT_USR3:
-				latencyOffset = 3;// toggle 3
-				break;
-			case KEY_MIXTGT_USR4:
-				latencyOffset = 4;// toggle 4
-				break;
-			case KEY_MIXTGT_USR5:
-				latencyOffset = 5;// toggle 5
-				break;
-			case KEY_MIXTGT_USR0:
-				SOLO_rec_MCC_enabled ^= 1; // toggle MCC enabled
-				break;
-			default:
+	unsigned char latencyOffset = 0;
+	switch (keyNdx) {
+		case KEY_MIXTGT_USR1:
+			latencyOffset = 1; // toggle 1
 			break;
+		case KEY_MIXTGT_USR2:
+			latencyOffset = 2;// toggle 2
+			break;
+		case KEY_MIXTGT_USR3:
+			latencyOffset = 3;// toggle 3
+			break;
+		case KEY_MIXTGT_USR4:
+			latencyOffset = 4;// toggle 4
+			break;
+		case KEY_MIXTGT_USR5:
+			latencyOffset = 5;// toggle 5
+			break;
+		case KEY_MIXTGT_USR0:
+			if ( SOLO_scale_chords_program == OFF ){
+				SOLO_rec_MCC_enabled ^= 1; // toggle MCC enabled
+			}
+			break;
+		default:
+		break;
+	}
+	if ( latencyOffset > 0 ){
+		if ( G_TT_external_latency_offset == latencyOffset ){
+			G_TT_external_latency_offset = OFF;
 		}
-		if ( latencyOffset > 0 ){
-			if ( G_TT_external_latency_offset == latencyOffset ){
-				G_TT_external_latency_offset = OFF;
-			}
-			else {
-				G_TT_external_latency_offset = latencyOffset;
-			}
+		else {
+			G_TT_external_latency_offset = latencyOffset;
 		}
 	}
 

@@ -5341,13 +5341,13 @@ void restoreChordPalette(){
 	for (i=3; i < 5; i++){ // index 3 and 4
 
 		chord = &Chord_palette_repository[i + 7];
-		initChord(chord, i);
+		initChord(chord, i + 7);
 		// assistant page overrides
 		chord->chord_id = SOLO_assistant_page->Track[i]->attr_VEL;
 
 		if ( chord->chord_id == NOP || chord->chord_id == 64 /* legacy default */ ){
 
-			initChord(chord, i);
+			initChord(chord, i + 7);
 			continue;
 		}
 
