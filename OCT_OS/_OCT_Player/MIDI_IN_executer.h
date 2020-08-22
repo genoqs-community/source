@@ -681,8 +681,8 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 					if ( G_zoom_level == zoomSOLOREC
 						 && SOLO_rec_continue_recording == OFF
 						 && target_col == 0
-						 && G_MIDI_timestamp >= 12 // make sure the sequencer hasn't just started
-						 && G_track_rec_bit_latch == ON
+						 && G_MIDI_timestamp > 12 // make sure the sequencer hasn't just started
+						 && ( G_track_rec_bit_latch == ON || SOLO_rec_finalized == OFF )
 						 && force_note == OFF
 						 && target_page->pageNdx == first_page_in_cluster(GRID_CURSOR)
 						 && target_row == find_record_track_chain_start(target_page)

@@ -266,6 +266,8 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		if ( G_global_locator == 1 ) {
 
 			#ifdef FEATURE_SOLO_REC
+			G_skip_step = NULL;
+
 			if ( OTM_CC_type != OFF && G_zoom_level != zoomSOLOREC ){
 
 				MIDI_send( OTM_CC_type, OTM_CC_val0, OTM_CC_val1, OTM_CC_val2 );

@@ -840,8 +840,9 @@ void record_note_to_track( 	Pagestruct* target_page,
 						Step_set_status( target_page->Step[row][target_col], STEPSTAT_TOGGLE, ON );
 
 						#ifdef FEATURE_SOLO_REC
-						if ( G_zoom_level == zoomSOLOREC && target_start > STEP_DEF_START )
-						G_skip_step = target_page->Step[row][target_col];
+						if ( G_zoom_level == zoomSOLOREC && target_start > STEP_DEF_START ){
+							G_skip_step = target_page->Step[row][target_col];
+						}
 						#endif
 					}
 					break;
