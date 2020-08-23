@@ -283,7 +283,7 @@
 					}
 				}
 			}
-			else if ( row_of(keyNdx) == 0 ) {
+			else if ( row_of(keyNdx) == 0 && is_matrix_key(keyNdx) == TRUE ) {
 
 				unsigned char pitches[MAX_NOTES];
 				Chordstruct* chord = &Chord_palette_repository[SOLO_scale_chords_palette_ndx];
