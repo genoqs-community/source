@@ -274,15 +274,18 @@ void saveRec(){
 	if ( SOLO_rec_finalized == OFF ) return;
 
 	G_measure_locator = 0;
-	selected_page_cluster_copy(GRID_CURSOR + 20, GRID_CURSOR);
-	SOLO_rec_page = &Page_repository[GRID_CURSOR + 20];
+	unsigned char start = first_page_in_cluster(GRID_CURSOR);
+	unsigned char end = last_page_in_cluster(GRID_CURSOR);
+	selected_page_cluster_copy(end + 20, start);
+	SOLO_rec_page = &Page_repository[end + 20];
 	if ( G_run_bit == OFF ){
 		GRID_p_selection[ SOLO_rec_bank ] = SOLO_rec_page;
 		GRID_p_preselection[ SOLO_rec_bank ] = SOLO_rec_page;
 	}
 	GRID_p_clock_presel[ SOLO_rec_bank ] = SOLO_rec_page;
-	pageClusterEnterSoloRec(GRID_CURSOR + 20);
+	pageClusterEnterSoloRec(end + 20);
 	SOLO_page_play_along[grid_row(SOLO_rec_page->pageNdx)] = NOP;
+	GRID_CURSOR = SOLO_rec_page->pageNdx;
 }
 
 void clearRec(){
