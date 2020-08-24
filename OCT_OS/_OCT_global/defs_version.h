@@ -1,10 +1,10 @@
 
 
 #define 	SW_VERSION_MAJOR				 0	// Max 10 - Hundreds
-#define		SW_VERSION_MINOR				 5	// Max 10 - Tens
-#define		SW_VERSION_RELEASE				 2	// Max 10 - Ones
+#define		SW_VERSION_MINOR				 6	// Max 10 - Tens
+#define		SW_VERSION_RELEASE				 0	// Max 10 - Ones
 
-#define		SW_VERSION_INTERNAL				 4	// Max 127 - Row 0 number
+#define		SW_VERSION_INTERNAL				 0	// Max 127 - Row 0 number
 
 // SWITCH between 'MIDI' and 'USB' modes of the MIDI 2 Port
 #define		OCTDEF_UART2_MODE	 			MIDI

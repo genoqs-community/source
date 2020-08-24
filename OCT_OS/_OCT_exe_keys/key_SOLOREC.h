@@ -23,6 +23,11 @@
 		return; // disable track select buttons
 	}
 
+	if ( keyNdx == KEY_BK100 ){
+		SOLO_big_counter ^= 1;
+		SOLO_big_count = OFF;
+	}
+
 	if ( keyNdx == KEY_TEMPO ){
 
 		if ( SOLO_slow_tempo != OFF ){ // slow tempo

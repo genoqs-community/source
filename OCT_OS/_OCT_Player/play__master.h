@@ -267,6 +267,13 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 			#ifdef FEATURE_SOLO_REC
 			G_skip_step = NULL;
+			if ( SOLO_big_counter == ON ){
+				SOLO_big_count++;
+				if ( SOLO_big_count > 99 ){
+					SOLO_big_counter = OFF;
+					SOLO_big_count = OFF;
+				}
+			}
 
 			if ( OTM_CC_type != OFF && G_zoom_level != zoomSOLOREC ){
 

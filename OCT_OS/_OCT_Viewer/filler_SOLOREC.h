@@ -429,211 +429,7 @@
 	}
 
 
-	if ( SOLO_rec_track_preview == SOLOGRID ||
-		 G_run_bit == OFF ||
-		 SOLO_scale_chords_program == ON ||
-		 TEMPO_TIMER == ON ||
-		 GRID_CURSOR == SOLO_assistant_page->pageNdx /* Arp */
-	   ){
-
-		unsigned char showing_page_notes = OFF;
-
-		// MATRIX NOTE PRESS
-		for (i=0; i < MAX_NROF_PAGES; i++) {
-
-			if (( TEMPO_TIMER == ON && grid_row(i) == 0 ) || SOLO_scale_chords_program == ON ){
-				continue; // we are showing the chord notes in the top row
-			}
-
-			int pressed_grid = is_pressed_pagerange();
-			unsigned char pressed_ndx = grid_ndx_from_key(pressed_grid);
-			// DEBUG -- see the undo notes in the grid
-//			if ( Rec_repository[grid_col(SOLO_rec_page->pageNdx)].Note[i]->status == ON ){
-			if ( SOLO_rec_track_preview != SOLOGRID &&
-				 pressed_grid != FALSE &&
-				 grid_row(pressed_ndx) == SOLO_rec_bank &&
-				 Rec_repository[grid_col(pressed_ndx)].Note[i]->status == ON
-			   ){
-
-				// Show the notes in the pressed page
-				GRID_write_dot( i, MIR_GREEN );
-				if ( is_note_chord(Rec_repository[grid_col(pressed_ndx)].Note[i]) ){
-					GRID_write_dot( i, MIR_RED );
-				}
-
-				showing_page_notes = ON;
-			}
-//			if ( is_pressed_pagerange() != FALSE && Rec_undo_repository[grid_col(grid_ndx_from_key(is_pressed_pagerange()))].Note[i]->status == ON ){
-//
-//				GRID_write_dot( i, MIR_RED );
-//				GRID_write_dot( i, MIR_BLINK );
-//			}
-		}
-
-		if (TEMPO_TIMER != ON && !( SOLO_scale_chords_program == ON && SOLO_scale_chords_palette_ndx != NOP )){
-
-			// MATRIX
-			for (i=0; i < MAX_NROF_PAGES; i++) {
-
-				// Page has contents and is not one of the row zero
-				if (	(Page_repository[i].page_clear != ON)  &&	( grid_row(i) != 9 )){
-					// This is our Solo Recording cluster
-					if ( SOLO_rec_page != NULL && selected_page_cluster( i, SOLO_rec_page->pageNdx ) != NOP ){
-						// Page PLAYING - i.e. selected in GRID
-						if ( is_selected_in_GRID( &Page_repository[i] ) ){
-
-							// Show it in GREEN
-							GRID_write_dot( i, MIR_GREEN );
-
-							// Flash for Free Flow
-							if ( SOLO_rec_freeflow == ON ){
-								GRID_write_dot( i, MIR_RED );
-								GRID_write_dot( i, MIR_BLINK );
-							}
-						}
-						else {
-							GRID_write_dot( i, MIR_RED );
-						}
-					}
-					else if ( showing_page_notes == OFF ) {
-
-						if ( SOLO_page_play_along[grid_row(i)] == i ){
-							GRID_write_dot( i, MIR_GREEN );
-							GRID_write_dot( i, MIR_BLINK );
-						}
-						else {
-							// This is a muted page in the grid
-							GRID_write_dot( i, MIR_RED );
-						}
-					}
-				} // page_clear != ON
-			} // page iterator
-
-
-			// Write Grid to MIR
-			MIR_write_GRID ();
-		}
-	}
-
-
-	// Show the GRID cursor
 	unsigned char flashClear = OFF;
-	unsigned int pressed = is_pressed_pagerange();
-	unsigned char pressedNdx = grid_ndx_from_key(pressed); // the key that is pressed FIXME: short circuit
-	unsigned char selRec = selected_solo_rec_page( pressedNdx, pressedNdx );
-
-	if ( pressed != OFF
-		 && G_run_bit == OFF
-		 && has_valid_record_cluster_format( &Page_repository[ pressedNdx ], ON ) == ON
-		 && Page_repository[ pressedNdx ].page_clear == OFF
-		 && selRec == OFF
-		 && (
-			  SOLO_rec_page == NULL ||
-			  selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) == NOP
-		 )
-	   ){
-		MIR_write_dot( LED_PAUSE, MIR_GREEN );
-		MIR_write_dot( LED_PAUSE, MIR_BLINK );
-	}
-
-	if ( SOLO_scale_chords_program == OFF &&
-	   ( selRec == ON ||
-	   ( SOLO_rec_page != NULL &&
-	     selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) != NOP
-	))){
-
-		if ( pressed != OFF && selRec == OFF && SOLO_rec_page != NULL && SOLO_scale_chords_program == OFF ){
-			MIR_write_dot( LED_CLEAR, MIR_BLINK );
-			flashClear = ON;
-		}
-
-		if ( SOLO_rec_finalized == ON && G_run_bit == OFF ){
-			// do we have enough empty tracks left to double the current track chain
-			if ( (10 / Rec_repository[ grid_col(pressedNdx) ].measure_count) >= 2 ){
-				MIR_write_dot( LED_CHAINMODE_3, MIR_RED   );
-				MIR_write_dot( LED_CHAINMODE_3, MIR_GREEN );
-			}
-
-			if ( grid_col(pressedNdx) < 15 ){
-				MIR_write_dot( LED_CHAINMODE_2, MIR_RED   );
-				MIR_write_dot( LED_CHAINMODE_2, MIR_GREEN );
-			}
-		}
-
-		if ( SOLO_rec_page == NULL && SOLO_rec_freeflow == OFF && has_empty_grid_row_ahead(pressedNdx) == TRUE ){
-			// No recording page has been chosen yet so show the Free Flow button flashing
-			// when an eligible grid page is pressed
-			MIR_write_dot( LED_CHAINMODE_4, MIR_RED   );
-			MIR_write_dot( LED_CHAINMODE_4, MIR_GREEN );
-			MIR_write_dot( LED_CHAINMODE_4, MIR_BLINK );
-		}
-
-		// Show the pressed recording page or the page to the right that may become a recording page
-		if ( pressed != FALSE && ( SOLO_rec_freeflow == OFF || selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) != NOP )){
-
-			MIR_write_dot( pressed, MIR_RED   );
-			MIR_write_dot( pressed, MIR_GREEN );
-			MIR_write_dot( pressed, MIR_BLINK );
-
-			unsigned int min = 20;
-			unsigned int max = 119;
-			unsigned int result = 0;
-
-			if ( SOLO_has_rec == TRUE && G_run_bit == OFF ){
-				// Show the page edit warp tunnel
-				MIR_write_dot( LED_ZOOM_PAGE, MIR_RED   );
-				MIR_write_dot( LED_ZOOM_PAGE, MIR_BLINK );
-			}
-
-			if ( SOLO_rec_track_preview == SOLOGRID || SOLO_has_rec == FALSE ){
-
-				// Show the row zero measure count for the pressed page
-				for( i=min; i <= max; i+=11 ){
-					result = (i - 9) / 11;
-
-					if ( SOLO_has_rec == TRUE ){ // has a recording
-
-						if ( SOLO_rec_page != NULL && Rec_repository[ grid_col(pressedNdx) ].measure_count >= result ){
-
-							MIR_write_dot( i, MIR_RED );
-						}
-					}
-					else {
-
-						if ( SOLO_rec_page != NULL && Rec_repository[ grid_col(pressedNdx) ].measure_count == result ){
-
-							MIR_write_dot( i, MIR_GREEN );
-						}
-						else if ( G_run_bit == OFF ) {
-							MIR_write_dot( i, MIR_RED );
-						}
-					}
-				}
-			}
-		}
-	}
-	// Continue flashing the measure selection for a moment
-	else if ( ROT_INDEX == REC_MEASURES_IDX ){
-
-		unsigned int min = 20;
-		unsigned int max = 119;
-		unsigned int result = 0;
-
-		// Show the row zero measure count for the pressed page
-		for( i=min; i <= max; i+=11 ){
-			result = (i - 9) / 11;
-
-			if ( SOLO_rec_page != NULL && Rec_repository[SOLO_rec_pressed_col].measure_count == result ){
-
-				MIR_write_dot( i, MIR_GREEN );
-				MIR_write_dot( i, MIR_BLINK );
-			}
-			else {
-				MIR_write_dot( i, MIR_RED );
-			}
-		}
-	}
-
 	if ( SOLO_rec_page != NULL && G_run_bit == OFF && SOLO_scale_chords_program == OFF ){
 
 		MIR_write_dot( LED_CLEAR, MIR_RED ); // LEN / clr
@@ -645,7 +441,7 @@
 	if ( G_run_bit == ON ){
 
 		// Show the row zero measure position
-		if ( SOLO_rec_track_preview == SOLOGRID ){
+		if ( SOLO_rec_track_preview == SOLOGRID && SOLO_big_counter == OFF ){
 
 			if ( GRID_CURSOR != SOLO_assistant_page->pageNdx /* !Arp */ ){
 				// - and end of recording
@@ -682,7 +478,7 @@
 			}
 		}
 
-		if ( SOLO_rec_track_preview == SOLOPAGE ){
+		if ( SOLO_rec_track_preview == SOLOPAGE && SOLO_big_counter == OFF ){
 
 			if ( SOLO_scale_chords_program == OFF && GRID_CURSOR != SOLO_assistant_page->pageNdx /* !Arp */ ){
 
@@ -724,7 +520,7 @@
 				MIR_write_dot (LED_PROGRAM, MIR_GREEN);
 			}
 		}
-		else if ( SOLO_rec_track_preview == SOLOMCC ){
+		else if ( SOLO_rec_track_preview == SOLOMCC && SOLO_big_counter == OFF ){
 
 			// MATRIX
 			if ( G_run_bit == ON ){
@@ -993,3 +789,376 @@
 			break;
 	}
 
+	if ( SOLO_big_counter == ON ){
+		MIR_write_dot( KEY_BK100, MIR_GREEN 	);
+		MIR_write_dot( KEY_BK100, MIR_RED 		);
+		MIR_write_dot( KEY_BK100, MIR_BLINK 	);
+	}
+	else {
+		MIR_write_dot( KEY_BK100, MIR_GREEN 	);
+	}
+
+
+	if ( SOLO_big_counter == ON ){
+
+		unsigned char card [10][10]; // bitmaps for the numbers
+		card[0][0] = 0;
+		card[1][0] = 24;
+		card[2][0] = 36;
+		card[3][0] = 66;
+		card[4][0] = 129;
+		card[5][0] = 129;
+		card[6][0] = 66;
+		card[7][0] = 36;
+		card[8][0] = 24;
+		card[9][0] = 0;
+
+		card[0][1] = 0;
+		card[1][1] = 12;
+		card[2][1] = 8;
+		card[3][1] = 8;
+		card[4][1] = 8;
+		card[5][1] = 8;
+		card[6][1] = 8;
+		card[7][1] = 8;
+		card[8][1] = 28;
+		card[9][1] = 0;
+
+		card[0][2] = 0;
+		card[1][2] = 60;
+		card[2][2] = 66;
+		card[3][2] = 66;
+		card[4][2] = 32;
+		card[5][2] = 16;
+		card[6][2] = 8;
+		card[7][2] = 4;
+		card[8][2] = 126;
+		card[9][2] = 0;
+
+		card[0][3] = 0;
+		card[1][3] = 28;
+		card[2][3] = 34;
+		card[3][3] = 32;
+		card[4][3] = 16;
+		card[5][3] = 8;
+		card[6][3] = 16;
+		card[7][3] = 34;
+		card[8][3] = 28;
+		card[9][3] = 0;
+
+		card[0][4] = 0;
+		card[1][4] = 34;
+		card[2][4] = 34;
+		card[3][4] = 34;
+		card[4][4] = 126;
+		card[5][4] = 32;
+		card[6][4] = 32;
+		card[7][4] = 32;
+		card[8][4] = 32;
+		card[9][4] = 0;
+
+		card[0][5] = 0;
+		card[1][5] = 62;
+		card[2][5] = 2;
+		card[3][5] = 2;
+		card[4][5] = 28;
+		card[5][5] = 32;
+		card[6][5] = 32;
+		card[7][5] = 34;
+		card[8][5] = 28;
+		card[9][5] = 0;
+
+		card[0][6] = 0;
+		card[1][6] = 56;
+		card[2][6] = 68;
+		card[3][6] = 2;
+		card[4][6] = 2;
+		card[5][6] = 58;
+		card[6][6] = 70;
+		card[7][6] = 36;
+		card[8][6] = 24;
+		card[9][6] = 0;
+
+		card[0][7] = 0;
+		card[1][7] = 124;
+		card[2][7] = 66;
+		card[3][7] = 64;
+		card[4][7] = 32;
+		card[5][7] = 56;
+		card[6][7] = 8;
+		card[7][7] = 4;
+		card[8][7] = 2;
+		card[9][7] = 0;
+
+		card[0][8] = 0;
+		card[1][8] = 28;
+		card[2][8] = 34;
+		card[3][8] = 34;
+		card[4][8] = 20;
+		card[5][8] = 8;
+		card[6][8] = 20;
+		card[7][8] = 34;
+		card[8][8] = 28;
+		card[9][8] = 0;
+
+		card[0][9] = 0;
+		card[1][9] = 28;
+		card[2][9] = 34;
+		card[3][9] = 34;
+		card[4][9] = 60;
+		card[5][9] = 32;
+		card[6][9] = 32;
+		card[7][9] = 32;
+		card[8][9] = 32;
+		card[9][9] = 0;
+
+		unsigned char slice;
+		unsigned char shift;
+		unsigned char mark = ( SOLO_big_count > 0
+				               && (
+				            	  (SOLO_rec_measure_hold == ON && SOLO_big_count % 4 == 0)
+				            	  || (SOLO_rec_measure_hold == OFF && SOLO_rec_measure_pos % 4 == 0))
+				             );
+
+		// Show the row zero measure count for the pressed page
+		for (i=0; i < MAX_NROF_PAGES; i++) {
+
+			shift = 8;//i / MATRIX_NROF_ROWS < MATRIX_NROF_ROWS;
+			slice = card[(i % MATRIX_NROF_ROWS)][SOLO_big_count % 10];
+			if ( slice & (1 << (i / MATRIX_NROF_ROWS ))){
+				if (mark == ON){
+					GRID_write_dot(i + (MATRIX_NROF_ROWS * shift), MIR_GREEN );
+				}
+				GRID_write_dot(i + (MATRIX_NROF_ROWS * shift), MIR_RED );
+			}
+
+			if ( SOLO_big_count / 10 > 0 ){
+				slice = card[(i % MATRIX_NROF_ROWS)][SOLO_big_count / 10];
+				if ( slice & (1 << (i / MATRIX_NROF_ROWS ))){
+					if (mark == ON){
+						GRID_write_dot(i + MATRIX_NROF_ROWS, MIR_GREEN );
+					}
+					GRID_write_dot(i + MATRIX_NROF_ROWS, MIR_RED );
+				}
+			}
+
+			if ( mark ){
+				if ( i % MATRIX_NROF_ROWS == 0
+					 || i % MATRIX_NROF_ROWS == MATRIX_NROF_ROWS - 1
+					 || i / MATRIX_NROF_ROWS == 0
+					 || i / MATRIX_NROF_ROWS == MATRIX_NROF_COLUMNS - 1
+					){
+					GRID_write_dot( i, MIR_GREEN );
+					GRID_write_dot( i, MIR_RED );
+				}
+			}
+		}
+		MIR_write_GRID ();
+
+		return;
+	}
+
+
+	if ( SOLO_rec_track_preview == SOLOGRID ||
+		 G_run_bit == OFF ||
+		 SOLO_scale_chords_program == ON ||
+		 TEMPO_TIMER == ON ||
+		 GRID_CURSOR == SOLO_assistant_page->pageNdx /* Arp */
+	   ){
+
+		unsigned char showing_page_notes = OFF;
+
+		// MATRIX NOTE PRESS
+		for (i=0; i < MAX_NROF_PAGES; i++) {
+
+			if (( TEMPO_TIMER == ON && grid_row(i) == 0 ) || SOLO_scale_chords_program == ON ){
+				continue; // we are showing the chord notes in the top row
+			}
+
+			int pressed_grid = is_pressed_pagerange();
+			unsigned char pressed_ndx = grid_ndx_from_key(pressed_grid);
+			// DEBUG -- see the undo notes in the grid
+//			if ( Rec_repository[grid_col(SOLO_rec_page->pageNdx)].Note[i]->status == ON ){
+			if ( SOLO_rec_track_preview != SOLOGRID &&
+				 pressed_grid != FALSE &&
+				 grid_row(pressed_ndx) == SOLO_rec_bank &&
+				 Rec_repository[grid_col(pressed_ndx)].Note[i]->status == ON
+			   ){
+
+				// Show the notes in the pressed page
+				GRID_write_dot( i, MIR_GREEN );
+				if ( is_note_chord(Rec_repository[grid_col(pressed_ndx)].Note[i]) ){
+					GRID_write_dot( i, MIR_RED );
+				}
+
+				showing_page_notes = ON;
+			}
+//			if ( is_pressed_pagerange() != FALSE && Rec_undo_repository[grid_col(grid_ndx_from_key(is_pressed_pagerange()))].Note[i]->status == ON ){
+//
+//				GRID_write_dot( i, MIR_RED );
+//				GRID_write_dot( i, MIR_BLINK );
+//			}
+		}
+
+		if (TEMPO_TIMER != ON && !( SOLO_scale_chords_program == ON && SOLO_scale_chords_palette_ndx != NOP )){
+
+			// MATRIX
+			for (i=0; i < MAX_NROF_PAGES; i++) {
+
+				// Page has contents and is not one of the row zero
+				if (	(Page_repository[i].page_clear != ON)  &&	( grid_row(i) != 9 )){
+					// This is our Solo Recording cluster
+					if ( SOLO_rec_page != NULL && selected_page_cluster( i, SOLO_rec_page->pageNdx ) != NOP ){
+						// Page PLAYING - i.e. selected in GRID
+						if ( is_selected_in_GRID( &Page_repository[i] ) ){
+
+							// Show it in GREEN
+							GRID_write_dot( i, MIR_GREEN );
+
+							// Flash for Free Flow
+							if ( SOLO_rec_freeflow == ON ){
+								GRID_write_dot( i, MIR_RED );
+								GRID_write_dot( i, MIR_BLINK );
+							}
+						}
+						else {
+							GRID_write_dot( i, MIR_RED );
+						}
+					}
+					else if ( showing_page_notes == OFF ) {
+
+						if ( SOLO_page_play_along[grid_row(i)] == i ){
+							GRID_write_dot( i, MIR_GREEN );
+							GRID_write_dot( i, MIR_BLINK );
+						}
+						else {
+							// This is a muted page in the grid
+							GRID_write_dot( i, MIR_RED );
+						}
+					}
+				} // page_clear != ON
+			} // page iterator
+
+
+			// Write Grid to MIR
+			MIR_write_GRID ();
+		}
+	}
+
+
+	// Show the GRID cursor
+	unsigned int pressed = is_pressed_pagerange();
+	unsigned char pressedNdx = grid_ndx_from_key(pressed); // the key that is pressed FIXME: short circuit
+	unsigned char selRec = selected_solo_rec_page( pressedNdx, pressedNdx );
+
+	if ( pressed != OFF
+		 && G_run_bit == OFF
+		 && has_valid_record_cluster_format( &Page_repository[ pressedNdx ], ON ) == ON
+		 && Page_repository[ pressedNdx ].page_clear == OFF
+		 && selRec == OFF
+		 && (
+			  SOLO_rec_page == NULL ||
+			  selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) == NOP
+		 )
+	   ){
+		MIR_write_dot( LED_PAUSE, MIR_GREEN );
+		MIR_write_dot( LED_PAUSE, MIR_BLINK );
+	}
+
+	if ( SOLO_scale_chords_program == OFF &&
+	   ( selRec == ON ||
+	   ( SOLO_rec_page != NULL &&
+	     selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) != NOP
+	))){
+
+		if ( pressed != OFF && selRec == OFF && SOLO_rec_page != NULL && SOLO_scale_chords_program == OFF ){
+			MIR_write_dot( LED_CLEAR, MIR_BLINK );
+			flashClear = ON;
+		}
+
+		if ( SOLO_rec_finalized == ON && G_run_bit == OFF ){
+			// do we have enough empty tracks left to double the current track chain
+			if ( (10 / Rec_repository[ grid_col(pressedNdx) ].measure_count) >= 2 ){
+				MIR_write_dot( LED_CHAINMODE_3, MIR_RED   );
+				MIR_write_dot( LED_CHAINMODE_3, MIR_GREEN );
+			}
+
+			if ( grid_col(pressedNdx) < 15 ){
+				MIR_write_dot( LED_CHAINMODE_2, MIR_RED   );
+				MIR_write_dot( LED_CHAINMODE_2, MIR_GREEN );
+			}
+		}
+
+		if ( SOLO_rec_page == NULL && SOLO_rec_freeflow == OFF && has_empty_grid_row_ahead(pressedNdx) == TRUE ){
+			// No recording page has been chosen yet so show the Free Flow button flashing
+			// when an eligible grid page is pressed
+			MIR_write_dot( LED_CHAINMODE_4, MIR_RED   );
+			MIR_write_dot( LED_CHAINMODE_4, MIR_GREEN );
+			MIR_write_dot( LED_CHAINMODE_4, MIR_BLINK );
+		}
+
+		// Show the pressed recording page or the page to the right that may become a recording page
+		if ( pressed != FALSE && ( SOLO_rec_freeflow == OFF || selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) != NOP )){
+
+			MIR_write_dot( pressed, MIR_RED   );
+			MIR_write_dot( pressed, MIR_GREEN );
+			MIR_write_dot( pressed, MIR_BLINK );
+
+			unsigned int min = 20;
+			unsigned int max = 119;
+			unsigned int result = 0;
+
+			if ( SOLO_has_rec == TRUE && G_run_bit == OFF ){
+				// Show the page edit warp tunnel
+				MIR_write_dot( LED_ZOOM_PAGE, MIR_RED   );
+				MIR_write_dot( LED_ZOOM_PAGE, MIR_BLINK );
+			}
+
+			if ( SOLO_rec_track_preview == SOLOGRID || SOLO_has_rec == FALSE ){
+
+				// Show the row zero measure count for the pressed page
+				for( i=min; i <= max; i+=11 ){
+					result = (i - 9) / 11;
+
+					if ( SOLO_has_rec == TRUE ){ // has a recording
+
+						if ( SOLO_rec_page != NULL && Rec_repository[ grid_col(pressedNdx) ].measure_count >= result ){
+
+							MIR_write_dot( i, MIR_RED );
+						}
+					}
+					else {
+
+						if ( SOLO_rec_page != NULL && Rec_repository[ grid_col(pressedNdx) ].measure_count == result ){
+
+							MIR_write_dot( i, MIR_GREEN );
+						}
+						else if ( G_run_bit == OFF ) {
+							MIR_write_dot( i, MIR_RED );
+						}
+					}
+				}
+			}
+		}
+	}
+	// Continue flashing the measure selection for a moment
+	else if ( ROT_INDEX == REC_MEASURES_IDX ){
+
+		unsigned int min = 20;
+		unsigned int max = 119;
+		unsigned int result = 0;
+
+		// Show the row zero measure count for the pressed page
+		for( i=min; i <= max; i+=11 ){
+			result = (i - 9) / 11;
+
+			if ( SOLO_rec_page != NULL && Rec_repository[SOLO_rec_pressed_col].measure_count == result ){
+
+				MIR_write_dot( i, MIR_GREEN );
+				MIR_write_dot( i, MIR_BLINK );
+			}
+			else {
+				MIR_write_dot( i, MIR_RED );
+			}
+		}
+	}
