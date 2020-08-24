@@ -919,6 +919,11 @@
 				            	  (SOLO_rec_measure_hold == ON && SOLO_big_count % 4 == 0)
 				            	  || (SOLO_rec_measure_hold == OFF && SOLO_rec_measure_pos % 4 == 0))
 				             );
+		unsigned char flashMark = ( SOLO_big_count > 0
+								    && (
+									   (SOLO_rec_measure_hold == ON && SOLO_big_count % 16 == 0)
+									   || (SOLO_rec_measure_hold == OFF && SOLO_rec_measure_pos % 16 == 0))
+								  );
 
 		// Show the row zero measure count for the pressed page
 		for (i=0; i < MAX_NROF_PAGES; i++) {
@@ -949,7 +954,7 @@
 				}
 			}
 
-			if ( mark ){
+			if ( mark == ON ){
 				if ( i % MATRIX_NROF_ROWS == 0
 					 || i % MATRIX_NROF_ROWS == MATRIX_NROF_ROWS - 1
 					 || i / MATRIX_NROF_ROWS == 0
@@ -957,6 +962,9 @@
 					){
 					GRID_write_dot( i, MIR_GREEN );
 					GRID_write_dot( i, MIR_RED );
+					if ( flashMark == ON ){
+						GRID_write_dot( i, MIR_BLINK );
+					}
 				}
 			}
 		}
