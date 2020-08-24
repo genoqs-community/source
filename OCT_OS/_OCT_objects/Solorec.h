@@ -520,6 +520,8 @@ void exitSoloRec(){
 	SOLO_mute = OFF;
 	G_skip_step = NULL;
 	SOLO_rec_CLOCKSTART_OTM = OFF;
+	SOLO_big_counter = OFF;
+	SOLO_big_count = OFF;
 
 	for (i=0; i<MATRIX_NROF_ROWS; i++){
 		if ( SOLO_page_play_along_toggle[i] != NOP ){

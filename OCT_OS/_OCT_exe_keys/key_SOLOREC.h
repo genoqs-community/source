@@ -25,7 +25,7 @@
 
 	if ( keyNdx == KEY_BK100 ){
 		SOLO_big_counter ^= 1;
-		SOLO_big_count = OFF;
+		SOLO_big_count = (SOLO_rec_measure_hold == ON) ? OFF : SOLO_rec_measure_pos;
 	}
 
 	if ( keyNdx == KEY_TEMPO ){

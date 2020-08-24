@@ -914,16 +914,8 @@
 
 		unsigned char slice;
 		unsigned char shift;
-		unsigned char mark = ( SOLO_big_count > 0
-				               && (
-				            	  (SOLO_rec_measure_hold == ON && SOLO_big_count % 4 == 0)
-				            	  || (SOLO_rec_measure_hold == OFF && SOLO_rec_measure_pos % 4 == 0))
-				             );
-		unsigned char flashMark = ( SOLO_big_count > 0
-								    && (
-									   (SOLO_rec_measure_hold == ON && SOLO_big_count % 16 == 0)
-									   || (SOLO_rec_measure_hold == OFF && SOLO_rec_measure_pos % 16 == 0))
-								  );
+		unsigned char mark = ( SOLO_big_count > 0 && SOLO_big_count % 4 == 0 );
+		unsigned char flashMark = ( SOLO_big_count > 0 && SOLO_big_count % 16 == 0 );
 
 		// Show the row zero measure count for the pressed page
 		for (i=0; i < MAX_NROF_PAGES; i++) {
