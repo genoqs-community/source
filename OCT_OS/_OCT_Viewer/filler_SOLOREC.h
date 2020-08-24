@@ -926,10 +926,17 @@
 			shift = 8;//i / MATRIX_NROF_ROWS < MATRIX_NROF_ROWS;
 			slice = card[(i % MATRIX_NROF_ROWS)][SOLO_big_count % 10];
 			if ( slice & (1 << (i / MATRIX_NROF_ROWS ))){
-				if (mark == ON){
+
+				if ( SOLO_big_count == 0 ){
 					GRID_write_dot(i + (MATRIX_NROF_ROWS * shift), MIR_GREEN );
+					GRID_write_dot(i + (MATRIX_NROF_ROWS * shift), MIR_BLINK );
 				}
-				GRID_write_dot(i + (MATRIX_NROF_ROWS * shift), MIR_RED );
+				else {
+					if (mark == ON){
+						GRID_write_dot(i + (MATRIX_NROF_ROWS * shift), MIR_GREEN );
+					}
+					GRID_write_dot(i + (MATRIX_NROF_ROWS * shift), MIR_RED );
+				}
 			}
 
 			if ( SOLO_big_count / 10 > 0 ){
