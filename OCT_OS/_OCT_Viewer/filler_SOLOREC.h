@@ -946,7 +946,7 @@
 				}
 			}
 
-			if ( mark == ON ){
+			if ( ( mark == ON && SOLO_big_count <= 8 ) || flashMark == ON ){
 				if ( i % MATRIX_NROF_ROWS == 0
 					 || i % MATRIX_NROF_ROWS == MATRIX_NROF_ROWS - 1
 					 || i / MATRIX_NROF_ROWS == 0

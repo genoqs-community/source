@@ -610,7 +610,7 @@ void reset_page_cluster( Pagestruct* temp_page ){
 		m = MATRIX_NROF_ROWS - temp_page->attr_STA; // from the bottom up
 
 		for (n=9; n >= m; --n) { // each measure
-			temp_page->trackSelection |= 1 << n;
+			temp_page->trackSelection &= ( 1 << n );
 			temp_page->Track[n]->attr_MCH = SOLO_midi_ch;
 		}
 
