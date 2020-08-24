@@ -610,12 +610,18 @@ void reset_page_cluster( Pagestruct* temp_page ){
 		m = MATRIX_NROF_ROWS - temp_page->attr_STA; // from the bottom up
 
 		for (n=9; n >= m; --n) { // each measure
-			temp_page->trackSelection &= ( 1 << n );
+			temp_page->trackSelection |= ( 1 << n );
 			temp_page->Track[n]->attr_MCH = SOLO_midi_ch;
 		}
 
 		chain_selected_tracks( temp_page );
 		Page_setTrackRecPatternBit( temp_page, (n+1) );
+
+		temp_page->trackSelection = 0;
+		set_page_locators( temp_page, 0, 0 );
+
+		set_track_locators( temp_page, NULL, 0, 0 );
+		temp_page->locator = 0;
 
 		this_ndx += 10;
 	}
