@@ -341,6 +341,14 @@ void clearRec(){
 		SOLO_rec_has_MCC = OFF;
 		SOLO_rec_track_preview = SOLOPAGE;
 	}
+
+	Pagestruct* firstPage = &Page_repository[first_page_in_cluster(SOLO_rec_page->pageNdx)];
+
+	// back to the first page
+	GRID_p_selection[ SOLO_rec_bank ] = firstPage;
+	GRID_p_preselection[ SOLO_rec_bank ] = firstPage;
+	GRID_p_clock_presel[ SOLO_rec_bank ] = firstPage;
+	GRID_CURSOR = firstPage->pageNdx;
 }
 
 void externalMIDI_PGMCH(){
