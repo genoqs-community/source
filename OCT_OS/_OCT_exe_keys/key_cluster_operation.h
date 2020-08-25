@@ -585,6 +585,7 @@ void reset_page_cluster( Pagestruct* temp_page ){
 	SOLO_transpose_GRID_CURSOR = GRID_CURSOR;
 	follow_flag = FOLLOW_PAGE;
 
+	SOLO_rec_measure_count = 0;
 
 	// track forward
 	while ( 	(this_ndx < MAX_NROF_PAGES) &&
@@ -596,6 +597,8 @@ void reset_page_cluster( Pagestruct* temp_page ){
 		// reset first
 		temp_page->attr_STA = Rec_repository[grid_col(temp_page->pageNdx)].measure_count;
 		temp_page->repeats_left = temp_page->attr_STA; // reset page repeats
+
+		SOLO_rec_measure_count += (unsigned short) temp_page->attr_STA;
 
 		// reset first
 		remove_track_chain(temp_page);

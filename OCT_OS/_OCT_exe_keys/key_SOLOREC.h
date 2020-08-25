@@ -770,13 +770,14 @@
 				// A page is pressed first then step 1 through 10 of row zero to set the measure count
 				else if ( rowZeroTrack != OFF && rowZeroTrack <= 10 && SOLO_rec_freeflow == OFF ){
 
+					SOLO_rec_page = &Page_repository[heldNdx];
+
 					if ( Page_repository[heldNdx].page_clear == ON ){
 						/*
 						 * ########################################
 						 * A record page was created!
 						 * ########################################
 						 */
-						SOLO_rec_page = &Page_repository[heldNdx];
 
 						if ( SOLO_has_rec == OFF ){
 							GRID_CURSOR = SOLO_rec_page->pageNdx;
@@ -784,6 +785,7 @@
 					}
 
 					SOLO_rec_pressed_col = heldCol;
+
 					Rec_repository[heldCol].measure_count = rowZeroTrack;
 					Rec_undo_repository[heldCol].measure_count = rowZeroTrack;
 					create_page_record_track_chain(SOLO_rec_page, rowZeroTrack);

@@ -1464,8 +1464,6 @@ void create_page_record_track_chain(Pagestruct* target_page, unsigned int measur
 
 	col = grid_col(target_page->pageNdx);
 
-	SOLO_rec_measure_count += (unsigned short) measures;
-
 	PAGE_init(target_page, target_page->pageNdx, false);
 	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
 		Track_hard_init( target_page->Track[row], target_page->Track[row]->trackId );

@@ -646,7 +646,7 @@
 	if ( G_run_bit == ON ){
 
 		// Show the row zero measure position
-		if ( SOLO_rec_track_preview == SOLOGRID ){
+		if ( SOLO_rec_track_preview == SOLOGRID && SOLO_big_counter == OFF ){
 
 			if ( GRID_CURSOR != SOLO_assistant_page->pageNdx /* !Arp */ ){
 				// - and end of recording
@@ -682,8 +682,7 @@
 				MIR_write_dot (LED_PROGRAM, MIR_GREEN);
 			}
 		}
-
-		if ( SOLO_rec_track_preview == SOLOPAGE ){
+		else if ( SOLO_rec_track_preview == SOLOPAGE && SOLO_big_counter == OFF ){
 
 			if ( SOLO_scale_chords_program == OFF && GRID_CURSOR != SOLO_assistant_page->pageNdx /* !Arp */ ){
 
@@ -725,7 +724,7 @@
 				MIR_write_dot (LED_PROGRAM, MIR_GREEN);
 			}
 		}
-		else if ( SOLO_rec_track_preview == SOLOMCC ){
+		else if ( SOLO_rec_track_preview == SOLOMCC && SOLO_big_counter == OFF ){
 
 			// MATRIX
 			if ( G_run_bit == ON ){
@@ -1006,117 +1005,6 @@
 
 	if ( SOLO_big_counter == ON ){
 
-		unsigned char card [10][10]; // bitmaps for the numbers
-		card[0][0] = 0;
-		card[1][0] = 24;
-		card[2][0] = 36;
-		card[3][0] = 66;
-		card[4][0] = 129;
-		card[5][0] = 129;
-		card[6][0] = 66;
-		card[7][0] = 36;
-		card[8][0] = 24;
-		card[9][0] = 0;
-
-		card[0][1] = 0;
-		card[1][1] = 12;
-		card[2][1] = 8;
-		card[3][1] = 8;
-		card[4][1] = 8;
-		card[5][1] = 8;
-		card[6][1] = 8;
-		card[7][1] = 8;
-		card[8][1] = 28;
-		card[9][1] = 0;
-
-		card[0][2] = 0;
-		card[1][2] = 60;
-		card[2][2] = 66;
-		card[3][2] = 66;
-		card[4][2] = 32;
-		card[5][2] = 16;
-		card[6][2] = 8;
-		card[7][2] = 4;
-		card[8][2] = 126;
-		card[9][2] = 0;
-
-		card[0][3] = 0;
-		card[1][3] = 28;
-		card[2][3] = 34;
-		card[3][3] = 32;
-		card[4][3] = 16;
-		card[5][3] = 8;
-		card[6][3] = 16;
-		card[7][3] = 34;
-		card[8][3] = 28;
-		card[9][3] = 0;
-
-		card[0][4] = 0;
-		card[1][4] = 34;
-		card[2][4] = 34;
-		card[3][4] = 34;
-		card[4][4] = 126;
-		card[5][4] = 32;
-		card[6][4] = 32;
-		card[7][4] = 32;
-		card[8][4] = 32;
-		card[9][4] = 0;
-
-		card[0][5] = 0;
-		card[1][5] = 62;
-		card[2][5] = 2;
-		card[3][5] = 2;
-		card[4][5] = 28;
-		card[5][5] = 32;
-		card[6][5] = 32;
-		card[7][5] = 34;
-		card[8][5] = 28;
-		card[9][5] = 0;
-
-		card[0][6] = 0;
-		card[1][6] = 56;
-		card[2][6] = 68;
-		card[3][6] = 2;
-		card[4][6] = 2;
-		card[5][6] = 58;
-		card[6][6] = 70;
-		card[7][6] = 36;
-		card[8][6] = 24;
-		card[9][6] = 0;
-
-		card[0][7] = 0;
-		card[1][7] = 124;
-		card[2][7] = 66;
-		card[3][7] = 64;
-		card[4][7] = 32;
-		card[5][7] = 56;
-		card[6][7] = 8;
-		card[7][7] = 4;
-		card[8][7] = 2;
-		card[9][7] = 0;
-
-		card[0][8] = 0;
-		card[1][8] = 28;
-		card[2][8] = 34;
-		card[3][8] = 34;
-		card[4][8] = 20;
-		card[5][8] = 8;
-		card[6][8] = 20;
-		card[7][8] = 34;
-		card[8][8] = 28;
-		card[9][8] = 0;
-
-		card[0][9] = 0;
-		card[1][9] = 28;
-		card[2][9] = 34;
-		card[3][9] = 34;
-		card[4][9] = 60;
-		card[5][9] = 32;
-		card[6][9] = 32;
-		card[7][9] = 32;
-		card[8][9] = 32;
-		card[9][9] = 0;
-
 		unsigned char slice;
 		unsigned char shift;
 		unsigned char mark = ( SOLO_big_count > 0 && SOLO_big_count % 4 == 0 );
@@ -1126,7 +1014,7 @@
 		for (i=0; i < MAX_NROF_PAGES; i++) {
 
 			shift = 8;//i / MATRIX_NROF_ROWS < MATRIX_NROF_ROWS;
-			slice = card[(i % MATRIX_NROF_ROWS)][SOLO_big_count % 10];
+			slice = G_num_card[SOLO_big_count % 10][(i % MATRIX_NROF_ROWS)];
 			if ( slice & (1 << (i / MATRIX_NROF_ROWS ))){
 
 				if ( SOLO_big_count == 0 ){
@@ -1142,7 +1030,7 @@
 			}
 
 			if ( SOLO_big_count / 10 > 0 ){
-				slice = card[(i % MATRIX_NROF_ROWS)][SOLO_big_count / 10];
+				slice = G_num_card[SOLO_big_count / 10][(i % MATRIX_NROF_ROWS)];
 				if ( slice & (1 << (i / MATRIX_NROF_ROWS ))){
 					if (mark == ON){
 						GRID_write_dot(i + MATRIX_NROF_ROWS, MIR_GREEN );

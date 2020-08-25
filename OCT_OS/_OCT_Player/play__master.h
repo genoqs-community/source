@@ -267,7 +267,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 			#ifdef FEATURE_SOLO_REC
 			G_skip_step = NULL;
-			if ( SOLO_big_counter == ON ){
+			if ( SOLO_big_counter == ON && SOLO_rec_record_OTM == OFF ){
 				SOLO_big_count++;
 				if ( SOLO_big_count > 99 ){
 					SOLO_big_counter = OFF;
