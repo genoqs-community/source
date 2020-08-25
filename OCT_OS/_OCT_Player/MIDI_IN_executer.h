@@ -673,6 +673,11 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  							target_row = row_of_track( target_page, target_page->Track[row]->chain_data[NEXT] );
 							#endif
  						}
+						#ifdef FEATURE_SOLO_REC
+ 						else if ( target_col < 15 ){ // not the last column
+							SOLO_rec_measure_hold_OTM = OFF;
+						}
+						#endif
  					}
 
 					#ifdef FEATURE_SOLO_REC
