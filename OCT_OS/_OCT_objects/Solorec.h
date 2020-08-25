@@ -307,6 +307,7 @@ void clearRec(){
 		SOLO_rec_has_MCC = OFF;
 		SOLO_rec_measure_hold = ON;
 		SOLO_rec_rehearsal = OFF;
+		SOLO_rec_record_OTM_latch = OFF;
 		// Clear the pages
 		clear_page_record_track_chain(SOLO_rec_page);
 
