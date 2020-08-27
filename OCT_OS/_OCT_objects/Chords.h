@@ -5043,7 +5043,6 @@ void record_chord_to_track( Pagestruct* target_page,
 	int i;
 	unsigned char pitches[MAX_NOTES];
 	unsigned char chord_id = pitchToChordId(in_pitch);
-	if ( chord_id == NOP ) return;
 	unsigned char tone = toneToIndex( G_scale_ndx );
 	unsigned char scale = currentScaleIndex( SOLO_assistant_page );
 	signed char pitch = (MIDDLE_C + (OCTAVE * SOLO_scale_chords_octave) + SOLO_assistant_page->attr_PIT);
@@ -5058,6 +5057,7 @@ void record_chord_to_track( Pagestruct* target_page,
  		pitch = chord->pitch;
  	}
  	else {
+ 		if ( chord_id == NOP ) return;
  		translateSymbolsToChord(chords[scale][tone][chord_id], pitches, ON);
  	}
 
