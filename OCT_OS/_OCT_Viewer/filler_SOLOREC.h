@@ -353,7 +353,13 @@
 			MIR_write_dot( LED_QUANTIZE_LOW, MIR_RED );
 		}
 		else {
-			MIR_write_dot( (LED_QUANTIZE_LOW + SOLO_quantize_note), MIR_GREEN );
+			if ( SOLO_quantize_type == 1 ){
+				MIR_write_dot( (LED_QUANTIZE_LOW + SOLO_quantize_note), MIR_RED );
+				MIR_write_dot( (LED_QUANTIZE_LOW + SOLO_quantize_note), MIR_GREEN ); // hard limit
+			}
+			else {
+				MIR_write_dot( (LED_QUANTIZE_LOW + SOLO_quantize_note), MIR_GREEN ); // equal pull relative to center
+			}
 		}
 
 		if ( SOLO_rec_quantize_first_beat == TRUE ){

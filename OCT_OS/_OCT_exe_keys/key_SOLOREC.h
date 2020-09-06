@@ -717,7 +717,13 @@
 	// Quantize chord buttons
 	else if (keyNdx >= KEY_QUANTIZE_LOW && keyNdx <= KEY_QUANTIZE_HIGH){
 
+		unsigned char prev = SOLO_quantize_note;
 		SOLO_quantize_note = keyNdx - KEY_QUANTIZE_LOW;
+
+		if ( prev > 0 && prev == SOLO_quantize_note ){
+			SOLO_quantize_type ^= 1;
+		}
+
 		applyEffects(); // Apply the quantize
 	}
 	else if ( SOLO_scale_chords_program == OFF &&

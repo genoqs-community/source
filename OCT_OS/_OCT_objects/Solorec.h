@@ -8,6 +8,7 @@ unsigned char SOLO_quantize_fine_tune_center	= 1; // attract to center (STA_STAR
 unsigned char SOLO_quantize_fine_tune_edge		= 9; // switch polarity from the edge
 unsigned char SOLO_quantize_fine_tune_drop_edge	= OFF; // drop edge notes that would otherwise switch polarity
 unsigned char SOLO_quantize_note 				= 0; // 0=OFF, 1=STA4, 2=STA3, 3=STA2, 4=STA1, 5=STA0
+unsigned char SOLO_quantize_type 				= 0;
 signed char	  SOLO_strum						= 9; // 9=OFF
 unsigned char SOLO_apply_effects_alarm			= OFF;
 unsigned char SOLO_last_controller_mode			= NOP;
@@ -1094,13 +1095,29 @@ void freeflowOff( unsigned char trim ){
 
 void quantizeStep(Stepstruct* target_step, Notestruct* noteRec){
 
-	if ( noteRec->attr_STA > STEP_MAX_START - SOLO_quantize_note ){
+	if ( SOLO_quantize_type == 0 ){ // all steps pull equally relative to center
 
-		target_step->attr_STA = STEP_MAX_START - SOLO_quantize_note;
+		if ( noteRec->attr_STA > STEP_DEF_START ){
+			target_step->attr_STA -= SOLO_quantize_note;
+			if ( target_step->attr_STA < STEP_DEF_START ){
+				target_step->attr_STA = STEP_DEF_START;
+			}
+		}
+		else if ( noteRec->attr_STA < STEP_DEF_START ){
+			target_step->attr_STA += SOLO_quantize_note;
+			if ( target_step->attr_STA > STEP_DEF_START ){
+				target_step->attr_STA = STEP_DEF_START;
+			}
+		}
 	}
-	else if ( noteRec->attr_STA < STEP_MIN_START + SOLO_quantize_note ){
+	else { // hard limit
 
-		target_step->attr_STA = STEP_MIN_START + SOLO_quantize_note;
+		if ( noteRec->attr_STA > STEP_MAX_START - SOLO_quantize_note ){
+			target_step->attr_STA = STEP_MAX_START - SOLO_quantize_note;
+		}
+		else if ( noteRec->attr_STA < STEP_MIN_START + SOLO_quantize_note ){
+			target_step->attr_STA = STEP_MIN_START + SOLO_quantize_note;
+		}
 	}
 }
 
@@ -1200,30 +1217,16 @@ unsigned char fineQuantizeStep(
 
 		if ( target_note->attr_STA < STEP_DEF_START ){ // negative STA
 
-			if ( target_note->attr_STA > center ){ // negative STA distance is too far from center
+			if ( target_note->attr_STA >= STEP_DEF_START - center ){ // negative STA distance is close to center
 
-//				1 > 1 FALSE for STA 1
-//				2 > 1 TRUE for STA 2
-//				3 > 1 TRUE for STA 3
-//				1 > 2 FALSE for STA 1
-//				2 > 2 FALSE for STA 2
-//				3 > 2 TRUE for STA 3
-
-				return TRUE; // this is an include from the center out
+				return FALSE;
 			}
 		}
 		else { // positive STA
 
-			if ( target_note->attr_STA - STEP_DEF_START < STEP_DEF_START - center ){ // positive STA distance is too far from center
+			if ( target_note->attr_STA <= STEP_DEF_START + center ){ // positive STA distance is close to center
 
-//				11 - 6 = 5 < 6 - 1 = 5 FALSE for STA 5
-//				10 - 6 = 4 < 6 - 1 = 5 TRUE for STA 4
-//				09 - 6 = 3 < 6 - 1 = 5 TRUE for STA 3
-//				11 - 6 = 5 < 6 - 2 = 4 FALSE for STA 5
-//				10 - 6 = 4 < 6 - 2 = 4 FALSE for STA 4
-//				09 - 6 = 3 < 6 - 2 = 4 TRUE for STA 3
-
-				return TRUE; // this is an include from the center out
+				return FALSE;
 			}
 		}
 	}
@@ -1234,13 +1237,6 @@ unsigned char fineQuantizeStep(
 		if ( target_note->attr_STA < STEP_DEF_START ){ // negative STA
 
 			if ( target_note->attr_STA <= (8 - edge) ){ // negative STA distance is too far from center
-
-//					1 <= 8 - 7 = 1 TRUE for STA 1
-//					2 <= 8 - 7 = 1 FALSE for STA 2
-//					3 <= 8 - 7 = 1 FALSE for STA 3
-//					1 <= 8 - 6 = 2 TRUE for STA 1
-//					2 <= 8 - 6 = 2 TRUE for STA 2
-//					3 <= 8 - 6 = 2 FALSE for STA 3
 
 				if ( SOLO_quantize_fine_tune_drop_edge == OFF ){ // pivot
 
@@ -1268,14 +1264,7 @@ unsigned char fineQuantizeStep(
 		}
 		else { // positive STA
 
-			if ( STEP_DEF_START - ( target_note->attr_STA - STEP_DEF_START ) <= (8 - edge) ){ // positive STA distance is too far from center
-
-//				6 - (11 - 6 = 5) = 1 <= 8 - 7 = 1 TRUE for STA 11
-//				6 - (10 - 6 = 4) = 2 <= 8 - 7 = 1 FALSE for STA 10
-//				6 - (9 - 6 = 3) = 3 <= 8 - 7 = 1 FALSE for STA 9
-//				6 - (11 - 6 = 5) = 1 <= 8 - 6 = 2 TRUE for STA 11
-//				6 - (10 - 6 = 4) = 2 <= 8 - 6 = 2 TRUE for STA 10
-//				6 - (9 - 6 = 3) = 3 <= 8 - 6 = 2 FALSE for STA 9
+			if ( target_note->attr_STA > STEP_MAX_START - (8 - edge) ){ // positive STA distance is too far from center
 
 				if ( SOLO_quantize_fine_tune_drop_edge == OFF ){ // pivot
 
@@ -1294,7 +1283,7 @@ unsigned char fineQuantizeStep(
 		}
 	}
 
-	return FALSE;
+	return TRUE;
 }
 
 void lengthAdjust(Stepstruct* target_step){
