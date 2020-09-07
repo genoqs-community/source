@@ -626,7 +626,10 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 							unsigned char i=0;
 							for ( i=0; i < MATRIX_NROF_COLUMNS; i++){
 								if ( Step_get_status( target_page->Step[row][i], STEPSTAT_TOGGLE ) == ON ){
-									SOLO_rec_measure_hold_OTM = OFF;
+									target_col = get_next_tracklocator( target_page->Track[row], target_page->Track[row]->attr_LOCATOR ) -1;
+									if ( target_col != i ){
+										SOLO_rec_measure_hold_OTM = OFF;
+									}
 									break;
 								}
 							}
