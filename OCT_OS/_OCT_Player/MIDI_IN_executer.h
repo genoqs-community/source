@@ -1398,9 +1398,11 @@ void midi_PGMCH_execute( unsigned char midi_byte, unsigned char UART_ndx ){
 		G_PGMCH_val = midi_byte; // store the last click value
 	}
 
+	if ( G_zoom_level == zoomSOLOREC ) return;
+	#endif
+	
 	// Only act when REC bit is on..
 	if ( GRID_assistant_page->REC_bit == OFF ) return;
-	#endif
 
 	// Determine channel
 	channel = ( G_running_status_byte_IN_UART[ UART_ndx ] & 0x0F ) + 1;
