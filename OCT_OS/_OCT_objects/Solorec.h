@@ -1063,7 +1063,11 @@ void pageClusterEnterSoloRec(unsigned char pageNdx){
 	copy_page_cluster_to_recording();
 }
 
-void breakSoloRecordingMeasureHold(){
+void breakSoloRecordingMeasureHold(int row){
+
+	if ( row != NOP && grid_row(SOLO_rec_page->pageNdx) != row ){
+		return;
+	}
 
 	if ( SOLO_rec_page != NULL &&
 		 G_run_bit == ON &&

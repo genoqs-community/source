@@ -956,7 +956,7 @@ void Track_record_CC( 	Pagestruct* 	target_page,
  				SOLO_rec_track_preview = SOLOMCC;
  				SOLO_rec_has_MCC = ON;
 
- 				breakSoloRecordingMeasureHold();
+ 				breakSoloRecordingMeasureHold(row);
  				SOLO_rec_measure_hold_OTM = OFF;
  			}
 			#endif

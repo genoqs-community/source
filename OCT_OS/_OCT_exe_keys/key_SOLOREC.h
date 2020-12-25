@@ -23,6 +23,7 @@
 		return; // disable track select buttons
 	}
 
+	/*
 	if ( keyNdx == KEY_BK100 ){
 
 		// D O U B L E - C L I C K  C O N S T R U C T
@@ -51,6 +52,7 @@
 			SOLO_big_count = (SOLO_rec_measure_hold == ON) ? OFF : SOLO_rec_measure_pos;
 		}
 	}
+	*/
 
 	if ( keyNdx == KEY_TEMPO ){
 
