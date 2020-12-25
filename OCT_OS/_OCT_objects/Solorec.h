@@ -1097,9 +1097,9 @@ void freeflowOff( unsigned char trim ){
 	SOLO_rec_freeflow = OFF;
 }
 
-void quantizeStep(Stepstruct* target_step, Notestruct* noteRec){
+void quantizeStep(Stepstruct* target_step, Notestruct* noteRec, unsigned char noteCreate){
 
-	if ( SOLO_quantize_type == 0 ){ // all steps pull equally relative to center
+	if ( noteCreate == OFF && SOLO_quantize_type == 0 ){ // all steps pull equally relative to center
 
 		if ( noteRec->attr_STA > STEP_DEF_START ){
 			target_step->attr_STA -= SOLO_quantize_note;
@@ -1150,7 +1150,7 @@ void capture_note_event(
 	}
 
 	// Quantize notes as they are recorded
-	quantizeStep(target_step, noteRec);
+	quantizeStep(target_step, noteRec, ON);
 
 	SOLO_has_rec = ON;
 }
@@ -1499,7 +1499,7 @@ void applyEffects(){
 											  &total_len,
 											  &total_vel) == TRUE ){
 
-							quantizeStep(target_step, target_note); // apply Quantize
+							quantizeStep(target_step, target_note, OFF); // apply Quantize
 						}
 					}
 
