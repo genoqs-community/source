@@ -797,7 +797,7 @@ void sequencer_START() {
 		){
 
 		#ifdef FEATURE_SOLO_REC
-		if ( G_zoom_level == zoomSOLOREC && SOLO_rec_record_OTM == ON ){
+		if ( G_zoom_level == zoomSOLOREC && SOLO_rec_record_OTM == ON && SOLO_has_rec == OFF ){
 			SOLO_rec_CLOCKSTART_OTM = ON;
 		}
 		else {
