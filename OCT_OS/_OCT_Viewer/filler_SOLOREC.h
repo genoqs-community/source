@@ -47,9 +47,11 @@
 	else if ( SOLO_rec_ending_flash == ON ){
 		MIR_write_dot( LED_PLAY4, MIR_GREEN );
 		MIR_write_dot( LED_PLAY4, MIR_RED );
+		MIR_write_dot( LED_PLAY4, MIR_BLINK );
 	}
 	else {
 		MIR_write_dot( LED_PLAY4, MIR_GREEN );
+		MIR_write_dot( LED_PLAY4, MIR_BLINK );
 	}
 
 	if ( G_run_bit == ON ){
@@ -192,6 +194,7 @@
 			// Legato
 			if ( SOLO_rec_legato == ON ){
 				MIR_write_dot( LED_ZOOM_STEP, MIR_GREEN );
+				MIR_write_dot( LED_ZOOM_STEP, MIR_BLINK );
 			}
 			else {
 				MIR_write_dot( LED_ZOOM_STEP, MIR_RED ); // STEP ZOOM for Legato note length toggle
@@ -412,6 +415,7 @@
 		}
 		else {
 			MIR_write_dot( 197, MIR_RED ); // drop the notes
+			MIR_write_dot( 197, MIR_BLINK ); // drop the notes
 		}
 
 		switch (SOLO_quantize_fine_tune_edge) {
