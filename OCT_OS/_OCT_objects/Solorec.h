@@ -49,7 +49,7 @@ unsigned char SOLO_rec_pressed_col				= OFF;
 unsigned char SOLO_rec_is_tape					= OFF;
 unsigned char SOLO_rec_freeflow					= OFF; // This was renamed to Tape Recording in the manual
 unsigned char SOLO_rec_freeflow_trim			= OFF;
-unsigned char SOLO_rec_ending_flash				= ON;
+unsigned char SOLO_rec_ending_flash				= OFF;
 unsigned char SOLO_rec_continue_recording		= OFF;
 unsigned char SOLO_rec_quantize_first_beat		= ON;
 unsigned char SOLO_rec_legato					= OFF;
@@ -1098,6 +1098,8 @@ void freeflowOff( unsigned char trim ){
 }
 
 void quantizeStep(Stepstruct* target_step, Notestruct* noteRec, unsigned char noteCreate){
+
+	if ( SOLO_quantize_note == OFF ) return;
 
 	if ( noteCreate == OFF && SOLO_quantize_type == 0 ){ // all steps pull equally relative to center
 
