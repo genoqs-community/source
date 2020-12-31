@@ -679,6 +679,8 @@
 						MIR_write_dot( i, MIR_RED );
 					}
 				}
+				// Show the packman at playtime - unless there is a scale selected
+				show ( ELE_OCTAVE_CIRCLE, G_global_locator_PICTURE );
 			}
 			else if ( SOLO_scale_chords == ON )
 			{
@@ -744,11 +746,6 @@
 				MIR_write_lauflicht_track( trackNdx, 9 );
 			}
 			show ( ELE_MATRIX, ATTR_MAP_VALUES );
-		}
-		else {
-
-			// Show the packman at playtime - unless there is a scale selected
-			show ( ELE_OCTAVE_CIRCLE, G_global_locator_PICTURE );
 		}
 	}
 	else {
@@ -1003,6 +1000,7 @@
 			break;
 	}
 
+	/*
 	if ( SOLO_big_counter == ON ){
 		MIR_write_dot( KEY_BK100, MIR_GREEN 	);
 		MIR_write_dot( KEY_BK100, MIR_RED 		);
@@ -1011,7 +1009,7 @@
 	else {
 		MIR_write_dot( KEY_BK100, MIR_GREEN 	);
 	}
-
+	*/
 
 	if ( SOLO_big_counter == ON ){
 
