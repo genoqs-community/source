@@ -1009,6 +1009,7 @@ void playSoloRecCluster(){
 		}
 	}
 
+	SOLO_pos_marker_in = OFF;
 	G_skip_step = NULL;
 	SOLO_prev_stop = SOLO_rec_finalized;
 
@@ -1700,8 +1701,10 @@ void cut_by_pos_markers() {
 		cut_freeflow_track_chain(SOLO_pos_out, last_shift_measure, count_out, OFF);
 	}
 
+	SOLO_pos_marker_in = OFF;
 	SOLO_pos_marker_out = OFF;
 	SOLO_pos_in = NULL;
+	SOLO_pos_out = NULL;
 
 	SOLO_edit_buffer_volatile = ON;
 
