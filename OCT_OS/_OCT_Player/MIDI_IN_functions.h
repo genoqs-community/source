@@ -832,6 +832,13 @@ void record_note_to_track( 	Pagestruct* target_page,
 						target_page->Step[row][target_col]->attr_VEL =
 							adjust_VEL_to_track( in_velocity, target_page->Track[row] );
 
+						#ifdef FEATURE_SOLO_REC
+						// Temporary hack to help understand the STA rollover problem... or, maybe permanent
+						if ( G_zoom_level == zoomSOLOREC && target_start > STEP_MAX_START ){
+							target_start = STEP_DEF_START + ((NOP - target_start) - 1);
+						}
+						#endif
+
 						// START - Fill the step with the right start offset
 						target_page->Step[row][target_col]->attr_STA =
 							target_start;

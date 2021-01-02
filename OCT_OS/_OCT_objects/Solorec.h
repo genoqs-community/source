@@ -302,6 +302,10 @@ void clearRec(){
 		SOLO_pos_marker_out = OFF;
 		SOLO_rec_finalized = OFF;
 		SOLO_rec_transpose = OFF;
+		SOLO_normalize_vel = OFF;
+		SOLO_normalize_len = OFF;
+		SOLO_len_adjust = OFF;
+
 		if ( SOLO_rec_has_MCC == ON && SOLO_rec_track_preview == SOLOMCC ){
 			SOLO_rec_track_preview = SOLOPAGE;
 		}
