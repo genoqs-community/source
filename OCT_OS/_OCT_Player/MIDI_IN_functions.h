@@ -599,6 +599,21 @@ void G_midi_insert_event( 	NOTEeventstruct* in_event,
 		(  (in_event->target_step->event_data & 0x0F) | (multiplier << 4)  );
 
 
+	#ifdef FEATURE_SOLO_REC
+	// Temporary hack to help understand the STA rollover problem... or, maybe permanent
+	if ( G_zoom_level == zoomSOLOREC ){
+		if ( in_event->start > STEP_MAX_START ){
+			in_event->start = STEP_DEF_START + ((NOP - in_event->start) - 1);
+		}
+		else if ( in_event->start < STEP_MIN_START ){
+			in_event->start = STEP_MIN_START;
+		}
+		if ( in_event->start > STEP_MAX_START || in_event->start < STEP_MIN_START ){
+			in_event->start = STEP_DEF_START;
+		}
+	}
+	#endif
+
 	// START
 	in_event->target_step->attr_STA = in_event->start;
 
@@ -840,6 +855,9 @@ void record_note_to_track( 	Pagestruct* target_page,
 							}
 							else if ( target_start < STEP_MIN_START ){
 								target_start = STEP_MIN_START;
+							}
+							if ( target_start > STEP_MAX_START || target_start < STEP_MIN_START ){
+								target_start = STEP_DEF_START;
 							}
 						}
 						#endif
