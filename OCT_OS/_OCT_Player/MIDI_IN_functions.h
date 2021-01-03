@@ -834,8 +834,13 @@ void record_note_to_track( 	Pagestruct* target_page,
 
 						#ifdef FEATURE_SOLO_REC
 						// Temporary hack to help understand the STA rollover problem... or, maybe permanent
-						if ( G_zoom_level == zoomSOLOREC && target_start > STEP_MAX_START ){
-							target_start = STEP_DEF_START + ((NOP - target_start) - 1);
+						if ( G_zoom_level == zoomSOLOREC ){
+							if ( target_start > STEP_MAX_START ){
+								target_start = STEP_DEF_START + ((NOP - target_start) - 1);
+							}
+							else if ( target_start < STEP_MIN_START ){
+								target_start = STEP_MIN_START;
+							}
 						}
 						#endif
 
