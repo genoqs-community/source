@@ -67,7 +67,6 @@ unsigned char SOLO_rec_strum_latch				= OFF;
 unsigned char SOLO_rec_bank						= OFF;
 unsigned char SOLO_rec_rehearsal				= OFF;
 unsigned char SOLO_rec_record_OTM				= OFF;
-unsigned char SOLO_rec_record_OTM_latch			= OFF;
 unsigned char SOLO_rec_CLOCKSTART_OTM			= OFF;
 unsigned char SOLO_rec_track_preview			= SOLOPAGE;
 unsigned char SOLO_rec_has_MCC					= OFF;
@@ -312,7 +311,7 @@ void clearRec(){
 		SOLO_rec_has_MCC = OFF;
 		SOLO_rec_measure_hold = ON;
 		SOLO_rec_rehearsal = OFF;
-		SOLO_rec_record_OTM_latch = OFF;
+
 		// Clear the pages
 		clear_page_record_track_chain(SOLO_rec_page);
 
