@@ -470,6 +470,31 @@
 
 		if ( keyNdx == KEY_PLAY1 ){
 
+			// D O U B L E - C L I C K  C O N S T R U C T
+			// DOUBLE CLICK SCENARIO
+			if (	( DOUBLE_CLICK_TARGET == keyNdx )
+				&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+
+				// Double click code
+				// ...
+				if ( SOLO_rec_page != NULL ){
+					checkpoint_save_undo_track_chain(SOLO_rec_page);
+				}
+
+			} // end of double click scenario
+
+			// SINGLE CLICK SCENARIO
+			else if (DOUBLE_CLICK_TARGET == 0) {
+
+				DOUBLE_CLICK_TARGET = keyNdx;
+				DOUBLE_CLICK_TIMER = ON;
+				// Start the Double click Alarm
+				cyg_alarm_initialize(
+						doubleClickAlarm_hdl,
+						cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+						DOUBLE_CLICK_ALARM_TIME );
+			}
+
 			if ( SOLO_rec_freeflow == ON && SOLO_rec_measure_hold == OFF ){
 				return; // disable play for Freeflow, once measure hold is broken
 			}
@@ -654,6 +679,10 @@
 
 			copyNote(note, undoNote);
 			initNote(note);
+		}
+		else {
+			// Turns the step selection on
+			interpret_matrix_stepkey( row, col, target_page );
 		}
 	}
 

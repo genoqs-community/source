@@ -304,6 +304,11 @@ void clearRec(){
 		SOLO_normalize_vel = OFF;
 		SOLO_normalize_len = OFF;
 		SOLO_len_adjust = OFF;
+		SOLO_quantize_fine_tune_center = 1;
+		SOLO_quantize_fine_tune_edge = 9;
+		SOLO_quantize_fine_tune_drop_edge = OFF;
+		SOLO_quantize_note = 0;
+		SOLO_strum = 9;
 
 		if ( SOLO_rec_has_MCC == ON && SOLO_rec_track_preview == SOLOMCC ){
 			SOLO_rec_track_preview = SOLOPAGE;

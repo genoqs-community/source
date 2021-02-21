@@ -1536,6 +1536,34 @@ void clear_page_record_track_chain(Pagestruct* target_page){
 	}
 }
 
+void checkpoint_save_undo_track_chain(Pagestruct* target_page){
+	int row, col, ndx;
+
+	signed short this_ndx = first_page_in_cluster(target_page->pageNdx);
+	unsigned char page_col;
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		page_col = grid_col(Page_repository[this_ndx].pageNdx);
+
+		// Init each step in each page
+		for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
+			for ( col=0; col < MATRIX_NROF_COLUMNS; col++ ){
+
+				ndx = grid_ndx(row, col);
+				stepToNote(Page_repository[this_ndx].Step[row][col], Rec_undo_repository[page_col].Note[ndx]);
+			}
+		}
+		this_ndx += 10;
+	}
+
+	SOLO_edit_buffer_volatile = ON;
+}
+
 void clear_page_record_mcc_data(Pagestruct* target_page){
 	int row, col;
 
@@ -2830,6 +2858,8 @@ void interpret_matrix_stepkey( 	unsigned char row,
 
 			#ifdef FEATURE_SOLO_REC
 			if ( G_zoom_level == zoomSOLOREC ){ // Steps can only be cleared by touch in SoloRec zoom
+				// Turn the step simply ON
+				Step_set_status( target_step, STEPSTAT_TOGGLE, ON );
 				return;
 			}
 			#endif

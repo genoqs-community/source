@@ -132,7 +132,7 @@ void MIDI_send( 	unsigned char type,
 					|	(val1		<<  8)		// controller / value / pgmchg index / LSB (bender)
 					|	(val2		<< 	0)	);	// value / MSB (bender)
 
-	if ( type == MIDI_START) {
+	if ( type == MIDI_START ) {
 		target_UART = ( val0 <= 16 ) ? 1 : 2;
 		G_out_MIDI[ G_out_MIDI_ndx ] = MIDI_START;
 
