@@ -1562,6 +1562,11 @@ void checkpoint_save_undo_track_chain(Pagestruct* target_page){
 	}
 
 	SOLO_edit_buffer_volatile = ON;
+	MIX_TIMER = ON;
+	// Setup alarm for the MIX TIMER
+	cyg_alarm_initialize(	alarm_hdl,
+							cyg_current_time() + TIMEOUT_VALUE,
+							0 );
 }
 
 void clear_page_record_mcc_data(Pagestruct* target_page){
