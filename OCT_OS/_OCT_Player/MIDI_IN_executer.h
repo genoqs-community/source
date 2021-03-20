@@ -641,7 +641,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  					// Adjust the step start value according to current TTC. Logic: see book p.189
  					if ( offset_TTC <= STEP_DEF_START
 						 #ifdef FEATURE_SOLO_REC
- 					     && G_zoom_level != zoomSOLOREC
+ 					     && ( G_zoom_level != zoomSOLOREC || SOLO_sequencer_rec_mode == OFF )
 						 #endif
  					   ){
 

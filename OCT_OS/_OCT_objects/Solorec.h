@@ -89,8 +89,9 @@ unsigned char SOLO_orig_GRID_CURSOR				= NOP;
 unsigned char SOLO_orig_G_clock_source			= NOP;
 unsigned char SOLO_prev_stop					= ON;
 unsigned char SOLO_mute							= OFF;
-unsigned char SOLO_big_counter					= OFF;
+unsigned char SOLO_big_counter					= OFF; // feature disabled
 unsigned char SOLO_big_count					= OFF;
+unsigned char SOLO_sequencer_rec_mode			= OFF;
 
 Pagestruct*   SOLO_pos_in						= NULL;
 Pagestruct*   SOLO_pos_out						= NULL;

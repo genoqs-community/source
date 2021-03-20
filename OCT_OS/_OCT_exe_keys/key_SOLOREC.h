@@ -916,6 +916,10 @@
 		}
 	}
 
+	if ( keyNdx == KEY_CHAINMODE_1 ){
+		SOLO_sequencer_rec_mode ^= 1;
+	}
+
 	// Fine tune quantize
 	unsigned char xdx = BK_KEY_to_xdx( keyNdx );
 	if ( xdx != OFF ){

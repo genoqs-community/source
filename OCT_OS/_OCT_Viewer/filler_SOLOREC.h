@@ -79,6 +79,14 @@
 		}
 	}
 
+	if ( SOLO_sequencer_rec_mode == ON ){
+		MIR_write_dot( LED_CHAINMODE_1, MIR_GREEN );
+		MIR_write_dot( LED_CHAINMODE_1, MIR_BLINK );
+	}
+	else {
+		MIR_write_dot( LED_CHAINMODE_1, MIR_RED );
+	}
+
 	if ( SOLO_rec_page != NULL ) { // No recording yet
 
 		// Rehearsal
