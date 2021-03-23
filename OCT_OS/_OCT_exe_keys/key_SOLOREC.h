@@ -819,6 +819,7 @@
 					SOLO_rec_page = &Page_repository[heldNdx];
 					GRID_CURSOR = SOLO_rec_page->pageNdx;
 					SOLO_rec_freeflow = ON;
+					SOLO_rec_record_OTM = OFF;
 					SOLO_rec_measure_hold = ON;
 					SOLO_rec_is_tape = ON;
 					Rec_repository[heldCol].measure_count = MATRIX_NROF_ROWS;

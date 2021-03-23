@@ -994,12 +994,11 @@ void applyStrumToPageCluster(){
 void playSoloRecCluster(){
 
 	unsigned int pressed = is_pressed_pagerange();
-	unsigned char pressedNdx, cursor_col, col, offset, i;
+	unsigned char pressedNdx, col, offset, i;
 	Pagestruct* target_page;
 
 	if ( pressed != FALSE ){
 
-		cursor_col = grid_col(GRID_CURSOR);
 		pressedNdx = grid_ndx_from_key(pressed);
 		if ( selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) != NOP ){
 
@@ -1009,8 +1008,8 @@ void playSoloRecCluster(){
 			GRID_p_clock_presel[ SOLO_rec_bank ] = target_page;
 			GRID_CURSOR = target_page->pageNdx;
 			SOLO_transpose_GRID_CURSOR = GRID_CURSOR;
-			col = grid_col(target_page->pageNdx);
-			offset = col - cursor_col;
+			col = grid_col(first_page_in_cluster(target_page->pageNdx));
+			offset = grid_col(target_page->pageNdx) - col;
 
 			for (i=0; i<offset; i++){
 				SOLO_rec_measure_pos += Rec_repository[col + i].measure_count;

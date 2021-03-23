@@ -1537,10 +1537,14 @@ void clear_page_record_track_chain(Pagestruct* target_page){
 }
 
 void checkpoint_save_undo_track_chain(Pagestruct* target_page){
-	int row, col, ndx;
 
-	signed short this_ndx = first_page_in_cluster(target_page->pageNdx);
-	unsigned char page_col;
+	unsigned char pageNdx = target_page->pageNdx;
+	unsigned char this_ndx = first_page_in_cluster(pageNdx);
+	unsigned char start, col;
+
+	SOLO_undo_page_col = grid_col(first_page_in_cluster(pageNdx));
+	SOLO_undo_page_len = grid_col(last_page_in_cluster(pageNdx)) - SOLO_undo_page_col + 1;
+	SOLO_rec_undo_measure_count = SOLO_rec_measure_count;
 
 	// For each page in the record chain
 	// track forward
@@ -1548,18 +1552,23 @@ void checkpoint_save_undo_track_chain(Pagestruct* target_page){
 			(Page_repository[this_ndx].page_clear == OFF)
 	){
 
-		page_col = grid_col(Page_repository[this_ndx].pageNdx);
+		target_page = &Page_repository[this_ndx];
+		col = grid_col(target_page->pageNdx);
+		start = find_record_track_chain_start(target_page);
+		Rec_repository[col].measure_count = MATRIX_NROF_ROWS - start;
+		Rec_undo_repository[col].measure_count = MATRIX_NROF_ROWS - start;
 
-		// Init each step in each page
-		for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
-			for ( col=0; col < MATRIX_NROF_COLUMNS; col++ ){
+		tracksToRec(target_page, &Rec_repository[col]);
+		copyTracks(&Rec_repository[col], &Rec_undo_repository[col]);
 
-				ndx = grid_ndx(row, col);
-				stepToNote(Page_repository[this_ndx].Step[row][col], Rec_undo_repository[page_col].Note[ndx]);
-			}
+		if ( SOLO_rec_page == NULL ){
+			SOLO_rec_bank = grid_row(pageNdx);
+			SOLO_rec_page = target_page;
 		}
 		this_ndx += 10;
 	}
+
+	copy_page_cluster_to_recording();
 
 	SOLO_edit_buffer_volatile = ON;
 	MIX_TIMER = ON;
