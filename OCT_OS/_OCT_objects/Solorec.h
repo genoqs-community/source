@@ -316,7 +316,6 @@ void clearRec(){
 		}
 		SOLO_rec_has_MCC = OFF;
 		SOLO_rec_measure_hold = ON;
-		SOLO_rec_rehearsal = OFF;
 
 		// Clear the pages
 		clear_page_record_track_chain(SOLO_rec_page);
@@ -368,34 +367,32 @@ void externalMIDI_PGMCH(){
 
 	if ( G_prev_PGMCH_val == G_PGMCH_val + 1 ){ // down
 
-		if ( G_track_rec_bit ){ // running, stop
-			stop_solo_rec(FALSE, OFF);
-		}
-		else if ( SOLO_edit_buffer_volatile == OFF ){ // has undo - clear data
-			clearRec();
+		if ( SOLO_edit_buffer_volatile == ON ){ // has undo
+			undoRec(NOP); // undo
 		}
 		else {
-			undoRec(NOP); // undo
+			clearRec();
+			SOLO_rec_measure_hold = ON;
 		}
 	}
 
 	if (( G_prev_PGMCH_val == G_PGMCH_val - 1 ) && G_run_bit == ON ){ // up
-		if ( G_track_rec_bit == OFF ){
+		if ( G_track_rec_bit == OFF ){ // start recording
 			if ( SOLO_rec_finalized == OFF ){
 				SOLO_rec_measure_hold = ON;
 			}
-			G_track_rec_bit = ON;
+			else {
+				G_track_rec_bit = ON;
+			}
+			SOLO_edit_buffer_volatile = OFF;
+			SOLO_rec_record_OTM = SOLO_rec_measure_hold;
 			SOLO_rec_track_preview = SOLOPAGE;
 			SOLO_rec_rehearsal = OFF;
 		}
-		else { // recording, overdub / punch - toggle
-			if ( SOLO_rec_measure_hold == ON ){
-				SOLO_rec_rehearsal = ON;
-				G_track_rec_bit = OFF;
-			}
-			else {
-				SOLO_overdub ^= 1; // toggle
-			}
+		else { // stop recording - rehearse
+			G_track_rec_bit = OFF;
+			SOLO_rec_track_preview = SOLOPAGE;
+			SOLO_rec_rehearsal = ON;
 		}
 	}
 }
@@ -960,6 +957,48 @@ void commitMix(){
 
 	SOLO_edit_buffer_volatile = OFF;
 	SOLO_undo_note_all = OFF;
+}
+
+void checkpoint_save_undo_track_chain(Pagestruct* target_page){
+
+	unsigned char pageNdx = target_page->pageNdx;
+	unsigned char this_ndx = first_page_in_cluster(pageNdx);
+	unsigned char start, col;
+
+	SOLO_undo_page_col = grid_col(first_page_in_cluster(pageNdx));
+	SOLO_undo_page_len = grid_col(last_page_in_cluster(pageNdx)) - SOLO_undo_page_col + 1;
+	SOLO_rec_undo_measure_count = SOLO_rec_measure_count;
+
+	// For each page in the record chain
+	// track forward
+	while ( 	(this_ndx < MAX_NROF_PAGES) &&
+			(Page_repository[this_ndx].page_clear == OFF)
+	){
+
+		target_page = &Page_repository[this_ndx];
+		col = grid_col(target_page->pageNdx);
+		start = find_record_track_chain_start(target_page);
+		Rec_repository[col].measure_count = MATRIX_NROF_ROWS - start;
+		Rec_undo_repository[col].measure_count = MATRIX_NROF_ROWS - start;
+
+		tracksToRec(target_page, &Rec_repository[col]);
+		copyTracks(&Rec_repository[col], &Rec_undo_repository[col]);
+
+		if ( SOLO_rec_page == NULL ){
+			SOLO_rec_bank = grid_row(pageNdx);
+			SOLO_rec_page = target_page;
+		}
+		this_ndx += 10;
+	}
+
+	copy_page_cluster_to_recording();
+
+	SOLO_edit_buffer_volatile = ON;
+	MIX_TIMER = ON;
+	// Setup alarm for the MIX TIMER
+	cyg_alarm_initialize(	alarm_hdl,
+							cyg_current_time() + TIMEOUT_VALUE,
+							0 );
 }
 
 void applyStrumToPageCluster(){

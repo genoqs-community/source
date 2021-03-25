@@ -1379,10 +1379,7 @@ void midi_PGMCH_execute( unsigned char midi_byte, unsigned char UART_ndx ){
 
 			// Double click code
 			// ...
-			saveRec();
-			SOLO_rec_track_preview = SOLOGRID;
-
-			G_PGMCH_val = NOP;
+			checkpoint_save_undo_track_chain( &Page_repository[GRID_CURSOR] );
 		}
 
 		// SINGLE CLICK SCENARIO
