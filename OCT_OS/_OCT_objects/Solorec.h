@@ -92,6 +92,7 @@ unsigned char SOLO_mute							= OFF;
 unsigned char SOLO_big_counter					= OFF; // feature disabled
 unsigned char SOLO_big_count					= OFF;
 unsigned char SOLO_sequencer_rec_mode			= OFF;
+unsigned char SOLO_rec_has_checkpoint 			= OFF;
 
 Pagestruct*   SOLO_pos_in						= NULL;
 Pagestruct*   SOLO_pos_out						= NULL;
@@ -269,6 +270,7 @@ void enterSoloRec(){
 
 	CLEAR_BIT(SOLO_assistant_page->trackMutepattern, 0); // un-mute the Arp track
 	SOLO_has_scale = ON;
+	SOLO_rec_has_checkpoint = OFF;
 	G_zoom_level = zoomSOLOREC;
 }
 
@@ -994,6 +996,7 @@ void checkpoint_save_undo_track_chain(Pagestruct* target_page){
 	copy_page_cluster_to_recording();
 
 	SOLO_edit_buffer_volatile = ON;
+	SOLO_rec_has_checkpoint = ON;
 	MIX_TIMER = ON;
 	// Setup alarm for the MIX TIMER
 	cyg_alarm_initialize(	alarm_hdl,
@@ -1194,7 +1197,7 @@ void capture_note_event(
 	stepToNote(target_step, noteRec);
 
 //	diag_printf("cap r:%d c:%d l:%d off:%d\n", row, step_col, target_step->attr_LEN, target_step->attr_VEL);
-	if ( SOLO_rec_finalized == OFF ){
+	if ( SOLO_rec_finalized == OFF && SOLO_rec_has_checkpoint == OFF ){
 //		diag_printf("undo\n");
 		copyNote(noteRec, Rec_undo_repository[col].Note[idx]); // undo
 	}
