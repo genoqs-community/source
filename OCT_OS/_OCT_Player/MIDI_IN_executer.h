@@ -649,6 +649,11 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  						target_col 		= target_page->Track[row]->attr_LOCATOR -1;
  						target_start 	= offset_TTC-1 + 6;
 
+						#ifdef FEATURE_SOLO_REC
+ 						if ( target_col == 1 ){
+							SOLO_rec_measure_hold_OTM = OFF;
+						}
+						#endif
  					}
  					else {
 
