@@ -26,21 +26,29 @@
 		// Write Grid to MIR - this is necessary here..
 		MIR_write_GRID ();
 
-
+		unsigned char is_peek_chase = NEMO_lauflicht_track != OFF ? TRUE : FALSE;
+		unsigned char NEMO_lauflicht_ndx = my_bit2ndx( NEMO_lauflicht_track & 0x0F );
 		// SHOW PLAYSTATUS OF TRACKS - OFF/ON/SOLO (red/green/orange)
 		for ( j=0; j < GRID_NROF_BANKS; j++ ){
-
 			// If the page is playing in the grid
-			if (	( is_selected_in_GRID( GRID_p_selection[j] ))
+			if (	( page_is_selected_in_GRID( GRID_p_selection[j] ))
 				&&	( GRID_p_selection[j] != NULL )
 				// &&	( GRID_p_clock_presel[j]->page_clear != ON )
 				){
-				if( !row_in_page_window( j ) )
+				if( 	( !row_in_page_window( j ) )
+					||	( ( is_peek_chase )
+					&& 	( NEMO_lauflicht_ndx == j - shiftPageRow ) )
+					) {
 					continue;
+				}
 				// Show the preselection of the page that is active in the bank
 				GRID_write_mutepattern( GRID_p_selection[j], j - shiftPageRow );
+
+				// Col 16 button Track mute toggle
+				if( GRID_p_selection[j]->trackMutepattern ) {
+					MIR_write_dot( 176 + j - shiftPageRow, MIR_GREEN );
+				} else if( GRID_p_selection[j]->trackMutepatternStored ) {
+					MIR_write_dot( 176 + j - shiftPageRow, MIR_RED );
+				}
 			}
 		}
-
-
-

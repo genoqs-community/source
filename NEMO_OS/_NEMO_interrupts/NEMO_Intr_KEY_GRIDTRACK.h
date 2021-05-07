@@ -68,6 +68,16 @@
 			}
 
 			GRIDTRACK_OPS_mode = INTERACTIVE;
+
+			if  ( 	( !CHECK_BIT( NEMO_lauflicht_track, 4 ) )
+				&&	( !is_pressed_key( KEY_MIXTGT_USR1 ) )
+				&&	( !is_pressed_key( KEY_MIXTGT_USR2 ) )
+				&&	( !is_pressed_key( KEY_MIXTGT_USR3 ) )
+				&&	( !is_pressed_key( KEY_MIXTGT_USR4 ) )
+			) {
+				// Cancel chase latching
+				NEMO_lauflicht_track = OFF;
+			}
 		}
 		// d_iag_printf( "Intr_KEY_GRIDTRACK switch to INTERACTIVE\n" );
 	}

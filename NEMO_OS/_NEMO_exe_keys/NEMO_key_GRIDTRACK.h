@@ -102,7 +102,25 @@
 		// SELECTORS
 		else if ((keyNdx >0) && (keyNdx <= 10)) {
 			// Toggle the playmodes for the GRID bank.
-			GRID_bank_playmodes ^= 1 << (keyNdx-1);
+			if (	( DOUBLE_CLICK_TARGET == keyNdx )
+				&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+				// Toggle Mute across cluster
+				TOGGLE_BIT( GRID_assistant_page->trackMutepattern, keyNdx - 1 );
+			}
+			// SINGLE CLICK SCENARIO
+			else if (DOUBLE_CLICK_TARGET == 0) {
+
+					DOUBLE_CLICK_TARGET = keyNdx;
+					DOUBLE_CLICK_TIMER = ON;
+					// Start the Double click Alarm
+					cyg_alarm_initialize(
+							doubleClickAlarm_hdl,
+							cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+							DOUBLE_CLICK_ALARM_TIME );
+
+				// Single click code
+				GRID_bank_playmodes ^= 1 << ( keyNdx - 1 );
+			}
 		}
 				
 
@@ -184,46 +202,51 @@
 		// MUTE MASTER
 		//
 		if (keyNdx == KEY_MUTE_MASTER) {
-	
 			// D O U B L E - C L I C K
-			if ((DOUBLE_CLICK_TARGET == keyNdx) 
+			if ((DOUBLE_CLICK_TARGET == keyNdx)
 					&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
 				// This is a double click victim - Mute all tracks
 				// GRID_bank_mutepattern = 0x3ff;
-				// GRID_bank_mutepattern_stored = GRID_bank_mutepattern;							
+				// GRID_bank_mutepattern_stored = GRID_bank_mutepattern;
 			}
-	
+
 			// Step_activity is ON: turn it OFF or SELECT it
 			else if (DOUBLE_CLICK_TARGET == 0) {
-	
+
 				DOUBLE_CLICK_TARGET = keyNdx;
 				DOUBLE_CLICK_TIMER = ON;
 				// Start the Double click Alarm
-				cyg_alarm_initialize(	
-						doubleClickAlarm_hdl, 
+				cyg_alarm_initialize(
+						doubleClickAlarm_hdl,
 						cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
 						DOUBLE_CLICK_ALARM_TIME );
-	
+
 				// SINGLE CLICK CODE
+				bool is_unarm_page_operation = false;
 				for ( i=0; i < GRID_NROF_BANKS; i++ ){
-	
-					// Make sure there is a page playing in the bank pressed
-					if ( GRID_p_selection[ i ] != NULL ){
-			
-						// Toggle the mutepatterns in the pages active in the bank			
-						if ( GRID_p_selection[ i ]->trackMutepattern != 0) {
-			
-							GRID_p_selection[ i ]->trackMutepatternStored = 
-												GRID_p_selection[ i ]->trackMutepattern;
-							GRID_p_selection[ i ]->trackMutepattern = 0;
-						}
-						else {						
-							// Then fill the mutepattern from store
-							GRID_p_selection[ i ]->trackMutepattern = 
-								GRID_p_selection[ i ]->trackMutepatternStored;
-						}			
+					if ( G_on_the_measure_operation[i] ) {
+						unarm_page_otm_operation( GRID_p_selection[i], OPERATION_MUTE );
+						unarm_page_otm_operation( GRID_p_selection[i], OPERATION_SOLO );
+						is_unarm_page_operation = true;
 					}
-				} // Bank iterator
+				}
+
+				if( !is_unarm_page_operation ) {
+					for ( i=0; i < GRID_NROF_BANKS; i++ ){
+						// Make sure there is a page playing in the bank pressed
+						if ( GRID_p_selection[i] != NULL ){
+							// Toggle the mutepatterns in the pages active in the bank
+							if ( GRID_p_selection[i]->trackMutepattern != 0 ) {
+								GRID_p_selection[i]->trackMutepatternStored = GRID_p_selection[i]->trackMutepattern;
+								apply_page_mute_pattern_operation( GRID_p_selection[i], 0x0, MASK( OPERATION_MUTE ) | MASK( OPERATION_NOSTORE ) );
+							}
+							else {
+								// Then fill the mutepattern from store
+								apply_page_mute_pattern_operation( GRID_p_selection[i], GRID_p_selection[i]->trackMutepatternStored, MASK( OPERATION_MUTE ) );
+							}
+						}
+					} // Bank iterator
+				}
 			}
 		} // MUTE_MASTER
 
@@ -232,19 +255,18 @@
 		//
 		// MIXER MAPS
 		//	
-		if (	
+		if (
 				( (keyNdx == KEY_MIXTGT_USR1) )
 			||	( (keyNdx == KEY_MIXTGT_USR2) ) 
 			||	( (keyNdx == KEY_MIXTGT_USR3) )
 			||	( (keyNdx == KEY_MIXTGT_USR4) )
-			||	( (keyNdx == KEY_MIXTGT_USR5) ) 
+			||	( (keyNdx == KEY_MIXTGT_USR5) )
 			){
 			
 //			// D O U B L E - C L I C K  C O N S T R U C T
 //			// DOUBLE CLICK SCENARIO
-//			if ((DOUBLE_CLICK_TARGET == keyNdx) 
-//					&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
-//		
+			if ((DOUBLE_CLICK_TARGET == keyNdx)
+					&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
 //				// Double click code
 //				// ...
 //				// Zoom into the clicked mix target
@@ -252,10 +274,11 @@
 //				// Select GRID CCMAP MODE and become PASSIVE
 //				GRID_play_mode 		= GRID_CCMAP;
 //				GRIDTRACK_OPS_mode 	= PASSIVE;
-//			} // end of double click scenario 
+				TOGGLE_BIT( NEMO_lauflicht_track, 4 );
+			} // end of double click scenario
 					
 			// SINGLE CLICK SCENARIO
-//			else if (DOUBLE_CLICK_TARGET == 0) {
+			else if (DOUBLE_CLICK_TARGET == 0) {
 				
 					DOUBLE_CLICK_TARGET = keyNdx;
 					DOUBLE_CLICK_TIMER 	= ON;
@@ -264,21 +287,29 @@
 							doubleClickAlarm_hdl, 
 							cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
 							DOUBLE_CLICK_ALARM_TIME );
-		
 				// Single click code
 				// ...				
 				// Just simply switch to the chosen mix target.
-				switch( keyNdx ){
-	
-					// case KEY_MIXTGT_USR0: 	GRID_assistant_page->mixTarget = MIXTGT_USR0; 	break;
-					case KEY_MIXTGT_USR1: 	GRID_assistant_page->mixTarget = MIXTGT_USR1; 	break;
-					case KEY_MIXTGT_USR2: 	GRID_assistant_page->mixTarget = MIXTGT_USR2; 	break;
-					case KEY_MIXTGT_USR3: 	GRID_assistant_page->mixTarget = MIXTGT_USR3; 	break;
-					case KEY_MIXTGT_USR4: 	GRID_assistant_page->mixTarget = MIXTGT_USR4; 	break;
-					case KEY_MIXTGT_USR5: 	GRID_assistant_page->mixTarget = MIXTGT_USR5; 	break;		
+				if( is_pressed_key( KEY_MIX_MASTER ) ) {
+					switch( keyNdx ){
+
+						// case KEY_MIXTGT_USR0: 	GRID_assistant_page->mixTarget = MIXTGT_USR0; 	break;
+						case KEY_MIXTGT_USR1: 	GRID_assistant_page->mixTarget = MIXTGT_USR1; 	break;
+						case KEY_MIXTGT_USR2: 	GRID_assistant_page->mixTarget = MIXTGT_USR2; 	break;
+						case KEY_MIXTGT_USR3: 	GRID_assistant_page->mixTarget = MIXTGT_USR3; 	break;
+						case KEY_MIXTGT_USR4: 	GRID_assistant_page->mixTarget = MIXTGT_USR4; 	break;
+						case KEY_MIXTGT_USR5: 	GRID_assistant_page->mixTarget = MIXTGT_USR5; 	break;
+					}
+				} else {
+					switch( keyNdx ){
+						case KEY_MIXTGT_USR1: 	SET_APPLY_MASK( NEMO_lauflicht_track, 0xF0 ); SET_BIT( NEMO_lauflicht_track, NEMO_ROW_I ); 	break;
+						case KEY_MIXTGT_USR2: 	SET_APPLY_MASK( NEMO_lauflicht_track, 0xF0 ); SET_BIT( NEMO_lauflicht_track, NEMO_ROW_II ); 	break;
+						case KEY_MIXTGT_USR3: 	SET_APPLY_MASK( NEMO_lauflicht_track, 0xF0 ); SET_BIT( NEMO_lauflicht_track, NEMO_ROW_III );	break;
+						case KEY_MIXTGT_USR4: 	SET_APPLY_MASK( NEMO_lauflicht_track, 0xF0 ); SET_BIT( NEMO_lauflicht_track, NEMO_ROW_IV ); 	break;
+					}
 				}
 
-//			} // Single click scenario
+			} // Single click scenario
 
 		} // MIX TARGET KEY pressed
 	

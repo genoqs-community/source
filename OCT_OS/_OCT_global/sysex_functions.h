@@ -214,7 +214,7 @@ void my_sysex_dump( unsigned char dump_type, unsigned char pageNdx, int objectIx
 			break;
 
 		case def_SCENE_SYSEX_DUMP:
-			//diag_printf( "sysex dump scene\n");
+			//// d_iag_printf( "sysex dump scene\n");
 			checksum ^= send_sysex_scene();
 			break;
 	}

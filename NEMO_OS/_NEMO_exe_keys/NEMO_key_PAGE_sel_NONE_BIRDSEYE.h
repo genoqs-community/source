@@ -121,7 +121,7 @@
 
 			case KEY_PLAY1:
 				// Toggle the page playing status - classic toggle behavior
-				switch ( is_selected_in_GRID( target_page ) ) {
+				switch ( page_is_selected_in_GRID( target_page ) ) {
 					case ON:
 						grid_select( target_page, OFF );
 						break;
@@ -213,7 +213,7 @@
 
 			case KEY_FLT:
 				// Only active pages can be flipped. Break on inactive page
-				if (is_selected_in_GRID( &Page_repository[GRID_CURSOR] ) == OFF){
+				if (page_is_selected_in_GRID( &Page_repository[GRID_CURSOR] ) == OFF){
 					break;
 				}
 

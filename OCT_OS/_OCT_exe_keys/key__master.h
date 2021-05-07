@@ -85,8 +85,6 @@ void executeKey( unsigned int keyNdx ){
 	// Page pointer holder
 	Pagestruct* temp_page = NULL;
 	static Pagestruct* previous_page = NULL;
-	static Pagestruct* prev_previous_page = NULL; // used to validate page cluster selections
-	static unsigned char prev_previous_page_clear = ON;
 	// Used for syntax simplification
 	signed char* val_ptr = NULL;
 

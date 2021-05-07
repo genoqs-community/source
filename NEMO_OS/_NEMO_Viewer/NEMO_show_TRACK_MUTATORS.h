@@ -28,8 +28,6 @@
 
 	// Differentiate between single and multi selection
 	for (i=0; i<MATRIX_NROF_ROWS; i++){
-		if ( !row_in_track_window( target_page, i ) )
-			continue;
 
 		if ((target_page->trackSelection & (1<<i)) > 0) {
 			if ((target_page->trackSelection ^ (1<<i)) > 0) { 
@@ -43,6 +41,7 @@
 		}
 	}
 	
+	unsigned char otm_pattern = OFF;
 	switch (content) {
 		
 		case GRID_SET_SWITCHMODE:
@@ -103,33 +102,58 @@
 
 
 		case TRACK_MUTEPATTERN:
+			row = target_page->pageNdx % 10;
+			otm_pattern = OFF;
+			if ( 	( CHECK_BIT( G_on_the_measure_mod_bit, row ) )
+				&&	( G_on_the_measure_pattern_pageNdx[row] == target_page->pageNdx ) ) {
+				if ( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_MUTE ) ) {
+					unsigned short mutePattern = DIFF_MASK( G_on_the_measure_pattern[row][OPERATION_MUTE], target_page->trackMutepattern ) >> shiftTrackRow;
+					SET_MASK( otm_pattern, mutePattern );
 
-			// On the measure mutepattern
-			if ( G_on_the_measure_operation != OFF ) {
-				unsigned short mutePattern = 0;
-				if ( CHECK_BIT( G_on_the_measure_operation, OPERATION_MASK ) ) {
-					mutePattern = CHECK_BIT( G_on_the_measure_operation, OPERATION_MUTE ) ?
-							target_page->trackMutepattern ^ G_on_the_measure_trackMutepattern :
-							target_page->trackSolopattern ^ G_on_the_measure_trackMutepattern;
-				} else {
-					mutePattern = get_otm_track_pattern();
+					if ( page_is_selected_in_MAC_bank( target_page ) ) {
+						MIR_write_buttool (RHS, mutePattern, MIR_SHINE_RED );
+					} else {
+						MIR_write_buttool ( RHS, mutePattern, MIR_RED );
+						MIR_write_buttool ( RHS, mutePattern, MIR_BLINK );
+					}
 				}
-				MIR_write_buttool (RHS, mutePattern >> shiftTrackRow, MIR_RED);
-				MIR_write_buttool (RHS, mutePattern >> shiftTrackRow, MIR_BLINK);
-				if ( CHECK_BIT( G_track_page_chain_mod_bit, CLUSTER_MOD ) ) {
-					MIR_write_buttool (RHS, mutePattern >> shiftTrackRow, MIR_GREEN);
+
+				if 	( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO ) ) {
+					unsigned short soloPattern = DIFF_MASK( G_on_the_measure_pattern[row][OPERATION_SOLO], target_page->trackSolopattern ) >> shiftTrackRow;
+					SET_MASK( otm_pattern, soloPattern );
 				}
 			}
 
-			MIR_write_buttool (RHS, target_page->trackMutepattern >> shiftTrackRow, MIR_RED);
+			MIR_write_buttool ( RHS, APPLY_MASK( target_page->trackMutepattern >> shiftTrackRow, ~otm_pattern ), MIR_RED);
 
 			break;
 			
 
 
 		case TRACK_SOLOPATTERN:
-			MIR_write_buttool (RHS, target_page->trackSolopattern >> shiftTrackRow, MIR_GREEN);
-			// MIR_write_buttool (RHS, target_page->trackSolopattern, MIR_BLINK);
+			row = target_page->pageNdx % 10;
+			otm_pattern = OFF;
+			if ( 	( CHECK_BIT( G_on_the_measure_mod_bit, row ) )
+				&&	( G_on_the_measure_pattern_pageNdx[row] == target_page->pageNdx ) ) {
+				if ( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO ) ) {
+					unsigned short soloPattern = DIFF_MASK( G_on_the_measure_pattern[row][OPERATION_SOLO], target_page->trackSolopattern ) >> shiftTrackRow;
+					SET_MASK( otm_pattern, soloPattern );
+
+					if ( page_is_selected_in_MAC_bank( target_page ) ) {
+						MIR_write_buttool (RHS, soloPattern, MIR_SHINE_GREEN );
+					} else {
+						MIR_write_buttool ( RHS, soloPattern, MIR_GREEN );
+						MIR_write_buttool ( RHS, soloPattern, MIR_BLINK );
+					}
+				}
+
+				if 	( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_MUTE ) ) {
+					unsigned short mutePattern = DIFF_MASK( G_on_the_measure_pattern[row][OPERATION_MUTE], target_page->trackMutepattern ) >> shiftTrackRow;
+					SET_MASK( otm_pattern, mutePattern );
+				}
+			}
+
+			MIR_write_buttool (RHS, APPLY_MASK( target_page->trackSolopattern >> shiftTrackRow, ~otm_pattern ), MIR_GREEN);
 			break;
 		
 		
@@ -182,7 +206,7 @@
 
 			// SOLO: If the track is soloed, blink the SOLO LED
 			for (row=0; row<MATRIX_NROF_ROWS; row++) {
-				if ( (((i<<row) & target_page->trackSolopattern) != 0) && 
+				if ( (((i<<row) & target_page->trackSolopattern) != 0) &&
 					 (((i<<row) & target_page->trackSelection)   != 0)    ) {
 					MIR_write_dot (KEY_SOLO, MIR_BLINK);
 				}
@@ -407,7 +431,7 @@
 	
 		case PAGE_FUNCTIONS:
 			// TOGGLE - Light up the PLAY key if stopped and the STOP key if playing
-			if ( is_selected_in_GRID( &Page_repository[GRID_CURSOR]) ){
+			if ( page_is_selected_in_GRID( &Page_repository[GRID_CURSOR]) ){
 				MIR_write_dot( LED_PLAY1, MIR_RED );
 			}
 			else{
@@ -434,8 +458,18 @@
 				MIR_write_dot( LED_PASTE, MIR_GREEN );
 			}					
 			
+			if ( G_zoom_level == zoomGRID ) {
+				if ( CHECK_BIT( page_cluster_op, PGM_CLST_CPY ) ) {
+					MIR_write_dot( LED_COPY, MIR_BLINK );
+				}
+
+				if ( CHECK_BIT( page_cluster_op, PGM_CLST_CLR ) ) {
+					MIR_write_dot( LED_CLEAR, MIR_BLINK );
+				}
+			}
+
 			// SOLO: show only when page under cursor is selected
-			if (	(is_selected_in_GRID( &Page_repository[GRID_CURSOR] ) ) 
+			if (	(page_is_selected_in_GRID( &Page_repository[GRID_CURSOR] ) ) 
 				&&	(Page_repository[GRID_CURSOR].page_clear == OFF) 
 				){
 				MIR_write_dot( LED_MUTE_MASTER, MIR_RED );

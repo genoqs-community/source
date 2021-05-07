@@ -315,7 +315,7 @@
 		if (target_page->trackSelection != 0){
 			break;
 		}
-
+		row = target_page->pageNdx % 10;
 //		// Check if a STEP key is pressed. If so, skip that step.
 //		unsigned char temp = is_pressed_steprange();
 //		if ( temp != 0 ){
@@ -352,20 +352,26 @@
 				}
 			}
 		}
-
-
-		// Clear the solopattern if it exist
-		else if (target_page->trackSolopattern != 0) {
-			apply_page_mute_pattern_operation( target_page, 0x0, OPERATION_SOLO );
+		else if (G_on_the_measure_operation[row]) {
+			unarm_page_otm_operation( target_page, OPERATION_MUTE );
+			unarm_page_otm_operation( target_page, OPERATION_SOLO );
+		}
+		// Clear the solo pattern if it exist
+		else if (	( target_page->trackSolopattern != 0 )
+				||	( G_on_the_measure_pattern[row][OPERATION_SOLO] != OFF )
+				) {
+			apply_page_mute_pattern_operation( target_page, 0x0, MASK( OPERATION_SOLO ) );
 		}
 		else {
-			// Then clear the solopattern
-			if (target_page->trackMutepattern != 0) {
-				apply_page_mute_pattern_operation( target_page, 0x0, OPERATION_MUTE );
+			// Then clear the mute pattern
+			if (	( target_page->trackMutepattern != 0 )
+				&&	( G_on_the_measure_pattern[row][OPERATION_MUTE] == OFF )
+				) {
+				apply_page_mute_pattern_operation( target_page, 0x0, MASK( OPERATION_MUTE ) | MASK( OPERATION_NOSTORE ) );
 			}
 			else {
-				// Then fill the mutepattern from store
-				apply_page_mute_pattern_operation( target_page, target_page->trackMutepatternStored, OPERATION_MUTE );
+				// fill the mute pattern from store
+				apply_page_mute_pattern_operation( target_page, target_page->trackMutepatternStored, MASK( OPERATION_MUTE ) );
 			}
 		}
 
@@ -373,7 +379,11 @@
 		if ((DOUBLE_CLICK_TARGET == keyNdx)
 				&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
 			// This is a double click victim - Mute all tracks
-			apply_page_mute_pattern_operation( target_page, 0xFF, OPERATION_MUTE );
+			if (target_page->trackSolopattern != 0) {
+				// Remove solo pattern immediately
+				target_page->trackSolopattern = OFF;
+			}
+			apply_page_mute_pattern_operation( target_page, 0xFF, MASK( OPERATION_MUTE ) );
 			target_page->trackMutepatternStored = target_page->trackMutepattern;
 		}
 
@@ -428,23 +438,22 @@
 		else if (   (target_page->trackSelection == 0)
 			&& (target_page->stepSelection  == 0)  ){
 
-
 			// If the button pressed falls within the solo pattern, disable its solo status..
 			// ..considering the chaimode settings
-			if ( ((1<<(keyNdx-187)) & target_page->trackSolopattern) != 0 ){
+			if ( 	( has_solo_row_state( target_page, keyNdx - 187 ) )
+				||  ( has_solo_row_future_state( target_page, keyNdx - 187 ) ) ) {
 				current_track = target_page->Track[ keyNdx-187 ];
-				apply_page_track_mute_toggle_operation( target_page, current_track, OPERATION_SOLO );
+				apply_page_track_mute_toggle_operation( target_page, current_track, MASK( OPERATION_SOLO ) );
 
 				// Need to break here, otherwise the key press gets executed further
 				break;
 			}
 
 
-
 			// If there is no active mutepattern, use fresh store variable
 			if (target_page->trackMutepattern == 0) {
 
-				target_page->trackMutepatternStored = 0;
+//				target_page->trackMutepatternStored = 0;
 			}
 
 
@@ -455,7 +464,7 @@
 
 			// Start with the pressed track.
 			current_track = target_page->Track[ keyNdx-187 ];
-			apply_page_track_mute_toggle_operation( target_page, current_track, OPERATION_MUTE );
+			apply_page_track_mute_toggle_operation( target_page, current_track, MASK( OPERATION_MUTE ) );
 
 			// D O U B L E - C L I C K
 			if ((DOUBLE_CLICK_TARGET == keyNdx)
@@ -464,8 +473,8 @@
 
 				// This is a double click victim, so add track to Solopattern,
 				// ..considering the chain mode settings.
-				if ( ((1<<(keyNdx-187)) & target_page->trackMutepattern) == 0 ) {
-					apply_page_track_mute_toggle_operation( target_page, current_track, OPERATION_SOLO );
+				if ( 1 << ( keyNdx-187 ) ) {
+					apply_page_track_mute_toggle_operation( target_page, current_track, MASK( OPERATION_SOLO ) );
 				} // double click key was not in mutepattern
 			}// Double click victim.
 
@@ -494,30 +503,10 @@
 	key_exe_chainselectors( keyNdx );
 
 	if ( keyNdx == KEY_ZOOM_TRACK ) {
-		// D O U B L E - C L I C K  C O N S T R U C T
-		// DOUBLE CLICK SCENARIO
-		if ((DOUBLE_CLICK_TARGET == keyNdx)
-				&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
-
-			// Double click code
-			// ...
-			// Enable on the measure operations
-			TOGGLE_BIT( G_track_page_chain_mod_bit, ON_THE_MEASURE_MOD );
-		} // end of double click scenario
-
-		// SINGLE CLICK SCENARIO
-		else if (DOUBLE_CLICK_TARGET == 0) {
-
-				DOUBLE_CLICK_TARGET = keyNdx;
-				DOUBLE_CLICK_TIMER = ON;
-				// Start the Double click Alarm
-				cyg_alarm_initialize(
-						doubleClickAlarm_hdl,
-						cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
-						DOUBLE_CLICK_ALARM_TIME );
-
-			// Single click code
-			// ...
+		unsigned char row = target_page->pageNdx % 10;
+		TOGGLE_BIT( G_on_the_measure_mod_bit, row );
+		if ( CHECK_BIT( G_on_the_measure_mod_bit, row ) ) {
+			bank_reset_on_the_measure(row);
 		}
 	}
 
@@ -685,8 +674,11 @@
 			target_page->trackSelection = 0;
 		} else if ( SEQUENCER_JUST_STARTED == TRUE ) {
 			if( 	( G_track_rec_bit == ON )
-				&&	( is_selected_in_active_bank( target_page ) ) ) {
-				GRID_CURSOR = Page_leftmost_neighbour( target_page )->pageNdx;
+				&&	( page_is_selected_in_active_bank( target_page ) ) ) {
+				Pagestruct* leftmost_neighbour = Page_leftmost_neighbour( target_page );
+				if	( page_is_selected_in_GRID( leftmost_neighbour ) ) {
+					GRID_CURSOR = leftmost_neighbour->pageNdx;
+				}
 			}
 
 			if( page_is_chain_follow( target_page ) ) {

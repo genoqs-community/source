@@ -49,7 +49,7 @@ extern 	void 			sequencer_HALT();
 #ifdef FEATURE_ENABLE_SONG_UPE
 extern	void			sequencer_command_PAUSE(unsigned char measure_scrolling);
 extern	void 			select_page_preselections();
-extern  unsigned char 	is_pre_selected_in_GRID( Pagestruct* target_page );
+extern  unsigned char 	PAGE_is_pre_selected_in_GRID( Pagestruct* target_page );
 
 extern 	void 			copy_ctrl_step_to_track( Pagestruct* page, Trackstruct* track, Stepstruct* step );
 extern	void 			copy_ctrl_track_to_step( Pagestruct* page, Trackstruct* track, Stepstruct* step );
@@ -58,11 +58,9 @@ extern	void 			quick_assign_control_track ( Pagestruct* target_page, unsigned ch
 extern	void 			make_control_track ( Pagestruct* target_page, unsigned char trackIdx );
 #endif
 
-extern unsigned short 	get_otm_track_pattern();
-extern unsigned int 	is_page_in_cluster( Pagestruct* temp_page, unsigned char pageNdx );
 extern void 			apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track, unsigned char operation );
 extern void 			apply_page_cluster_mute_pattern( Pagestruct* target_page, unsigned short pattern, unsigned char operation );
-extern void 			apply_page_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track, unsigned short* trackMutepattern );
+extern unsigned short	apply_page_track_mute( Pagestruct* target_page, Trackstruct* current_track, unsigned short* trackMutepattern );
 extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
 extern	void 			align_measure_locators();
 
@@ -82,7 +80,11 @@ extern 	void 			G_TIMER_REFILL_update();
 extern 	unsigned int 	G_scanRots();
 
 
-extern 	unsigned char 	selection_change_request_pending();
+extern 	bool 			selection_change_request_pending();
+extern  bool 			page_is_selected_in_GRID( Pagestruct* target_page );
+extern 	bool 			page_is_selected_in_active_bank( Pagestruct* target_page );
+extern 	bool 			page_is_selected_in_MAC_bank( Pagestruct* target_page );
+
 extern 	void 			show( 					unsigned int target,
 												unsigned int content );
 

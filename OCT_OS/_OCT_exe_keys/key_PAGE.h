@@ -423,24 +423,10 @@
 	// TRACK+REC is handled elsewhere.
 
 	if ( keyNdx == KEY_RECORD ){
-
-		// Ignore the key event if a track selection is active. It will be handled in key_PAGE_sel_TRACK.h.
-		if ( !target_page->trackSelection ) {
-
-			// If PAGE+REC is pressed, disable Track record mode and toggle page record mode.
-			if ( is_pressed_key( KEY_ZOOM_PAGE ) ) {
-				G_track_rec_bit = OFF;
-				target_page->REC_bit ^= ON;
-			}
-
-			// If just REC is pressed, disable Page record mode, and toggle Track record mode.
-			else {
-				target_page->REC_bit = OFF;
-
-//				if ( target_page->priv_track_REC_pattern != 0 ){
-					G_track_rec_bit ^= ON;
-//				}
-
+		if ( keyNdx == KEY_RECORD ){
+			// Ignore the key event if a track selection is active. It will be handled in key_PAGE_sel_TRACK.h.
+			if ( !target_page->trackSelection ) {
+				apply_record_operation( target_page );
 			}
 		}
 	}

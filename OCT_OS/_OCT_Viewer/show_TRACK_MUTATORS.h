@@ -40,6 +40,7 @@
 		}
 	}
 	
+	unsigned char otm_pattern = OFF;
 	switch (content) {
 		
 		case GRID_SET_SWITCHMODE:
@@ -143,68 +144,124 @@
 
 
 		case TRACK_MUTEPATTERN:
+			row = target_page->pageNdx % 10;
+			otm_pattern = OFF;
+			if ( 	( CHECK_BIT( G_on_the_measure_mod_bit, row ) )
+				&&	( G_on_the_measure_pattern_pageNdx[row] == target_page->pageNdx ) ) {
+				if ( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_MUTE ) ) {
+					unsigned short mutePattern = DIFF_MASK( G_on_the_measure_pattern[row][OPERATION_MUTE], target_page->trackMutepattern );
+					SET_MASK( otm_pattern, mutePattern );
 
-			if ( G_on_the_measure_operation != OFF ) {
-				unsigned short mutePattern = 0;
-				if ( CHECK_BIT( G_on_the_measure_operation, OPERATION_MASK ) ) {
-					mutePattern = CHECK_BIT( G_on_the_measure_operation, OPERATION_MUTE ) ?
-							target_page->trackMutepattern ^ G_on_the_measure_trackMutepattern :
-							target_page->trackSolopattern ^ G_on_the_measure_trackMutepattern;
-				} else {
-					mutePattern = get_otm_track_pattern();
+					if ( page_is_selected_in_MAC_bank( target_page ) ) {
+						MIR_write_buttool (RHS, mutePattern, MIR_SHINE_RED );
+					} else {
+						MIR_write_buttool ( RHS, mutePattern, MIR_RED );
+						MIR_write_buttool ( RHS, mutePattern, MIR_BLINK );
+					}
 				}
-				MIR_write_buttool (RHS, mutePattern, MIR_RED);
-				MIR_write_buttool (RHS, mutePattern, MIR_BLINK);
-				if ( CHECK_BIT( G_track_page_chain_mod_bit, CLUSTER_MOD ) ) {
-					MIR_write_buttool (RHS, mutePattern, MIR_GREEN);
+
+				if 	( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO ) ) {
+					unsigned short soloPattern = DIFF_MASK( G_on_the_measure_pattern[row][OPERATION_SOLO], target_page->trackSolopattern );
+					SET_MASK( otm_pattern, soloPattern );
 				}
 			}
 
-			MIR_write_buttool (RHS, target_page->trackMutepattern, MIR_RED);
+			MIR_write_buttool ( RHS, APPLY_MASK( target_page->trackMutepattern, ~otm_pattern ), MIR_RED);
 
 			break;
 			
 
 
 		case TRACK_SOLOPATTERN:
-			MIR_write_buttool (RHS, target_page->trackSolopattern, MIR_GREEN);
-			// MIR_write_buttool (RHS, target_page->trackSolopattern, MIR_BLINK);
+			row = target_page->pageNdx % 10;
+			otm_pattern = OFF;
+			if ( 	( CHECK_BIT( G_on_the_measure_mod_bit, row ) )
+				&&	( G_on_the_measure_pattern_pageNdx[row] == target_page->pageNdx ) ) {
+				if ( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO ) ) {
+					unsigned short soloPattern = DIFF_MASK( G_on_the_measure_pattern[row][OPERATION_SOLO], target_page->trackSolopattern );
+					SET_MASK( otm_pattern, soloPattern );
+
+					if ( page_is_selected_in_MAC_bank( target_page ) ) {
+						MIR_write_buttool (RHS, soloPattern, MIR_SHINE_GREEN );
+					} else {
+						MIR_write_buttool ( RHS, soloPattern, MIR_GREEN );
+						MIR_write_buttool ( RHS, soloPattern, MIR_BLINK );
+					}
+				}
+
+				if 	( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_MUTE ) ) {
+					unsigned short mutePattern = DIFF_MASK( G_on_the_measure_pattern[row][OPERATION_MUTE], target_page->trackMutepattern );
+					SET_MASK( otm_pattern, mutePattern );
+				}
+			}
+
+			MIR_write_buttool (RHS, APPLY_MASK( target_page->trackSolopattern, ~otm_pattern ), MIR_GREEN);
 			break;
 		
 		
 		
 		case TRACK_FUNCTIONS:
-
+			row = target_page->pageNdx % 10;
 			// Functions from Panel
-			// If in track zoom mode, turn off green light of zoom button
+			for (i=0; i<MATRIX_NROF_ROWS; i++) {
+				// Find the selected track
+				if ( (target_page->trackSelection & (1<<i)) > 0 ) {
+					//  row is index of the (first) selected track
+					break;
+				}
+			}
+
 			if ( G_zoom_level == zoomTRACK ){
 			
 				bitpattern = G_PANEL_matrix[j][ENTITY] ^ ZOOM;
-			
+
 				// If the track is muted turn off green light of toggle
-				for (i=0; i<MATRIX_NROF_ROWS; i++) {
-					// Find the selected track
-					if ( (target_page->trackSelection & (1<<i)) > 0 ) {
-						//  row is index of the (first) selected track
-						row = i;
+				// Turn off the green part of toggle light
+				if ( 	( CHECK_BIT( G_on_the_measure_mod_bit, row ) )
+					&&	( G_on_the_measure_pattern_pageNdx[row] == target_page->pageNdx )
+					&& 	( ( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_MUTE ) )
+					|| 	( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO ) ) ) ) {
+
+					if ( CHECK_BIT( DIFF_MASK( G_on_the_measure_pattern[row][OPERATION_MUTE], target_page->trackMutepattern ), i ) ) {
+						// MUTE: If the track has pending mute operation blink TGL
+						MIR_write_dot( LED_TGGL, MIR_BLINK 	);
+					}
+					if ( CHECK_BIT( DIFF_MASK( G_on_the_measure_pattern[row][OPERATION_SOLO], target_page->trackSolopattern ), i ) ) {
+						// SOLO: If the track is soloed, blink the SOLO LED
+						MIR_write_dot( LED_SOLO, MIR_BLINK 	);
 					}
 				}
-			
-				// Turn off the green part of toggle light
-				if ((target_page->trackMutepattern & (1 << row )) != 0) {
+
+				if ( CHECK_BIT( target_page->trackMutepattern, i ) ) {
 					bitpattern ^= TGGL;
-				}							
-				// Write the pattern
+				}
+				// Write the green pattern
 				MIR_write_buttool (	RHS, bitpattern, MIR_GREEN);
+
+				bitpattern = G_PANEL_matrix[j][ENTITY];
+
+				if ( CHECK_BIT( target_page->trackSolopattern, i ) ) {
+					// Turn off red part of solo light
+					bitpattern ^= SOLO;
+				}
+
+				// Write the red pattern (plain)
+				MIR_write_buttool (	RHS, bitpattern, MIR_RED);
 			}
-			
 			// Default mode for green pattern
 			else {
+				// Write the green pattern (plain)
 				MIR_write_buttool (	RHS, G_PANEL_matrix[j][ENTITY], MIR_GREEN);
+
+				// Write the red pattern (plain)
+				MIR_write_buttool (	RHS, G_PANEL_matrix[j][ENTITY], MIR_RED);
+
+				// SOLO: If the track is soloed, blink the SOLO LED
+				if ( CHECK_BIT( target_page->trackSolopattern, i ) ) {
+					MIR_write_dot( LED_SOLO, MIR_BLINK 	);
+				}
 			}
 
-			// Write the red pattern (plain)
-			MIR_write_buttool (	RHS, G_PANEL_matrix[j][ENTITY], MIR_RED);
 
 			// PASTE: Check if buffer and target selection have the same cardinality
 			if ((TRACK_COPY_BUFFER != 0) && 
@@ -215,16 +272,6 @@
 				MIR_write_buttool( RHS, PASTE, MIR_GREEN );
 				MIR_write_buttool( RHS, PASTE, MIR_RED );
 			}
-
-
-			// SOLO: If the track is soloed, blink the SOLO LED
-			for (row=0; row<MATRIX_NROF_ROWS; row++) {
-				if ( (((i<<row) & target_page->trackSolopattern) != 0) && 
-					 (((i<<row) & target_page->trackSelection)   != 0)    ) {
-					MIR_write_dot (KEY_SOLO, MIR_BLINK);
-				}
-			}			
-					
 
 			// Show the EFF status
 			switch( Track_get_MISC( target_page->Track[ my_bit2ndx( target_page->trackSelection )], EFF_BIT ) ){
@@ -450,10 +497,20 @@
 			if (PAGE_COPY_BUFFER != GRID_SELECTION_EMPTY) {
 				MIR_write_dot( LED_PASTE, MIR_RED );
 				MIR_write_dot( LED_PASTE, MIR_GREEN );
-			}					
+			}
 			
+			if ( G_zoom_level == zoomGRID ) {
+				if ( CHECK_BIT( page_cluster_op, PGM_CLST_CPY ) ) {
+					MIR_write_dot( LED_COPY, MIR_BLINK );
+				}
+
+				if ( CHECK_BIT( page_cluster_op, PGM_CLST_CLR ) ) {
+					MIR_write_dot( LED_CLEAR, MIR_BLINK );
+				}
+			}
+
 			// SOLO LED: show only when page under cursor is selected
-			if ((is_selected_in_GRID( &Page_repository[GRID_CURSOR] )) &&
+			if ((page_is_selected_in_GRID( &Page_repository[GRID_CURSOR] )) &&
 				(Page_repository[GRID_CURSOR].page_clear == OFF) ) {
 				MIR_write_dot( LED_SOLO, MIR_RED );
 				MIR_write_dot( LED_SOLO, MIR_GREEN );						

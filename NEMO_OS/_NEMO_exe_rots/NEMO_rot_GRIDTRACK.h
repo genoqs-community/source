@@ -60,6 +60,11 @@ void rot_exec_GRIDTRACK( 	Pagestruct* target_page,
 		} // Bank iterator		
 	}
 
+	// Ensure the right mode for operation
+	if ( ( rotNdx >= 11 ) && ( rotNdx <= 20 ) ) {
+		// Send the corresponding CC data!
+		rot_exe_MIX( rotNdx, direction, GRID_assistant_page );
+	}
 }
 
 

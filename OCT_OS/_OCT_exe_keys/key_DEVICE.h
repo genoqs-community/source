@@ -38,12 +38,13 @@
 					my_OS_dump();
 				}
 
-
-
 				// D O U B L E - C L I C K  C O N S T R U C T
 				// DOUBLE CLICK SCENARIO
 				if (	( DOUBLE_CLICK_TARGET == keyNdx )
 					&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+
+					// Double click code
+					// ...
 
 				} // end of double click scenario
 
@@ -61,18 +62,23 @@
 
 					// Single click code
 					// ...
-					if ( keyNdx == KEY_SCALE_MYSEL ){
-						G_MIDI_B_priority ^= 1; // toggle
+					if ( 	( keyNdx == KEY_PROGRAM )
+						&&	( G_DEVICE_dirty ) ) {
 						Flash_write_grid();
+						G_DEVICE_dirty = FALSE;
+					}
+					else if ( keyNdx == KEY_SCALE_MYSEL ){
+						TOGGLE_BIT(G_MIDI_B_priority, 0);
+						G_DEVICE_dirty = TRUE;
 					}
 					else if ( keyNdx == KEY_ZOOM_GRID ){
-						G_initZoom ^= 1; // toggle
-						Flash_write_grid();
+						TOGGLE_BIT(G_initZoom, 0);
+						G_DEVICE_dirty = TRUE;
 					}
+					/*
 					// Anti-Echo
 					else if ( keyNdx == KEY_ZOOM_MAP ){
 						G_midi_map_controller_mode ^= 1; // toggle
-						Flash_write_grid();
 					}
 
 					unsigned char latencyOffset = 0;
@@ -102,9 +108,10 @@
 						else {
 							G_TT_external_latency_offset = latencyOffset;
 						}
-						Flash_write_grid();
 					}
+				*/
 				}
+
 
 				// DIAG MODE entry
 				if ( keyNdx == 1 ){

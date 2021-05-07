@@ -1033,7 +1033,7 @@
 	// MUT Main button
 	if ( keyNdx == KEY_MUTE_MASTER ){
 		row = my_bit2ndx( target_page->trackSelection );
-		target_page->trackSolopattern ^= ( 1 << row );
+		apply_page_track_mute_toggle_operation( target_page, target_page->Track[row], MASK( OPERATION_SOLO ) );
 	}
 
 

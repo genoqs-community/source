@@ -186,6 +186,12 @@
 		// Show the picture of the global locator, color to be determined
 		case G_global_locator_PICTURE:
 
+			if( NEMO_lauflicht_track == OFF ) {
+				break;
+			}
+
+			// lauflicht track row
+			i = my_bit2ndx( NEMO_lauflicht_track & 0x0F );
 			// Determine the color to be used: DIRECT->GREEN // OCLOCK->RED
 			j = MIR_RED;
 
@@ -199,29 +205,65 @@
 			switch ( G_global_locator ) {
 				
 				// Fallthrough overall intended - to get the packman effect
-				case 16:		MIR_write_dot( LED_NOTE_F, 		j );
-				case 15:		MIR_write_dot( LED_NOTE_E, 		j );
-				case 14:		MIR_write_dot( LED_NOTE_Dis, 	j );
-				case 13:		MIR_write_dot( LED_NOTE_D, 		j );
-				case 12:		MIR_write_dot( LED_NOTE_Cis, 	j );
-				case 11:		MIR_write_dot( LED_NOTE_C, 		j );
-				case 10:		MIR_write_dot( LED_SCALE_MOD,	j );
-				case 9:			MIR_write_dot( LED_SCALE_SEL,	j );
-				case 8:			MIR_write_dot( LED_SCALE_CAD,	j );
-				case 7:			MIR_write_dot( LED_NOTE_Cup, 	j );
-				case 6:			MIR_write_dot( LED_NOTE_B, 		j );
-				case 5:			MIR_write_dot( LED_NOTE_Ais, 	j );
-				case 4:			MIR_write_dot( LED_NOTE_A, 		j );
-				case 3:			MIR_write_dot( LED_NOTE_Gis, 	j );
-				case 2:			MIR_write_dot( LED_NOTE_G, 		j );
-				case 1:			MIR_write_dot( LED_NOTE_Fis, 	j );
+				case 16:		MIR_write_dot( 176 + i, j );
+				case 15:		MIR_write_dot( 165 + i, j );
+				case 14:		MIR_write_dot( 154 + i, j );
+				case 13:		MIR_write_dot( 143 + i, j );
+				case 12:		MIR_write_dot( 132 + i, j );
+				case 11:		MIR_write_dot( 121 + i, j );
+				case 10:		MIR_write_dot( 110 + i, j );
+				case 9:			MIR_write_dot( 99 + i,  j );
+				case 8:			MIR_write_dot( 88 + i,  j );
+				case 7:			MIR_write_dot( 77 + i,  j );
+				case 6:			MIR_write_dot( 66 + i,  j );
+				case 5:			MIR_write_dot( 55 + i,  j );
+				case 4:			MIR_write_dot( 44 + i,  j );
+				case 3:			MIR_write_dot( 33 + i,  j );
+				case 2:			MIR_write_dot( 22 + i,  j );
+				case 1:			MIR_write_dot( 11 + i,  j );
 				case 0:			// Show nothing
 					break;
 			} // switch (G_global_locator)
 
 			break; 
 			
+			// Show the picture of the global locator, color to be determined
+			case G_global_locator_MINI_PICTURE:
 
+				// Determine the color to be used: DIRECT->GREEN // OCLOCK->RED
+				j = MIR_RED;
+
+				if ( GRID_switch_mode == GRID_SWITCH_DIRECT ){
+
+					// This is the DIRECT mode
+					j = MIR_GREEN;
+				}
+
+				// This is the rotating picture..
+				switch ( G_global_locator ) {
+
+					// Fallthrough overall intended - to get the packman effect
+					case 16:
+					case 15:
+					case 14:
+					case 13:		MIR_write_dot( LED_MIXTGT_USR4, j );
+					case 12:
+					case 11:
+					case 10:
+					case 9:			MIR_write_dot( LED_MIXTGT_USR3,	j );
+					case 8:
+					case 7:
+					case 6:
+					case 5:			MIR_write_dot( LED_MIXTGT_USR2, j );
+					case 4:
+					case 3:
+					case 2:
+					case 1:			MIR_write_dot( LED_MIXTGT_USR1, j );
+					case 0:			// Show nothing
+						break;
+				} // switch (G_global_locator)
+
+				break;
 
 		// Light up everything green, except for active one which is red
 		case SELECTED_CADENCE_KEY:

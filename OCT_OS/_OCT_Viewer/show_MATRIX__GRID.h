@@ -48,7 +48,7 @@
 					){
 
 					// Page PLAYING - i.e. selected in GRID
-					if ( is_selected_in_GRID( &Page_repository[i] ) ){
+					if ( page_is_selected_in_GRID( &Page_repository[i] ) ){
 						
 						// Show it in GREEN
 						GRID_write_dot( i, MIR_GREEN );
@@ -70,37 +70,36 @@
 		case GRID_MIX:
 
 			// GRID_CURSOR shown by blinking 
-//					GRID_write_dot (GRID_CURSOR, MIR_BLINK);
 
-			// GRID SETS: Show the non-empty GRID sets by red lights.
-			for ( i=0; i < GRID_NROF_SETS; i++ ){
+			// Show the current GRID set - but not when called from page
+			if ( 	( G_zoom_level == zoomGRID )
+				&&	( !is_pressed_key( 10 ) ) ) {
 
-				// Check the respective GRID set for content and currency
-				if ( 	( get_content_GRID_set( i ) )
-					&&	( current_GRID_set != i )
-					){
-					
-					GRID_write_dot( 9 + i*10, MIR_RED );
+				// GRID SETS: Show the non-empty GRID sets by red lights.
+				for ( i=0; i < GRID_NROF_SETS; i++ ){
+
+					// Check the respective GRID set for content and currency
+					if ( 	( get_content_GRID_set( i ) )
+						&&	( current_GRID_set != i )
+						){
+
+						GRID_write_dot( 9 + i*10, MIR_RED );
+					}
 				}
+
+				GRID_write_dot( 9 + current_GRID_set*10, MIR_GREEN 	);
+
+				// Check if changes have been made to set
+				if ( !is_actual_GRID( current_GRID_set ) ){
+
+					GRID_write_dot( 9 + current_GRID_set*10, MIR_RED );
+				}
+
+	//			// Blink the current GRID set - but not when called from page BIRDSEYE
+	//			if ( G_zoom_level != zoomPAGE ){
+
+				GRID_write_dot( 9 + current_GRID_set*10, MIR_BLINK 	);
 			}
-
-
-		// Show the current GRID set - but not when called from page BIRDSEYE
-		if ( G_zoom_level != zoomPAGE ){
-
-			GRID_write_dot( 9 + current_GRID_set*10, MIR_GREEN 	);
-
-			// Check if changes have been made to set
-			if ( !is_actual_GRID( current_GRID_set ) ){
-
-				GRID_write_dot( 9 + current_GRID_set*10, MIR_RED );			
-			}
-
-//			// Blink the current GRID set - but not when called from page BIRDSEYE
-//			if ( G_zoom_level != zoomPAGE ){
-
-			GRID_write_dot( 9 + current_GRID_set*10, MIR_BLINK 	);
-		}
 
 
 
@@ -113,7 +112,7 @@
 					){
 
 					// Page PLAYING - i.e. selected in GRID
-					if ( is_selected_in_GRID( &Page_repository[i] ) ){			
+					if ( page_is_selected_in_GRID( &Page_repository[i] ) ){			
 
 						// Show it in GREEN
 						GRID_write_dot( i, MIR_GREEN );
@@ -136,7 +135,7 @@
 			for ( j = 0; j < GRID_NROF_BANKS; j++ ){
 
 				// If the page is not already playing anyways.. and page not empty / clear
-				if (	( ! is_selected_in_GRID( GRID_p_clock_presel[j] ))
+				if (	( ! page_is_selected_in_GRID( GRID_p_clock_presel[j] ))
 					&&	( GRID_p_clock_presel[j]->page_clear != ON )
 					){
 
@@ -153,47 +152,3 @@
 
 	// Write Grid to MIR
 	MIR_write_GRID ();
-
-	#ifdef FEATURE_ENABLE_SONG_UPE
-	// Control track MIX ARMED
-	if ( MIX_TRACK != NULL && CHECK_BIT(MIX_TRACK->attr_MISC, TRK_CTRL_MIX) && Track_get_MISC(MIX_TRACK, CONTROL_BIT) ){
-		MIR_write_dot( LED_MIX_MASTER, MIR_RED );
-		MIR_write_dot( LED_MIX_MASTER, MIR_GREEN );
-		MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
-	}
-	#endif
-
-	// Show the current grid set track if a note is set
-	if ( GRID_p_set_note_offsets[current_GRID_set] != 255 )
-	{
-		MIR_write_dot( 10, MIR_RED );
-		MIR_write_dot( 10, MIR_GREEN );
-		MIR_write_dot( 10, MIR_BLINK );
-	}
-
-	if ( is_pressed_key(196) )
-	{
-		if ( GRID_p_set_midi_ch <= 16 ){
-
-			MIR_point_numeric(
-				GRID_p_set_midi_ch,
-				9,	MIR_GREEN);
-		}
-		else if ( GRID_p_set_midi_ch <= 32 ){
-
-			MIR_point_numeric(
-				GRID_p_set_midi_ch - 16,
-				9,	MIR_RED);
-		}
-	}
-
-	if ( is_pressed_rowzero() && GRID_p_set_note_offsets[current_GRID_set] != 255 )
-	{
-		MIR_write_numeric_H( GRID_p_set_note_offsets[current_GRID_set], 9 );
-	}
-
-
-
-
-
-

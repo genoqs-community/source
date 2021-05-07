@@ -141,9 +141,12 @@ void show (unsigned int target, unsigned int content) {
 
 				case zoomGRIDTRACK:
 				case zoomGRID:
+				if( !is_pressed_key( KEY_MIX_MASTER ) ) {
+					break;
+				}
+				i = GRID_assistant_page->mixTarget;
 				#ifdef FEATURE_ENABLE_DICE
 				case zoomDICE:
-					i = GRID_assistant_page->mixTarget;
 
 					if ( content == OPTIONS ) {
 

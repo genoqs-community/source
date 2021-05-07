@@ -139,12 +139,13 @@
 #define 	SCALE_MOD			2
 #define		SCALE_CAD			3
 
-#define 	CLUSTER_MOD			0	// Cluster operation applied immediately flag
-#define		ON_THE_MEASURE_MOD	1	// Operation applied on the measure flag
 
-#define 	OPERATION_MUTE		0 	// On the measure mute operation
-#define 	OPERATION_SOLO		1 	// On the measure solo operation
-#define 	OPERATION_MASK		2 	// On the measure mute / solo mask operation
+#define 	OPERATION_MUTE		0 	// mute operation
+#define 	OPERATION_SOLO		1 	// solo operation
+#define 	OPERATION_RECORD	2 	// record operation
+#define 	OPERATION_NOSTORE	3 	// skip storing last mute state
+
+#define 	OTM_OPERATION_COUNT	3
 
 #define 	LEAD				2	// used when a note in scale selection is the lead tone
 
@@ -306,12 +307,16 @@
 #define 	CHORD_SIZE				22
 #define		CHORD_SIZE_TRACK		32
 #define		SELECTED_CADENCE_KEY	23
+#ifdef FEATURE_NOTE_DRUM_CTRL
+#define		ELE_DRUM_CTRL			24
+#endif
 #define		GRID_TRIGGERMODES		30
 #define		GRID_SET_SWITCHMODE		44
 #define 	GRID_BANK_PLAYMODES		45
 #ifdef FEATURE_ENABLE_DICE
 #define 	DICE_GRID_SELECTION		46
 #endif
+#define 	G_global_locator_MINI_PICTURE	25
 
 // CHAIN MOODE DEFS
 //#define 	TEN_OF_ONE				0	// MODE 1: TEN OF ONE
@@ -470,6 +475,9 @@
 #define 	SEL_RECALL				0
 #define		SEL_CLEAR				1
 
+// Used for GRID_p_set_mode as flags
+#define		GRID_SET_NOTE_CTRL_ENABLE	0
+
 // Used in the Track MISC attribute as flags
 #define 	CHORD_BIT				2
 #define		EFF_BIT					7
@@ -544,7 +552,6 @@
 #define		NEMO_NROF_ROWSHIFT		4
 #define		NEMO_WINDOW				0xF
 #define		NEMO_MAX_WINDOW			0xFF
-
 #ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 #define		GST_TOGGLE				1
 #endif

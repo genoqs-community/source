@@ -45,7 +45,8 @@
 
 unsigned char 		G_flashload_flag = LOAD_ON_POWERON;
 unsigned char		G_flashgridheadersonly_flag = FALSE;
-
+unsigned char 		G_DEVICE_dirty = FALSE
+		;
 // SPAGHETTI from scan_keys
 unsigned int 		G_scan[3][26];
 unsigned int 		G_pressed_keys[261];
@@ -229,11 +230,11 @@ cyg_handle_t	UART1_IN_mbox_handle;
 // This indicates globally whether Octopus is running or not, or in Step record mode
 unsigned char G_run_bit 		= OFF;
 unsigned char G_pause_bit 		= OFF;
-unsigned char G_track_page_chain_mod_bit = OFF;
-unsigned char G_on_the_measure_operation = OFF;
-unsigned short G_on_the_measure_trackMutepattern = 0;
-unsigned char G_on_the_measure_trackMutepattern_pageNdx = 0;
-Trackstruct* G_on_the_measure_track[MATRIX_NROF_ROWS];
+
+unsigned short G_on_the_measure_mod_bit;
+unsigned char G_on_the_measure_operation[MATRIX_NROF_ROWS];
+unsigned short G_on_the_measure_pattern[MATRIX_NROF_ROWS][OTM_OPERATION_COUNT];
+unsigned char G_on_the_measure_pattern_pageNdx[MATRIX_NROF_ROWS];
 
 unsigned char G_stop_bit		= OFF;
 

@@ -590,17 +590,19 @@
 
 		// TGGL function: set or unset the mute bit on the track
 		if (keyNdx == KEY_TGGL) {
-
-			// Toggle the mute bit pattern
-			target_page->trackMutepattern ^= (1<<row);
+			apply_page_track_mute_toggle_operation( target_page, target_page->Track[row], MASK( OPERATION_MUTE ) );
+			if( CHECK_BIT( target_page->trackSolopattern, row ) ) {
+				apply_page_track_mute_toggle_operation( target_page, target_page->Track[row], MASK( OPERATION_SOLO ) );
+			}
 		}
 
 
 		// SOLO function: set or unset the solo bit of the track
 		if (keyNdx == KEY_SOLO) {
-
-			// Toggle the SOLO bits on the selected track - double click ensures only one track selected
-			target_page->trackSolopattern ^= (1<<row);
+			if( CHECK_BIT( target_page->trackMutepattern, row ) ) {
+				apply_page_track_mute_toggle_operation( target_page, target_page->Track[row], MASK( OPERATION_MUTE ) );
+			}
+			apply_page_track_mute_toggle_operation( target_page, target_page->Track[row], MASK( OPERATION_SOLO ) );
 		}
 
 

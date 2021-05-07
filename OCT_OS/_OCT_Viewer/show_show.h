@@ -407,6 +407,39 @@ void show (unsigned int target, unsigned int content) {
 			}
 			break;
 
+		#ifdef FEATURE_NOTE_DRUM_CTRL
+		case ELE_DRUM_CTRL:
+		if ( 	( G_zoom_level == zoomGRID )
+			&&	( CHECK_BIT( GRID_p_set_mode, GRID_SET_NOTE_CTRL_ENABLE ) ) ) {
+
+			// Show the current grid set track if a note is set
+			MIR_write_dot( 10, MIR_RED );
+			MIR_write_dot( 10, MIR_BLINK );
+			if ( 	( is_pressed_key( 10 ) )
+				||	( GRID_p_set_note_offsets[current_GRID_set] != 255 ) ) {
+				MIR_write_dot( 10, MIR_GREEN );
+			}
+
+			if ( is_pressed_key( 10 ) ) {
+
+				if ( GRID_p_set_midi_ch <= 16 ) {
+					MIR_point_numeric(
+						GRID_p_set_midi_ch,
+						9,	MIR_GREEN);
+				} else if ( GRID_p_set_midi_ch <= 32 ) {
+
+					MIR_point_numeric(
+						GRID_p_set_midi_ch - 16,
+						9,	MIR_RED);
+				}
+
+				if ( GRID_p_set_note_offsets[current_GRID_set] != 255 ) {
+					show_pitch_in_circle( GRID_p_set_note_offsets[current_GRID_set], ON );
+				}
+			}
+		}
+		break;
+		#endif
 	} // switch (target)
 }
 

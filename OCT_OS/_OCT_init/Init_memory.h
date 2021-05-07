@@ -288,7 +288,7 @@ void Grid_init(){
 	// Init the GRID sets as empty
 	for (i=0; i < GRID_NROF_SETS; i++){
 
-		#ifdef FEATURE_ENABLE_SONG_UPE
+		#ifdef FEATURE_NOTE_DRUM_CTRL
 		GRID_p_set_note_offsets[i] = 255;
 		#endif
 
@@ -301,29 +301,28 @@ void Grid_init(){
 	// Set the grid cursor to page 1 of bank 1
 #ifdef NEMO
 	GRID_CURSOR = 0;
-	#ifdef FEATURE_ENABLE_SONG_UPE
 	PREV_GRID_CURSOR = 0;
-	#endif
 	// This is the default starting page, in row 0, which is selected.
 	GRID_p_selection[0] 	= &Page_repository[GRID_CURSOR];
 	GRID_p_preselection[0] 	= &Page_repository[GRID_CURSOR];
 	GRID_p_clock_presel[0]	= &Page_repository[GRID_CURSOR];
 //	Page_repository[GRID_CURSOR].page_clear = OFF;
 #else
-	for (j=0; j<MATRIX_NROF_ROWS; j++){
-		G_on_the_measure_track[j] = NULL;
-	}
-	#ifdef FEATURE_ENABLE_SONG_UPE
 	GRID_CURSOR = 8;
 	PREV_GRID_CURSOR = 8;
-	#endif
 	// This is the default starting page, in row 9, which is selected.
 	GRID_p_selection[8] 	= &Page_repository[GRID_CURSOR];
 	GRID_p_preselection[8] 	= &Page_repository[GRID_CURSOR];
 	GRID_p_clock_presel[8]	= &Page_repository[GRID_CURSOR];
 	Page_repository[GRID_CURSOR].page_clear = OFF;
 #endif
-
+	for (i=0; i < MATRIX_NROF_ROWS; i++){
+		for (j=0; j < OTM_OPERATION_COUNT; j++){
+			G_on_the_measure_pattern[i][j] = OFF;
+		}
+		G_on_the_measure_operation[i] = OFF;
+		G_on_the_measure_pattern_pageNdx[i] = OFF;
+	}
 	// Assign the PLAY_MODE_page pointers to real pages
 	// these are the pages in the bottom matrix row..
 	PLAY_MODE_page[8] = &Page_repository[89];
@@ -371,7 +370,7 @@ void Grid_init(){
 	i = j = 0;
 	for ( i=10; i < 160; i+=10 ){
 		for ( j=0; j <= 8; j++ ){
-//			diag_printf("idx:%d val:%d\n", idx, i+j);
+//			// d_iag_printf("idx:%d val:%d\n", idx, i+j);
 			move_map[idx++] = i + j;
 			if (idx == 128) goto out1;
 		}
@@ -380,7 +379,7 @@ void Grid_init(){
 	i = j = idx = 0;
 	for ( i=10; i <= 160; i+=10 ){
 		for ( j=0; j <= 8; j++ ){
-//			diag_printf("pidx:%d pval:%d\n", i+j, idx);
+//			// d_iag_printf("pidx:%d pval:%d\n", i+j, idx);
 			move_page_map[i+j] = idx++;
 			if (idx == 128) goto out2;
 		}
