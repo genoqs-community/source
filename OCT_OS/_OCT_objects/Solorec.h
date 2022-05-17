@@ -62,7 +62,7 @@ signed char   SOLO_rec_transpose_prev_pitch		= 127;
 unsigned char SOLO_rec_measure_hold				= OFF;
 unsigned char SOLO_rec_measure_hold_OTM			= OFF;
 unsigned char SOLO_rec_measure_hold_latch		= OFF;
-unsigned char SOLO_rec_show_strum				= OFF;
+unsigned char SOLO_rec_show_strum				= ON;
 unsigned char SOLO_rec_strum_latch				= OFF;
 unsigned char SOLO_rec_bank						= OFF;
 unsigned char SOLO_rec_rehearsal				= OFF;
@@ -260,7 +260,7 @@ void enterSoloRec(){
 	}
 
 	for ( i=0; i< 9; i++){
-		SOLO_assistant_page->scaleNotes[i]			= SCALE_SIG_MAJ;
+//		SOLO_assistant_page->scaleNotes[i]			= SCALE_SIG_MAJ;
 		SOLO_assistant_page->scaleLead[i]			= OFF;
 		SOLO_assistant_page->scaleLead[i]			= 1 << 11;  // this is equivalent to C
 	}
@@ -376,16 +376,17 @@ void externalMIDI_PGMCH(){
 			clearRec();
 			SOLO_rec_measure_hold = ON;
 		}
+		SOLO_rec_record_OTM = OFF;
 	}
 
 	if (( G_prev_PGMCH_val == G_PGMCH_val - 1 ) && G_run_bit == ON ){ // up
 		if ( G_track_rec_bit == OFF ){ // start recording
 			if ( SOLO_rec_finalized == OFF ){
 				SOLO_rec_measure_hold = ON;
+
 			}
-			else {
-				G_track_rec_bit = ON;
-			}
+			G_track_rec_bit = ON;
+			SOLO_rec_record_OTM = ON;
 			SOLO_edit_buffer_volatile = OFF;
 			SOLO_rec_record_OTM = SOLO_rec_measure_hold;
 			SOLO_rec_track_preview = SOLOPAGE;
@@ -395,6 +396,7 @@ void externalMIDI_PGMCH(){
 			G_track_rec_bit = OFF;
 			SOLO_rec_track_preview = SOLOPAGE;
 			SOLO_rec_rehearsal = ON;
+			SOLO_rec_record_OTM = OFF;
 		}
 	}
 }
@@ -525,7 +527,7 @@ void exitSoloRec(){
 	SOLO_transpose_GRID_CURSOR			= NOP;
 	SOLO_rec_transpose					= OFF;
 	SOLO_rec_transpose_octave			= OFF;
-	SOLO_rec_show_strum					= OFF;
+	SOLO_rec_show_strum					= ON;
 	SOLO_rec_strum_latch				= OFF;
 	SOLO_len_adjust						= OFF;
 	SOLO_rec_is_tape					= OFF;

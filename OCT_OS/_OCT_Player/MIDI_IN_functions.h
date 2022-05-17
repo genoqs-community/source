@@ -952,7 +952,7 @@ void send_note_off_full_range( unsigned char channel, unsigned char pitch_segmen
 
 	signed char pitch;
 
-	for ( pitch=((pitch_segment % 4) * 32); pitch < (32 + ((pitch_segment % 4) * 32) -1); pitch++ ){ // The entire pitch range
+	for ( pitch=((pitch_segment % 8) * 16); pitch < (16 + ((pitch_segment % 8) * 16) -1); pitch++ ){ // The entire pitch range
 
 		// Channel (+1 offset needed), pitch, velocity, trigger time - 0 means NOW
 		MIDI_NOTE_new ( channel, pitch, OFF, 0 );

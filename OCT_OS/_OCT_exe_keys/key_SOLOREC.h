@@ -62,7 +62,7 @@
 		}
 		else { // reset to original tempo
 			SOLO_slow_tempo = G_master_tempo;
-			G_master_tempo = 100;
+			G_master_tempo = G_master_tempo / 2;
 		}
 	}
 
@@ -80,7 +80,7 @@
 		if ( SOLO_rec_strum_latch == ON ){
 
 			SOLO_rec_strum_latch = OFF;
-			SOLO_rec_show_strum = OFF;
+//			SOLO_rec_show_strum = OFF;
 
 		} else if ( SOLO_rec_show_strum == ON ) {
 
@@ -470,29 +470,8 @@
 
 		if ( keyNdx == KEY_PLAY1 ){
 
-			// D O U B L E - C L I C K  C O N S T R U C T
-			// DOUBLE CLICK SCENARIO
-			if (	( DOUBLE_CLICK_TARGET == keyNdx )
-				&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
-
-				// Double click code
-				// ...
-				if ( SOLO_rec_page != NULL ){
-					checkpoint_save_undo_track_chain(SOLO_rec_page);
-				}
-
-			} // end of double click scenario
-
-			// SINGLE CLICK SCENARIO
-			else if (DOUBLE_CLICK_TARGET == 0) {
-
-				DOUBLE_CLICK_TARGET = keyNdx;
-				DOUBLE_CLICK_TIMER = ON;
-				// Start the Double click Alarm
-				cyg_alarm_initialize(
-						doubleClickAlarm_hdl,
-						cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
-						DOUBLE_CLICK_ALARM_TIME );
+			if ( SOLO_rec_rehearsal == ON && G_run_bit == ON && SOLO_rec_page != NULL ) {
+				checkpoint_save_undo_track_chain(SOLO_rec_page);
 			}
 
 			if ( SOLO_rec_freeflow == ON && SOLO_rec_measure_hold == OFF ){
@@ -921,24 +900,24 @@
 		SOLO_sequencer_rec_mode ^= 1;
 	}
 
-	// Fine tune quantize
-	unsigned char xdx = BK_KEY_to_xdx( keyNdx );
-	if ( xdx != OFF ){
-		if ( xdx < 5 ){
-			if ( xdx != 4 || SOLO_quantize_fine_tune_edge != 6 ){
-				SOLO_quantize_fine_tune_center = xdx;
-			}
-		}
-		else if ( xdx == 5 ){
-			SOLO_quantize_fine_tune_drop_edge ^= 1;
-		}
-		else if ( xdx < 10 ){
-			if ( xdx != 6 || SOLO_quantize_fine_tune_center != 4 ){
-				SOLO_quantize_fine_tune_edge = xdx;
-			}
-		}
-		applyEffects();
-	}
+//	// Fine tune quantize
+//	unsigned char xdx = BK_KEY_to_xdx( keyNdx );
+//	if ( xdx != OFF ){
+//		if ( xdx < 5 ){
+//			if ( xdx != 4 || SOLO_quantize_fine_tune_edge != 6 ){
+//				SOLO_quantize_fine_tune_center = xdx;
+//			}
+//		}
+//		else if ( xdx == 5 ){
+//			SOLO_quantize_fine_tune_drop_edge ^= 1;
+//		}
+//		else if ( xdx < 10 ){
+//			if ( xdx != 6 || SOLO_quantize_fine_tune_center != 4 ){
+//				SOLO_quantize_fine_tune_edge = xdx;
+//			}
+//		}
+//		applyEffects();
+//	}
 
 	unsigned char latencyOffset = 0;
 	switch (keyNdx) {
