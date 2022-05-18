@@ -747,7 +747,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 
 			#ifdef FEATURE_SOLO_REC
 
-			if ( SOLO_rec_transpose == ON ){
+			if ( SOLO_rec_transpose == ON && in_velocity != OFF ){
 
 				modifyChordTone( target_page, in_pitch );
 
@@ -1385,6 +1385,7 @@ void midi_PGMCH_execute( unsigned char midi_byte, unsigned char UART_ndx ){
 			// Double click code
 			// ...
 			checkpoint_save_undo_track_chain( &Page_repository[GRID_CURSOR] );
+			G_PGMCH_val = NOP;
 		}
 
 		// SINGLE CLICK SCENARIO

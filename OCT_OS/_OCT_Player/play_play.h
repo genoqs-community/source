@@ -1336,7 +1336,7 @@ Trackstruct* TTC_trigger_track( 	Pagestruct* target_page,
 	}
 	#endif
 	#ifdef FEATURE_SOLO_REC
-	if ( SOLO_rec_measure_hold_latch == ON ){
+	if ( SOLO_sequencer_rec_mode == ON && SOLO_rec_measure_hold_latch == ON ){
 		return target_track;
 	}
 	#endif

@@ -103,7 +103,7 @@ unsigned char		G_TT_external_latency_offset = 0;
 // Total number of tracks currently set in record select. If just 1, auto rechanneling for record is enabled.
 int					G_tracks_in_record_count = 0;
 
-// 32 pitch segment from 0 to 3 NOTE_OFF messages
+// 32 pitch segment from 1 to 4 NOTE_OFF messages
 unsigned char		G_pitch_segment = 0;
 
 // Assign data buffers for incoming MIDI data, plus counter to current data

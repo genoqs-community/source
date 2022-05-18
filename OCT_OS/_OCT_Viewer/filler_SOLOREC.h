@@ -400,46 +400,46 @@
 			MIR_write_dot( LED_ALIGN, MIR_RED );
 		}
 
-		// Quantize fine tune value
-		// NUMERIC QUADRANT
-		switch (SOLO_quantize_fine_tune_center) {
-		case 1:
-			MIR_write_dot( 201, MIR_RED );
-			break;
-		case 2:
-			MIR_write_dot( 200, MIR_GREEN );
-			break;
-		case 3:
-			MIR_write_dot( 199, MIR_GREEN );
-			break;
-		case 4:
-			MIR_write_dot( 198, MIR_GREEN );
-			break;
-		}
-
-		if ( SOLO_quantize_fine_tune_drop_edge == OFF ){
-			MIR_write_dot( 197, MIR_GREEN );
-			MIR_write_dot( 197, MIR_RED );
-		}
-		else {
-			MIR_write_dot( 197, MIR_RED ); // drop the notes
-			MIR_write_dot( 197, MIR_BLINK ); // drop the notes
-		}
-
-		switch (SOLO_quantize_fine_tune_edge) {
-		case 6:
-			MIR_write_dot( 207, MIR_GREEN );
-			break;
-		case 7:
-			MIR_write_dot( 206, MIR_GREEN );
-			break;
-		case 8:
-			MIR_write_dot( 216, MIR_GREEN );
-			break;
-		case 9:
-			MIR_write_dot( 215, MIR_RED );
-			break;
-		}
+//		// Quantize fine tune value
+//		// NUMERIC QUADRANT
+//		switch (SOLO_quantize_fine_tune_center) {
+//		case 1:
+//			MIR_write_dot( 201, MIR_RED );
+//			break;
+//		case 2:
+//			MIR_write_dot( 200, MIR_GREEN );
+//			break;
+//		case 3:
+//			MIR_write_dot( 199, MIR_GREEN );
+//			break;
+//		case 4:
+//			MIR_write_dot( 198, MIR_GREEN );
+//			break;
+//		}
+//
+//		if ( SOLO_quantize_fine_tune_drop_edge == OFF ){
+//			MIR_write_dot( 197, MIR_GREEN );
+//			MIR_write_dot( 197, MIR_RED );
+//		}
+//		else {
+//			MIR_write_dot( 197, MIR_RED ); // drop the notes
+//			MIR_write_dot( 197, MIR_BLINK ); // drop the notes
+//		}
+//
+//		switch (SOLO_quantize_fine_tune_edge) {
+//		case 6:
+//			MIR_write_dot( 207, MIR_GREEN );
+//			break;
+//		case 7:
+//			MIR_write_dot( 206, MIR_GREEN );
+//			break;
+//		case 8:
+//			MIR_write_dot( 216, MIR_GREEN );
+//			break;
+//		case 9:
+//			MIR_write_dot( 215, MIR_RED );
+//			break;
+//		}
 	}
 
 	if ( SOLO_rec_strum_latch == ON ){
