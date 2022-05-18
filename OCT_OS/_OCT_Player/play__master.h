@@ -214,7 +214,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 	#ifdef FEATURE_SOLO_REC
 	if ( G_zoom_level == zoomSOLOREC
 		 && SOLO_rec_record_OTM == ON
-		 && G_global_locator == 16
+		 && G_global_locator == 0
 	   ){
 
 		SOLO_rec_record_OTM = OFF;
