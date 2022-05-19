@@ -83,7 +83,7 @@ switch( content ) {
 	case zoomPAGE:
 
 		// If the page is playing in GRID
-		if ( is_selected_in_GRID( target_page ) ) {
+		if ( page_is_selected_in_GRID( target_page ) ) {
 
 			// Check whether it is soloed
 			j = FALSE;
@@ -214,7 +214,7 @@ switch( content ) {
 
 		// PAGE mode
 		// Indicate whether the page is currently playing
-		if ( is_selected_in_GRID( target_page ) ) {
+		if ( page_is_selected_in_GRID( target_page ) ) {
 
 			// Page is active in the Grid
 			MIR_write_dot (LED_ZOOM_PAGE, 		MIR_GREEN);

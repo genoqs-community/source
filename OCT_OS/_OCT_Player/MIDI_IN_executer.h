@@ -116,7 +116,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 				)
 
 			// ..the page is not playing in GRID,
-			||	( is_selected_in_GRID( target_page ) == TRUE )
+			||	( page_is_selected_in_GRID( target_page ) == TRUE )
 		){
 		// Basically continue execution.
 	}else{
@@ -452,7 +452,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 				)
 
 			// ..the page is not playing in GRID,
-			||	( is_selected_in_GRID( target_page ) == FALSE )
+			||	( page_is_selected_in_GRID( target_page ) == FALSE )
 		){
 
 		#ifdef FEATURE_SOLO_REC
@@ -1029,7 +1029,7 @@ void midi_controller_execute( 	unsigned char UART_ndx,
 			target_page = &Page_repository[GRID_CURSOR];
 
 			// Make sure the page is actually playing in GRID
-			if ( is_selected_in_GRID( target_page ) == TRUE ){
+			if ( page_is_selected_in_GRID( target_page ) == TRUE ){
 
 				// This is legacy controller recording
 				Track_record_CC( target_page, UART_ndx, status_byte, controller_number, controller_value );
@@ -1081,7 +1081,7 @@ void midi_bender_execute( 	unsigned char inputMidiBus,				// Range = [0, 1].
 				)
 
 			// ..the page is not playing in GRID,
-			||	( is_selected_in_GRID( target_page ) == FALSE )
+			||	( page_is_selected_in_GRID( target_page ) == FALSE )
 		){
 
 		return;
@@ -1234,7 +1234,7 @@ void midi_pressure_execute( 	unsigned char inputMidiBus,				// Range = [0, 1].
 				)
 
 			// ..the page is not playing in GRID,
-			||	( is_selected_in_GRID( target_page ) == FALSE )
+			||	( page_is_selected_in_GRID( target_page ) == FALSE )
 		){
 
 		return;
@@ -1437,7 +1437,7 @@ void midi_PGMCH_execute( unsigned char midi_byte, unsigned char UART_ndx ){
 			temp_page = &Page_repository[ page_ndx ];
 
 			// Toggle the page playing status
-			switch ( is_selected_in_GRID( temp_page ) ) {
+			switch ( page_is_selected_in_GRID( temp_page ) ) {
 				case ON:
 					grid_select( temp_page, OFF );
 					break;

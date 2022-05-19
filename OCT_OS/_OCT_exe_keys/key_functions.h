@@ -28,63 +28,154 @@
 #include "key_chainer_operation.h"
 #include "key_cluster_operation.h"
 
-unsigned short get_otm_track_pattern() {
 
-	unsigned char i;
-	unsigned short otm_track_pattern = 0;
+void unarm_page_otm_operation( Pagestruct* target_page, unsigned char operation ){
 
-	for ( i = 0; i < MATRIX_NROF_ROWS; i++ ){
-
-			if ( G_on_the_measure_track[i] != NULL ){
-				SET_BIT(otm_track_pattern, i);
-			}
+	unsigned char row = target_page->pageNdx % 10;
+	G_on_the_measure_pattern[row][operation] = OFF;
+	CLEAR_MASK( G_on_the_measure_operation[row], MASK( operation ) );
+	if( operation == OPERATION_MUTE) {
+		CLEAR_MASK( G_on_the_measure_operation[row], MASK( OPERATION_NOSTORE ) );
 	}
-
-	return otm_track_pattern;
 }
 
-void apply_page_mute_pattern_operation( Pagestruct* target_page, unsigned short pattern, unsigned char operation ){
+void unarm_page_otm_operations( Pagestruct* target_page ){
 
-	unsigned char j = 0;
-	G_on_the_measure_operation = OFF;
-	for (j = 0; j < MATRIX_NROF_ROWS; j++){
-		G_on_the_measure_track[j] = NULL;
+	unsigned char row = target_page->pageNdx % 10;
+	unsigned char i = 0;
+	G_on_the_measure_operation[row] = OFF;
+	G_on_the_measure_pattern_pageNdx[row] = OFF;
+	for (i = 0; i < OTM_OPERATION_COUNT; i++ ) {
+		G_on_the_measure_pattern[row][i] = OFF;
 	}
+}
 
-	if ( CHECK_BIT( G_track_page_chain_mod_bit, ON_THE_MEASURE_MOD ) ) {
-		SET_BIT( G_on_the_measure_operation, operation );
-		SET_BIT( G_on_the_measure_operation, OPERATION_MASK );
-		G_on_the_measure_trackMutepattern = pattern;
-		G_on_the_measure_trackMutepattern_pageNdx = target_page->pageNdx;
-	} else if ( CHECK_BIT( G_track_page_chain_mod_bit, CLUSTER_MOD ) ) {
-		apply_page_cluster_mute_pattern( target_page, pattern, 1 << operation );
-	} else if ( operation == OPERATION_MUTE ) {
-		target_page->trackMutepattern = pattern;
-		if (pattern) {
-			target_page->trackMutepatternStored = target_page->trackMutepattern;
+void apply_page_mute_pattern_operation( Pagestruct* target_page, unsigned short pattern, unsigned char operation_mask ){
+
+	unsigned char row = target_page->pageNdx % 10;
+	if ( 	( G_run_bit == ON )
+		&& 	( CHECK_BIT( G_on_the_measure_mod_bit, row ) )
+		&& 	( is_cluster_playing( target_page ) )
+	){
+		// d_iag_printf( "A>row: %u - OTM Operation: %b - pattern: %b - OTM Mute: %b - Page Mute: %b - OTM Solo: %b - Page Solo: %b\n", row, G_on_the_measure_operation[row], pattern, G_on_the_measure_pattern[row][OPERATION_MUTE], target_page->trackMutepattern, G_on_the_measure_pattern[row][OPERATION_SOLO], target_page->trackSolopattern );
+		SET_MASK( G_on_the_measure_operation[row], G_on_the_measure_operation[row] | operation_mask );
+		G_on_the_measure_pattern_pageNdx[row] = target_page->pageNdx;
+
+		unsigned char mute_armed = CHECK_BIT( G_on_the_measure_operation[row], OPERATION_MUTE );
+		unsigned char solo_armed = CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO );
+
+		if ( CHECK_BIT( operation_mask, OPERATION_MUTE ) ) {
+			G_on_the_measure_pattern[row][OPERATION_MUTE] = pattern;
+
+		} else {
+			G_on_the_measure_pattern[row][OPERATION_SOLO] = pattern;
 		}
-	} else if ( operation == OPERATION_SOLO ) {
-		target_page->trackSolopattern = pattern;
+
+		if ( mute_armed && G_on_the_measure_pattern[row][OPERATION_MUTE] == target_page->trackMutepattern ) {
+			// d_iag_printf( "UNARM MUTE \n");
+			unarm_page_otm_operation(target_page, OPERATION_MUTE );
+		}
+		if ( solo_armed && G_on_the_measure_pattern[row][OPERATION_SOLO] == target_page->trackSolopattern ) {
+			// d_iag_printf( "UNARM SOLO\n");
+			unarm_page_otm_operation(target_page, OPERATION_SOLO );
+		}
+		// d_iag_printf( "B>row: %u - OTM Operation: %b - pattern: %b - OTM Mute: %b - Page Mute: %b - OTM Solo: %b - Page Solo: %b\n", row, G_on_the_measure_operation[row], pattern, G_on_the_measure_pattern[row][OPERATION_MUTE], target_page->trackMutepattern, G_on_the_measure_pattern[row][OPERATION_SOLO], target_page->trackSolopattern );
+	} else {
+		unarm_page_otm_operations( target_page );
+		if ( page_is_selected_in_MAC_bank( target_page ) && target_page->page_clear == OFF ) {
+			apply_page_cluster_mute_pattern( target_page, pattern, operation_mask );
+		} else if ( CHECK_BIT( operation_mask, OPERATION_MUTE ) ) {
+			CLEAR_MASK( target_page->trackSolopattern, pattern );
+			if ( pattern || !( CHECK_BIT( operation_mask, OPERATION_NOSTORE ) ) ) {
+				target_page->trackMutepatternStored = pattern | ( target_page->trackMutepatternStored & target_page->trackSolopattern );
+			}
+			target_page->trackMutepattern = pattern;
+			//// d_iag_printf( "OPERATION_MUTE Mute:%b - MStore:%b - Solo:%b\n", target_page->trackMutepattern, target_page->trackMutepatternStored, target_page->trackSolopattern );
+		} else {
+			unsigned short unsolo_pattern = SET_APPLY_MASK( target_page->trackSolopattern, DIFF_MASK( target_page->trackSolopattern, pattern ) );
+			CLEAR_MASK( target_page->trackMutepattern, ( target_page->trackSolopattern = pattern ) );
+			SET_MASK( target_page->trackMutepattern, SET_APPLY_MASK( unsolo_pattern, target_page->trackMutepatternStored ) );
+			//// d_iag_printf( "OPERATION_SOLO Mute:%b - MStore:%b - Solo:%b\n\n", target_page->trackMutepattern, target_page->trackMutepatternStored, target_page->trackSolopattern );
+		}
 	}
 }
 
-void apply_page_track_mute_toggle_operation( Pagestruct* target_page, Trackstruct* current_track, unsigned char operation ){
+void apply_page_track_mute_toggle_operation( Pagestruct* target_page, Trackstruct* current_track, unsigned char operation_mask ){
 
-	G_on_the_measure_operation = OFF;
-	G_on_the_measure_trackMutepattern = OFF;
+	unsigned short target_pattern = 0;
+	unsigned char row = target_page->pageNdx % 10;
 
-	if ( CHECK_BIT( G_track_page_chain_mod_bit, ON_THE_MEASURE_MOD ) ) {
-		apply_page_track_mute_toggle( target_page, current_track, &G_on_the_measure_trackMutepattern );
-		SET_BIT( G_on_the_measure_operation, operation );
-		G_on_the_measure_trackMutepattern_pageNdx = target_page->pageNdx;
-		G_on_the_measure_track[row_of_track( target_page, current_track )] = current_track;
-	} else if ( CHECK_BIT( G_track_page_chain_mod_bit, CLUSTER_MOD ) ) {
-		apply_page_cluster_track_mute_toggle( target_page, current_track, 1 << operation );
-	} else if ( operation == OPERATION_MUTE ) {
-		apply_page_track_mute_toggle( target_page, current_track, &target_page->trackMutepattern );
-		target_page->trackMutepatternStored = target_page->trackMutepattern;
-	} else if ( operation == OPERATION_SOLO ) {
-		apply_page_track_mute_toggle( target_page, current_track, &target_page->trackSolopattern );
+	if ( 	( G_run_bit == ON )
+		&& 	( CHECK_BIT( G_on_the_measure_mod_bit, row ) )
+		&& 	( is_cluster_playing( target_page ) )
+	){
+		if ( CHECK_BIT( operation_mask, OPERATION_MUTE ) ) {
+			target_pattern = CHECK_BIT( G_on_the_measure_operation[row], OPERATION_MUTE )
+				? G_on_the_measure_pattern[row][OPERATION_MUTE]
+				: target_page->trackMutepattern;
+		} else if ( CHECK_BIT( operation_mask, OPERATION_SOLO ) ) {
+			target_pattern = CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO )
+				? G_on_the_measure_pattern[row][OPERATION_SOLO]
+				: target_page->trackSolopattern;
+		}
+	} else {
+		target_pattern = CHECK_BIT( operation_mask, OPERATION_MUTE ) ? target_page->trackMutepattern : target_page->trackSolopattern;
+	}
+
+	apply_page_track_mute( target_page, current_track, &target_pattern );
+	apply_page_mute_pattern_operation( target_page, target_pattern, operation_mask );
+}
+
+unsigned char has_solo_row_state ( Pagestruct* target_page, unsigned char solo_row ) {
+
+	return CHECK_BIT( target_page->trackSolopattern, solo_row );
+}
+
+unsigned char has_solo_row_future_state ( Pagestruct* target_page, unsigned char solo_row ) {
+
+	unsigned char row = target_page->pageNdx % 10;
+	return CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO ) && ( DIFF_BIT( G_on_the_measure_pattern[row][OPERATION_SOLO], target_page->trackSolopattern, solo_row ) );
+}
+
+void apply_page_track_selection_mute_toggle_operation( Pagestruct* target_page, unsigned char operation_mask ){
+
+	unsigned char row = 0;
+	for (row = 0; row < MATRIX_NROF_ROWS; row++ ) {
+		if ( CHECK_BIT( target_page->trackSelection, row ) ) {
+			apply_page_track_mute_toggle_operation( target_page, target_page->Track[row], operation_mask );
+			if ( target_page->CHAINS_PLAY_HEAD ) {
+				row += max( 0, cardinality_of_chain( target_page->Track[row] ) - 1 );
+			}
+		}
+	}
+}
+
+void apply_record_operation( Pagestruct* target_page ){
+
+	unsigned char row = target_page->pageNdx % 10;
+
+	// If PAGE+REC is pressed, disable Track record mode and toggle page record mode.
+	if ( is_pressed_key( KEY_ZOOM_PAGE ) ) {
+		unarm_page_otm_operation(target_page, MASK ( OPERATION_RECORD ) );
+		G_track_rec_bit = OFF;
+		target_page->REC_bit ^= ON;
+	}
+
+	// If just REC is pressed, disable Page record mode, and toggle Track record mode.
+	else {
+		if ( 	( G_run_bit == ON )
+			&& 	( CHECK_BIT( G_on_the_measure_mod_bit, row ) )
+		){
+			if ( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_RECORD ) ) {
+				unarm_page_otm_operation(target_page, MASK ( OPERATION_RECORD ) );
+			} else {
+				SET_MASK(G_on_the_measure_operation[row], MASK( OPERATION_RECORD ) );
+				G_on_the_measure_pattern_pageNdx[row] = target_page->pageNdx;
+			}
+		} else {
+			G_track_rec_bit ^= ON;
+		}
+		target_page->REC_bit = OFF;
 	}
 }
 
@@ -241,6 +332,21 @@ char* ptr_of_track_attr_value( 	Pagestruct* target_page,
 	return result;
 }
 
+
+bool is_key_row_zero( unsigned char keyNdx ){
+
+	bool result = false;
+
+	switch( keyNdx ){
+		case 20:	case 31:	case 42:	case 53:
+		case 64:	case 75:	case 86:	case 97:
+		case 108:	case 119:	case 130:	case 141:
+		case 152: case 163: case 174: case 185:
+			result = true;
+	}
+
+	return result;
+}
 
 
 // Translate key presses in numeric quadrant to indexes
@@ -460,10 +566,8 @@ void stop_playing_page( 	Pagestruct* target_page,
 #endif
 
 
-//
-// Boolean: returns true if there is a change request pending, false otherwise
-//
-unsigned char selection_change_request_pending() {
+// true if there is a change request pending, false otherwise
+bool selection_change_request_pending() {
 
 	unsigned char i=0;
 
@@ -623,6 +727,8 @@ void clear_ctrl_track( Pagestruct* target_page, Trackstruct* target_track ){
 }
 
 #endif
+
+
 
 //
 // Select the target_page to be played by the grid.
@@ -1630,6 +1736,8 @@ void sequencer_STOP( bool midi_send_stop ) {
 		}
 	}
 
+	reset_on_the_measure();
+
 	// Reset the locators
 	#ifdef FEATURE_ENABLE_SONG_UPE
 	sequencer_RESET(force_stop);
@@ -1904,6 +2012,7 @@ void select_in_scale( 	Pagestruct* target_page,
 						unsigned char target_state,
 						unsigned char scale_ndx ){
 
+	//d_iag_printf( "Sel->scale: k:%d state:%d\n", target_note, target_state );
 	// Syntactic sugar: new_flag has to be at least 12 bits long!
 	unsigned short new_flag 	= 	1 << (target_note - 12);
 
@@ -2685,7 +2794,11 @@ void import_GRID_set( unsigned int source_set ){
 		select_page_preselections();
 	}
 
-	GRID_p_set_note_presel = source_set;
+	#ifdef FEATURE_NOTE_DRUM_CTRL
+	if ( CHECK_BIT( GRID_p_set_mode, GRID_SET_NOTE_CTRL_ENABLE ) ) {
+		GRID_p_set_note_presel = source_set;
+	}
+	#endif
 }
 
 
@@ -2804,6 +2917,91 @@ void copy_ctrl_step_to_track( Pagestruct* page, Trackstruct* track, Stepstruct* 
 	page->trackMutepattern & (step->attr_AMT<<row_of_track( page, track ));
 }
 #endif
+
+
+void interpret_matrix_cluster_selection( unsigned char keyNdx, Pagestruct* previous_page ) {
+
+	static Pagestruct* prev_previous_page = NULL; // used to validate page cluster selections
+	static unsigned char prev_previous_page_clear = ON;
+	Pagestruct* temp_page = NULL;
+
+	GRID_CURSOR = row_of(keyNdx) + (10 * column_of (keyNdx));
+
+	if ( GRID_p_selection_cluster == ON ) {
+
+		if (! ( (keyNdx >= 187)
+				&& 	(keyNdx <= 195)
+		) ) {
+
+			if ( selected_page_cluster_pressed( GRID_CURSOR, PREV_GRID_CURSOR ) ) {
+
+				if ( CHECK_BIT(page_cluster_op, PGM_CLST_CLR) ) {
+					selected_page_cluster_clear( GRID_CURSOR );
+
+				}
+
+			} else if ( CHECK_BIT(page_cluster_op, PGM_CLST_CPY) ) {
+
+				selected_page_cluster_copy( GRID_CURSOR, PREV_GRID_CURSOR );
+
+			} else if ( !CHECK_BIT(page_cluster_op, PGM_CLST_CLR) ){
+
+				selected_page_cluster_move( GRID_CURSOR, PREV_GRID_CURSOR );
+
+			}
+		}
+	}
+
+	if ( PREV_GRID_CURSOR + 10 == GRID_CURSOR && is_pressed_key(keyNdx - 11) ) {
+
+		#ifdef FEATURE_ENABLE_SONG_UPE
+		// --------------------------------------------------------------------------------
+		// Control Track Reference Page Selection
+		//
+		if ( MIX_TRACK != NULL && CHECK_BIT(MIX_TRACK->attr_MISC, TRK_CTRL_MIX) && Track_get_MISC(MIX_TRACK, CONTROL_BIT) ){
+			MIX_TRACK->program_change = PREV_GRID_CURSOR / 10 + 1;
+			MIX_TRACK->attr_MCH = 9 - (PREV_GRID_CURSOR % 10);
+		}
+		// --------------------------------------------------------------------------------
+		#endif
+
+		previous_page = &Page_repository[ PREV_GRID_CURSOR ];
+
+		if ( PREV_GRID_CURSOR >= 10 ) { // there is a prev_prev in the row
+
+			prev_previous_page = &Page_repository[ PREV_GRID_CURSOR - 10 ];
+			prev_previous_page_clear = prev_previous_page->page_clear;
+		} else {
+
+			prev_previous_page_clear = ON;
+		}
+		temp_page = &Page_repository[ GRID_CURSOR ];
+
+		if ( previous_page->page_clear == OFF && temp_page->page_clear == OFF && prev_previous_page_clear == ON ){
+
+			GRID_p_selection_cluster = ON;
+
+		} else {
+
+			GRID_p_selection_cluster = OFF;
+			CLEAR_BIT(page_cluster_op, PGM_CLST_CLR);
+			CLEAR_BIT(page_cluster_op, PGM_CLST_CPY);
+		}
+
+	} else if ( (keyNdx >= 11) && (keyNdx <= 185) ) {
+		if (! ( (keyNdx >= 187)
+				&& 	(keyNdx <= 195)
+		) ) {
+
+			GRID_p_selection_cluster = OFF;
+			CLEAR_BIT(page_cluster_op, PGM_CLST_CLR);
+			CLEAR_BIT(page_cluster_op, PGM_CLST_CPY);
+		}
+
+	}
+	PREV_GRID_CURSOR = GRID_CURSOR;
+}
+
 
 // Interprets a key press dealing with changing the status of a step
 void interpret_matrix_stepkey( 	unsigned char row,
@@ -3036,7 +3234,7 @@ void PAGE_toggle_solo(){
 	if ( ( j == FALSE ) ) {
 
 		// Only active pages can be soloed. Break on inactive page.
-		if (is_selected_in_GRID( &Page_repository[GRID_CURSOR] ) == OFF){
+		if (page_is_selected_in_GRID( &Page_repository[GRID_CURSOR] ) == OFF){
 
 			return;
 		}
@@ -3458,6 +3656,36 @@ unsigned short page_get_armed_chain_selection( Pagestruct* target_page ) {
 
 unsigned char is_matrix_key( unsigned char keyNdx ){
 	return (( keyNdx >= 11 ) && ( keyNdx <= 185 ) && (((keyNdx-10) % 11 ) != 0 ));
+}
+
+
+// Page is in the grid selection
+bool page_is_selected_in_GRID( Pagestruct* target_page ){
+
+	unsigned char i=0;
+
+	for ( i=0; i<GRID_NROF_BANKS; i++ ){
+
+		if ( GRID_p_selection[i] == target_page ){
+
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
+
+// Is page in active bank
+bool page_is_selected_in_active_bank( Pagestruct* target_page ) {
+
+	return CHECK_BIT( GRID_bank_playmodes, target_page->pageNdx % 10 );
+}
+
+
+// Is page in mute/solo across cluster state bank
+bool page_is_selected_in_MAC_bank( Pagestruct* target_page ) {
+
+	return page_is_selected_in_active_bank( target_page ) && CHECK_BIT( GRID_assistant_page->trackMutepattern, target_page->pageNdx % 10 );
 }
 
 

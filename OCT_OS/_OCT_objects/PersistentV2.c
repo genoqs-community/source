@@ -29,7 +29,7 @@ void PersistentV2_SceneExport( ScenePersistentV2* targetScenePt )
 {
 	int setIx, bankIx;
 
-	//diag_printf( "scene-export to %p size=%ld ", targetScenePt, sizeof(ScenePersistentV2));
+	//// d_iag_printf( "scene-export to %p size=%ld ", targetScenePt, sizeof(ScenePersistentV2));
 
 	// Init target scene buffer.
 	PersistentV2_SceneInit( targetScenePt );
@@ -77,7 +77,7 @@ void PersistentV2_SceneImport( const ScenePersistentV2* sourceScenePt )
 {
 	int setIx, bankIx;
 
-	//diag_printf( "scene-import from %p m1=%x m2=%x ", sourceScenePt, sourceScenePt->magic1, sourceScenePt->magic2 );
+	//// d_iag_printf( "scene-import from %p m1=%x m2=%x ", sourceScenePt, sourceScenePt->magic1, sourceScenePt->magic2 );
 
 	// Check scene magic values.
 	if ( sourceScenePt->magic1 != PERSISTENT_GRID_MAGIC1 || sourceScenePt->magic2 != PERSISTENT_SCENE_MAGIC2 ) {
@@ -175,7 +175,7 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	}
 
 	// Because zoom level is not used, I will override it to set the CC controller mode - Synth knobs, etc. or MIDI controller.
-	targetGridPt->G_zoom_level |= !G_midi_map_controller_mode & 0x1;
+	targetGridPt->G_zoom_level |= G_midi_map_controller_mode & 0x1;
 	targetGridPt->G_zoom_level |= G_MIDI_B_priority << 1 & 0x2;
 	targetGridPt->G_zoom_level |= G_initZoom << 2 & 0x4;
 	targetGridPt->G_zoom_level |= G_TT_external_latency_offset << 3 & 0x38;
@@ -193,7 +193,7 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 				pageId = GRID_p_set[setIx][bankIx]->pageNdx;
 			}
 
-			#ifdef FEATURE_SOLO_REC
+			#ifdef FEATURE_NOTE_DRUM_CTRL
 			if ( bankIx == 0 ){
 				targetGridPt->GRID_p_id_set[setIx][bankIx] = GRID_p_set_note_offsets[setIx] << 8;
 			}
@@ -209,10 +209,11 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	targetGridPt->GRID_mixAttribute = GRID_mixAttribute;
 	targetGridPt->GRID_play_mode = GRID_play_mode;
 
-	#ifdef FEATURE_SOLO_REC
-	// First 9 bits used for grid bank play mode bit flags. Last 7 bits used for grid set MIDI channel
-	targetGridPt->GRID_bank_playmodes = GRID_p_set_midi_ch << 9;
-	targetGridPt->GRID_bank_playmodes |= GRID_bank_playmodes & 0x1ff; // toggle using a bit mask
+	#ifdef FEATURE_NOTE_DRUM_CTRL
+	// First 9 bits used for grid bank play mode bit flags. 6 bits used for grid set note out MIDI channel and 1 bit for grid set note out enable
+	targetGridPt->GRID_bank_playmodes = GRID_p_set_mode << 15 & 0x1;
+	targetGridPt->GRID_bank_playmodes |= GRID_p_set_midi_ch << 9 & 0x20;
+	targetGridPt->GRID_bank_playmodes |= GRID_bank_playmodes & 0x1FF; // toggle using a bit mask
 	#else
 	targetGridPt->GRID_bank_playmodes = GRID_bank_playmodes;
 	#endif
@@ -277,6 +278,7 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	targetGridPt->GRIDTRACK_editmode = GRIDTRACK_editmode;
 
 	// Export grid assistent page, embedded in persistent grid object.
+	GRID_assistant_page->trackMutepatternStored = G_on_the_measure_mod_bit;
 	PersistentV2_PageExport( GRID_assistant_page, &targetGridPt->assistant_page );
 
 
@@ -362,9 +364,9 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 	// Maintain current zoom level.
 	// G_zoom_level = sourceGridPt->G_zoom_level;
 	// Because zoom level is not used, I will override it to set the CC controller mode - Synth knobs, etc. or MIDI controller.
-	G_midi_map_controller_mode = !(sourceGridPt->G_zoom_level & 0x1); // use only the first bit
-	G_MIDI_B_priority = sourceGridPt->G_zoom_level >> 1 & 0x1; // shift the second bit
-	G_initZoom = sourceGridPt->G_zoom_level >> 2 & 0x1; // shift the third bit
+	G_midi_map_controller_mode = sourceGridPt->G_zoom_level & 0x1;
+	G_MIDI_B_priority = sourceGridPt->G_zoom_level >> 1 & 0x1;
+	G_initZoom = sourceGridPt->G_zoom_level >> 2 & 0x1;
 	G_TT_external_latency_offset = sourceGridPt->G_zoom_level >> 3 & 0x7;
 	G_LED_metronome = sourceGridPt->G_zoom_level >> 6 & 0x1;
 	G_PGMCH_foot_control = sourceGridPt->G_zoom_level >> 7 & 0x1;
@@ -375,9 +377,10 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 	GRID_mixAttribute = sourceGridPt->GRID_mixAttribute;
 	GRID_play_mode = sourceGridPt->GRID_play_mode;
 
-	#ifdef FEATURE_SOLO_REC
-	// First 9 bits used for grid bank play mode bit flags. Last 7 bits used for grid set MIDI channel
-	GRID_p_set_midi_ch = sourceGridPt->GRID_bank_playmodes >> 9 & 0x7F;
+	#ifdef FEATURE_NOTE_DRUM_CTRL
+	// First 9 bits used for grid bank play mode bit flags. 6 bits used for grid set note out MIDI channel and 1 bit for grid set note out enable
+	GRID_p_set_mode |= sourceGridPt->GRID_bank_playmodes >> 15;
+	GRID_p_set_midi_ch = sourceGridPt->GRID_bank_playmodes >> 9 & 0x20;
 	GRID_bank_playmodes = sourceGridPt->GRID_bank_playmodes & 0x1FF;		// either _SIMPLE or _CHAIN
 	#else
 	GRID_bank_playmodes = sourceGridPt->GRID_bank_playmodes;		// either _SIMPLE or _CHAIN
@@ -391,7 +394,7 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 		for ( bankIx = 0; bankIx < GRID_NROF_BANKS; bankIx++ ) {
 			GRID_p_set[setIx][bankIx] = NULL;
 
-			#ifdef FEATURE_SOLO_REC
+			#ifdef FEATURE_NOTE_DRUM_CTRL
 			if ( bankIx == 0 ){
 				GRID_p_set_note_offsets[setIx] = sourceGridPt->GRID_p_id_set[setIx][bankIx] >> 8 & 0xFF;
 			}
@@ -468,7 +471,7 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 
 	// Import assistent page embedded in persistent grid object.
 	PersistentV2_PageImport( &sourceGridPt->assistant_page, GRID_assistant_page );
-
+	G_on_the_measure_mod_bit = GRID_assistant_page->trackMutepatternStored;
 }
 
 

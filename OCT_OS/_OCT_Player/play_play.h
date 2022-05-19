@@ -324,7 +324,7 @@ unsigned char getHyperstepPitch( 	Pagestruct* pagePt,
 	unsigned char hyperstepRow	= trackPt->hyper >> 4;
 	unsigned char hyperstepCol	= trackPt->hyper & 0x0F;
 	Stepstruct* stepPt			= pagePt->Step[hyperstepRow][hyperstepCol];
-	unsigned char runningPitch 	= 0;
+	signed short runningPitch 	= 0;
 	unsigned char temp 			= 0;
 
 	// Once hyperstep identified, the track we care about is the hyperstep track
@@ -364,7 +364,7 @@ unsigned char getHyperstepVelocity( 	Pagestruct* pagePt,
 	unsigned char hyperstepRow	= trackPt->hyper >> 4;
 	unsigned char hyperstepCol	= trackPt->hyper & 0x0F;
 	Stepstruct* stepPt			= pagePt->Step[hyperstepRow][hyperstepCol];
-	unsigned char runningVelocity = 0;
+	signed short runningVelocity = 0;
 	unsigned char temp 			= 0;
 
 	// Once hyperstep identified, the track we care about is the hyperstep track
@@ -958,11 +958,13 @@ unsigned int play_row_MCC( 	Pagestruct* target_page,
 					// target_page->EFF_pool[ ATTR_MIDICC ] +=
 					//	(		(unsigned char) target_page->Step[row][locator-1]->attr_MCC
 					//		-	STEP_DEF_MIDICC );
-					target_page->EFF_pool[ ATTR_MIDICC ] +=
-						normalize(	( 	target_page->Step[phys_row][locator-1]->attr_MCC
-							*  Track_MCC_factor[	target_page->Track[head_row]->MCC_factor
-												+ target_page->Track[phys_row]->event_offset[ATTR_MIDICC] ]
-							/ MCC_FACTOR_NEUTRAL_VALUE ), STEP_MIN_MIDICC, STEP_MAX_MIDICC );
+					target_page->EFF_pool[ ATTR_MIDICC ] = normalize(
+							target_page->EFF_pool[ ATTR_MIDICC ]
+					        +	( 	target_page->Step[phys_row][locator-1]->attr_MCC
+							*	Track_MCC_factor[	target_page->Track[head_row]->MCC_factor
+							+ target_page->Track[phys_row]->event_offset[ATTR_MIDICC] ]
+							/ MCC_FACTOR_NEUTRAL_VALUE ),
+							EFF_POOL_MIN, EFF_POOL_MAX );
 					break;
 
 				case RECEIVE:
@@ -974,11 +976,13 @@ unsigned int play_row_MCC( 	Pagestruct* target_page,
 					// MIDICC
 					EFF_pool_MCC = target_page->EFF_pool[ ATTR_MIDICC ];
 
-					target_page->EFF_pool[ ATTR_MIDICC ] +=
-							normalize(	( 	target_page->Step[phys_row][locator-1]->attr_MCC
-							*  Track_MCC_factor[	target_page->Track[head_row]->MCC_factor
+					target_page->EFF_pool[ ATTR_MIDICC ] = normalize(
+							target_page->EFF_pool[ ATTR_MIDICC ]
+							+	( 	target_page->Step[phys_row][locator-1]->attr_MCC
+							*	Track_MCC_factor[	target_page->Track[head_row]->MCC_factor
 												+ target_page->Track[phys_row]->event_offset[ATTR_MIDICC] ]
-							/ MCC_FACTOR_NEUTRAL_VALUE ), STEP_MIN_MIDICC, STEP_MAX_MIDICC );
+							/ MCC_FACTOR_NEUTRAL_VALUE ),
+							EFF_POOL_MIN, EFF_POOL_MAX );
 					break;
 			}
 		}
@@ -1619,7 +1623,8 @@ void PLAYER_play_track( Pagestruct* target_page, unsigned char row ){
 
 					// Pick up operation in the potentially next track (e.g. in chains)
 					// The first click is already done, do the rest..
-					if ( target_track != origin_track ){
+					if ( 	( target_track != origin_track )
+						&& 	( target_track->attr_TEMPOMUL < 9 ) ){
 						#ifdef FEATURE_ENABLE_DICE
 						attr_TEMPOMUL = dice_apply_clock_offset( target_page, row_of_track( target_page, target_track ) ).attr_TEMPOMUL;
 						#else

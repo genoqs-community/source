@@ -358,7 +358,7 @@ void chain_selected_tracks( Pagestruct* target_page ){
 
 
 	// Align tracks to global clock - but only the ones in the playing pages
-	if ( is_selected_in_GRID( target_page ) ){
+	if ( page_is_selected_in_GRID( target_page ) ){
 		// set_page_locators( target_page, G_global_locator, my_max_value( G_TTC_abs_value, 1 ) );
 		target_LOC = G_global_locator;
 		target_TTC = my_max_value( G_TTC_abs_value, 1 );

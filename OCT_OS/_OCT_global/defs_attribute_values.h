@@ -273,6 +273,8 @@
 
 #define STEP_DEF_POSITION		0	// Step position attribute holds the second 7-bit nibble for the bender value
 
+#define EFF_POOL_MIN			-127
+#define	EFF_POOL_MAX			127
 
 // These are hardcoded to the step structure, do not modify without consulting the struct
 #define	STEPSTAT_TOGGLE			0

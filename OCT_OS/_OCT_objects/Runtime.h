@@ -575,12 +575,13 @@ extern Pagestruct* 	GRID_p_selection 		[GRID_NROF_BANKS];
 extern Pagestruct* 	GRID_p_preselection	  	[GRID_NROF_BANKS];
 extern Pagestruct* 	GRID_p_clock_presel	  	[GRID_NROF_BANKS];
 extern Pagestruct* 	GRID_p_set				[GRID_NROF_SETS ][GRID_NROF_BANKS]; // Stores the GRID sets
-extern unsigned char   GRID_p_set_note_offsets	[GRID_NROF_SETS ];
-extern unsigned char   GRID_p_set_midi_ch;
-extern unsigned char   GRID_p_selection_cluster;
-#ifdef FEATURE_ENABLE_SONG_UPE
-extern char			GRID_p_set_note_presel;
+#ifdef FEATURE_NOTE_DRUM_CTRL
+extern unsigned char   	GRID_p_set_note_offsets	[GRID_NROF_SETS ];
+extern unsigned char   	GRID_p_set_midi_ch;
+extern unsigned char   	GRID_p_set_mode;
+extern unsigned char	GRID_p_set_note_presel;
 #endif
+extern unsigned char   GRID_p_selection_cluster;
 #ifdef FEATURE_ENABLE_SONG_UPE
 extern Pagestruct* 	GRID_p_selection_buffer [GRID_NROF_BANKS];
 #else
@@ -623,6 +624,7 @@ extern unsigned short NEMO_selectedTrackAttribute;
 extern unsigned short NEMO_selectedStepAttribute;
 extern unsigned char NEMO_track_VFF;
 extern unsigned char NEMO_step_VER;
+extern unsigned char NEMO_lauflicht_track;
 #endif
 #ifdef FEATURE_ENABLE_DICE
 extern unsigned char dice_synced_attr;
@@ -639,6 +641,7 @@ extern unsigned char SOLO_rec_strum_latch;
 extern unsigned char G_run_bit;
 extern unsigned char G_track_rec_bit;
 
+extern unsigned short G_on_the_measure_mod_bit;
 extern unsigned char G_midi_map_controller_mode;
 extern unsigned char G_MIDI_B_priority;
 extern unsigned char G_TT_external_latency_offset;
@@ -646,6 +649,7 @@ extern unsigned char G_flashgridheadersonly_flag;
 extern unsigned char G_initZoom;
 extern unsigned char G_LED_metronome;
 extern unsigned char G_PGMCH_foot_control;
+extern unsigned char G_DEVICE_dirty;
 
 // From init_memory.h
 extern Pagestruct* GRID_assistant_page;

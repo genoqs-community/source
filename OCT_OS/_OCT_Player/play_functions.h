@@ -451,7 +451,7 @@ void send_track_program_change( Trackstruct* target_track, Pagestruct* target_pa
 									case 9: case 8: case 7: case 6: case 5: case 4: case 3: case 2: case 1:
 
 										// Toggle the page playing status (this is reversed OFF is toggle ON)
-										switch ( is_selected_in_GRID( temp_page ) && (!is_pre_selected_in_GRID( temp_page ) || G_scroll_bit ) ) {
+										switch ( PAGE_is_pre_selected_in_GRID( temp_page ) && (!PAGE_is_pre_selected_in_GRID( temp_page ) || G_scroll_bit ) ) {
 										case ON:
 											if ( prev_G_stop_bit == OFF || G_pause_bit == ON ) {
 												GRID_p_preselection[ bank ] = NULL;
@@ -696,7 +696,10 @@ void switch_gridbank( unsigned char target_bank ){
 		}
 	}
 	#else
+
 	// HALT the old page
+	unsigned char halted_page_locator = 0;
+
 	if ( GRID_p_selection[target_bank] != NULL ) {
 
 		// PLAYMODE handling
@@ -707,12 +710,16 @@ void switch_gridbank( unsigned char target_bank ){
 			// First turn the PLAY mode OFF, then bring it ON again - down below
 			PLAY_MODE_switch_new( target_bank, OFF );
 		}
+		// Apply pending OTM immediately
+		apply_on_the_measure(GRID_p_selection [target_bank], true);
 
 		// Stop playing the old page if it was not empty..
 		stop_playing_page( GRID_p_selection[target_bank],	G_TTC_abs_value );
 
 		// ..and set its locators to 0 for the next round of play.
 		set_track_locators( GRID_p_selection[target_bank], NULL, 0, 0 );
+
+		halted_page_locator = GRID_p_selection[target_bank]->locator;
 
 		// Set the page locator to 0, just to be consistent with using
 		// a locator of 0 to indicate that page or track is not playing.
@@ -724,7 +731,6 @@ void switch_gridbank( unsigned char target_bank ){
 
 	// Make sure we do not operate on an invalid page pointer
 	if ( GRID_p_selection [target_bank] != NULL ){
-
 		// Reset all track locators - may have changed
 		// ..?
 
@@ -740,9 +746,14 @@ void switch_gridbank( unsigned char target_bank ){
 		else{
 			send_program_changes( GRID_p_selection[ target_bank ] );
 		}
-		// Advance its locators once, moving them from 0 to 1, indicating activity
-		advance_page_locators( GRID_p_selection[target_bank] );
 
+		if( halted_page_locator ) {
+			// Restore page locator from halted page
+			GRID_p_selection[target_bank]->locator = halted_page_locator;
+		} else {
+			// Advance its locators once, moving them from 0 to 1, indicating activity
+			advance_page_locators( GRID_p_selection[target_bank] );
+		}
 		// Refill the page repeats value
 		GRID_p_selection[target_bank]->repeats_left = GRID_p_selection[target_bank]->attr_STA;
 
@@ -919,6 +930,7 @@ bool is_trigger_random( Trackstruct* target_track  ){
 
 // Nemo x2 only - Follow chain when follow chain mode and crossing Nemo track window
 void track_window_follow_chain( Pagestruct* target_page, Trackstruct* target_track ){
+
 	#ifdef NEMO
 	if( 	( target_page->trackSelection == 0 )
 		&&	( page_is_chain_follow( target_page ) )
@@ -971,6 +983,87 @@ unsigned char get_track_flow_factor( const unsigned char attribute, const unsign
 	}
 	#endif
 	return 0;
+}
+
+
+void apply_on_the_measure_operations( Pagestruct* target_page ) {
+
+	unsigned char row = target_page->pageNdx % 10;
+	if ( 	( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO ) )
+		||	( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_MUTE ) )
+		) {
+		// Direct mute / solo pattern
+		if ( page_is_selected_in_MAC_bank( target_page ) ) {
+			if ( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_MUTE ) ) {
+				apply_page_cluster_mute_pattern( target_page, G_on_the_measure_pattern[row][OPERATION_MUTE], MASK( OPERATION_NOSTORE ) | MASK( OPERATION_MUTE) );
+			}
+
+			if ( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO ) ) {
+				apply_page_cluster_mute_pattern( target_page, G_on_the_measure_pattern[row][OPERATION_SOLO], MASK( OPERATION_SOLO ) );
+			}
+		} else {
+			if ( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_MUTE ) ) {
+				CLEAR_MASK( target_page->trackSolopattern, G_on_the_measure_pattern[row][OPERATION_MUTE] );
+				if ( G_on_the_measure_pattern[row][OPERATION_MUTE] || !( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_NOSTORE ) ) ) {
+					target_page->trackMutepatternStored = G_on_the_measure_pattern[row][OPERATION_MUTE] | ( target_page->trackMutepatternStored & target_page->trackSolopattern );
+				}
+				target_page->trackMutepattern = G_on_the_measure_pattern[row][OPERATION_MUTE];
+				//// d_iag_printf( "OPERATION_MUTE Mute:%b - MStore:%b - Solo:%b\n", target_page->trackMutepattern, target_page->trackMutepatternStored, target_page->trackSolopattern );
+			}
+
+			if ( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO ) ) {
+				unsigned short unsolo_pattern = SET_APPLY_MASK( target_page->trackSolopattern, DIFF_MASK( target_page->trackSolopattern, G_on_the_measure_pattern[row][OPERATION_SOLO] ) );
+				CLEAR_MASK( target_page->trackMutepattern, ( target_page->trackSolopattern = G_on_the_measure_pattern[row][OPERATION_SOLO] ) );
+				SET_MASK( target_page->trackMutepattern, SET_APPLY_MASK( unsolo_pattern, target_page->trackMutepatternStored ) );
+				//// d_iag_printf( "OPERATION_SOLO Mute:%b - MStore:%b - Solo:%b\n\n", target_page->trackMutepattern, target_page->trackMutepatternStored, target_page->trackSolopattern );
+			}
+		}
+	}
+
+	if ( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_RECORD) ) {
+		G_track_rec_bit  ^= ON;
+	}
+}
+
+
+void bank_reset_on_the_measure(unsigned char row) {
+	unsigned char i = 0;
+	for (i = 0; i < OTM_OPERATION_COUNT; i++){
+		G_on_the_measure_pattern[row][i] = OFF;
+	}
+
+	G_on_the_measure_operation[row] = OFF;
+	G_on_the_measure_pattern_pageNdx[row] = OFF;
+	// d_iag_printf( "Reset row: %u - OTM Mute: %b - OTM Solo: %b\n", row, G_on_the_measure_pattern[row][OPERATION_MUTE], G_on_the_measure_pattern[row][OPERATION_SOLO] );
+}
+
+
+void reset_on_the_measure() {
+
+	unsigned char i = 0;
+	// Reset the on the measure mute pattern
+	for (i = 0; i < MATRIX_NROF_ROWS; i++){
+		bank_reset_on_the_measure(i);
+	}
+}
+
+
+void apply_on_the_measure( Pagestruct* target_page, bool force ) {
+
+	unsigned char row = target_page->pageNdx % 10;
+	unsigned char target_locator = target_page->locator - 1;
+	if (  	( G_on_the_measure_operation[row] )
+		&&	( ( force )
+			|| ( ( ( ( target_page->attr_LEN < PAGE_DEF_LEN )
+				&&	( target_locator == target_page->attr_LEN ) )
+				||	( ( page_is_selected_in_active_bank( target_page ) )
+				&&	( target_locator == target_page->attr_LEN ) ) )
+				|| 	!( target_locator % MATRIX_NROF_COLUMNS ) ) )
+		) {
+
+			apply_on_the_measure_operations( &Page_repository[G_on_the_measure_pattern_pageNdx[row]] );
+			bank_reset_on_the_measure(row);
+	}
 }
 
 #ifdef FEATURE_ENABLE_DICE

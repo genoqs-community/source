@@ -233,7 +233,7 @@
 //			// MODE_OBJECT_SELECTION = INTERACTIVE;
 //		}
 
-		// MIDI NOTE and CC routing and pass through enabled
+		// MIDI CC routing and pass through enabled
 		if ( keyNdx == KEY_ZOOM_MAP ){
 			G_midi_map_controller_mode ^= 1;
 		}
@@ -242,8 +242,25 @@
 		// SELECTORS
 		// Toggle the playmodes for the GRID bank.
 		if ((keyNdx >0) && (keyNdx <= 10)) {
+			if (	( DOUBLE_CLICK_TARGET == keyNdx )
+				&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
+				// Toggle Mute accross cluster
+				TOGGLE_BIT( GRID_assistant_page->trackMutepattern, keyNdx - 1 );
+			}
+			// SINGLE CLICK SCENARIO
+			else if (DOUBLE_CLICK_TARGET == 0) {
 
-			GRID_bank_playmodes ^= 1 << (keyNdx-1);
+					DOUBLE_CLICK_TARGET = keyNdx;
+					DOUBLE_CLICK_TIMER = ON;
+					// Start the Double click Alarm
+					cyg_alarm_initialize(
+							doubleClickAlarm_hdl,
+							cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+							DOUBLE_CLICK_ALARM_TIME );
+
+				// Single click code
+				GRID_bank_playmodes ^= 1 << ( keyNdx - 1 );
+			}
 		}
 
 
@@ -339,7 +356,7 @@
 		}
 		#endif
 
-		#ifdef FEATURE_SOLO_REC
+		#ifdef FEATURE_NOTE_DRUM_CTRL
 		if ( keyNdx == KEY_MIX_MASTER ){
 
 			GRID_CC_events ^= 1;
@@ -347,14 +364,30 @@
 
 		// Grid Scene change note event send on-the-measure
 		if ( keyNdx == 10 ){ // grid selection row 0 button
+			// D O U B L E - C L I C K  C O N S T R U C T
+			// DOUBLE CLICK SCENARIO
+			if (	( DOUBLE_CLICK_TARGET == keyNdx )
+				&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
 
-			if ( GRID_p_set_note_offsets[current_GRID_set] == 255 )
-			{
-				GRID_p_set_note_offsets[current_GRID_set] = 0;
-			}
-			else
-			{
-				GRID_p_set_note_offsets[current_GRID_set] = 255; // turn note send off
+				// Double click code
+				// ...
+				TOGGLE_BIT( GRID_p_set_mode, GRID_SET_NOTE_CTRL_ENABLE );
+			} // end of double click scenario
+
+			// SINGLE CLICK SCENARIO
+			else if (DOUBLE_CLICK_TARGET == 0) {
+
+					DOUBLE_CLICK_TARGET = keyNdx;
+					DOUBLE_CLICK_TIMER = ON;
+					// Start the Double click Alarm
+					cyg_alarm_initialize(
+							doubleClickAlarm_hdl,
+							cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+							DOUBLE_CLICK_ALARM_TIME );
+
+				// Single click code
+				// ...
+				// nothing to do
 			}
 		}
 		#endif
@@ -425,7 +458,7 @@
 								// Toggle the page playing status --> classic toggle behavior
 								// Note that this is effectively reversing the queue status
 								if ( GRID_editmode != ON ){
-									switch ( is_selected_in_GRID( target_page ) ) {
+									switch ( page_is_selected_in_GRID( target_page ) ) {
 										case ON:
 											grid_select( target_page, ON );
 											break;
@@ -480,6 +513,8 @@
 								// Single click code
 								// ...
 
+								interpret_matrix_cluster_selection( keyNdx, previous_page );
+
 								// Need this here so we can grab pages in GRID
 								GRID_CURSOR = temp;
 								target_page = &Page_repository[ GRID_CURSOR ];
@@ -505,7 +540,7 @@
 
 									// Toggle the page playing status
 									// Classic toggle behavior
-									switch ( is_selected_in_GRID( target_page ) ) {
+									switch ( page_is_selected_in_GRID( target_page ) ) {
 										case ON:
 											grid_select( target_page, OFF );
 											#ifdef FEATURE_ENABLE_SONG_UPE
@@ -532,6 +567,7 @@
 											break;
 									}
 								} // GRID editormode is not active
+
 							} // Single click scenario
 
 							break;
@@ -554,21 +590,11 @@
 
 				switch (keyNdx) {
 					case KEY_CLEAR:
-						if ( CHECK_BIT(page_cluster_op, PGM_CLST_CLR) ) {
-							CLEAR_BIT(page_cluster_op, PGM_CLST_CLR);
-						} else {
-							SET_BIT(page_cluster_op, PGM_CLST_CLR);
-							CLEAR_BIT(page_cluster_op, PGM_CLST_CPY);
-						}
+						TOGGLE_BIT( page_cluster_op, PGM_CLST_CLR );
 					break;
 
 					case KEY_COPY:
-						if ( CHECK_BIT(page_cluster_op, PGM_CLST_CPY) ) {
-							CLEAR_BIT(page_cluster_op, PGM_CLST_CPY);
-						} else {
-							SET_BIT(page_cluster_op, PGM_CLST_CPY);
-							CLEAR_BIT(page_cluster_op, PGM_CLST_CLR);
-						}
+						TOGGLE_BIT( page_cluster_op, PGM_CLST_CPY );
 					break;
 				}
 
@@ -1148,9 +1174,6 @@
 					switch( GRID_rowzero_pagelength ){
 
 						case FALSE:
-							#ifdef FEATURE_ENABLE_SONG_UPE
-							// Repeats statement removed
-							#else
 							// D O U B L E - C L I C K  C O N S T R U C T
 							// DOUBLE CLICK SCENARIO
 							if ((DOUBLE_CLICK_TARGET == keyNdx)
@@ -1181,7 +1204,6 @@
 								target_page->attr_STA = (keyNdx - 9) / 11;
 								target_page->repeats_left = target_page->attr_STA;
 							}
-							#endif
 							break;
 
 						case TRUE:
@@ -1269,9 +1291,7 @@
 						// Single click code
 						// ...
 
-						// Update the GRID CURSOR
-						// GRID_CURSOR = row_of(keyNdx) + (10 * column_of (keyNdx));
-						// target_page = 	&Page_repository[ GRID_CURSOR ];
+						interpret_matrix_cluster_selection( keyNdx, previous_page );
 					}
 
 			} // switch keyNdx..
@@ -1296,7 +1316,7 @@
 					// Toggle the page playing status
 
 					// Classic toggle behavior
-					switch ( is_selected_in_GRID( target_page ) ) {
+					switch ( page_is_selected_in_GRID( target_page ) ) {
 						case ON:
 							grid_select( target_page, OFF );
 							#ifdef FEATURE_ENABLE_SONG_UPE
@@ -1397,7 +1417,7 @@
 
 				case KEY_RMX:
 					// Only active pages can be rmx'ed. Break on inactive page
-					if (is_selected_in_GRID( target_page ) == OFF){
+					if (page_is_selected_in_GRID( target_page ) == OFF){
 						break;
 					}
 

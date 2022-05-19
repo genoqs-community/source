@@ -15,20 +15,24 @@
 
 			// VEL
 			#ifdef EVENTS_FACTORIZED
-			target_page->EFF_pool[ ATTR_VELOCITY ] +=	
-				( 	target_page->Step[phys_row][locator-1]->attr_VEL
-					*  Track_VEL_factor[	target_page->Track[head_row]->VEL_factor 
-										+ target_page->Track[phys_row]->event_offset[ATTR_VELOCITY] ] 
-					/ VEL_FACTOR_NEUTRAL_VALUE )
-				-	STEP_DEF_VELOCITY;
+			target_page->EFF_pool[ ATTR_VELOCITY ] = normalize(
+					target_page->EFF_pool[ ATTR_VELOCITY ]
+					+ (	( 	target_page->Step[phys_row][locator-1]->attr_VEL
+						* Track_VEL_factor[	target_page->Track[head_row]->VEL_factor
+						+ target_page->Track[phys_row]->event_offset[ATTR_VELOCITY] ]
+						/ VEL_FACTOR_NEUTRAL_VALUE	)
+					- STEP_DEF_VELOCITY	),
+					EFF_POOL_MIN, EFF_POOL_MAX );
 			#endif // EVENTS_FACTORIZED
 			
 			#ifdef EVENTS_ABSOLUTE
-			target_page->EFF_pool[ ATTR_VELOCITY ] +=	
-				( 	target_page->Step[phys_row][locator-1]->attr_VEL
-					*  Track_VEL_factor[	target_page->Track[head_row]->VEL_factor ] 
-					/ VEL_FACTOR_NEUTRAL_VALUE )
-				-	STEP_DEF_VELOCITY;
+			target_page->EFF_pool[ ATTR_VELOCITY ] = normalize(
+					target_page->EFF_pool[ ATTR_VELOCITY ]
+					+ (	(	target_page->Step[phys_row][locator-1]->attr_VEL
+						*  Track_VEL_factor[	target_page->Track[head_row]->VEL_factor ]
+						/ VEL_FACTOR_NEUTRAL_VALUE	)
+					- STEP_DEF_VELOCITY	),
+					EFF_POOL_MIN, EFF_POOL_MAX );
 			#endif // EVENTS_ABSOLUTE
 
 
@@ -36,32 +40,38 @@
 			// PIT
 			#ifdef EVENTS_FACTORIZED
 			//________FACTORIZED version
-			target_page->EFF_pool[ ATTR_PITCH ] +=	
-				( 	target_page->Step[phys_row][locator-1]->attr_PIT
-					*  Track_PIT_factor[	target_page->Track[head_row]->PIT_factor 
-										+ target_page->Track[phys_row]->event_offset[ATTR_PITCH] ] 
-					/ PIT_FACTOR_NEUTRAL_VALUE )
-				-	STEP_DEF_PITCH;	
+			target_page->EFF_pool[ ATTR_PITCH ] = normalize(
+					target_page->EFF_pool[ ATTR_PITCH ]
+					+ ( ( 	target_page->Step[phys_row][locator-1]->attr_PIT
+						*  Track_PIT_factor[	target_page->Track[head_row]->PIT_factor
+						+ target_page->Track[phys_row]->event_offset[ATTR_PITCH] ]
+						/ PIT_FACTOR_NEUTRAL_VALUE )
+					- STEP_DEF_PITCH	),
+					EFF_POOL_MIN, EFF_POOL_MAX );
 			#endif // EVENTS_FACTORIZED
 
 			#ifdef EVENTS_ABSOLUTE
 			//________ABSOLUTE version
-			target_page->EFF_pool[ ATTR_PITCH ] +=	
-				( 	target_page->Step[phys_row][locator-1]->attr_PIT
-					*  Track_PIT_factor[ target_page->Track[head_row]->PIT_factor ] 
-					/ PIT_FACTOR_NEUTRAL_VALUE )
-				-	STEP_DEF_PITCH;
+			target_page->EFF_pool[ ATTR_PITCH ] = normalize(
+					target_page->EFF_pool[ ATTR_PITCH ]
+					+ (	( 	target_page->Step[phys_row][locator-1]->attr_PIT
+						*  Track_PIT_factor[ target_page->Track[head_row]->PIT_factor ]
+						/ PIT_FACTOR_NEUTRAL_VALUE	)
+					- STEP_DEF_PITCH	)
+					EFF_POOL_MIN, EFF_POOL_MAX );
 			#endif // EVENTS_ABSOLUTE
 
 
 
 			// LEN
-			target_page->EFF_pool[ ATTR_LENGTH ] +=	
-				( 	((unsigned char)target_page->Step[phys_row][locator-1]->attr_LEN)
-					*  Track_LEN_factor[	target_page->Track[head_row]->LEN_factor 
-										+ target_page->Track[phys_row]->event_offset[ATTR_LENGTH] ] 
-					/ LEN_FACTOR_NEUTRAL_VALUE )
-				-	STEP_DEF_LENGTH;
+			target_page->EFF_pool[ ATTR_LENGTH ] = normalize(
+					target_page->EFF_pool[ ATTR_LENGTH ]
+					+ (	( ( (unsigned char) target_page->Step[phys_row][locator-1]->attr_LEN	)
+						*  Track_LEN_factor[	target_page->Track[head_row]->LEN_factor
+						+ target_page->Track[phys_row]->event_offset[ATTR_LENGTH] ]
+						/ LEN_FACTOR_NEUTRAL_VALUE )
+					- STEP_DEF_LENGTH	),
+					EFF_POOL_MIN, EFF_POOL_MAX );
 			break;
 
 
@@ -92,22 +102,24 @@
 
 			// VEL
 			#ifdef EVENTS_FACTORIZED
-			target_page->EFF_pool[ ATTR_VELOCITY ] += (
-				( 	target_page->Step[phys_row][locator-1]->attr_VEL
-					*  Track_VEL_factor[	target_page->Track[head_row]->VEL_factor 
-										+ target_page->Track[phys_row]->event_offset[ATTR_VELOCITY] ] 
-					/ VEL_FACTOR_NEUTRAL_VALUE )
-				-	STEP_DEF_VELOCITY
-				);
+			target_page->EFF_pool[ ATTR_VELOCITY ] = normalize(
+					target_page->EFF_pool[ ATTR_VELOCITY ]
+					+ (	( 	target_page->Step[phys_row][locator-1]->attr_VEL
+						*  Track_VEL_factor[	target_page->Track[head_row]->VEL_factor
+						+ target_page->Track[phys_row]->event_offset[ATTR_VELOCITY] ]
+						/ VEL_FACTOR_NEUTRAL_VALUE )
+					- STEP_DEF_VELOCITY	),
+					EFF_POOL_MIN, EFF_POOL_MAX );
 			#endif // EVENTS_FACTORIZED
 			
 			#ifdef EVENTS_ABSOLUTE
-			target_page->EFF_pool[ ATTR_VELOCITY ] += (
-				( 	target_page->Step[phys_row][locator-1]->attr_VEL
-					*  Track_VEL_factor[	target_page->Track[head_row]->VEL_factor ] 
-					/ VEL_FACTOR_NEUTRAL_VALUE )
-				-	STEP_DEF_VELOCITY
-				);
+			target_page->EFF_pool[ ATTR_VELOCITY ] = normalize(
+					target_page->EFF_pool[ ATTR_VELOCITY ]
+					+ (	( 	target_page->Step[phys_row][locator-1]->attr_VEL
+						*  Track_VEL_factor[	target_page->Track[head_row]->VEL_factor ]
+						/ VEL_FACTOR_NEUTRAL_VALUE )
+					- STEP_DEF_VELOCITY	),
+					EFF_POOL_MIN, EFF_POOL_MAX );
 			#endif // EVENTS_ABSOLUTE
 
 
@@ -115,35 +127,38 @@
 			// PIT
 			#ifdef EVENTS_FACTORIZED
 			//________FACTORIZED version
-			target_page->EFF_pool[ ATTR_PITCH ] += (
-				( 	target_page->Step[phys_row][locator-1]->attr_PIT
-					*  Track_PIT_factor[	target_page->Track[head_row]->PIT_factor 
-										+ target_page->Track[phys_row]->event_offset[ATTR_PITCH] ] 
-					/ PIT_FACTOR_NEUTRAL_VALUE )
-				-	STEP_DEF_PITCH
-				);
+			target_page->EFF_pool[ ATTR_PITCH ] = normalize(
+					target_page->EFF_pool[ ATTR_PITCH ]
+					+ (	( 	target_page->Step[phys_row][locator-1]->attr_PIT
+						*  Track_PIT_factor[	target_page->Track[head_row]->PIT_factor
+						+ target_page->Track[phys_row]->event_offset[ATTR_PITCH] ]
+						/ PIT_FACTOR_NEUTRAL_VALUE )
+					- STEP_DEF_PITCH	),
+					EFF_POOL_MIN, EFF_POOL_MAX );
 			#endif // EVENTS_FACTORIZED
 			
 			#ifdef EVENTS_ABSOLUTE
 			//________ABSOLUTE version
-			target_page->EFF_pool[ ATTR_PITCH ] += (
-				( 	target_page->Step[phys_row][locator-1]->attr_PIT
-					*  Track_PIT_factor[ target_page->Track[head_row]->PIT_factor ] 
-					/ PIT_FACTOR_NEUTRAL_VALUE )
-				-	STEP_DEF_PITCH
-				);
+			target_page->EFF_pool[ ATTR_PITCH ] = normalize(
+					target_page->EFF_pool[ ATTR_PITCH ]
+					+ (	( 	target_page->Step[phys_row][locator-1]->attr_PIT
+						*  Track_PIT_factor[ target_page->Track[head_row]->PIT_factor ]
+						/ PIT_FACTOR_NEUTRAL_VALUE )
+					- STEP_DEF_PITCH	),
+					EFF_POOL_MIN, EFF_POOL_MAX );
 			#endif // EVENTS_ABSOLUTE
 
 
 
 			// LEN
-			target_page->EFF_pool[ ATTR_LENGTH ] +=	(
-				( 	((unsigned char)target_page->Step[phys_row][locator-1]->attr_LEN)
-					*  Track_LEN_factor[	target_page->Track[head_row]->LEN_factor 
-										+ target_page->Track[phys_row]->event_offset[ATTR_LENGTH] ] 
-					/ LEN_FACTOR_NEUTRAL_VALUE )
-				-	STEP_DEF_LENGTH
-				);
+			target_page->EFF_pool[ ATTR_LENGTH ] = normalize(
+					target_page->EFF_pool[ ATTR_LENGTH ]
+					+ (	(	( (unsigned char) target_page->Step[phys_row][locator-1]->attr_LEN)
+						*  Track_LEN_factor[	target_page->Track[head_row]->LEN_factor
+						+ target_page->Track[phys_row]->event_offset[ATTR_LENGTH] ]
+						/ LEN_FACTOR_NEUTRAL_VALUE )
+					- STEP_DEF_LENGTH	),
+					EFF_POOL_MIN, EFF_POOL_MAX );
 			break;
 
 	}

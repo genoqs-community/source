@@ -127,13 +127,13 @@
 #define 	SCALE_MOD			2
 #define		SCALE_CAD			3
 
-#define 	CLUSTER_MOD			0	// Cluster operation applied immediately flag
-#define		ON_THE_MEASURE_MOD	1	// Operation applied on the measure flag
 
-#define 	OPERATION_MUTE		0 	// On the measure mute operation
-#define 	OPERATION_SOLO		1 	// On the measure solo operation
-#define 	OPERATION_MASK		2 	// On the measure mute / solo mask operation
+#define 	OPERATION_MUTE		0 	// mute operation
+#define 	OPERATION_SOLO		1 	// solo operation
+#define 	OPERATION_RECORD	2 	// record operation
+#define 	OPERATION_NOSTORE	3 	// skip storing last mute state
 
+#define 	OTM_OPERATION_COUNT	3
 
 #define 	LEAD				2	// used when a note in scale selection is the lead tone
 
@@ -154,7 +154,7 @@
 
 // NUMBER OF PAGES
 // Should never be changed down from 160 because the invisible pages (index 144-159)
-// are used for shadow operations like grid assistancy, freeze and revert, etc.
+// are used for shadow operations like grid assistancy,set freeze and revert, etc.
 #define MAX_NROF_PAGES			160
 #define PAGE_NROF_ATTRIBUTES	4	// means: STATUS, VELOCITY, PITCH, LENGTH.
 
@@ -303,7 +303,9 @@
 #define		SCALE_SELECTION			21
 #define 	CHORD_SIZE				22
 #define		CHORD_SIZE_TRACK		32
-// 			empty					23
+#ifdef FEATURE_NOTE_DRUM_CTRL
+#define		ELE_DRUM_CTRL			24
+#endif
 // #define		GRID_TRIGGERMODES		30
 #define		GRID_SET_SWITCHMODE		44
 #define 	GRID_BANK_PLAYMODES		45
@@ -462,6 +464,9 @@
 // Used for GRID_set_switchmode
 #define 	SEL_RECALL				0
 #define		SEL_CLEAR				1
+
+// Used for GRID_p_set_mode as flags
+#define		GRID_SET_NOTE_CTRL_ENABLE	0
 
 // Used in the Track MISC attribute as flags
 #ifdef FEATURE_ENABLE_SONG_UPE

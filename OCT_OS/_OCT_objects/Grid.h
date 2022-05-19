@@ -54,9 +54,12 @@ Pagestruct* 	GRID_p_selection 		[GRID_NROF_BANKS]; // Pointers of the pages that
 Pagestruct* 	GRID_p_preselection	  	[GRID_NROF_BANKS];	// Stores the page indexes of the pages to be selected at the next oclock
 Pagestruct* 	GRID_p_clock_presel	  	[GRID_NROF_BANKS];
 Pagestruct* 	GRID_p_set				[GRID_NROF_SETS ][GRID_NROF_BANKS]; // Stores the GRID sets
+#ifdef FEATURE_NOTE_DRUM_CTRL
 unsigned char	GRID_p_set_note_offsets	[GRID_NROF_SETS ];
-unsigned char   GRID_p_set_midi_ch = 0; // Stores the global midi channel for note events
-char			GRID_p_set_note_presel = 255; // Stores the set index of the note to send on the measure
+unsigned char   GRID_p_set_midi_ch = 32; // Stores the global midi channel for note events
+unsigned char   GRID_p_set_mode = OFF;
+unsigned char	GRID_p_set_note_presel = 255; // Stores the set index of the note to send on the measure
+#endif
 
 
 // Page cluster selection active flag
@@ -204,4 +207,5 @@ unsigned char GRID_CC_events = OFF;
 	// Indicates what is currently selected as a track modification target
 	unsigned char NEMO_track_VFF = VFF_VALUE;
 	unsigned char NEMO_step_VER =  VER_VALUE;
+	unsigned char NEMO_lauflicht_track = OFF;
 #endif

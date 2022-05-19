@@ -73,19 +73,44 @@ void rot_exec_GRID( 	Pagestruct* target_page,
 				// Apply global page modifications
 				rot_exec_PAGE_global( target_page, rotNdx, direction );
 			}
+			#ifdef FEATURE_NOTE_DRUM_CTRL
+			if ( 	( rotNdx == ROT_PIT )
+				&&	( CHECK_BIT( GRID_p_set_mode, GRID_SET_NOTE_CTRL_ENABLE )
+				&&	( is_pressed_key( 10 ) ) ) ) {
 
-			if ( rotNdx == ROT_PIT && is_pressed_rowzero() && GRID_p_set_note_offsets[current_GRID_set] != 255 )
-			{
-				// Modify the page pitch
-				modify_parameter( 	&GRID_p_set_note_offsets[current_GRID_set],
-									PAGE_MIN_PIT, PAGE_MAX_PIT, direction, OFF, FIXED );
-				break;
+				switch (direction) {
+
+					case INC:
+						if ( GRID_p_set_note_offsets[current_GRID_set] == 255 ) {
+							GRID_p_set_note_offsets[current_GRID_set] = PAGE_MIN_PIT;
+						} else {
+							// Modify the page pitch
+							modify_parameter( 	&GRID_p_set_note_offsets[current_GRID_set],
+												PAGE_MIN_PIT, PAGE_MAX_PIT, direction, OFF, FIXED );
+						}
+						break;
+					case DEC:
+						if ( GRID_p_set_note_offsets[current_GRID_set] == PAGE_MIN_PIT ) {
+							GRID_p_set_note_offsets[current_GRID_set] = 255;
+						} else if ( GRID_p_set_note_offsets[current_GRID_set] != 255 ) {
+							// Modify the page pitch
+							modify_parameter( 	&GRID_p_set_note_offsets[current_GRID_set],
+												PAGE_MIN_PIT, PAGE_MAX_PIT, direction, OFF, FIXED );
+						}
+						break;
+				}
 			}
+			#endif
 			break;
 			
 		case 10:
-			// Set the MIDI Channel for grid scene note events
-			modify_parameter(&GRID_p_set_midi_ch, TRACK_MIN_MIDICH, TRACK_MAX_MIDICH, direction, OFF, FIXED);
+			#ifdef FEATURE_NOTE_DRUM_CTRL
+			if ( 	( CHECK_BIT( GRID_p_set_mode, GRID_SET_NOTE_CTRL_ENABLE )
+				&&	( is_pressed_key( 10 ) ) ) ) {
+				// Set the MIDI Channel for grid scene note events
+				modify_parameter( &GRID_p_set_midi_ch, TRACK_MIN_MIDICH, TRACK_MAX_MIDICH, direction, OFF, FIXED );
+			}
+			#endif
 			break;
 
 		// MIX encoders

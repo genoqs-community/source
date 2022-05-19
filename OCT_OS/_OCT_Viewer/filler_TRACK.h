@@ -32,7 +32,7 @@
 
 	// PAGE mode
 	// Indicate whether the page is currently playing
-	if ( is_selected_in_GRID( target_page ) ) {
+	if ( page_is_selected_in_GRID( target_page ) ) {
 
 		// Page is active in the Grid
 		MIR_write_dot (LED_ZOOM_PAGE, 		MIR_GREEN);
