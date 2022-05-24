@@ -219,30 +219,30 @@
 		}
 	}
 
-	if ( SOLO_scale_chords_program == OFF && GRID_CURSOR != SOLO_assistant_page->pageNdx /* Arp */ ){
-
-		// MIX recording split button
-		if ( ROT_INDEX == REC_MEASURES_SPLIT && G_run_bit == OFF ){
-			MIR_write_dot( LED_MIX_MASTER, MIR_RED );
-			MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
-		}
-
-		if ( SOLO_rec_finalized == ON && G_run_bit == ON && SOLO_prev_stop == ON ){
-
-			// The recording is playing and not recording so enable split markers using POS
-			if ( G_run_bit == ON && G_track_rec_bit == OFF ){
-
-				MIR_write_dot( LED_MIX_MASTER, MIR_RED );
-				MIR_write_dot( LED_MIX_MASTER, MIR_GREEN );
-				if ( SOLO_pos_marker_in != OFF ){
-					MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
-				}
-				if ( SOLO_pos_marker_in != OFF ){
-					MIR_write_dot( LED_MIX_INDICATOR, MIR_GREEN );
-				}
-			}
-		}
-	}
+//	if ( SOLO_scale_chords_program == OFF && GRID_CURSOR != SOLO_assistant_page->pageNdx /* Arp */ ){
+//
+//		// MIX recording split button
+//		if ( ROT_INDEX == REC_MEASURES_SPLIT && G_run_bit == OFF ){
+//			MIR_write_dot( LED_MIX_MASTER, MIR_RED );
+//			MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
+//		}
+//
+//		if ( SOLO_rec_finalized == ON && G_run_bit == ON && SOLO_prev_stop == ON ){
+//
+//			// The recording is playing and not recording so enable split markers using POS
+//			if ( G_run_bit == ON && G_track_rec_bit == OFF ){
+//
+//				MIR_write_dot( LED_MIX_MASTER, MIR_RED );
+//				MIR_write_dot( LED_MIX_MASTER, MIR_GREEN );
+//				if ( SOLO_pos_marker_in != OFF ){
+//					MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
+//				}
+//				if ( SOLO_pos_marker_in != OFF ){
+//					MIR_write_dot( LED_MIX_INDICATOR, MIR_GREEN );
+//				}
+//			}
+//		}
+//	}
 
 	if ( SOLO_rec_has_MCC == ON ){
 		MIR_write_dot( LED_EDIT_INDICATOR, MIR_GREEN );
@@ -579,13 +579,13 @@
 			}
 		}
 
-		if ( SOLO_rec_page == NULL && SOLO_rec_freeflow == OFF && has_empty_grid_row_ahead(pressedNdx) == TRUE ){
-			// No recording page has been chosen yet so show the Free Flow button flashing
-			// when an eligible grid page is pressed
-			MIR_write_dot( LED_CHAINMODE_4, MIR_RED   );
-			MIR_write_dot( LED_CHAINMODE_4, MIR_GREEN );
-			MIR_write_dot( LED_CHAINMODE_4, MIR_BLINK );
-		}
+//		if ( SOLO_rec_page == NULL && SOLO_rec_freeflow == OFF && has_empty_grid_row_ahead(pressedNdx) == TRUE ){
+//			// No recording page has been chosen yet so show the Free Flow button flashing
+//			// when an eligible grid page is pressed
+//			MIR_write_dot( LED_CHAINMODE_4, MIR_RED   );
+//			MIR_write_dot( LED_CHAINMODE_4, MIR_GREEN );
+//			MIR_write_dot( LED_CHAINMODE_4, MIR_BLINK );
+//		}
 
 		// Show the pressed recording page or the page to the right that may become a recording page
 		if ( pressed != FALSE && ( SOLO_rec_freeflow == OFF || selected_page_cluster( pressedNdx, SOLO_rec_page->pageNdx ) != NOP )){

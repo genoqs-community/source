@@ -1370,7 +1370,7 @@ void midi_PGMCH_execute( unsigned char midi_byte, unsigned char UART_ndx ){
 			// Double click code
 			// ...
 
-			flush_note_on_queue( &Page_repository[GRID_CURSOR], SOLO_midi_ch );
+			flush_note_on_queue( &Page_repository[GRID_CURSOR], SOLO_midi_ch, 0 );
 			send_ALL_NOTES_OFF();
 			send_RESET_ALL_CONTROLLERS();
 

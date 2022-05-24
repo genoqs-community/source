@@ -427,7 +427,7 @@ void stop_solo_rec( unsigned char trim, unsigned char stop ){
 	}
 
 	if (stop || SOLO_rec_continue_recording == OFF){
-		flush_note_on_queue( &Page_repository[GRID_CURSOR], SOLO_midi_ch );
+		flush_note_on_queue( &Page_repository[GRID_CURSOR], SOLO_midi_ch, 4 );
 	}
 
 	if ( SOLO_rec_rehearsal == OFF && SOLO_rec_measure_hold == OFF ){
