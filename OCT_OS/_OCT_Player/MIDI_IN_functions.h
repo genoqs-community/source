@@ -915,7 +915,7 @@ void record_note_to_track( 	Pagestruct* target_page,
 
 //_______________________________________________________________________________________
 //
-void flush_note_on_queue( Pagestruct* target_page, unsigned char in_channel ){
+void flush_note_on_queue( Pagestruct* target_page, unsigned char in_channel, unsigned char offset ){
 
 	signed char 	pitch 			= 	0;
 	unsigned char   target_row		=	0;
@@ -940,6 +940,7 @@ void flush_note_on_queue( Pagestruct* target_page, unsigned char in_channel ){
 		// Save the notes
 		if ( (G_run_bit == ON) && (G_track_rec_bit == ON) ) {
 
+			note->timestamp = note->timestamp + offset;
 			// Insert event into the sequencing engine - i.e. activate corresponding step!
 			G_midi_insert_event( note, G_MIDI_timestamp, target_page, target_page->Track[target_row], target_col );
 		}

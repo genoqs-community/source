@@ -1716,6 +1716,7 @@ void cut_by_pos_markers() {
 	int last_shift_measure = measure_of_page_by_locator_vector( SOLO_pos_out->pageNdx, SOLO_pos_marker_out,
 															 /* we care about multiple pages even if in/out are for a single page */
 																single_page_in );
+
 	int first_col = grid_col(first_page_in_cluster(SOLO_pos_in->pageNdx));
 	int cnt = Rec_repository[first_col].measure_count;
 
@@ -1726,19 +1727,11 @@ void cut_by_pos_markers() {
 	}
 	else {
 
-		if ( single_page_in == TRUE ){
-
-			count_in = MATRIX_NROF_ROWS - last_cut_measure;
-		}
-		else {
-			count_in = last_cut_measure - (( MATRIX_NROF_ROWS - 1 ) - cnt );
-		}
-
 		count_in = MATRIX_NROF_ROWS - ( last_cut_measure -
 				 ( MATRIX_NROF_ROWS - Rec_repository[grid_col(SOLO_pos_in->pageNdx)].measure_count ));
 
 		count_out = last_shift_measure -
-				 (( MATRIX_NROF_ROWS - 1 ) - Rec_repository[grid_col(SOLO_pos_out->pageNdx)].measure_count );
+				 ( MATRIX_NROF_ROWS - Rec_repository[grid_col(SOLO_pos_out->pageNdx)].measure_count );
 	}
 
 	SOLO_undo_page_col = grid_col(first_page_in_cluster(SOLO_pos_in->pageNdx));

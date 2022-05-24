@@ -252,7 +252,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 				// Advance page locator of the page, having its length..
 				advance_page_locators( GRID_p_selection[i] );
-				apply_on_the_measure( GRID_p_selection[i], false );
+//				apply_on_the_measure( GRID_p_selection[i], false );
 			} // GRID selection is not NULL
 		} // GRID bank iterator
 	} // (G_TTC_abs_value) % 3 == 1

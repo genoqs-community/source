@@ -180,6 +180,8 @@
 
 				// There are no scales in Chromatic keys so choose Major
 				SOLO_assistant_page->scaleNotes[G_scale_ndx] = SCALE_SIG_MAJ;
+				SOLO_scale_chords_pitch_recall_scaleNotes = SCALE_SIG_MAJ;
+				SOLO_scale_chords_pitch_prev_scaleNotes = SCALE_SIG_MAJ;
 			}
 			else {
 				SOLO_last_note_scale = SOLO_assistant_page->scaleNotes[G_scale_ndx];
@@ -702,27 +704,27 @@
 		}
 	}
 
-	else if ( keyNdx == KEY_MIX_MASTER &&
-			  SOLO_rec_finalized == ON &&
-			  G_run_bit == ON &&
-			  SOLO_scale_chords_program == OFF &&
-			  G_track_rec_bit == OFF &&
-			  SOLO_prev_stop == ON ){
-
-		if ( SOLO_pos_marker_in == OFF ){
-			SOLO_pos_marker_in = SOLO_rec_measure_pos;
-			SOLO_pos_in = &Page_repository[GRID_CURSOR];
-		}
-		else {
-			stop_solo_rec(FALSE, ON);
-		}
-
-		ROT_INDEX = REC_MEASURES_SPLIT;
-		// Setup alarm for the EDIT TIMER
-		cyg_alarm_initialize(	alarm_hdl,
-								cyg_current_time() + (TIMEOUT_VALUE / 4),
-								0 );
-	}
+//	else if ( keyNdx == KEY_MIX_MASTER &&
+//			  SOLO_rec_finalized == ON &&
+//			  G_run_bit == ON &&
+//			  SOLO_scale_chords_program == OFF &&
+//			  G_track_rec_bit == OFF &&
+//			  SOLO_prev_stop == ON ){
+//
+//		if ( SOLO_pos_marker_in == OFF ){
+//			SOLO_pos_marker_in = SOLO_rec_measure_pos;
+//			SOLO_pos_in = &Page_repository[GRID_CURSOR];
+//		}
+//		else {
+//			stop_solo_rec(FALSE, ON);
+//		}
+//
+//		ROT_INDEX = REC_MEASURES_SPLIT;
+//		// Setup alarm for the EDIT TIMER
+//		cyg_alarm_initialize(	alarm_hdl,
+//								cyg_current_time() + (TIMEOUT_VALUE / 4),
+//								0 );
+//	}
 
 	// Quantize chord buttons
 	else if (keyNdx >= KEY_QUANTIZE_LOW && keyNdx <= KEY_QUANTIZE_HIGH){
@@ -791,25 +793,25 @@
 			 */
 			if ( !SOLO_has_rec ){ // does not have a recording yet
 
-				if ( has_empty_grid_row_ahead(heldNdx) == TRUE && keyNdx == KEY_CHAINMODE_4 &&
-					SOLO_rec_page == NULL && Page_repository[heldNdx].page_clear == ON ){
-
-					// Free Flow!
-					SOLO_rec_page = &Page_repository[heldNdx];
-					GRID_CURSOR = SOLO_rec_page->pageNdx;
-					SOLO_rec_freeflow = ON;
-					SOLO_rec_record_OTM = OFF;
-					SOLO_rec_measure_hold = ON;
-					SOLO_rec_is_tape = ON;
-					Rec_repository[heldCol].measure_count = MATRIX_NROF_ROWS;
-					Rec_undo_repository[heldCol].measure_count = MATRIX_NROF_ROWS;
-					create_next_freeflow_page_cluster(heldNdx);
-					SOLO_rec_freeflow_measures = count_to_last_page_in_grid_row(heldNdx) * MATRIX_NROF_ROWS;
-
-					reset_page_cluster( SOLO_rec_page );
-				}
+//				if ( has_empty_grid_row_ahead(heldNdx) == TRUE && keyNdx == KEY_CHAINMODE_4 &&
+//					SOLO_rec_page == NULL && Page_repository[heldNdx].page_clear == ON ){
+//
+//					// Free Flow!
+//					SOLO_rec_page = &Page_repository[heldNdx];
+//					GRID_CURSOR = SOLO_rec_page->pageNdx;
+//					SOLO_rec_freeflow = ON;
+//					SOLO_rec_record_OTM = OFF;
+//					SOLO_rec_measure_hold = ON;
+//					SOLO_rec_is_tape = ON;
+//					Rec_repository[heldCol].measure_count = MATRIX_NROF_ROWS;
+//					Rec_undo_repository[heldCol].measure_count = MATRIX_NROF_ROWS;
+//					create_next_freeflow_page_cluster(heldNdx);
+//					SOLO_rec_freeflow_measures = count_to_last_page_in_grid_row(heldNdx) * MATRIX_NROF_ROWS;
+//
+//					reset_page_cluster( SOLO_rec_page );
+//				}
 				// A page is pressed first then step 1 through 10 of row zero to set the measure count
-				else if ( rowZeroTrack != OFF && rowZeroTrack <= 10 && SOLO_rec_freeflow == OFF ){
+				if ( rowZeroTrack != OFF && rowZeroTrack <= 10 && SOLO_rec_freeflow == OFF ){
 
 					SOLO_rec_page = &Page_repository[heldNdx];
 
