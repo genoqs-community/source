@@ -220,7 +220,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 	   ){
 
 		SOLO_rec_record_OTM = OFF;
-		SOLO_rec_measure_hold_OTM = ON;
+//		SOLO_rec_measure_hold_OTM = ON;
 		G_track_rec_bit = ON;
 		SOLO_rec_rehearsal = OFF;
 		G_MIDI_timestamp = 0;
@@ -252,7 +252,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 				// Advance page locator of the page, having its length..
 				advance_page_locators( GRID_p_selection[i] );
-//				apply_on_the_measure( GRID_p_selection[i], false );
+				apply_on_the_measure( GRID_p_selection[i], false );
 			} // GRID selection is not NULL
 		} // GRID bank iterator
 	} // (G_TTC_abs_value) % 3 == 1
@@ -421,6 +421,8 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 				 SOLO_assistant_page->pageNdx != GRID_CURSOR // only the Arp plays on the assistant page
 			){
 
+				SOLO_rec_page->repeats_left = SOLO_rec_page->attr_STA;
+
 				stop_playing_page( &Page_repository[GRID_CURSOR],	G_TTC_abs_value );
 
 				// ..and set its locators to 0 for the next round of play.
@@ -432,6 +434,8 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 				// Advance its locators once, moving them from 0 to 1, indicating activity
 				advance_page_locators( &Page_repository[GRID_CURSOR] );
+
+				SOLO_rec_measure_hold_OTM = OFF;
 
 				return;
 			}

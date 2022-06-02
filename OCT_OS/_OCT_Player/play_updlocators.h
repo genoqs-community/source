@@ -191,12 +191,6 @@ void update_trackchain_PLAY( 	Pagestruct* target_page,
 								Trackstruct* entry_track,
 								Trackstruct* new_PLAY_track ){
 
-	#ifdef FEATURE_SOLO_REC
-	if (( SOLO_rec_measure_hold == ON || SOLO_rec_measure_hold_OTM == ON ) && G_run_bit == ON ){
-		return;
-	}
-	#endif
-
 	unsigned char i=0;
 	Trackstruct* current_track = NULL;
 
@@ -210,6 +204,12 @@ void update_trackchain_PLAY( 	Pagestruct* target_page,
 
 		if ( is_skipped_track( target_page, row_of_track( target_page, new_PLAY_track )) == TRUE ){
 
+			#ifdef FEATURE_SOLO_REC
+			if (( SOLO_rec_measure_hold == ON || SOLO_rec_measure_hold_OTM == ON ) && G_run_bit == ON ){
+				i = MATRIX_NROF_ROWS;
+				continue;
+			}
+			#endif
 			// d_iag_printf(" skipped PLAY track detected\n" );
 			// Advance the chain data pointer
 			new_PLAY_track = new_PLAY_track->chain_data[NEXT];

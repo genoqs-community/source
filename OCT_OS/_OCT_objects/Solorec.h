@@ -361,6 +361,8 @@ void clearRec(){
 	GRID_p_preselection[ SOLO_rec_bank ] = firstPage;
 	GRID_p_clock_presel[ SOLO_rec_bank ] = firstPage;
 	GRID_CURSOR = firstPage->pageNdx;
+
+	send_ALL_NOTES_OFF();
 }
 
 void externalMIDI_PGMCH(){
@@ -1125,7 +1127,7 @@ void breakSoloRecordingMeasureHold(int row){
 	if ( SOLO_rec_page != NULL &&
 		 G_run_bit == ON &&
 		 ( G_track_rec_bit == ON || G_track_rec_bit_latch == ON ) &&
-		 SOLO_rec_measure_hold != OFF &&
+		 SOLO_rec_measure_hold == ON &&
 		 SOLO_rec_measure_hold_OTM == OFF &&
 		 SOLO_rec_rehearsal == OFF
 	   ){

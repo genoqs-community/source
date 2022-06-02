@@ -615,25 +615,27 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 					else if ( SOLO_rec_measure_hold_OTM == ON &&
 						    ( status_byte & 0xF0 ) != MIDI_CMD_NOTE_OFF ){ // Note ON
 
-						if ( offset_TTC > STEP_DEF_START ){
-							SOLO_rec_measure_hold_OTM = OFF; // an earlier step has released the measure-hold
-						}
-						else {
-							SOLO_rec_measure_hold_latch = OFF;
-							SOLO_rec_measure_hold = OFF;
-							force_note = ON;
+						SOLO_rec_measure_hold_OTM = OFF;
 
-							unsigned char i=0;
-							for ( i=0; i < MATRIX_NROF_COLUMNS; i++){
-								if ( Step_get_status( target_page->Step[row][i], STEPSTAT_TOGGLE ) == ON ){
-									target_col = get_next_tracklocator( target_page->Track[row], target_page->Track[row]->attr_LOCATOR ) -1;
-									if ( target_col != i ){
-										SOLO_rec_measure_hold_OTM = OFF;
-									}
-									break;
-								}
-							}
-						}
+//						if ( offset_TTC > STEP_DEF_START ){
+//							SOLO_rec_measure_hold_OTM = OFF; // an earlier step has released the measure-hold
+//						}
+//						else {
+//							SOLO_rec_measure_hold_latch = OFF;
+//							SOLO_rec_measure_hold = OFF;
+//							force_note = ON;
+//
+//							unsigned char i=0;
+//							for ( i=0; i < MATRIX_NROF_COLUMNS; i++){
+//								if ( Step_get_status( target_page->Step[row][i], STEPSTAT_TOGGLE ) == ON ){
+//									target_col = get_next_tracklocator( target_page->Track[row], target_page->Track[row]->attr_LOCATOR ) -1;
+//									if ( target_col != i ){
+//										SOLO_rec_measure_hold_OTM = OFF;
+//									}
+//									break;
+//								}
+//							}
+//						}
 					}
 					#endif
 
@@ -669,7 +671,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  						if ( target_col < target_page->Track[row]->attr_LOCATOR-1 ){
 
 							#ifdef FEATURE_SOLO_REC
-							if ( SOLO_rec_measure_hold_OTM != ON || force_note == ON ){
+							if ( SOLO_rec_measure_hold_OTM == OFF || force_note == ON ){
 								target_row = row_of_track( target_page, target_page->Track[row]->chain_data[NEXT] );
 
 								if ( force_note == ON && Rec_repository[grid_col(GRID_CURSOR)].measure_count > 1 ){
@@ -682,8 +684,10 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 							#endif
  						}
 						#ifdef FEATURE_SOLO_REC
- 						else if ( target_col < 15 ){ // not the last column
+						else if ( target_col <= 15 ){ // not the last column
+							// SOLO_rec_measure_hold = OFF;
 							SOLO_rec_measure_hold_OTM = OFF;
+							// SOLO_rec_measure_hold_latch = OFF;
 						}
 						#endif
  					}
