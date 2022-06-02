@@ -711,7 +711,7 @@ void switch_gridbank( unsigned char target_bank ){
 			PLAY_MODE_switch_new( target_bank, OFF );
 		}
 		// Apply pending OTM immediately
-//		apply_on_the_measure(GRID_p_selection [target_bank], true);
+		apply_on_the_measure(GRID_p_selection [target_bank], true);
 
 		// Stop playing the old page if it was not empty..
 		stop_playing_page( GRID_p_selection[target_bank],	G_TTC_abs_value );

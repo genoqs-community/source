@@ -285,7 +285,9 @@ void G_midi_interpret_NOTE_ON( unsigned char midi_byte, unsigned char UART_ndx )
 
 	#ifdef FEATURE_SOLO_REC
 	// Solo Recording - handle the first note of the initial recording
-	breakSoloRecordingMeasureHold(NOP);
+	if ( ( G_midi_note_IN_UART[UART_ndx][0] & 0xF0 ) != MIDI_CMD_NOTE_OFF ){
+		breakSoloRecordingMeasureHold(NOP);
+	}
 	#endif
 	// Store the byte in the circular array	- just so it can be printed out.
 	// DO NOT USE PRINTFS OR THE LIKE HERE, OR THE INPUT IS DELAYED AND SCRAMBLED

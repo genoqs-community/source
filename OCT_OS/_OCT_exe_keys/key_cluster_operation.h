@@ -426,13 +426,14 @@ void stop_solo_rec( unsigned char trim, unsigned char stop ){
 		SOLO_pos_out = &Page_repository[GRID_CURSOR];
 	}
 
-	if (stop || SOLO_rec_continue_recording == OFF){
+	if (( stop || SOLO_rec_continue_recording == OFF ) &&
++	   ( SOLO_rec_measure_hold == OFF && SOLO_rec_measure_hold_OTM == OFF )){
 		flush_note_on_queue( &Page_repository[GRID_CURSOR], SOLO_midi_ch, 4 );
 	}
 
-	if ( SOLO_rec_rehearsal == OFF && SOLO_rec_measure_hold == OFF ){
-		freeflowOff( trim );
-	}
+	// if ( SOLO_rec_rehearsal == OFF && SOLO_rec_measure_hold == OFF ){
+	// 	freeflowOff( trim );
+	// }
 
 	saveOrUndoTranspose();
 
