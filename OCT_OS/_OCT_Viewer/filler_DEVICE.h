@@ -35,15 +35,10 @@
 					MIR_write_dot (LED_PROGRAM, 	MIR_BLINK);
 				}			
 
-				if ( G_MIDI_B_priority == OFF ){
-
 				if ( G_MIDI_B_priority ) {
 					MIR_write_dot (LED_SCALE_MYSEL,		MIR_RED);
 				} else {
 					MIR_write_dot (LED_SCALE_MYSEL,		MIR_GREEN);
-				}
-				else {
-					MIR_write_dot (LED_SCALE_MYSEL,		MIR_RED);
 				}
 
 				// ZOOM DEVICE MODE INDICATORS

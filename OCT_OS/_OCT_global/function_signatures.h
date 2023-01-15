@@ -151,8 +151,9 @@ extern unsigned char 	grid_ndx_from_key (unsigned int keyNdx);
 extern 	void 			sequencer_RESET( unsigned char force_stop );
 
 extern unsigned int 	computeKeyNdx(			unsigned char reg,
-												unsigned char sigByte,
-extern unsigned short	apply_page_track_mute( Pagestruct* target_page, Trackstruct* current_track, unsigned short* trackMutepattern );											unsigned char portValue);
+							unsigned char sigByte,
+							unsigned char portValue);
+extern unsigned short	apply_page_track_mute( Pagestruct* target_page, Trackstruct* current_track, unsigned short* trackMutepattern );
 
 extern 	void 			executeKey( 			unsigned int keyNdx );
 extern 	void 			updateMIR();
