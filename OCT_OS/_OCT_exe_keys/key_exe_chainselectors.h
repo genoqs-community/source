@@ -296,7 +296,7 @@ void key_exe_chainselectors( unsigned short keyNdx ){
 		apply_mutepattern( target_page, target_page->trackMutepattern );
 		
 		// Align tracks to global clock - but only the ones in the playing pages
-		if ( page_is_selected_in_GRID( target_page ) ){
+		if ( is_selected_in_GRID( target_page ) ){
 
 			set_page_locators( target_page, G_global_locator, my_max_value( G_TTC_abs_value, 1 ) );
 		}

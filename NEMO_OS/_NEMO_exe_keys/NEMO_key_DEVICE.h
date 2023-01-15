@@ -42,45 +42,6 @@
 					my_OS_dump();
 				}
 
-				// D O U B L E - C L I C K  C O N S T R U C T
-				// DOUBLE CLICK SCENARIO
-				if (	( DOUBLE_CLICK_TARGET == keyNdx )
-					&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
-
-					// Double click code
-					// ...
-
-				} // end of double click scenario
-
-
-				// SINGLE CLICK SCENARIO
-				else if (DOUBLE_CLICK_TARGET == 0) {
-
-						DOUBLE_CLICK_TARGET = keyNdx;
-						DOUBLE_CLICK_TIMER = ON;
-						// Start the Double click Alarm
-						cyg_alarm_initialize(
-								doubleClickAlarm_hdl,
-								cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
-								DOUBLE_CLICK_ALARM_TIME );
-
-					// Single click code
-					// ...
-					if ( 	( keyNdx == KEY_PROGRAM )
-						&&	( G_DEVICE_dirty ) ) {
-						Flash_write_grid();
-						G_DEVICE_dirty = FALSE;
-					}
-					else if ( keyNdx == KEY_SCALE_SEL ){
-						TOGGLE_BIT(G_MIDI_B_priority, 0);
-						G_DEVICE_dirty = TRUE;
-					}
-					else if ( keyNdx == KEY_ZOOM_GRID ){
-						TOGGLE_BIT(G_initZoom, 0);
-						G_DEVICE_dirty = TRUE;
-					}
-				}
-
 //				// REDBOOT CONFIG DUMP: the configuration segment for redboot
 //				if ( keyNdx == KEY_SELECT_MASTER ){
 //

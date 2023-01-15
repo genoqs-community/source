@@ -110,8 +110,6 @@ void GRID_write_dot ( 			unsigned int ndx,
 // Writes the mutepattern of the given page
 void GRID_write_mutepattern(	Pagestruct* target_page, unsigned char target_row ){
 
-	unsigned char row = target_page->pageNdx % 10;
-
 	// OFF tracks
 	MIR_write_trackpattern(
 		target_page->trackMutepattern << 3, target_row, MIR_RED   );
@@ -127,22 +125,6 @@ void GRID_write_mutepattern(	Pagestruct* target_page, unsigned char target_row )
 	// SOLO tracks
 	MIR_augment_trackpattern(
 		target_page->trackSolopattern << 3, target_row, MIR_RED   );
-
-	if ( 	( CHECK_BIT( G_on_the_measure_mod_bit, row ) )
-		&&	( G_on_the_measure_pattern_pageNdx[row] == target_page->pageNdx ) ) {
-
-		if( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_MUTE ) ) {
-			unsigned short mutePattern = ( G_on_the_measure_pattern[row][OPERATION_MUTE] ^ target_page->trackMutepattern );
-			MIR_blink_trackpattern( mutePattern << 3, target_row );
-		}
-
-		if( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO ) ) {
-			unsigned short soloPattern = ( G_on_the_measure_pattern[row][OPERATION_SOLO] ^ target_page->trackSolopattern );
-			MIR_blink_trackpattern( soloPattern << 3, target_row );
-			MIR_augment_trackpattern( target_page->trackSolopattern << 3, target_row, MIR_GREEN );
-			MIR_augment_trackpattern( target_page->trackSolopattern << 3, target_row, MIR_RED );
-		}
-	}
 }
 
 

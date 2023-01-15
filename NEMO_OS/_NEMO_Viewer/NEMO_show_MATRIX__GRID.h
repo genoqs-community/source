@@ -53,7 +53,7 @@
 					&&	( (i % 10) != 9 )
 					){
 					// Page PLAYING - i.e. selected in GRID
-					if ( page_is_selected_in_GRID( &Page_repository[i] ) ){
+					if ( is_selected_in_GRID( &Page_repository[i] ) ){
 						
 						// Show it in GREEN
 						GRID_write_dot( i - shiftPageRow, MIR_GREEN );
@@ -120,16 +120,11 @@
 						continue;
 
 					// Page PLAYING - i.e. selected in GRID
-					if ( page_is_selected_in_GRID( &Page_repository[i] ) ){			
+					if ( is_selected_in_GRID( &Page_repository[i] ) ){			
 
 						// Show it in GREEN
 						GRID_write_dot( i - shiftPageRow, MIR_GREEN );
-						if (	( G_run_bit == ON )
-							&&	( Page_repository[i].attr_STA == 0 )
-							&&	( ( GRID_bank_playmodes & ( 1 << (i % 10) ) ) != 0 ) ){
-							// Indicate clustered page is page looping indefinitely
-							GRID_write_dot( i - shiftPageRow, MIR_BLINK );
-						}
+						// GRID_write_dot( i, MIR_BLINK );								
 					}
 					else {
 						// Show it in GREEN
@@ -143,7 +138,7 @@
 			for ( j = 0; j < GRID_NROF_BANKS; j++ ){
 
 				// If the page is not already playing anyways.. and page not empty / clear
-				if (	( ! page_is_selected_in_GRID( GRID_p_clock_presel[j] ))
+				if (	( ! is_selected_in_GRID( GRID_p_clock_presel[j] ))
 					&&	( GRID_p_clock_presel[j]->page_clear != ON )
 					){
 

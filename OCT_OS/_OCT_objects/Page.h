@@ -89,8 +89,6 @@ void Page_clear( Pagestruct* pagePt )
 
 	// Mark page as cleared
 	pagePt->page_clear = ON;
-
-	pagePt->priv_track_REC_pattern = OFF;
 }
 
 
@@ -144,6 +142,9 @@ void Page_setTrackRecPatternBit( Pagestruct* pagePt, int bitNm )
 	int newCount = my_bit_cardinality( pagePt->priv_track_REC_pattern );
 	G_tracks_in_record_count += (newCount - oldCount);
 }
+
+
+
 
 // Compute the cardinality of the step selection in the page
 unsigned char get_stepSEL_cardinality( Pagestruct* target_page ){
@@ -858,13 +859,6 @@ void Page_CLEAR_recording_tracks( Pagestruct* target_page ) {
 	target_page->trackSelection = OFF;
 }
 
-
-
-// Boolean: returns true if the index is in the grid selection, false otherwise
-unsigned char PAGE_is_pre_selected_in_GRID( Pagestruct* target_page ){
-
-	return GRID_p_preselection[target_page->pageNdx % 10] == target_page;
-}
 
 
 //____________________________________________________________________________________________

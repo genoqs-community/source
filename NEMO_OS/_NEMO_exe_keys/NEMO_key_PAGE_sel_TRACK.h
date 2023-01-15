@@ -37,9 +37,16 @@
 
 	// Invoke track solo
 	if (keyNdx == KEY_MUTE_MASTER ){
-		// Mark the soloed tracks in the Solopattern
-		apply_page_track_selection_mute_toggle_operation( target_page, MASK( OPERATION_SOLO ) );
-		target_page->trackSelection = 0;
+
+		// Loop through the chain of the selected track and mute all chain tracks
+		// Start with the pressed track
+		current_track = target_page->Track[ my_bit2ndx( target_page->trackSelection )];
+		temp = cardinality_of_chain( current_track );
+		for ( i=0; i < temp; i++ ){
+
+			target_page->trackSolopattern ^= ( 1 << row_of_track( target_page, current_track ));
+			current_track = current_track->chain_data[NEXT];
+		}
 	}
 
 
@@ -48,7 +55,7 @@
 		&& 	( G_run_bit == ON )
 		&& 	( target_page->trackSelection != 0 )
 		&&	( !is_pressed_key( KEY_SELECT_MASTER ) )
-		&& 	( page_is_selected_in_GRID( target_page ) ) ){
+		&& 	( is_selected_in_GRID( target_page ) ) ){
 
 		// Tap a step into the target page
 		tap_step( target_page );

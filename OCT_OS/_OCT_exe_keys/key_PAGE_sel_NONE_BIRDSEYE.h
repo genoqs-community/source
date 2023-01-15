@@ -123,7 +123,7 @@
 				// Toggle the page playing status
 
 				// Classic toggle behavior
-				switch ( page_is_selected_in_GRID( target_page ) ) {
+				switch ( is_selected_in_GRID( target_page ) ) {
 
 					case ON:
 						grid_select( target_page, OFF );
@@ -171,7 +171,7 @@
 
 			case KEY_FLT:
 				// Only active pages can be flipped. Break on inactive page
-				if (page_is_selected_in_GRID( &Page_repository[GRID_CURSOR] ) == OFF){
+				if (is_selected_in_GRID( &Page_repository[GRID_CURSOR] ) == OFF){
 					break;
 				}
 
@@ -192,7 +192,7 @@
 
 			case KEY_RMX:
 				// Only active pages can be rmx'ed. Break on inactive page
-				if (page_is_selected_in_GRID( &Page_repository[GRID_CURSOR] ) == OFF){
+				if (is_selected_in_GRID( &Page_repository[GRID_CURSOR] ) == OFF){
 					break;
 				}
 

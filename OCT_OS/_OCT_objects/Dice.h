@@ -190,7 +190,7 @@ void Dice_set_MISC( Trackstruct* target_dice,
 		case DICE_GLOBAL_CLOCK | DICE_TRACK_CLOCK:
 		target_mask = holdout_mask = target_dice->attr_MISC;
 
-		CLEAR_MASK( holdout_mask, target_flag ); SET_APPLY_MASK( target_mask, in_value ); TOGGLE_MASK( target_mask, in_value );
+		CLEAR_MASK( holdout_mask, target_flag ); APPLY_MASK( target_mask, in_value ); TOGGLE_MASK( target_mask, in_value );
 		target_dice->attr_MISC = SET_MASK( target_mask, holdout_mask );
 		break;
 	}

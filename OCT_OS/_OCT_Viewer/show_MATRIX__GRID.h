@@ -48,7 +48,7 @@
 					){
 
 					// Page PLAYING - i.e. selected in GRID
-					if ( page_is_selected_in_GRID( &Page_repository[i] ) ){
+					if ( is_selected_in_GRID( &Page_repository[i] ) ){
 						
 						// Show it in GREEN
 						GRID_write_dot( i, MIR_GREEN );
@@ -70,36 +70,37 @@
 		case GRID_MIX:
 
 			// GRID_CURSOR shown by blinking 
+//					GRID_write_dot (GRID_CURSOR, MIR_BLINK);
 
-			// Show the current GRID set - but not when called from page
-			if ( 	( G_zoom_level == zoomGRID )
-				&&	( !is_pressed_key( 10 ) ) ) {
+			// GRID SETS: Show the non-empty GRID sets by red lights.
+			for ( i=0; i < GRID_NROF_SETS; i++ ){
 
-				// GRID SETS: Show the non-empty GRID sets by red lights.
-				for ( i=0; i < GRID_NROF_SETS; i++ ){
-
-					// Check the respective GRID set for content and currency
-					if ( 	( get_content_GRID_set( i ) )
-						&&	( current_GRID_set != i )
-						){
-
-						GRID_write_dot( 9 + i*10, MIR_RED );
-					}
+				// Check the respective GRID set for content and currency
+				if ( 	( get_content_GRID_set( i ) )
+					&&	( current_GRID_set != i )
+					){
+					
+					GRID_write_dot( 9 + i*10, MIR_RED );
 				}
-
-				GRID_write_dot( 9 + current_GRID_set*10, MIR_GREEN 	);
-
-				// Check if changes have been made to set
-				if ( !is_actual_GRID( current_GRID_set ) ){
-
-					GRID_write_dot( 9 + current_GRID_set*10, MIR_RED );
-				}
-
-	//			// Blink the current GRID set - but not when called from page BIRDSEYE
-	//			if ( G_zoom_level != zoomPAGE ){
-
-				GRID_write_dot( 9 + current_GRID_set*10, MIR_BLINK 	);
 			}
+
+
+		// Show the current GRID set - but not when called from page BIRDSEYE
+		if ( G_zoom_level != zoomPAGE ){
+
+			GRID_write_dot( 9 + current_GRID_set*10, MIR_GREEN 	);
+
+			// Check if changes have been made to set
+			if ( !is_actual_GRID( current_GRID_set ) ){
+
+				GRID_write_dot( 9 + current_GRID_set*10, MIR_RED );			
+			}
+
+//			// Blink the current GRID set - but not when called from page BIRDSEYE
+//			if ( G_zoom_level != zoomPAGE ){
+
+			GRID_write_dot( 9 + current_GRID_set*10, MIR_BLINK 	);
+		}
 
 
 
@@ -112,7 +113,7 @@
 					){
 
 					// Page PLAYING - i.e. selected in GRID
-					if ( page_is_selected_in_GRID( &Page_repository[i] ) ){			
+					if ( is_selected_in_GRID( &Page_repository[i] ) ){			
 
 						// Show it in GREEN
 						GRID_write_dot( i, MIR_GREEN );

@@ -43,7 +43,7 @@
 	if (	( keyNdx == KEY_ZOOM_STEP )
 		&&	( target_page->trackSelection != 0 )
 		&& 	( G_run_bit == ON )
-		&& 	( page_is_selected_in_GRID( target_page ) )
+		&& 	( is_selected_in_GRID( target_page ) )
 		){
 
 		// Tap a step into the target page
@@ -159,14 +159,21 @@
 
 			case KEY_TGGL:
 
-				apply_page_track_selection_mute_toggle_operation( target_page, MASK( OPERATION_MUTE ) );
+				for (row = 0; row < MATRIX_NROF_ROWS; row++) {
+					// Check track_selection if function applies to this row
+					if ( target_page->trackSelection & (1 << row)) {
+						// TGGL function: toggle mute bit on selected tracks
+						target_page->trackMutepattern ^= (1<<row);
+					}
+				}
+				// Clear track Selection
 				target_page->trackSelection = 0;
 				break;
 
 
 			case KEY_SOLO:
 				// Mark the soloed tracks in the Solopattern
-				apply_page_track_selection_mute_toggle_operation( target_page, MASK( OPERATION_SOLO ) );
+				target_page->trackSolopattern ^= target_page->trackSelection;
 				target_page->trackSelection = 0;
 				break;
 

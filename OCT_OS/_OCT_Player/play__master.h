@@ -66,7 +66,6 @@ extern void set_page_locators( 						Pagestruct* target_page,
 													unsigned char target_LOC,
 													unsigned char target_TTC );
 
-extern void apply_on_the_measure( Pagestruct* target_page, bool force );
 
 // General Player functions
 #include "play_functions.h"
@@ -97,15 +96,13 @@ void advance_global_locator(){
 // This used to be G_master_tempo_TRACKER driven.
 void advance_page_locators( Pagestruct* target_page ){
 
-	// When Page is in active bank target_page->locator advances and re-trigger at Page Length otherwise continue advancing and wrap at PAGE_MAX_LEN
-	unsigned char i = target_page->pageNdx % 10;
-	unsigned char page_length = ( target_page->attr_LEN < PAGE_DEF_LEN || GRID_p_selection[i] != NULL || page_is_selected_in_active_bank( target_page ) ) ? target_page->attr_LEN : PAGE_MAX_LEN;
 	switch( G_TTC_abs_value ) {
 
 		// Affected pages: multipliers: 1  2  4 (all pages)
 		case 1:
 			// Advance page locator: modulo operation acc. to page length
-			target_page->locator = ( target_page->locator % page_length) + 1;
+
+			target_page->locator = ( target_page->locator % target_page->attr_LEN ) + 1;
 
 			break;
 
@@ -178,6 +175,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 	// Counter variable
 	unsigned int i=0;
+	unsigned int j=0;
 	#ifdef FEATURE_ENABLE_SONG_UPE
 	unsigned int row=0;
 	Trackstruct* target_track = NULL;
@@ -252,7 +250,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 				// Advance page locator of the page, having its length..
 				advance_page_locators( GRID_p_selection[i] );
-				apply_on_the_measure( GRID_p_selection[i], false );
+
 			} // GRID selection is not NULL
 		} // GRID bank iterator
 	} // (G_TTC_abs_value) % 3 == 1
@@ -264,6 +262,7 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		// Advance the global locator - normal speed master
 		advance_global_locator();
 
+		// on the measure
 		if ( G_global_locator == 1 ) {
 
 			#ifdef FEATURE_SOLO_REC
@@ -330,22 +329,53 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 			}
 			#endif
 
-
-			// PAGE PLAY from grid selection: each bank has at most one active page
 			for ( i=0; i < GRID_NROF_BANKS; i++ ){
 
-			  // Skip the banks that are not currently active
-			  if ( GRID_p_selection[i] != NULL ){
+				// Skip the banks that are not currently active
+				if ( GRID_p_selection[i] != NULL ){
 
-			    // Play the page selected in current GRID bank
-			    PLAYER_play_page( GRID_p_selection[i], in_G_TTC_abs_value );
-			  }
-			}
+					if ( G_on_the_measure_operation != OFF && is_page_in_cluster( GRID_p_selection[i], G_on_the_measure_trackMutepattern_pageNdx ) ) {
+						// On the measure page mute / solo
+						Pagestruct * current_page = &Page_repository[G_on_the_measure_trackMutepattern_pageNdx];
+						if ( CHECK_BIT( G_on_the_measure_operation, OPERATION_MASK ) ) {
+							// Direct mute / solo pattern
+							if ( CHECK_BIT( G_track_page_chain_mod_bit, CLUSTER_MOD ) ) {
+								apply_page_cluster_mute_pattern( GRID_p_selection[i], G_on_the_measure_trackMutepattern, G_on_the_measure_operation );
+							} else {
+								if ( CHECK_BIT( G_on_the_measure_operation, OPERATION_MUTE ) ) {
+									current_page->trackMutepattern = G_on_the_measure_trackMutepattern;
+									if (current_page->trackMutepattern) {
+										current_page->trackMutepatternStored = current_page->trackMutepattern;
+									}
+								} else {
+									current_page->trackSolopattern = G_on_the_measure_trackMutepattern;
+								}
+							}
+						} else {
+							// Apply by track selection (toggle state adhere to chain data)
+							for ( j=0; j < MATRIX_NROF_ROWS; j++ ){
 
+								if ( G_on_the_measure_track[j] != NULL ){
+									if ( CHECK_BIT( G_track_page_chain_mod_bit, CLUSTER_MOD ) ) {
+										apply_page_cluster_track_mute_toggle( GRID_p_selection[i], G_on_the_measure_track[j], G_on_the_measure_operation );
+									} else {
+										// Apply OTM track ndx to current_page trackMutepattern
+										if ( CHECK_BIT( G_on_the_measure_operation, OPERATION_MUTE ) ) {
+											apply_page_track_mute_toggle( current_page, G_on_the_measure_track[j], &current_page->trackMutepattern );
+											current_page->trackMutepatternStored = current_page->trackMutepattern;
+										} else {
+											apply_page_track_mute_toggle( current_page, G_on_the_measure_track[j], &current_page->trackSolopattern );
+										}
+									}
+								}
+							}
+						}
+					}
+				}
 
 			#ifdef FEATURE_ENABLE_SONG_UPE
 
-			for ( i=0; i < GRID_NROF_BANKS; i++ ){
+
 				for ( row=0; row < MATRIX_NROF_ROWS; row ++ ){
 					target_track = GRID_p_selection[i]->Track[row];
 
@@ -358,8 +388,8 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 						target_track->ctrl_offset++;
 					}
 				}
-			}
 			#endif
+			}
 
 			#ifdef FEATURE_ENABLE_SONG_UPE
 			if (!G_align_bit){
@@ -370,18 +400,26 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 				}
 			}
 			#endif
-			#ifdef FEATURE_NOTE_DRUM_CTRL
-			// drum machine scene change
-			if ( 	( CHECK_BIT( GRID_p_set_mode, GRID_SET_NOTE_CTRL_ENABLE ) )
-				&&	( GRID_p_set_note_presel != 255 ) ) {
-				if ( ( GRID_p_set_note_offsets[GRID_p_set_note_presel] <= PAGE_MAX_PIT ) ) {
 
-					MIDI_send(	MIDI_NOTE, GRID_p_set_midi_ch, GRID_p_set_note_offsets[GRID_p_set_note_presel], TRACK_MAX_VELOCITY );
-					MIDI_send(	MIDI_NOTE, GRID_p_set_midi_ch, GRID_p_set_note_offsets[GRID_p_set_note_presel], TRACK_MIN_VELOCITY );
+			// reset the on the measure mute pattern
+			if ( G_on_the_measure_operation != OFF ){
+				for (j=0; j<MATRIX_NROF_ROWS; j++){
+					G_on_the_measure_track[j] = NULL;
+				}
+				G_on_the_measure_trackMutepattern = 0;
+				G_on_the_measure_operation = OFF;
+				G_on_the_measure_trackMutepattern_pageNdx = 0;
+			}
+
+			// drum machine scene change
+			if ( GRID_p_set_note_presel != 255) {
+				if ( GRID_p_set_note_offsets[(int) GRID_p_set_note_presel] > 0 ){
+
+					MIDI_send(	MIDI_NOTE, GRID_p_set_midi_ch, GRID_p_set_note_offsets[(int) GRID_p_set_note_presel], 127 );
+					MIDI_send(	MIDI_NOTE, GRID_p_set_midi_ch, GRID_p_set_note_offsets[(int) GRID_p_set_note_presel], 0 );
 					GRID_p_set_note_presel = 255;
 				}
 			}
-			#endif
 
 
 			#ifdef FEATURE_SOLO_REC
@@ -497,7 +535,6 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		}
 		#endif
 	}
-
 
 	#ifdef FEATURE_ENABLE_DICE
 	// Advance DICE global clock (DICE_GLOBAL_CLOCK)

@@ -23,6 +23,25 @@
 //
 
 
+		// GRID SETS: Show the non-empty GRID sets by red lights.
+		for ( i=0; i < GRID_NROF_SETS; i++ ){
+
+			// Check the respective GRID set for content and currency
+			if ( 	( get_content_GRID_set( i ) )
+				&&	( current_GRID_set != i )
+				){
+				
+				GRID_write_dot( 9 + i*10, MIR_RED );
+			}
+		}
+
+		GRID_write_dot( 9 + current_GRID_set*10, MIR_GREEN 	);
+
+		// Check if changes have been made to set
+		if ( !is_actual_GRID( current_GRID_set ) ){
+
+			GRID_write_dot( 9 + current_GRID_set*10, MIR_RED );			
+		}
 
 		// Blink the current GRID set 
 		// GRID_write_dot( 9 + current_GRID_set*10, MIR_BLINK 	);
@@ -35,20 +54,22 @@
 		for ( j=0; j < GRID_NROF_BANKS; j++ ){
 
 			// If the page is playing in the grid
-			if (	( page_is_selected_in_GRID( GRID_p_selection[j] ))
+			if (	( is_selected_in_GRID( GRID_p_selection[j] ))
 				&&	( GRID_p_selection[j] != NULL )
 				// &&	( GRID_p_clock_presel[j]->page_clear != ON )
 				){
 
 				// Show the preselection of the page that is active in the bank
 				GRID_write_mutepattern( GRID_p_selection[j], j );
-
-				if( GRID_p_selection[j]->trackMutepattern ) {
-					// Col 16 button Track mute toggle
-					MIR_write_dot( 176 + j, MIR_GREEN );
-				} else if( GRID_p_selection[j]->trackMutepatternStored ) {
-					// Col 16 button Track mute toggle
-					MIR_write_dot( 176 + j, MIR_RED );
-				}
 			}
 		}
+
+		// Show the current grid set track if a note is set
+		if ( GRID_p_set_note_offsets[current_GRID_set] != 255 )
+		{
+			MIR_write_dot( 10, MIR_RED );
+			MIR_write_dot( 10, MIR_GREEN );
+			MIR_write_dot( 10, MIR_BLINK );
+		}
+
+

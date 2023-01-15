@@ -51,7 +51,7 @@ PhraseStruct PhraseUndoBuf;
 
 
 #if PHRASE_PRINT
-	#define PRINT		// d_iag_printf
+	#define PRINT		diag_printf
 #else
 	#define PRINT		#error
 #endif

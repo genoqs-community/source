@@ -35,6 +35,7 @@
 #include "show_SCALE_SELECTOR_scale_selection_function.h"
 
 
+extern unsigned char is_selected_in_GRID( Pagestruct* target_page );
 extern char* ptr_of_track_attr_value( 	Pagestruct* target_page,
 								unsigned char track_ndx,
 								unsigned char attr_ndx );

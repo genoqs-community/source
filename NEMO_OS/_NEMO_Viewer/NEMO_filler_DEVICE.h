@@ -30,22 +30,30 @@
 		switch( DEVICE_STATE ){
 		
 			case DEFAULT:
-				if ( G_DEVICE_dirty == TRUE ) {
-					MIR_write_dot (LED_PROGRAM, 	MIR_RED);
-					MIR_write_dot (LED_PROGRAM, 	MIR_BLINK);
-				}
-
-				if ( G_MIDI_B_priority ) {
-					MIR_write_dot (LED_SCALE_SEL,		MIR_RED);
-				} else {
-					MIR_write_dot (LED_SCALE_SEL,		MIR_GREEN);
-				}
-
-				if ( G_initZoom ) {
-					MIR_write_dot (LED_ZOOM_GRID,		MIR_GREEN);
-				} else {
-					MIR_write_dot (LED_ZOOM_GRID, 		MIR_RED);
-				}
+			
+				// ZOOM DEVICE MODE INDICATORS
+				// Show all Mode buttons on
+				MIR_write_dot (LED_ZOOM_GRID,		MIR_GREEN);
+				MIR_write_dot (LED_ZOOM_GRID, 		MIR_RED);
+				MIR_write_dot (LED_ZOOM_GRID, 		MIR_BLINK);			
+				
+				MIR_write_dot (LED_ZOOM_PAGE,		MIR_GREEN);
+				MIR_write_dot (LED_ZOOM_PAGE, 		MIR_RED);
+		
+				MIR_write_dot (LED_ZOOM_TRACK,		MIR_GREEN);
+				MIR_write_dot (LED_ZOOM_TRACK, 		MIR_RED);
+		
+				MIR_write_dot (LED_ZOOM_STEP,		MIR_GREEN);
+				MIR_write_dot (LED_ZOOM_STEP, 		MIR_RED);
+		
+				MIR_write_dot (LED_ZOOM_MAP,		MIR_GREEN);
+				MIR_write_dot (LED_ZOOM_MAP, 		MIR_RED);
+		
+				MIR_write_dot (LED_ZOOM_PLAY,		MIR_GREEN);
+				MIR_write_dot (LED_ZOOM_PLAY, 		MIR_RED);
+		
+				// Show the RETURN key
+				MIR_write_dot( LED_RETURN,			MIR_GREEN);
 
 				#ifdef CE_OS_ADDON_BUILD
 				MIR_write_dot( LED_EDIT_MASTER,		MIR_SHINE_GREEN);

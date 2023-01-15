@@ -54,7 +54,6 @@
 		#include "fill_PAGE_sel_STEP.h"
 	}
 
-	row = target_page->pageNdx % 10;
 
 	// TRACK SELECTORS
 	if (EDIT_TIMER == ON) {
@@ -96,18 +95,14 @@
 			show( ELE_TRACK_SELECTORS, TRACK_EFF_STATUS );
 
 			// RECORD
-			if ( CHECK_BIT( G_on_the_measure_operation[row], OPERATION_RECORD) ) {
-				MIR_write_dot( LED_RECORD, MIR_SHINE_RED );
-			} else {
-				// Global track record mode is red.
-				if ( G_track_rec_bit == ON ) {
-					MIR_write_dot( LED_RECORD, MIR_RED );
-				}
-				// Local page record mode is orange.
-				else if ( target_page->REC_bit == ON ) {
-					MIR_write_dot( LED_RECORD, MIR_GREEN );
-					MIR_write_dot( LED_RECORD, MIR_RED );
-				}
+			// Global track record mode is red.
+			if ( G_track_rec_bit == ON ) {
+				MIR_write_dot( LED_RECORD, MIR_RED );
+			}
+			// Local page record mode is orange.
+			else if ( target_page->REC_bit == ON ) {
+				MIR_write_dot( LED_RECORD, MIR_GREEN );
+				MIR_write_dot( LED_RECORD, MIR_RED );
 			}
 			// Blink when no ON notes are pending.. and not in BIRDSEYE
 			if (	( NOTE_queue == NULL )
@@ -121,7 +116,7 @@
 		}
 	}
 
-	if ( G_midi_map_controller_mode == OFF ){
+	if ( G_midi_map_controller_mode == ON ){
 
 		MIR_write_dot (LED_ZOOM_MAP, 		MIR_RED);
 		MIR_write_dot( LED_ZOOM_MAP, 		MIR_BLINK );

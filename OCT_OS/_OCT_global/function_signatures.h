@@ -49,7 +49,7 @@ extern 	void 			sequencer_HALT();
 #ifdef FEATURE_ENABLE_SONG_UPE
 extern	void			sequencer_command_PAUSE(unsigned char measure_scrolling);
 extern	void 			select_page_preselections();
-extern  unsigned char 	PAGE_is_pre_selected_in_GRID( Pagestruct* target_page );
+extern  unsigned char 	is_pre_selected_in_GRID( Pagestruct* target_page );
 
 extern 	void 			copy_ctrl_step_to_track( Pagestruct* page, Trackstruct* track, Stepstruct* step );
 extern	void 			copy_ctrl_track_to_step( Pagestruct* page, Trackstruct* track, Stepstruct* step );
@@ -151,9 +151,8 @@ extern unsigned char 	grid_ndx_from_key (unsigned int keyNdx);
 extern 	void 			sequencer_RESET( unsigned char force_stop );
 
 extern unsigned int 	computeKeyNdx(			unsigned char reg,
-							unsigned char sigByte,
-							unsigned char portValue);
-extern unsigned short	apply_page_track_mute( Pagestruct* target_page, Trackstruct* current_track, unsigned short* trackMutepattern );
+												unsigned char sigByte,
+												unsigned char portValue);
 
 extern 	void 			executeKey( 			unsigned int keyNdx );
 extern 	void 			updateMIR();
@@ -165,11 +164,7 @@ extern 	void 			G_TIMER_REFILL_update();
 extern 	unsigned int 	G_scanRots();
 
 
-extern 	bool 			selection_change_request_pending();
-extern  bool 			page_is_selected_in_GRID( Pagestruct* target_page );
-extern 	bool 			page_is_selected_in_active_bank( Pagestruct* target_page );
-extern 	bool 			page_is_selected_in_MAC_bank( Pagestruct* target_page );
-
+extern 	unsigned char 	selection_change_request_pending();
 extern 	void 			show( 					unsigned int target,
 												unsigned int content );
 

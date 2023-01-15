@@ -128,19 +128,16 @@
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 #define TOGGLE_BIT(var,pos) ((var) = ((var) ^ (1<<(pos))))
-#define DIFF_BIT(a,b,pos) CHECK_BIT(a, pos) ^ CHECK_BIT(b, pos)
 #define SET_BIT(var,pos) ((var) = ((var) | (1<<(pos))))
-#define SET_BIT_HARD(var,pos) ((var) = (1<<(pos)))
 #define CLEAR_BIT(var,pos) ((var) = ((var) & ~(1<<(pos))))
+#define SET_BIT_VALUE(var,pos,value) ((value>0)?SET_BIT(var,pos):CLEAR_BIT(var,pos))
 
-#define MASK(pos) (1<<(pos))
 #define CHECK_MASK(var,mask) (((var) & (mask)) == mask)
-#define DIFF_MASK(var,mask) ((var) ^ (mask))
 #define SET_MASK(var,mask) (var = (var | mask))
-#define SET_APPLY_MASK(var,mask) (var = (var & mask))
-#define APPLY_MASK(var,mask) (var & mask)
+#define APPLY_MASK(var,mask) (var = (var & mask))
 #define TOGGLE_MASK(var,mask) (var = (var ^ mask))
 #define CLEAR_MASK(var,mask) (var = (var & ~mask))
+
 // Round up providing a width with an even power of 2, will return a number equal to or greater than n, which is a multiple of width, and which is the smallest value meeting that criteria
 #define ROUNDUP(n,width) (((n) + (width) - 1) & ~((width) - 1))
 

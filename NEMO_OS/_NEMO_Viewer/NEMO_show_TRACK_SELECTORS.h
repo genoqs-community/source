@@ -50,8 +50,7 @@
 				// Show the play modes of the individual banks: simple or chain
 
 				MIR_write_buttool( LHS, ( GRID_bank_playmodes >> shiftPageRow) & 0x1FF, 			MIR_GREEN );
-				MIR_write_buttool( LHS, ( ( ( GRID_bank_playmodes >> shiftPageRow ) ^ 0x3FF ) | ( GRID_assistant_page->trackMutepattern >> shiftPageRow ) ) & 0x1FF, 	MIR_RED );
-				MIR_write_buttool( LHS, ( ( GRID_bank_playmodes & GRID_assistant_page->trackMutepattern ) >> shiftPageRow) & 0x1FF, MIR_BLINK );
+				MIR_write_buttool( LHS, ((GRID_bank_playmodes >> shiftPageRow) ^ 0x3FF) & 0x1FF, 	MIR_RED );
 				break;
 			#ifdef FEATURE_ENABLE_DICE
 			case DICE_GRID_SELECTION:

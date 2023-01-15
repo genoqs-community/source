@@ -69,12 +69,9 @@
 			// Show the ESC LED - leaving the scale mode of the GRID asstn page
 			MIR_write_dot( LED_RETURN, MIR_GREEN );
 		}
-		else if ( 	!( ( G_zoom_level == zoomGRID )
-				&&	( CHECK_BIT( GRID_p_set_mode, GRID_SET_NOTE_CTRL_ENABLE ) )
-				&&	( GRID_p_set_note_offsets[current_GRID_set] != 255 )
-				&&	( is_pressed_key( 10 ) ) ) ) {
+		else{
 
-			// Show the packman at playtime - unless there is a scale selected (or Drum Ctrl PIT EDIT_TIMER preview)
+			// Show the packman at playtime - unless there is a scale selected
 			show ( ELE_OCTAVE_CIRCLE, G_global_locator_PICTURE );
 		}
 
@@ -90,12 +87,6 @@
 			MIR_write_numeric_C( G_master_tempo );
 		}
 
-		// Control track MIX ARMED
-		if ( MIX_TRACK != NULL && CHECK_BIT(MIX_TRACK->attr_MISC, TRK_CTRL_MIX) && Track_get_MISC(MIX_TRACK, CONTROL_BIT) ){
-			MIR_write_dot( LED_MIX_MASTER, MIR_RED );
-			MIR_write_dot( LED_MIX_MASTER, MIR_GREEN );
-			MIR_write_dot( LED_MIX_MASTER, MIR_BLINK );
-		}
 
 		// Show cursor Marcel style
 		if ( is_pressed_key( KEY_ZOOM_PAGE ) ){
@@ -135,10 +126,6 @@
 			MIR_write_dot( temp, MIR_GREEN );
 			MIR_write_dot( temp, MIR_BLINK );
 		}
-		#endif
-
-		#ifdef FEATURE_NOTE_DRUM_CTRL
-		show( ELE_DRUM_CTRL, ON );
 		#endif
 	} // // GRID_playmode == GRID_MIX
 
@@ -262,6 +249,7 @@
 			MIR_write_dot( LED_PROGRAM, MIR_RED   );
 			MIR_write_dot( LED_PROGRAM, MIR_BLINK );
 		}
+
 	} // GRID_play_mode == GRID_EDIT
 
 
@@ -400,7 +388,7 @@
 	// Show the ESC button -> taking you back to the page
 	MIR_write_dot( LED_RETURN, MIR_GREEN );
 
-	if ( G_midi_map_controller_mode == OFF ){
+	if ( G_midi_map_controller_mode == ON ){
 
 		MIR_write_dot (LED_ZOOM_MAP, 		MIR_RED);
 		MIR_write_dot( LED_ZOOM_MAP, 		MIR_BLINK );

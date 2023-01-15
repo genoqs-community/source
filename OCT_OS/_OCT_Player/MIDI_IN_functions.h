@@ -319,17 +319,13 @@ void make_chord( Stepstruct* target_step, signed char track_pitch, signed char i
 		local_chordSize = get_chord_cardinality( target_step, CHORD_OCTAVE_ALL ) + 1;
 
 		// Save the base pitch of the step before computing the chord stack
-		// step_pitches[0] = step_abs_pitch;
+		step_pitches[0] = step_abs_pitch;
 
 		// Remember all pitches from the step chord stack
 		for ( i = 0; i < 12; i++ ) {
 			octave_mask = get_chord_octave_mask( target_step, i );
 
-			if( i && !octave_mask ) {
-				continue;
-			}
-
-			if ( i == 0 || CHECK_MASK( octave_mask, CHORD_OCTAVE_FIRST ) ) {
+			if ( CHECK_MASK( octave_mask, CHORD_OCTAVE_FIRST ) ) {
 				step_pitches[first_offset++] = step_abs_pitch + i;
 			}
 
@@ -1241,7 +1237,7 @@ void transpose_selection(	Pagestruct* target_page,
 			&& ( in_velocity > 0 )
 			&& ( inputMidiChan == target_page->Track[i]->attr_STATUS) ) {
 				// velocity is strong trigger mode
-				in_velocity > 88 ? SET_BIT( target_page->Track[i]->attr_EMISC, GST_TOGGLE ) : CLEAR_BIT( target_page->Track[i]->attr_EMISC;
+			 	SET_BIT_VALUE( target_page->Track[i]->attr_EMISC, GST_TOGGLE, (int) (in_velocity > 88) );
 				if ( CHECK_BIT( target_page->Track[i]->attr_EMISC, GST_TOGGLE) ) {
 					target_page->Track[i]->attr_PIT = target_page->Track[i]->attr_GST;
 				} else {

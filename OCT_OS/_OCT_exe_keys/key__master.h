@@ -109,15 +109,14 @@ void executeKey( unsigned int keyNdx ){
 	// Work on the page under the grid cursor
 	Pagestruct* target_page = &Page_repository[ GRID_CURSOR ];
 
-	static Pagestruct* prev_previous_page = NULL; // used to validate page cluster selections
-	static unsigned char prev_previous_page_clear = ON;
-
 	// Used to mute a whole chain
 	Trackstruct* current_track = NULL;
 
 	// Page pointer holder
 	Pagestruct* temp_page = NULL;
 	static Pagestruct* previous_page = NULL;
+	static Pagestruct* prev_previous_page = NULL; // used to validate page cluster selections
+	static unsigned char prev_previous_page_clear = ON;
 	// Used for syntax simplification
 	signed char* val_ptr = NULL;
 

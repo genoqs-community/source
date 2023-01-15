@@ -59,7 +59,7 @@ void interpret_SYSEX_stream( unsigned int stream_size ){
 
 		// SCENE to be received
 		case def_SCENE_SYSEX_DUMP:
-			// // d_iag_printf( "-> stream type: SCENE\n" );
+			// diag_printf( "-> stream type: SCENE\n" );
 			G_sysex_header = 0x00206400 + def_SCENE_SYSEX_DUMP;
 			objectType = def_SCENE_SYSEX_DUMP;
 			break;

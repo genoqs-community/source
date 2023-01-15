@@ -13,7 +13,7 @@
 #define 	LOAD_ON_POWERON					TRUE
 
 // BUILD CE OS WITH ADDON FEATURES
-//#define 	CE_OS_ADDON_BUILD				TRUE
+#define 	CE_OS_ADDON_BUILD				FALSE
 
 #ifdef CE_OS_ADDON_BUILD
 
@@ -33,15 +33,12 @@
 // CORE BUILD FEATURE ENABLE
 #define 	FEATURE_ENABLE_CHORD_OCTAVE		TRUE
 #define		FEATURE_SOLO_REC				TRUE
-#define		FEATURE_NOTE_DRUM_CTRL			TRUE
-
 
 /*
  * Bug tracking spreadsheet
  * https://docs.google.com/spreadsheets/d/1eM8S2VbLz8OsRawqJ4Pzusfqcv13wKgeyLU071252Nk/edit#gid=520555008
  *
  * COMMUNITY EDITION VERSION CHANGES
- *  0.0.5.25		Port Nemo Device globals, OTM fixes (cases v5.25), Nemo/Oct platform integration & UI/UX refinements)
  *  0.0.5.24		Port on the measure / cluster mute (Complete OTM implementation with mute, solo and master)
  *  0.0.5.00		FINAL VERSION of 0.0.5
  *

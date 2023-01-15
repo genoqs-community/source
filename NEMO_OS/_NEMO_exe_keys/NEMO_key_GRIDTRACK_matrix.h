@@ -28,20 +28,6 @@
 	// Page selectors, act as always..
 	// ..select the page for play in preselection or zoom into it (doubleclick)
 
-		// Determine row of the key index
-		row = row_of( keyNdx );
-		col = column_of( keyNdx );
-		//((var) & (1<<(pos)))
-
-		if( 	( GRIDTRACK_editmode == OFF )
-			&& 	( col < 8 ) ) {
-			if ( 	( has_solo_row_state( GRID_p_selection[row], col ) )
-				||  ( has_solo_row_future_state( GRID_p_selection[row], col ) ) ) {
-				apply_page_track_mute_toggle_operation( GRID_p_selection[row], GRID_p_selection[row]->Track[col], MASK( OPERATION_SOLO ) );
-				return;
-			}
-			apply_page_track_mute_toggle_operation( GRID_p_selection[row], GRID_p_selection[row]->Track[col], MASK( OPERATION_MUTE ) );
-		}
 
 		// D O U B L E - C L I C K  C O N S T R U C T
 		// DOUBLE CLICK SCENARIO
@@ -60,35 +46,28 @@
 			temp = column_of( keyNdx );
 			if (	( temp > 7 )
 //				||	( temp < 6 )
-				||	( GRID_p_selection[ row ] == NULL )
+				||	( GRID_p_selection[ row_of( keyNdx ) ] == NULL )
 				){
 				return;
 			}
 
 			// ..true Double click code:
 			// Select the VIEWER page pertaining to the track.
-			target_page = &Page_repository[ GRID_p_selection[ row  ]->pageNdx ];
+			target_page = &Page_repository[ GRID_p_selection[ row_of(keyNdx)  ]->pageNdx ];
 			// Move the cursor for the grid
 			GRID_CURSOR = target_page->pageNdx;
-			switch( GRIDTRACK_editmode ){
 
-				case ON:
-					// Put the track into the track selection
-		//			target_page->trackSelection ^= mirror( 1 << (column_of( keyNdx ) ), 10 );
-					target_page->trackSelection ^= ( 1 << temp );
+			// Put the track into the track selection
+//			target_page->trackSelection ^= mirror( 1 << (column_of( keyNdx ) ), 10 );
+			target_page->trackSelection ^= ( 1 << temp );
 
-					// Shift Track x2 to selection
-					if( !row_in_track_window( target_page, temp ) ) {
-						track_shift_window( target_page );
-					}
-
-					// Zoom into the target_page (implicitly) and the track there
-					G_zoom_level = zoomTRACK;
-				break;
-				case OFF:
-					apply_page_track_mute_toggle_operation( GRID_p_selection[row], GRID_p_selection[row]->Track[col], MASK( OPERATION_SOLO ) );
-					break;
+			// Shift Track x2 to selection
+			if( !row_in_track_window( target_page, temp ) ) {
+				track_shift_window( target_page );
 			}
+
+			// Zoom into the target_page (implicitly) and the track there
+			G_zoom_level = zoomTRACK;
 
 		} // end of double click scenario
 
@@ -112,28 +91,13 @@
 			temp = column_of( keyNdx );
 			if (	( temp > 7 )
 				// ||	( temp < 6 )
-				||	( GRID_p_selection[ row ] == NULL )
+				||	( GRID_p_selection[ row_of( keyNdx ) ] == NULL )
 				){
-				if ( temp == 15 ) {
-					// Col 16 button Track mute toggle
-					if ( G_on_the_measure_operation[row] ) {
-						unarm_page_otm_operation( GRID_p_selection[row], OPERATION_MUTE );
-						unarm_page_otm_operation( GRID_p_selection[row], OPERATION_SOLO );
-					} else if ( GRID_p_selection[row] != NULL ){
-						// Toggle the mutepatterns in the pages active in the bank
-						if ( GRID_p_selection[row]->trackMutepattern != 0 ) {
-							GRID_p_selection[row]->trackMutepatternStored = GRID_p_selection[row]->trackMutepattern;
-							apply_page_mute_pattern_operation( GRID_p_selection[row], 0x0, MASK( OPERATION_MUTE ) | MASK( OPERATION_NOSTORE ) );
-						}
-						else {
-							// Then fill the mutepattern from store
-							apply_page_mute_pattern_operation( GRID_p_selection[row], GRID_p_selection[row]->trackMutepatternStored, MASK( OPERATION_MUTE ) );
-						}
-					}
-				}
 				return;
 			}
 
+			// Determine row of the key index
+			row =  row_of( keyNdx );
 
 			switch( GRIDTRACK_editmode ){
 
@@ -142,7 +106,8 @@
 					// Otherwise toggle selection status
 
 					// Adjust the current selection pattern
-					GRID_p_selection[row]->trackSelection ^= ( 1 << col );
+//					GRID_p_selection[row]->trackSelection ^= mirror( 1 << ( column_of( keyNdx ) ), 10 );
+					GRID_p_selection[row]->trackSelection ^= ( 1 << ( column_of( keyNdx ) ) );
 
 					// Remember it accordingly
 					if ( is_pressed_key( KEY_SELECT_MASTER ) ){
@@ -151,7 +116,11 @@
 							GRID_p_selection[row]->trackSelection;
 					}
 					break;
+
 				case OFF:
+					// Adjust the current selection pattern
+//					GRID_p_selection[row]->trackMutepattern ^= mirror( 1 << ( column_of( keyNdx ) ), 10 );
+					GRID_p_selection[row]->trackMutepattern ^= ( 1 << ( column_of( keyNdx ) ) );
 					break;
 
 			} // GRIDTRACK edit mode

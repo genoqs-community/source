@@ -143,7 +143,7 @@ void cyg_user_start( void ){
 
 			// Enter the device maintenance mode
 			G_zoom_level = zoomDEVICE;
-			G_flashgridheadersonly_flag = TRUE; // only load the grid
+			G_flashload_flag = FALSE;
 
 			// Sysex stream keeper array now uses the memory reserved for the step repository.
 			G_sysex_stream_keeper = (unsigned char*) Step_repository;

@@ -41,18 +41,8 @@
 		
 		// MATRIX
 		show( ELE_MATRIX, GRIDTRACK );
-		if(	!is_pressed_key( KEY_MIX_MASTER ) ) {
-			if  ( 	( !CHECK_BIT( NEMO_lauflicht_track, 4 ) )
-				&&	( !is_pressed_key( KEY_MIXTGT_USR1 ) )
-				&&	( !is_pressed_key( KEY_MIXTGT_USR2 ) )
-				&&	( !is_pressed_key( KEY_MIXTGT_USR3 ) )
-				&&	( !is_pressed_key( KEY_MIXTGT_USR4 ) )
-			) {
-				show (ELE_OCTAVE_CIRCLE, G_global_locator_MINI_PICTURE);
-			} else {
-				show (ELE_OCTAVE_CIRCLE, G_global_locator_PICTURE);
-			}
-		}
+	
+	
 		// TRACK MUTATORS
 		// Default: mutepattern of grid banks
 //		show( ELE_TRACK_MUTATORS, GRID_SET_SWITCHMODE );
@@ -207,26 +197,8 @@
 	// Write the grid mutepattern to the mutator column
 	MIR_write_buttool (RHS, GRID_mutepattern, MIR_RED);
 
-	// Write lauflicht into PLAY LEDs (compact)
-	if(		( !is_pressed_key( KEY_MIX_MASTER ) )
-		&& ( ( is_pressed_key( KEY_MIXTGT_USR1 ) )
-		||	 ( is_pressed_key( KEY_MIXTGT_USR2 ) )
-		||	 ( is_pressed_key( KEY_MIXTGT_USR3 ) )
-		||	 ( is_pressed_key( KEY_MIXTGT_USR4 ) ) )
-		) {
-		if( CHECK_MASK( NEMO_lauflicht_track, MASK( NEMO_ROW_I ) ) ) {
-			MIR_write_dot( LED_MIXTGT_USR1, MIR_RED );
-			MIR_write_dot( LED_MIXTGT_USR1, MIR_GREEN );
-		} else if( CHECK_MASK( NEMO_lauflicht_track, MASK( NEMO_ROW_II ) ) ) {
-			MIR_write_dot( LED_MIXTGT_USR2, MIR_RED );
-			MIR_write_dot( LED_MIXTGT_USR2, MIR_GREEN );
-		} else if( CHECK_MASK( NEMO_lauflicht_track, MASK( NEMO_ROW_III ) ) ) {
-			MIR_write_dot( LED_MIXTGT_USR3, MIR_RED );
-			MIR_write_dot( LED_MIXTGT_USR3, MIR_GREEN );
-		} else if( CHECK_MASK( NEMO_lauflicht_track, MASK( NEMO_ROW_IV ) ) ) {
-			MIR_write_dot( LED_MIXTGT_USR4, MIR_RED );
-			MIR_write_dot( LED_MIXTGT_USR4, MIR_GREEN );
-		}
-	}
+	
+
+
 
 

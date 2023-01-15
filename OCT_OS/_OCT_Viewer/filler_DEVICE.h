@@ -30,23 +30,19 @@
 		switch( DEVICE_STATE ){
 		
 			case DEFAULT:
-				if ( G_DEVICE_dirty == TRUE ) {
-					MIR_write_dot (LED_PROGRAM, 	MIR_RED);
-					MIR_write_dot (LED_PROGRAM, 	MIR_BLINK);
-				}			
+			
+				if ( G_MIDI_B_priority == OFF ){
 
-				if ( G_MIDI_B_priority ) {
-					MIR_write_dot (LED_SCALE_MYSEL,		MIR_RED);
-				} else {
 					MIR_write_dot (LED_SCALE_MYSEL,		MIR_GREEN);
+				}
+				else {
+					MIR_write_dot (LED_SCALE_MYSEL,		MIR_RED);
 				}
 
 				// ZOOM DEVICE MODE INDICATORS
 				// Show all Mode buttons on
-				if ( G_initZoom ){
+				if ( G_initZoom == FALSE ){
 					MIR_write_dot (LED_ZOOM_GRID,		MIR_GREEN);
-				} else {
-					MIR_write_dot (LED_ZOOM_GRID, 		MIR_RED);
 				}
 				MIR_write_dot (LED_ZOOM_GRID, 		MIR_RED);
 				MIR_write_dot (LED_ZOOM_GRID, 		MIR_BLINK);			
@@ -63,7 +59,6 @@
 				MIR_write_dot (LED_ZOOM_PLAY,		MIR_GREEN);
 				MIR_write_dot (LED_ZOOM_PLAY, 		MIR_RED);
 
-				/*
 				// Anti-Echo
 				if ( G_midi_map_controller_mode == ON ){
 					MIR_write_dot (LED_ZOOM_MAP, MIR_RED);
@@ -110,14 +105,14 @@
 					default:
 						break;
 				}
-*/
+
 				#ifdef CE_OS_ADDON_BUILD
 				MIR_write_dot( LED_EDIT_MASTER,		MIR_SHINE_GREEN);
 				#endif
 
 				// Show the Software Version
 				MIR_write_numeric_C(
-					SW_VERSION_MAJOR*100 + SW_VERSION_MINOR*10 + SW_VERSION_RELEASE );		
+						SW_VERSION_MAJOR*100 + SW_VERSION_MINOR*10 + SW_VERSION_RELEASE );
 				MIR_write_numeric_H( SW_VERSION_INTERNAL, 9 );
 				break;
 				

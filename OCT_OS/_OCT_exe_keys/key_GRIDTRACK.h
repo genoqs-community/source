@@ -99,25 +99,9 @@
 
 		// SELECTORS
 		if ((keyNdx >0) && (keyNdx <= 10)) {
-			if (	( DOUBLE_CLICK_TARGET == keyNdx )
-				&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
-				// Toggle Mute across cluster
-				TOGGLE_BIT( GRID_assistant_page->trackMutepattern, keyNdx - 1 );
-			}
-			// SINGLE CLICK SCENARIO
-			else if (DOUBLE_CLICK_TARGET == 0) {
 
-					DOUBLE_CLICK_TARGET = keyNdx;
-					DOUBLE_CLICK_TIMER = ON;
-					// Start the Double click Alarm
-					cyg_alarm_initialize(
-							doubleClickAlarm_hdl,
-							cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
-							DOUBLE_CLICK_ALARM_TIME );
-
-				// Single click code
-				GRID_bank_playmodes ^= 1 << ( keyNdx - 1 );
-			}
+			// Toggle the playmodes for the GRID bank.
+			GRID_bank_playmodes ^= 1 << (keyNdx-1);
 		}
 
 
@@ -217,7 +201,7 @@
 		//
 		// MUTE MASTER
 		//
-		if (keyNdx == KEY_MUTE_MASTER) {
+		else if (keyNdx == KEY_MUTE_MASTER) {
 
 			// D O U B L E - C L I C K
 			if ((DOUBLE_CLICK_TARGET == keyNdx)
@@ -239,31 +223,25 @@
 						DOUBLE_CLICK_ALARM_TIME );
 
 				// SINGLE CLICK CODE
-				bool is_unarm_page_operation = false;
 				for ( i=0; i < GRID_NROF_BANKS; i++ ){
-					if ( G_on_the_measure_operation[i] ) {
-						unarm_page_otm_operation( GRID_p_selection[i], OPERATION_MUTE );
-						unarm_page_otm_operation( GRID_p_selection[i], OPERATION_SOLO );
-						is_unarm_page_operation = true;
-					}
-				}
 
-				if( !is_unarm_page_operation ) {
-					for ( i=0; i < GRID_NROF_BANKS; i++ ){
-						// Make sure there is a page playing in the bank pressed
-						if ( GRID_p_selection[i] != NULL ){
-							// Toggle the mutepatterns in the pages active in the bank
-							if ( GRID_p_selection[i]->trackMutepattern != 0 ) {
-								GRID_p_selection[i]->trackMutepatternStored = GRID_p_selection[i]->trackMutepattern;
-								apply_page_mute_pattern_operation( GRID_p_selection[i], 0x0, MASK( OPERATION_MUTE ) | MASK( OPERATION_NOSTORE ) );
-							}
-							else {
-								// Then fill the mutepattern from store
-								apply_page_mute_pattern_operation( GRID_p_selection[i], GRID_p_selection[i]->trackMutepatternStored, MASK( OPERATION_MUTE ) );
-							}
+					// Make sure there is a page playing in the bank pressed
+					if ( GRID_p_selection[ i ] != NULL ){
+
+						// Toggle the mutepatterns in the pages active in the bank
+						if ( GRID_p_selection[ i ]->trackMutepattern != 0) {
+
+							GRID_p_selection[ i ]->trackMutepatternStored =
+												GRID_p_selection[ i ]->trackMutepattern;
+							GRID_p_selection[ i ]->trackMutepattern = 0;
 						}
-					} // Bank iterator
-				}
+						else {
+							// Then fill the mutepattern from store
+							GRID_p_selection[ i ]->trackMutepattern =
+								GRID_p_selection[ i ]->trackMutepatternStored;
+						}
+					}
+				} // Bank iterator
 			}
 		} // MUTE_MASTER
 
@@ -443,7 +421,9 @@
 							if ( GRID_p_selection[row]->trackSelection != 0 ){
 
 								// Mark the soloed tracks in the Solopattern
-								apply_page_mute_pattern_operation( GRID_p_selection[ row ], GRID_p_selection[row]->trackSelection, MASK( OPERATION_SOLO ) );
+								GRID_p_selection[row]->trackSolopattern ^=
+									GRID_p_selection[row]->trackSelection;
+
 								if ( is_pressed_key( KEY_SELECT_MASTER ) ){
 
 									// Void the selection
