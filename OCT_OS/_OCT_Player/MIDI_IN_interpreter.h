@@ -199,13 +199,12 @@ void G_midi_interpret_REALTIME( unsigned char midi_byte ){
 						SOLO_transpose_GRID_CURSOR = GRID_CURSOR;
 						sequencer_command_PLAY();
 					}
+					else if ( SOLO_has_rec == OFF ){
+						SOLO_rec_measure_hold = ON;
+					}
 					else if ( G_track_rec_bit == OFF ) { // rehearse
 
 						SOLO_rec_rehearsal = ON;
-
-						if ( SOLO_has_rec == OFF ){
-							SOLO_rec_measure_hold = ON;
-						}
 
 						if ( G_run_bit == OFF ){
 
@@ -232,6 +231,11 @@ void G_midi_interpret_REALTIME( unsigned char midi_byte ){
 		// CONTINUE
 		case MIDICLOCK_CONTINUE:
 
+			#ifdef FEATURE_SOLO_REC
+			if ( G_zoom_level == zoomSOLOREC && SOLO_rec_page == NULL ) {
+				break;
+			}
+			#endif
 			G_run_bit 		= ON;
 			G_pause_bit 	= OFF;
 			break;
@@ -239,6 +243,24 @@ void G_midi_interpret_REALTIME( unsigned char midi_byte ){
 
 		// STOP
 		case MIDICLOCK_STOP:
+
+
+			#ifdef FEATURE_SOLO_REC
+			if ( G_zoom_level == zoomSOLOREC ){
+				if ( G_run_bit == ON &&
+				   ( SOLO_rec_page != NULL ||
+					 SOLO_scale_chords_program == ON ||
+					 GRID_CURSOR == SOLO_assistant_page->pageNdx /* Arp */ )
+				   ){
+
+					stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON, ON );
+				}
+				else {
+					send_ALL_NOTES_OFF();
+				}
+				break;
+			}
+			#endif
 
 			// First STOP causes a pause, second one stops slave for good.
 			switch ( G_run_bit ){

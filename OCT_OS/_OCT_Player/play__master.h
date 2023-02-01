@@ -220,13 +220,16 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		SOLO_rec_record_OTM = OFF;
 //		SOLO_rec_measure_hold_OTM = ON;
 		G_track_rec_bit = ON;
-		SOLO_rec_rehearsal = OFF;
-		G_MIDI_timestamp = 0;
 
-		if ( SOLO_rec_CLOCKSTART_OTM == ON ){
-			SOLO_rec_CLOCKSTART_OTM = OFF;
-			// Start external device
-			MIDI_send( MIDI_CLOCK, MIDICLOCK_START, 0, 0);
+		if ( G_clock_source == INT ){
+			SOLO_rec_rehearsal = OFF;
+			G_MIDI_timestamp = 0;
+
+			if ( SOLO_rec_CLOCKSTART_OTM == ON ){
+				SOLO_rec_CLOCKSTART_OTM = OFF;
+				// Start external device
+				MIDI_send( MIDI_CLOCK, MIDICLOCK_START, 0, 0);
+			}
 		}
 	}
 

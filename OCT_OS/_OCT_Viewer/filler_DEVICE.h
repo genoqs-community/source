@@ -74,13 +74,13 @@
 				else {
 					MIR_write_dot (LED_QUANTIZE_HIGH, MIR_GREEN);
 				}
-				if ( G_PGMCH_foot_control == ON ){
-					MIR_write_dot (LED_RECORD, MIR_RED);
-					MIR_write_dot (LED_RECORD, MIR_BLINK);
-				}
-				else {
+//				if ( G_PGMCH_foot_control == ON ){
+//					MIR_write_dot (LED_RECORD, MIR_RED);
+//					MIR_write_dot (LED_RECORD, MIR_BLINK);
+//				}
+//				else {
 					MIR_write_dot (LED_RECORD, MIR_GREEN);
-				}
+//				}
 				#endif
 		
 				// Show the RETURN key

@@ -156,23 +156,7 @@ void PersistentV2_GridExport( GridPersistentV2* targetGridPt )
 	// Export grid data members.
 	targetGridPt->G_master_tempo = G_master_tempo; 	//120 default
 	targetGridPt->G_TIMER_REFILL = G_TIMER_REFILL;
-
-	switch ( G_clock_source ){
-		case OFF:
-			targetGridPt->G_clock_source = OFF;
-			break;
-		case INT:
-			targetGridPt->G_clock_source = 1;
-			break;
-		case EXT:
-			if ( MIDICLOCK_PASSTHROUGH == ON ){
-				targetGridPt->G_clock_source = 2;
-			}
-			else {
-				targetGridPt->G_clock_source = 3;
-			}
-			break;
-	}
+	targetGridPt->G_clock_source = G_clock_source; // Can be any of OFF, INT(ernal), EXT(ernal)
 
 	// Because zoom level is not used, I will override it to set the CC controller mode - Synth knobs, etc. or MIDI controller.
 	targetGridPt->G_zoom_level |= !G_midi_map_controller_mode & 0x1;
@@ -342,22 +326,7 @@ void PersistentV2_GridImport( const GridPersistentV2* sourceGridPt )
 	// Import grid data members.
 	G_master_tempo = sourceGridPt->G_master_tempo; 	//120 default
 	G_TIMER_REFILL = sourceGridPt->G_TIMER_REFILL;
-
-	switch ( sourceGridPt->G_clock_source ){
-		case OFF:
-			G_clock_source = OFF;
-			break;
-		case 1:
-			G_clock_source = INT;
-			break;
-		case 2:
-			G_clock_source = EXT;
-			MIDICLOCK_PASSTHROUGH = ON;
-			break;
-		case 3:
-			G_clock_source = EXT;
-			break;
-	}
+	G_clock_source = sourceGridPt->G_clock_source;	// Can be any of OFF, INT(ernal), EXT(ernal)
 
 	// Maintain current zoom level.
 	// G_zoom_level = sourceGridPt->G_zoom_level;

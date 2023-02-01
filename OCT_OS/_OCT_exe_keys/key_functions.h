@@ -1645,59 +1645,7 @@ void sequencer_STOP( bool midi_send_stop ) {
 
 // Just a wrapper to stay call-name consistent
 void sequencer_command_STOP(){
-
-	// DOUBLE CLICK SCENARIO
-	if (	( DOUBLE_CLICK_TARGET == KEY_STOP )
-		&& 	( DOUBLE_CLICK_TIMER   > DOUBLE_CLICK_ALARM_SENSITIVITY ) ) {
-
-		// Double click code
-		// ...
-//		G_measure_indicator_value = 0;
-//		G_measure_indicator_part = 0;
-//		prev_G_pause_bit = OFF;
-		if ( SEQUENCER_JUST_RESTARTED == ON || G_pause_bit == ON ) // double click at startup or in grid scroll (paused) view
-		{
-//			G_measure_locator = 0;
-			align_measure_locators(); // mute all pages in the grid
-//			unsigned int	row=0;
-//			unsigned int 	i=0;
-//			Trackstruct* target_track = NULL;
-//			for (i=0; i <= GRID_NROF_BANKS; i++) { // for each grid bank
-//				for ( row=0; row < MATRIX_NROF_ROWS; row ++ ){
-//					if ( (GRID_bank_playmodes & ( 1 << i )) == 0 ) continue;
-//					if ( GRID_p_selection[i] != NULL ){
-//						target_track = GRID_p_selection[i]->Track[row];
-//						send_track_program_change( target_track, GRID_p_selection[i] );
-//					}
-//				}
-//			}
-		}
-
-	} // end of double click scenario
-
-	// SINGLE CLICK SCENARIO
-	else if (DOUBLE_CLICK_TARGET == 0) {
-
-		if ( G_save_song_pos == ON ) // the stop key was pressed rather than a function call
-		{
-			DOUBLE_CLICK_TARGET = KEY_STOP;
-			DOUBLE_CLICK_TIMER = ON;
-			// Start the Double click Alarm
-			cyg_alarm_initialize(
-					doubleClickAlarm_hdl,
-					cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
-					DOUBLE_CLICK_ALARM_TIME );
-		}
-
-		// Single click code
-		sequencer_STOP( true );
-#ifdef FEATURE_ENABLE_SONG_UPE
-		if ( G_pause_bit == ON ) // in grid scroll (paused) view
-		{
-			RESET_measure_locator(ON);
-		}
-#endif
-	}
+	sequencer_STOP( true );
 }
 
 

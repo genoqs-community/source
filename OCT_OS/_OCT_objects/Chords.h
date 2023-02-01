@@ -4606,7 +4606,7 @@ void enterProgramEditor(){
 	SOLO_scale_chords_prev_palette_ndx = NOP;
 	SOLO_scale_chords_program_keys = ON;
 
-	if ( G_run_bit == ON ) return;
+	if ( G_run_bit == ON || G_clock_source == EXT ) return;
 
 	SOLO_scale_chords_program = ON; // palette editor enabled
 	GRID_CURSOR = SOLO_assistant_page->pageNdx;

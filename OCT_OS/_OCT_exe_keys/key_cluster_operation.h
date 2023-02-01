@@ -446,8 +446,8 @@ void stop_solo_rec( unsigned char trim, unsigned char stop ){
 
 	saveOrUndoTranspose();
 
-	if (stop){
-		sequencer_STOP( true );
+	if ( stop ){
+		sequencer_STOP( G_clock_source == INT );
 		sequencer_RESET( false );
 		// Reset all locators in assistant page
 		set_page_locators( SOLO_assistant_page, 0, 0 );

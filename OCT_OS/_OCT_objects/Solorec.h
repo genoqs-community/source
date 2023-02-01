@@ -86,7 +86,7 @@ unsigned short SOLO_rec_measure_pos				= OFF;
 unsigned short SOLO_pos_marker_in				= OFF; // left cut -  SOLO_rec_measure_pos
 unsigned short SOLO_pos_marker_out				= OFF; // right cut - SOLO_rec_measure_pos
 unsigned char SOLO_orig_GRID_CURSOR				= NOP;
-unsigned char SOLO_orig_G_clock_source			= NOP;
+//unsigned char SOLO_orig_G_clock_source			= NOP;
 unsigned char SOLO_prev_stop					= ON;
 unsigned char SOLO_mute							= OFF;
 unsigned char SOLO_big_counter					= OFF; // feature disabled
@@ -226,6 +226,7 @@ void muteAssistantPage(){
 void enterSoloRec(){
 	int i;
 
+	SOLO_rec_measure_hold = ON;
 	SOLO_mute = OFF;
 	G_measure_locator = OFF;
 	SOLO_rec_measure_count = OFF;
@@ -234,12 +235,12 @@ void enterSoloRec(){
 	SOLO_rec_CLOCKSTART_OTM = OFF;
 	G_track_rec_bit = OFF;
 
-	SOLO_orig_G_clock_source = NOP;
-	if ( G_clock_source == EXT ){
-
-		SOLO_orig_G_clock_source = G_clock_source;
-		G_clock_source = OFF;
-	}
+//	SOLO_orig_G_clock_source = NOP;
+//	if ( G_clock_source == EXT ){
+//
+//		SOLO_orig_G_clock_source = G_clock_source;
+//		G_clock_source = OFF;
+//	}
 
 	SOLO_orig_GRID_CURSOR = GRID_CURSOR;
 
@@ -482,11 +483,11 @@ void exitSoloRec(){
 		SOLO_orig_GRID_CURSOR = SOLO_rec_page->pageNdx;
 	}
 
-	if ( SOLO_orig_G_clock_source != NOP ){
-
-		G_clock_source = SOLO_orig_G_clock_source;
-		SOLO_orig_G_clock_source = NOP;
-	}
+//	if ( SOLO_orig_G_clock_source != NOP ){
+//
+//		G_clock_source = SOLO_orig_G_clock_source;
+//		SOLO_orig_G_clock_source = NOP;
+//	}
 
 	// Reset most of the global variables
 	SOLO_quantize_fine_tune_center  	= 1;

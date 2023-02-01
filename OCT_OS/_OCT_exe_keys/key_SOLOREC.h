@@ -157,7 +157,7 @@
 		     GRID_CURSOR == SOLO_assistant_page->pageNdx /* Arp */ )
 		   ){
 
-			stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON, ON );
+			stop_solo_rec( SOLO_rec_freeflow_trim && SOLO_has_rec == ON, G_clock_source == INT );
 		}
 		else {
 			send_ALL_NOTES_OFF();
@@ -472,9 +472,9 @@
 
 		if ( keyNdx == KEY_PLAY1 ){
 
-			if ( SOLO_rec_rehearsal == ON && G_run_bit == ON && SOLO_rec_page != NULL ) {
-				checkpoint_save_undo_track_chain(SOLO_rec_page);
-			}
+//			if ( SOLO_rec_rehearsal == ON && G_run_bit == ON && SOLO_rec_page != NULL ) {
+//				checkpoint_save_undo_track_chain(SOLO_rec_page);
+//			}
 
 			if ( SOLO_rec_freeflow == ON && SOLO_rec_measure_hold == OFF ){
 				return; // disable play for Freeflow, once measure hold is broken
