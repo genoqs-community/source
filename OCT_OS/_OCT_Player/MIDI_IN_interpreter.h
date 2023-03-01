@@ -199,9 +199,6 @@ void G_midi_interpret_REALTIME( unsigned char midi_byte ){
 						SOLO_transpose_GRID_CURSOR = GRID_CURSOR;
 						sequencer_command_PLAY();
 					}
-					else if ( SOLO_has_rec == OFF ){
-						SOLO_rec_measure_hold = ON;
-					}
 					else if ( G_track_rec_bit == OFF ) { // rehearse
 
 						SOLO_rec_rehearsal = ON;
