@@ -61,31 +61,96 @@
 	}
 
 
-	// STEP SELECTION PATTERN INDEX
-	if (	(keyNdx == KEY_MIXTGT_USR1)
-		||	(keyNdx == KEY_MIXTGT_USR2)
-		||	(keyNdx == KEY_MIXTGT_USR3)
-		||	(keyNdx == KEY_MIXTGT_USR4)
-		||	(keyNdx == KEY_MIXTGT_USR5)
-		){
+	#ifdef FEATURE_STEP_SELECT_ALL
 
-		// Export content to old index
-		export_stepSELpattern( target_page );
+		// Dbl-Click on current index will add all ON Steps to current Step Selection
 
-		// Set the new index
-		switch( keyNdx ){
-			case KEY_MIXTGT_USR1:	target_page->stepSELpattern_ndx = 0;	break;
-			case KEY_MIXTGT_USR2:	target_page->stepSELpattern_ndx = 1;	break;
-			case KEY_MIXTGT_USR3:	target_page->stepSELpattern_ndx = 2;	break;
-			case KEY_MIXTGT_USR4:	target_page->stepSELpattern_ndx = 3;	break;
-			case KEY_MIXTGT_USR5:	target_page->stepSELpattern_ndx = 4;	break;
+		if (	(keyNdx == KEY_MIXTGT_USR1)
+				||	(keyNdx == KEY_MIXTGT_USR2)
+				||	(keyNdx == KEY_MIXTGT_USR3)
+				||	(keyNdx == KEY_MIXTGT_USR4)
+				||	(keyNdx == KEY_MIXTGT_USR5)
+				)	{
+			//
+			// D O U B L E - C L I C K  C O N S T R U C T
+			// DOUBLE CLICK SCENARIO
+			if ( (DOUBLE_CLICK_TARGET == keyNdx)
+				&& (	( (keyNdx == KEY_MIXTGT_USR1) && ( target_page->stepSELpattern_ndx == 0 ) )
+						||	( (keyNdx == KEY_MIXTGT_USR2) && ( target_page->stepSELpattern_ndx == 1 ) )
+						||	( (keyNdx == KEY_MIXTGT_USR3) && ( target_page->stepSELpattern_ndx == 2 ) )
+						||	( (keyNdx == KEY_MIXTGT_USR4) && ( target_page->stepSELpattern_ndx == 3 ) )
+						||	( (keyNdx == KEY_MIXTGT_USR5) && ( target_page->stepSELpattern_ndx == 4 ) )
+					)
+				&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY) ) {
+
+				// Double click code
+				// ...
+				// Add all ON Steps to the current Step Selection
+				all_ON_stepSELpattern( target_page );
+
+			} // end of double click scenario
+
+
+			// SINGLE CLICK SCENARIO
+			else if (DOUBLE_CLICK_TARGET == 0) {
+
+					DOUBLE_CLICK_TARGET = keyNdx;
+					DOUBLE_CLICK_TIMER = ON;
+					// Start the Double click Alarm
+					cyg_alarm_initialize(
+							doubleClickAlarm_hdl,
+							cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+							DOUBLE_CLICK_ALARM_TIME );
+
+				// Single click code
+				// ...
+
+				// Export content to old index
+				export_stepSELpattern( target_page );
+
+
+				// Set the new index
+				switch( keyNdx ){
+					case KEY_MIXTGT_USR1:	target_page->stepSELpattern_ndx = 0;	break;
+					case KEY_MIXTGT_USR2:	target_page->stepSELpattern_ndx = 1;	break;
+					case KEY_MIXTGT_USR3:	target_page->stepSELpattern_ndx = 2;	break;
+					case KEY_MIXTGT_USR4:	target_page->stepSELpattern_ndx = 3;	break;
+					case KEY_MIXTGT_USR5:	target_page->stepSELpattern_ndx = 4;	break;
+				}
+
+				// Import from new index
+				import_stepSELpattern( target_page );
+
+		}  // Single Click
+
+	}  // keyndx
+
+#else
+
+		// STEP SELECTION PATTERN INDEX
+		if (	(keyNdx == KEY_MIXTGT_USR1)
+			||	(keyNdx == KEY_MIXTGT_USR2)
+			||	(keyNdx == KEY_MIXTGT_USR3)
+			||	(keyNdx == KEY_MIXTGT_USR4)
+			||	(keyNdx == KEY_MIXTGT_USR5)
+			){
+
+			// Export content to old index
+			export_stepSELpattern( target_page );
+
+			// Set the new index
+			switch( keyNdx ){
+				case KEY_MIXTGT_USR1:	target_page->stepSELpattern_ndx = 0;	break;
+				case KEY_MIXTGT_USR2:	target_page->stepSELpattern_ndx = 1;	break;
+				case KEY_MIXTGT_USR3:	target_page->stepSELpattern_ndx = 2;	break;
+				case KEY_MIXTGT_USR4:	target_page->stepSELpattern_ndx = 3;	break;
+				case KEY_MIXTGT_USR5:	target_page->stepSELpattern_ndx = 4;	break;
+			}
+
+			// Import from new index
+			import_stepSELpattern( target_page );
 		}
-
-		// Import from new index
-		import_stepSELpattern( target_page );
-	}
-
-
+#endif
 
 	//
 	// TRACK_MUTATORS

@@ -44,6 +44,9 @@
 #ifdef FEATURE_ENABLE_DICE
 #include HEADER(_OCT_objects/Dice.h)
 #endif
+#ifdef FEATURE_STEP_SHIFT
+#include HEADER(_OCT_objects/Step_shift.h)
+#endif
 // #include "../_OCT_objects/MIDI_queue.h"
 // #include "../_OCT_objects/NOTE_ON_queue.h"
 // #include "../_OCT_objects/Grid.h"

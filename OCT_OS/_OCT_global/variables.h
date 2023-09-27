@@ -567,3 +567,13 @@ Pagestruct*		G_rec_ctrl_page = NULL;
 Pagestruct*		G_last_ctrl_page[9] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL };
 unsigned short	G_last_ctrl_offset[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 #endif
+
+#ifdef FEATURE_STEP_SHIFT
+	unsigned char ShiftHeldStep = 0;
+	// SHIFT_SKIPS
+	unsigned char G_MixShiftSkips = 0;
+#endif
+
+#ifdef FEATURE_IMPORT_CONVERT_530
+	unsigned char G_EventsConvert530 = 0;
+#endif

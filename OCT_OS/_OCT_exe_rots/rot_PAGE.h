@@ -170,39 +170,82 @@ void rot_exec_PAGE_local_EDIT( 	Pagestruct* target_page,
 	// Operate on selected steps
 	if ( target_page->stepSelection != 0 ){
 
-		// Select the edit attribute
-		target_page->editAttribute = rotNdx;
+		#ifdef FEATURE_STEP_SHIFT
+			if ( rotNdx == 6 )  {
+				StepSwapVertical( target_page, direction );
+			}
+			else {
+				// Select the edit attribute
+				target_page->editAttribute = rotNdx;
 
-		// Scan through all steps of the matrix - not very efficient!!
-		for (row=0; row < MATRIX_NROF_ROWS; row++) {
+				// Scan through all steps of the matrix - not very efficient!!
+				for (row=0; row < MATRIX_NROF_ROWS; row++) {
 
-			// When processing non-selected steps via the MIXER block pots, skip rows that do not have
-			// any selected steps. We don't want the MIXER pot to affect rows that are not participated in the selection.
+					// When processing non-selected steps via the MIXER block pots, skip rows that do not have
+					// any selected steps. We don't want the MIXER pot to affect rows that are not participated in the selection.
 
-			if ( step_selection == OFF ) {
-				for ( col=0; col < MATRIX_NROF_COLUMNS; col++ ) {
-					if ( Step_get_status(target_page->Step[row][col], STEPSTAT_SELECT) == ON ) {
-						break;
+					if ( step_selection == OFF ) {
+						for ( col=0; col < MATRIX_NROF_COLUMNS; col++ ) {
+							if ( Step_get_status(target_page->Step[row][col], STEPSTAT_SELECT) == ON ) {
+								break;
+							}
+						}
+						if ( col == MATRIX_NROF_COLUMNS ) {
+							continue;
+						}
+					}
+
+					// Okay, this row is involved in the selection, and can be processed.
+					for (col=0; col < MATRIX_NROF_COLUMNS; col++) {
+
+						// STEP SELECTION flag is set
+						if (Step_get_status( target_page->Step[row][col], STEPSTAT_SELECT ) == step_selection ){
+
+							// Does what it says - applies the rotary to the step in question.
+							apply_rotary_to_step( rotNdx, direction, target_page, row, col );
+
+						} // Step is selected
+					} // Matrix column G_scan
+
+				} // Matrix row G_scan
+			} // else
+
+		#else
+			// Select the edit attribute
+			target_page->editAttribute = rotNdx;
+
+			// Scan through all steps of the matrix - not very efficient!!
+			for (row=0; row < MATRIX_NROF_ROWS; row++) {
+
+				// When processing non-selected steps via the MIXER block pots, skip rows that do not have
+				// any selected steps. We don't want the MIXER pot to affect rows that are not participated in the selection.
+
+				if ( step_selection == OFF ) {
+					for ( col=0; col < MATRIX_NROF_COLUMNS; col++ ) {
+						if ( Step_get_status(target_page->Step[row][col], STEPSTAT_SELECT) == ON ) {
+							break;
+						}
+					}
+					if ( col == MATRIX_NROF_COLUMNS ) {
+						continue;
 					}
 				}
-				if ( col == MATRIX_NROF_COLUMNS ) {
-					continue;
-				}
-			}
 
-			// Okay, this row is involved in the selection, and can be processed.
-			for (col=0; col < MATRIX_NROF_COLUMNS; col++) {
+				// Okay, this row is involved in the selection, and can be processed.
+				for (col=0; col < MATRIX_NROF_COLUMNS; col++) {
 
-				// STEP SELECTION flag is set
-				if (Step_get_status( target_page->Step[row][col], STEPSTAT_SELECT ) == step_selection ){
+					// STEP SELECTION flag is set
+					if (Step_get_status( target_page->Step[row][col], STEPSTAT_SELECT ) == step_selection ){
 
-					// Does what it says - applies the rotary to the step in question.
-					apply_rotary_to_step( rotNdx, direction, target_page, row, col );
+						// Does what it says - applies the rotary to the step in question.
+						apply_rotary_to_step( rotNdx, direction, target_page, row, col );
 
-				} // Step is selected
-			} // Matrix column G_scan
+					} // Step is selected
+				} // Matrix column G_scan
 
-		} // Matrix row G_scan
+			} // Matrix row G_scan
+		#endif
+
 	} // step selection == ON
 
 
@@ -539,7 +582,7 @@ void rot_exec_PAGE_local( 	Pagestruct* target_page,
 		// ..but un-selections may be accessed by the MIXER!! :-) (for steps only)
 		if (   (target_page->trackSelection != 0)
 			){
-			#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+			#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 			//The exception is setting the keyboard transpose midi channel for selected tracks
 			if( (rotNdx == ROT_0)) {
 

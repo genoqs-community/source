@@ -617,7 +617,53 @@
 
 
 			case KEY_PAUSE:
-				sequencer_command_PAUSE();
+				#ifdef FEATURE_RESET_PAUSE
+					// D O U B L E - C L I C K  C O N S T R U C T
+					// DOUBLE CLICK SCENARIO
+					if ((DOUBLE_CLICK_TARGET == keyNdx)
+							&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
+
+						// Double click code
+						// If Sequencer Stopped then Un-Pause any paused tracks ready for Sequencer Run
+						if ( G_run_bit == OFF ) {
+							//Reset any Track(s) attr_TEMPOMUL == 0 to stored TEMPOMUL value
+							for ( i=0; i<MATRIX_NROF_ROWS; i++ ){
+
+								if ( target_page->Track[i]->attr_TEMPOMUL == 0 ){
+
+									#ifdef FEATURE_FIX_CBB_PAUSE
+									target_page->Track[i]->attr_TEMPOMUL = target_page->Track[i]->prepause_TEMPOMUL & 0x0F;
+									target_page->Track[i]->prepause_TEMPOMUL = 1;
+									#else
+										target_page->Track[i]->attr_TEMPOMUL = 1;
+									#endif
+
+								}
+							}
+						}
+
+					} // end of double click scenario
+
+					// SINGLE CLICK SCENARIO
+					else if (DOUBLE_CLICK_TARGET == 0) {
+
+						DOUBLE_CLICK_TARGET = keyNdx;
+						DOUBLE_CLICK_TIMER = ON;
+						// Start the Double click Alarm
+						cyg_alarm_initialize(
+								doubleClickAlarm_hdl,
+								cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+								DOUBLE_CLICK_ALARM_TIME );
+
+						// Single click code
+						// ...
+						sequencer_command_PAUSE();
+					}
+
+				#else
+					sequencer_command_PAUSE();
+				#endif
+
 				break;
 
 

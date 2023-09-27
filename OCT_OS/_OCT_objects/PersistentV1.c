@@ -722,6 +722,9 @@ void PersistentV1_TrackAndStepImport( Pagestruct* targetPagePt, card32 source_ro
 	targetTrackPt->hyper = 0xF0;
 	targetTrackPt->gatePosition = 0;
 
+	#ifdef FEATURE_FIX_CBB_PAUSE
+		targetTrackPt->prepause_TEMPOMUL = 1;  // Introduced with the PersistentV2 format
+	#endif
 
 	// Attribute offset ranges
 	for (i=0; i < TRACK_NROF_ATTRIBUTES; i++) {

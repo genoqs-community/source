@@ -189,7 +189,27 @@
 			case STEP_ATTRIBUTE_SELECTION:
 
 				if ( G_zoom_level == zoomSTEP ){
-
+					#ifdef FEATURE_STEP_EVENT_TRACKS
+					unsigned char event_data_attr = APPLY_MASK( target_page->Step [target_page->stepSelectionSingleRow][target_page->stepSelectionSingleCol]->event_data, 0x0F ) + 1;
+					MIR_write_buttool( LHS, 0x1FF, MIR_GREEN );
+					if ( Step_get_status( target_page->Step[ target_page->stepSelectionSingleRow ]
+					                                       [ target_page->stepSelectionSingleCol ],  STEPSTAT_EVENT ) == ON ) {
+						if( CHECK_BIT( target_page->Step[ target_page->stepSelectionSingleRow ]
+						   	                            [ target_page->stepSelectionSingleCol ]->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) ) {
+							// Flag ALT Mode
+							MIR_write_buttool (
+								LHS,
+								1 << ( ( event_data_attr - EVENT_FLAG_TRACK_MUTE ) & 0x0F) ,
+								MIR_SHINE_GREEN );
+						} else {
+						// Event model: show selected attribute in step
+						MIR_write_buttool (
+							LHS,
+							1 << ( ( event_data_attr - EVENT_FLAG_TRACK_MUTE ) & 0x0F) ,
+							MIR_BLINK );
+						}
+					}
+					#else
 					// Event model: show selected attribute in step
 					MIR_write_buttool (
 						LHS, 
@@ -197,10 +217,11 @@
 												[target_page->stepSelectionSingleCol]->event_data & 0x0F) ,
 						MIR_BLINK );
 //					MIR_write_buttool (
-//						LHS, 
+//						LHS,
 //						1 << (target_page->Step [target_page->stepSelectionSingleRow]
 //												[target_page->stepSelectionSingleCol]->event_data & 0x0F),
 //						MIR_RED   );
+					#endif
 				}
 				else{
 					// Legacy model:

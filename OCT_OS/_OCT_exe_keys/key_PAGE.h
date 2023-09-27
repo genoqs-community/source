@@ -163,13 +163,23 @@
 
 			if ( is_pressed_key( KEY_MIX_MASTER ) ){
 
-				// Assign the new mix Attribute
-				target_page->mixAttribute = keyNdx;
+				#ifdef FEATURE_STEP_SHIFT
+				// SHIFT_SKIPS
+				// Toggle between ATTR_POSITION and Shift Skips
+				if ( ( target_page->mixAttribute == ATTR_POSITION ) && ( keyNdx == 5 ) ) {
+					G_MixShiftSkips ^= 1;
+				}
+				else target_page->mixAttribute = keyNdx;
 
 				target_page->trackSelection = 0;
-				return;
+
+				#else
+				// Assign the new mix Attribute
+				target_page->mixAttribute = keyNdx;
+				target_page->trackSelection = 0;
+				#endif
 			}
-			#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+			#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 			//backup PIT as ghost pitch on selection
 			target_page->Track[keyNdx-1]->attr_GST = target_page->Track[keyNdx-1]->attr_PIT;
 			#endif

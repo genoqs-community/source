@@ -136,7 +136,16 @@
 
 		// POS
 		case NEMO_ATTR_POSITION:
+			#ifdef FEATURE_STEP_SHIFT
+			if ( G_MixShiftSkips == 1 )  {
+				show (ELE_MATRIX, STEP_SKIPS);
+			}
+			else  {
+				show( ELE_MATRIX, STEP_TOGGLE );
+			}
+			#else
 			show( ELE_MATRIX, STEP_TOGGLE );
+			#endif
 			break;
 		
 		

@@ -29,6 +29,10 @@
 //
 //
 
+#ifdef FEATURE_STEP_SHIFT
+// SHIFT_SKIPS
+extern unsigned char G_MixShiftSkips;
+#endif
 
 void key_exec_PAGE( unsigned short keyNdx ){
 
@@ -119,7 +123,7 @@ void key_exec_PAGE( unsigned short keyNdx ){
 		} // target_page->stepSelection != 0
 
 		else{
-			#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+			#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 			//backup PIT as ghost pitch on selection
 			target_page->Track[keyNdx-1]->attr_GST = target_page->Track[keyNdx-1]->attr_PIT;
 			#endif
@@ -278,6 +282,14 @@ void key_exec_PAGE( unsigned short keyNdx ){
 		row = row_of( keyNdx );
 		col = column_of( keyNdx );
 
+		#ifdef FEATURE_STEP_SHIFT
+		// SHIFT_SKIPS
+		unsigned char current_pos = 0;
+		if ( target_page->mixAttribute == NEMO_ATTR_POSITION ) {
+			current_pos = 1;
+		}
+		#endif
+
 		// Assignment of the MIX attribute
 		if ( is_pressed_key( KEY_MIX_MASTER ) ){
 
@@ -296,7 +308,14 @@ void key_exec_PAGE( unsigned short keyNdx ){
 				// MCH
 				case 9:		target_page->mixAttribute = NEMO_ATTR_MIDICH;		break;
 				// POS DIR
-				case 11: 	target_page->mixAttribute = NEMO_ATTR_POSITION;		break;
+				case 11: 	target_page->mixAttribute = NEMO_ATTR_POSITION;
+				#ifdef FEATURE_STEP_SHIFT
+				// SHIFT_SKIPS
+				if ( current_pos == 1 )  {
+					G_MixShiftSkips ^= 1;
+				}
+				#endif
+				break;
 				case 12:	target_page->mixAttribute = NEMO_ATTR_DIRECTION;	break;
 			}
 
@@ -318,6 +337,38 @@ void key_exec_PAGE( unsigned short keyNdx ){
 				page_preview_step = target_page->Step[row][col];
 				page_preview_step_col = col;
 				page_preview_step_row = row;
+
+				#ifdef FEATURE_STEP_SHIFT
+
+					// Absolute keyindex of the pressed button. Used to notice double click.
+					unsigned int j = ((col+1) * 11) + (row);
+
+					// DOUBLE CLICK was started
+					if (	( DOUBLE_CLICK_TARGET == j )
+							&& 	( DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY )
+						){
+
+						ShiftHeldStep = 1; 	// Step Shift is available with Step Dbl-Click & Held
+											// Matrix Steps will be shown (as in EDIT mode)
+					}
+
+					// Start thinking about double clicking
+					else if ( DOUBLE_CLICK_TARGET == 0 ) {
+
+						// Prepare double click timer for hold the step for Step Shift
+						DOUBLE_CLICK_TARGET = j;
+						DOUBLE_CLICK_TIMER = ON;
+
+						// Start the Double click Alarm
+						cyg_alarm_initialize(
+								doubleClickAlarm_hdl,
+								cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+								DOUBLE_CLICK_ALARM_TIME );
+
+						// Single click code
+						ShiftHeldStep = 0; // Preview_Perform View
+					}
+				#endif
 
 				// And play it in preview..
 				if ( target_page->editorMode == PREVIEW ){

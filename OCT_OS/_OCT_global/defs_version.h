@@ -2,9 +2,9 @@
 
 #define 	SW_VERSION_MAJOR				 0	// Max 10 - Hundreds
 #define		SW_VERSION_MINOR				 5	// Max 10 - Tens
-#define		SW_VERSION_RELEASE				 2	// Max 10 - Ones
+#define		SW_VERSION_RELEASE				 3	// Max 10 - Ones
 
-#define		SW_VERSION_INTERNAL				 4	// Max 127 - Row 0 number
+#define		SW_VERSION_INTERNAL				 0	// Max 127 - Row 0 number
 
 // SWITCH between 'MIDI' and 'USB' modes of the MIDI 2 Port
 #define		OCTDEF_UART2_MODE	 			MIDI
@@ -13,10 +13,6 @@
 #define 	LOAD_ON_POWERON					TRUE
 
 // BUILD CE OS WITH ADDON FEATURES
-//#define 	CE_OS_ADDON_BUILD				TRUE
-
-#ifdef CE_OS_ADDON_BUILD
-
 #ifdef NEMO
 // NEMO FEATURE ENABLE
 //#define 	FEATURE_ENABLE_DICE				TRUE
@@ -24,9 +20,8 @@
 #else
 // OCTOPUS FEATURE ENABLE
 //#define 	FEATURE_ENABLE_SONG_UPE			TRUE
-//#define 	FEATURE_ENABLE_KEYB_TRANSPOSE   TRUE
-
-#endif
+	#define 	FEATURE_SET_PAUSE				TRUE
+	#define 	FEATURE_SEL_UNPAUSE				TRUE
 
 #endif
 
@@ -35,12 +30,39 @@
 #define		FEATURE_SOLO_REC				FALSE
 #define		FEATURE_NOTE_DRUM_CTRL			TRUE
 
+#define 	FEATURE_FIX_CBB_PAUSE			TRUE
+#define 	FEATURE_FIX_SHOW_HYPER			TRUE
+
+#define 	FEATURE_STEP_SELECT_ALL			TRUE
+#define 	FEATURE_RESET_PAUSE				TRUE
+#define 	FEATURE_STEP_SHIFT				TRUE
+#define 	FEATURE_STEP_EVENT_TRACKS		TRUE
+#define 	FEATURE_EFF_LISTENER_MASK		TRUE
+#define 	FEATURE_CLICK_PLUS				TRUE
+#define 	FEATURE_TEMPO_MULT_PLUS			TRUE
+#define 	FEATURE_NEMO_ANTI_ECHO			TRUE
+#define 	FEATURE_ZOOMSTEP_PLUS			TRUE
+#define 	FEATURE_ENABLE_KEYBOARD_TRANSPOSE   TRUE
+
+#define		FEATURE_IMPORT_CONVERT_530		TRUE
 
 /*
  * Bug tracking spreadsheet
  * https://docs.google.com/spreadsheets/d/1eM8S2VbLz8OsRawqJ4Pzusfqcv13wKgeyLU071252Nk/edit#gid=520555008
  *
  * COMMUNITY EDITION VERSION CHANGES
+ *
+ *  0.0.5.30		FINAL VERSION of 0.0.5.3
+ *
+ *  0.0.5.27		Port Features: 	Step_Select_All
+ *  								Reset_Pause
+ *  								Step_Shift
+ *  								Eff_v2 (Effector Track Mode)
+ *  								Eff_Listener_Mask
+ *  								Click_Plus (Octopus only)
+ *  								Set_Pause (Octopus only)
+ *  								Sel_Unpause (Octopus only)
+ *  0.0.5.26		Port legacy fixes 1.62x (CBB_FIX_PAUSE & FIX_SHOW_HYPER)
  *  0.0.5.25		Port Nemo Device globals, OTM fixes (cases v5.25), Nemo/Oct platform integration & UI/UX refinements)
  *  0.0.5.24		Port on the measure / cluster mute (Complete OTM implementation with mute, solo and master)
  *  0.0.5.00		FINAL VERSION of 0.0.5

@@ -900,10 +900,23 @@ unsigned int play_row_MCC( 	Pagestruct* target_page,
 
 				case RECEIVE:
 					// MIDICC
+					#ifdef FEATURE_EFF_LISTENER_MASK
+						// Listener Step Mask
+						// AMT value of -127 is arbitary as it is not possible to negatively Scale attr_AMT via Step Event
+						// (See legacy CBB known issue case #2)
+						if ( target_page->Step[phys_row][locator-1]->attr_AMT == -127 )  break;
+					#endif //FEATURE_EFF_MASK_RECEIVE
 					EFF_pool_MCC = target_page->EFF_pool[ ATTR_MIDICC ];
 					break;
 
 				case RECEIVESEND:
+					// MIDICC
+					#ifdef FEATURE_EFF_LISTENER_MASK
+						// Listener Step Mask
+						// AMT value of -127 is arbitary as it is not possible to negatively Scale attr_AMT via Step Event
+						// (See legacy CBB known issue case #2)
+						if ( target_page->Step[phys_row][locator-1]->attr_AMT == -127 )  break;
+					#endif //FEATURE_EFF_MASK_RECEIVE SEND
 					// MIDICC
 					EFF_pool_MCC = target_page->EFF_pool[ ATTR_MIDICC ];
 
@@ -1063,14 +1076,18 @@ unsigned int PLAYER_play_row( 	Pagestruct* 	target_page,
 
 	unsigned int bitactivity = 0;
 	unsigned int MCCactivity = 0;
-
+	#ifdef FEATURE_STEP_EVENT_TRACKS
+	if (	( which_col == CURRENT ) ){
+		// Apply the step event instruction to the given track
+		update_step_event_tracks( target_page, target_row );
+	}
+	#endif
 	//
 	// EVENT PROCESSING
 	// Event operations from CURRENT step - only if the step is playing but before EFF
 	if (	( which_col == CURRENT )
 		&&	( Step_get_status( target_page->Step[target_row][col-1], STEPSTAT_EVENT ) == ON )
 		){
-
 		// Apply the step event instruction to the given track
 		perform_step_event( target_page->Step[target_row][col-1],
 							target_page->Track[target_row],
@@ -1607,8 +1624,6 @@ void PLAYER_play_track( Pagestruct* target_page, unsigned char row ){
 	}// switch on the track skip attribute
 }
 
-
-
 //_______________________________________________________________________________________
 //
 // Plays the given target page at the current TTC value
@@ -1642,6 +1657,16 @@ void PLAYER_play_page( 		Pagestruct* 	target_page,
 		target_page->EFF_pool[ ATTR_PITCH 	 ]  = 0;
 		target_page->EFF_pool[ ATTR_LENGTH 	 ]  = 0;
 		target_page->EFF_pool[ ATTR_MIDICC 	 ]  = 0;
+
+
+
+
+			#ifdef FEATURE_FIX_CBB_PAUSE
+			for ( row = 0; row < MATRIX_NROF_ROWS; row ++ ){
+				// Unpause scheduled Tracks OTB
+				perform_pause_tracks( target_page, row );
+			}
+			#endif
 	}
 
 	// PLAY THE PLAYLIST of this particular page, as generated above
@@ -1649,11 +1674,9 @@ void PLAYER_play_page( 		Pagestruct* 	target_page,
 
 		// Operate on valid playlist entry, and if the page bank is not muted in the grid!
 		if ( Track_playlist[row] != NULL ){
-
 			PLAYER_play_track( target_page, row );
 		}
 	}
-
 }
 
 

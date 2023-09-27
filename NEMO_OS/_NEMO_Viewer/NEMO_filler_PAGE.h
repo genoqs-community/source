@@ -134,6 +134,15 @@
 					// Show selected attribute - one only
 					MIR_write_trackpattern( 1 << (15 - j ), 	NEMO_ROW_II, MIR_RED );
 					MIR_write_trackpattern( 1 << (15 - j ), 	NEMO_ROW_II, MIR_BLINK );
+					#ifdef FEATURE_STEP_SHIFT
+					// SHIFT_SKIPS
+					if (  (  target_page->mixAttribute == NEMO_ATTR_POSITION )
+						&& ( G_MixShiftSkips == 1 )  )   {
+
+						MIR_write_trackpattern( 1 << (15 - j ), 	NEMO_ROW_II, MIR_SHINE_RED );
+
+					}
+					#endif
 				}
 			}
 

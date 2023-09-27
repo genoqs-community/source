@@ -40,7 +40,15 @@ void rot_exe_MIX( unsigned char rotNdx, unsigned char direction, Pagestruct* tar
 		// ..maybe one day.
 		// You can get the screen that you want if the target_page->mixMasterStatus is "red"
 		// Needs more digging
+		#ifdef FEATURE_STEP_SHIFT
+		// SHIFT_SKIPS
+		// Do not use mix_timer on POS or Shift Skip operation - looks too confusing
+		if (  target_page->mixAttribute != ATTR_POSITION ) {
+			start_MIX_TIMER();
+		}
+		#else
 		start_MIX_TIMER();
+		#endif
 
 		// Normalized index
 		trackNdx = rotNdx-11;

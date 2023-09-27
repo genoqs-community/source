@@ -61,19 +61,6 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  	switch( G_zoom_level ){
 
  	case zoomPAGE:
-#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
- 		// Keyboard Transpose
- 		// Only work on the current page.
- 		target_page = &Page_repository[GRID_CURSOR];
- 		if ( ( G_run_bit == ON )
- 			&& 	( inputMidiChan > 0 )
- 			&&	(	( Page_getTrackRecPattern(target_page) == 0 	)
- 			&& 	( target_page->REC_bit == OFF 			))			) {
-
- 				transpose_selection( target_page, in_pitch, in_velocity, inputMidiChan );
- 		}
- 		break;
-#endif
  	case zoomTRACK:
  	case zoomSTEP:
  		// Only work on the current page.
@@ -187,7 +174,15 @@ void midi_note_execute( 	unsigned char inputMidiBus,
 
   		// Recording notes classically - with tracks enabled for recording
   		case OFF:
-
+			#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
+			// Keyboard Transpose
+			// Only work on the current page.
+			target_page = &Page_repository[GRID_CURSOR];
+			if ( 	( Page_getTrackRecPattern(target_page) == OFF )
+				&& 	( inputMidiChan > 0 ) ) {
+					transpose_selection( target_page, in_pitch, in_velocity, inputMidiChan );
+			}
+			#endif
   			// Iterate through the rows - to enable multi-track recording
  			for ( row = 0; row < MATRIX_NROF_ROWS; row++ ) {
 
@@ -283,7 +278,14 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  			// Note that the note may have been re-channelled in the meantime.
  			// MIDI_NOTE_new() also uses the internal [1,64] range for MIDI channels.
 
- 			MIDI_NOTE_new( outputMidiBus * 16 + outputMidiChan, scale_pitch(target_page, in_pitch), in_velocity, 0 );
+			#ifdef FEATURE_NEMO_ANTI_ECHO
+			if ( G_midi_map_controller_mode == ON ){
+
+				MIDI_NOTE_new( outputMidiBus * 16 + outputMidiChan, scale_pitch(target_page, in_pitch), in_velocity, 0 );
+			}
+			#else
+			MIDI_NOTE_new( outputMidiBus * 16 + outputMidiChan, scale_pitch(target_page, in_pitch), in_velocity, 0 );
+			#endif
 
 			// Play MIDI queue elements which are due just before current timestamp, including the above..
 			play_MIDI_queue( G_MIDI_timestamp );
@@ -325,7 +327,7 @@ void midi_note_execute( 	unsigned char inputMidiBus,
  	// This is where the incoming MIDI note will be sent to, unless re-channelled, below.
  	int outputMidiBus  = inputMidiBus; 		// Range [0, 1].
  	int outputMidiChan = inputMidiChan; 	// Range [1, 16].
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
  	// Keyboard Transpose
 	if ( (G_run_bit == ON)
 		&& 	( inputMidiChan > 0 )

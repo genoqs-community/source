@@ -47,6 +47,10 @@
 
 				show( ELE_TRACK_SELECTORS, STEP_ATTRIBUTE_SELECTION );
    			}
+
+			#ifdef FEATURE_STEP_EVENT_TRACKS
+			show( ELE_MIXTGT, OPTIONS );
+			#endif
 		}
 
 
@@ -98,6 +102,56 @@
 		row = target_page->stepSelectionSingleRow;	// Keeps row coordinate of a selected single step
 		col = target_page->stepSelectionSingleCol;	// Keeps col coordinate of a selected single step
 
+		#ifdef FEATURE_ZOOMSTEP_PLUS
+		// If selected step is skipped then the underlying step status is shown as follows:
+		// Step On - Main Mute: Flash Green
+		// Chord - Main Mute: Flash Orange
+		// Event & Step On - Main Mute: Flash Orange
+		// Event & Step Off - Main Mute: Orange
+		// Hyperstep - Main Mute: Shine_Green
+
+		if (  (  Step_get_status( target_page->Step[row][col], STEPSTAT_SKIP )  ) == ON ) {
+
+			if (  (  (  Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE )  ) == OFF )
+					&&  ( Step_get_status( target_page->Step[row][col], STEPSTAT_EVENT  ) == ON ) )  {
+					//Event & Step Off - Main Mute: Orange
+					show( ELE_MUTE_MASTER, GREEN );
+					show( ELE_MUTE_MASTER, RED );
+			}
+
+			if (  (  Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE )  ) == ON ) {
+				//Step On - Main Mute: Flash Green
+				show( ELE_MUTE_MASTER, GREEN );
+				if  ( Step_get_status( target_page->Step[row][col], STEPSTAT_EVENT  ) == ON ) {
+					//Event & Step On - Main Mute: Flash Orange
+					show( ELE_MUTE_MASTER, RED );
+				}
+				#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+					if ( 	( is_step_chord( target_page->Step[row][col] ) )
+				#else
+					if ( 	( my_bit_cardinality( target_page->Step[row][col]->chord_data & 0x7FF )>0 )
+				#endif
+					)  {
+						// Chord - Main Mute: Flash Orange
+						show( ELE_MUTE_MASTER, RED );
+					}
+				show( ELE_MUTE_MASTER, BLINK );
+
+			}
+
+			if ( target_page->Step[row][col]->hyperTrack_ndx != 10 )  {
+				// Hyperstep - Main Mute: Shine_Green
+				MIR_write_dot( LED_MUTE_MASTER,	MIR_SHINE_RED);
+			}
+
+			if (  (  (  Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE )  ) == OFF )
+					&& ( target_page->Step[row][col]->hyperTrack_ndx == 10 )  )  {
+				//Step Off - Main Mute: Red
+				show( ELE_MUTE_MASTER, RED );
+			}
+		}
+
+		#endif
 
 		// GLOBALS
 		//
@@ -189,7 +243,9 @@
 			// If an event is set show the range defined for set event.
 			if ( Step_get_status( target_page->Step[row][col], STEPSTAT_EVENT ) == ON
    				){
-
+				#ifdef FEATURE_STEP_EVENT_TRACKS
+				unsigned char temp = ( target_page->Step[row][col]->event_data & 0x0F ) + 1;
+				#endif
 				// Depending on which event is set, show range
 				switch( (target_page->Step[row][col]->event_data & 0x0F) + 1 ){
 
@@ -220,7 +276,14 @@
 						MIR_write_dot( LED_SCALE_MYSEL, MIR_RED   );
 						MIR_write_dot( LED_SCALE_MYSEL, MIR_GREEN );
 						break;
+					#ifdef FEATURE_STEP_EVENT_TRACKS
+					case ATTR_POSITION:
 
+						MIR_write_numeric_C( target_page->Track[row]->event_max[ATTR_POSITION] );
+						MIR_write_dot( LED_SCALE_MYSEL, MIR_RED   );
+						MIR_write_dot( LED_SCALE_MYSEL, MIR_GREEN );
+						break;
+					#endif
 					case ATTR_DIRECTION:
 
 						MIR_write_numeric_C( target_page->Track[row]->event_max[ATTR_DIRECTION] );
@@ -255,7 +318,15 @@
 						MIR_write_dot( LED_SCALE_MYSEL, MIR_RED   );
 						MIR_write_dot( LED_SCALE_MYSEL, MIR_GREEN );
 						break;
-
+					#ifdef FEATURE_STEP_EVENT_TRACKS
+					default:
+						if ( temp >= EVENT_FLAG_TRACK_MUTE ) {
+							MIR_write_numeric_C( target_page->Track[row]->event_max[temp] );
+							MIR_write_dot( LED_SCALE_MYSEL, MIR_RED   );
+							MIR_write_dot( LED_SCALE_MYSEL, MIR_GREEN );
+						}
+						break;
+					#endif
 				} // switch on selected event type
 			}
 

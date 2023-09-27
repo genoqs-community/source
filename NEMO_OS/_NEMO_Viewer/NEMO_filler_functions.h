@@ -2563,8 +2563,29 @@ void display_stepLEN_multiplier( Stepstruct* target_step ){
 	} // switch on the LEN multiplier
 }
 
+#ifdef FEATURE_TEMPO_MULT_PLUS
 
+// Show the Step LEN multiplier value at LEN row
+void display_stepLEN_multiplier_At_Row( Stepstruct* target_step )  {
 
+	unsigned char i = 0;
+	// target_step->LEN_multiplier )
+	unsigned char j = ( (target_step->event_data & 0xF0) >> 4 );
+
+	for ( i = 1; i < 9; i ++ ) {
+		// Write Step LEN Multiplier in ROW I
+		//11, 22, 33, 44, 55, 66, 77, 88
+		MIR_write_dot( ( i * 11 ), MIR_RED );
+
+		if ( j != i ) {
+			// Step LEN Multiplier shown RED, other options shown ORANGE
+			MIR_write_dot( ( i * 11 ), MIR_GREEN );
+		}
+
+	}
+}
+
+#endif
 
 // Displays the value of the tempo multiplier in given track.
 // Logic is on book pg. 256 ff

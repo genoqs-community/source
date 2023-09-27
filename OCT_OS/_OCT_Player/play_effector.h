@@ -79,6 +79,13 @@
 		// Get the EFF values out of the EFF pool
 		case RECEIVE:
 
+			#ifdef FEATURE_EFF_LISTENER_MASK
+				// Listener Step Mask
+				// AMT value of -127 is arbitary as it is not possible to negatively Scale attr_AMT via Step Event
+				// (See legacy CBB known issue case #2)
+				if ( target_page->Step[phys_row][locator-1]->attr_AMT == -127 )  break;
+			#endif //FEATURE_EFF_MASK_RECEIVE
+
 			// Only these for now, the usual suspects. PIT and VEL watch their interval ranges!
 			EFF_pool_VEL = target_page->EFF_pool[ ATTR_VELOCITY ];
 			EFF_pool_PIT = target_page->EFF_pool[ ATTR_PITCH ];
@@ -89,6 +96,13 @@
 
 		// Send and receive the values at the same time
 		case RECEIVESEND:
+
+			#ifdef FEATURE_EFF_LISTENER_MASK
+				// Listener Step Mask
+				// AMT value of -127 is arbitary as it is not possible to negatively Scale attr_AMT via Step Event
+				// (See legacy CBB known issue case #2)
+				if ( target_page->Step[phys_row][locator-1]->attr_AMT == -127 )  break;
+			#endif //FEATURE_EFF_MASK_RECEIVE
 
 			// Only these for now, the usual suspects. PIT and VEL watch their interval ranges!
 			EFF_pool_VEL = target_page->EFF_pool[ ATTR_VELOCITY ];

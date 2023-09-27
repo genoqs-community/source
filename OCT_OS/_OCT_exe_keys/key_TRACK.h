@@ -100,7 +100,7 @@
 				}
 
 				break;
-		}
+		}  //switch
 
 	} // key is a track selector
 
@@ -153,11 +153,21 @@
 					target_page->Track[row]->attr_VEL =
 						normalize( i + j, 0, 127 );
 				}
+				#ifdef FEATURE_CLICK_PLUS
+				else if ( col == 12 )  {
+					// Write default value into the attribute
+					target_page->Track[row]->attr_VEL = TRACK_DEF_VELOCITY;
+				}
+				else if (col == 13){
+					target_page->Track[row]->attr_VEL = 0;
+				}
+				#else
 				else{
 
 					// Write the final value into the attribute
 					target_page->Track[row]->attr_VEL = TRACK_DEF_VELOCITY;
 				}
+				#endif
 			}
 
 			else if (DOUBLE_CLICK_TARGET == 0) {
@@ -239,6 +249,30 @@
 					// Adjust the pitch accordingly	- set the octave pitch.
 					target_page->Track[row]->attr_PIT = (col+1) * 12;
 				}
+
+				#ifdef FEATURE_CLICK_PLUS
+
+					// Set PIT to Default
+					else if (col == 12){
+						target_page->Track[row]->attr_PIT = TRACK_DEFAULT_PITCH[row];
+					}
+					// Set PIT to C5 (middle C)
+					else if (col == 13){
+						target_page->Track[row]->attr_PIT = 60;
+					}
+					// This is the octave- (8vb) button
+					else if (col == 14){
+						if ( target_page->Track[row]->attr_PIT >= (TRACK_MIN_PITCH + 12) ){
+							target_page->Track[row]->attr_PIT -= 12;
+						}
+					}
+					// This is the octave+ (8va) button
+					else if (col == 15){
+						if ( target_page->Track[row]->attr_PIT <= (TRACK_MAX_PITCH - 12) ){
+							target_page->Track[row]->attr_PIT += 12;
+						}
+					}
+				#endif
 			}
 
 			else if (DOUBLE_CLICK_TARGET == 0) {
@@ -371,11 +405,21 @@
 					target_page->Track[row]->attr_AMT =
 						normalize( i, 0, 100 );
 				}
-				else{
 
-					// Write the final value into the attribute
-					target_page->Track[row]->attr_AMT = TRACK_DEF_AMOUNT;
-				}
+				#ifdef FEATURE_CLICK_PLUS
+					else if ( col == 12 )  {
+						// Write default value into the attribute
+						target_page->Track[row]->attr_AMT = TRACK_DEF_AMOUNT;
+					}
+					else if (col == 13){
+						target_page->Track[row]->attr_AMT = 0;
+					}
+				#else
+					else {
+						// Write the final value into the attribute
+						target_page->Track[row]->attr_AMT = TRACK_DEF_AMOUNT;
+					}
+				#endif
 			}
 
 			else if (DOUBLE_CLICK_TARGET == 0) {
@@ -391,15 +435,18 @@
 				// Single click code:
 				//
 				if ( col < 9 ){
-					// Modify the ones value of the MIDICC. 128 is a special value.
-					if ( target_page->Track[row]->attr_AMT >= 127 ){
+					// Modify the ones value of the AMT
+					//if ( target_page->Track[row]->attr_AMT >= 127 ){
+					if ( target_page->Track[row]->attr_AMT >= 100 ){
 						i = 0;
 					}
 					else {
 						i = target_page->Track[row]->attr_AMT / 10;
 					}
+					//target_page->Track[row]->attr_AMT =
+					//	normalize( i*10 + col + 1, 0, 127 );
 					target_page->Track[row]->attr_AMT =
-						normalize( i*10 + col + 1, 0, 127 );
+							normalize( i*10 + col + 1, 0, 100 );
 				}
 			}
 		} // key in the AMOUNT row.
@@ -518,8 +565,75 @@
 		} // key in the MIDICC row.
 
 
+		#ifdef FEATURE_TEMPO_MULT_PLUS
+		// Set the Track Tempo Multiplier using the MCH row Matrix keys
+		if ( is_pressed_key( KEY_TEMPO ) ) {
 
+			if ( (keyNdx > 10) && (keyNdx <= 185) && (((keyNdx-10) % 11) != 0) ) {
 
+				if ( ((keyNdx - MIDICH) % 11) == 0) {
+
+					// Convert key press to Mult/Div in file "key_TRACK_multiplier.h"
+
+					// Allow track multipliers to always work, including in slave mode
+					#include "key_TRACK_multiplier.h"
+
+				}
+			}
+		}
+		else {
+			// MIDICH (MIDI Channel) row allows direct entry of data.
+					// Single click selects channel on the current port. Double click on the other port.
+					// Disregards the virtual midi channels
+					if ( ((keyNdx - MIDICH) % 11) == 0) {
+
+						// Row of target track
+						row = my_bit2ndx( target_page->trackSelection );
+
+						// Column of target step
+						col = ((keyNdx - MIDICH) / 11) - 1 ;
+
+						// D O U B L E - C L I C K
+						if ((DOUBLE_CLICK_TARGET == keyNdx)
+								&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
+
+							// Double click code:
+							///
+							// Switch the MIDI port
+							// Find out the current port: it will be 0 or 1;
+							// Note that the ATTR_MIDICH is in the range [1..32].
+							i = target_page->Track[row]->attr_MCH / 17;
+							j = target_page->Track[row]->attr_MCH - (16 * i);
+
+							// Swith the port indicator
+							i ^= 1;
+
+							// Write the new value to the attribute
+							target_page->Track[row]->attr_MCH = (16 * i) + j;
+						}
+
+						else if (DOUBLE_CLICK_TARGET == 0) {
+
+							DOUBLE_CLICK_TARGET = keyNdx;
+							DOUBLE_CLICK_TIMER = ON;
+							// Start the Double click Alarm
+							cyg_alarm_initialize(
+								doubleClickAlarm_hdl,
+								cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+								DOUBLE_CLICK_ALARM_TIME );
+
+							// Single click code:
+							// Find out the current port: it will be 0 or 1;
+							// Note that the ATTR_MIDICH is in the range [1..32].
+							i = target_page->Track[row]->attr_MCH / 17;
+
+							// Set the new value of the MIDICH attribute - on the same port.
+							target_page->Track[row]->attr_MCH = (16 * i) + col + 1;
+						}
+					} // key in the MIDICH row.
+		}
+
+		#else
 
 		// MIDICH (MIDI Channel) row allows direct entry of data.
 		// Single click selects channel on the current port. Double click on the other port.
@@ -570,6 +684,8 @@
 				target_page->Track[row]->attr_MCH = (16 * i) + col + 1;
 			}
 		} // key in the MIDICH row.
+
+		#endif
 
 	} // If this is a key in the Matrix
 
@@ -954,6 +1070,25 @@
 		toggle_PLAY_MODE( PLAY_MODE_STATUS^1 );
 	}
 
+	#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
+
+	if ( is_pressed_key( KEY_SCALE_SEL ) ) {
+
+		if ( ( my_bit_cardinality( target_page->trackSelection ) == 1 )
+				&& ( G_zoom_level == zoomTRACK ) )  {
+
+			// Extract the track index from current track selection
+			row = my_bit2ndx( target_page->trackSelection );
+
+			// Only if Track available for Transpose
+			if (  ( target_page->Track[row]->attr_STATUS != 0 )
+					&& ( keyNdx == 2 )  ) {
+				// PIT button will backup current PIT as ghost pitch on selection
+				target_page->Track[row]->attr_GST = target_page->Track[row]->attr_PIT;
+			}
+		}
+	}
+	#endif
 
 	//
 	// TRACK CHAIN SELECTORS - active only when sequencer not running.
@@ -1323,14 +1458,63 @@
 //		}
 //	}
 
-	// Allow track multipliers to always work, including in slave mode
-	if (	( keyNdx == KEY_PLAY1 )
-		||	( keyNdx == KEY_PLAY2 )
-		||	( keyNdx == KEY_PLAY4 )
-		){
+		#ifdef FEATURE_TEMPO_MULT_PLUS
+		if ( is_pressed_key( KEY_TEMPO ) ) {
+			// Enable Transport PLAY, PAUSE & STOP when KEY_TEMPO held
+			if ( keyNdx == KEY_PLAY1 ) {
+				// Make sure the sequencer is running
+				if ( G_clock_source != EXT ) {
+					sequencer_command_PLAY();
+				}
+			}
 
-		#include "key_TRACK_multiplier.h"
-	}
+			if ( keyNdx == KEY_STOP ) {
+				if ( G_clock_source != EXT ) {
+					sequencer_command_STOP();
+				}
+			}
+		}
+		else if (	( keyNdx == KEY_PLAY1 )
+				||	( keyNdx == KEY_PLAY2 )
+				||	( keyNdx == KEY_PLAY4 )
+				) {
+				// Allow track multipliers to always work, including in slave mode
+				#include "key_TRACK_multiplier.h"
+			}
+
+		#else
+		// Allow track multipliers to always work, including in slave mode
+		if (	( keyNdx == KEY_PLAY1 )
+			||	( keyNdx == KEY_PLAY2 )
+			||	( keyNdx == KEY_PLAY4 )
+			){
+
+			#include "key_TRACK_multiplier.h"
+		}
+
+		#endif
+
+		#ifdef FEATURE_SET_PAUSE
+			// Provide support for Pause key in zoomTrack (subordinate to CBB Pause Fix)
+			if ( keyNdx == KEY_PAUSE ) {
+				// Make sure only one track is selected
+				if ( my_bit_cardinality( target_page->trackSelection ) == 1 ) {
+
+					row = my_bit2ndx( target_page->trackSelection );
+
+					if ( target_page->Track[row]->attr_TEMPOMUL != 0 )  {
+						// Set track tempo to Pause
+						target_page->Track[row]->prepause_TEMPOMUL = target_page->Track[row]->attr_TEMPOMUL;
+						target_page->Track[row]->attr_TEMPOMUL = 0;
+					}
+					else  {
+						// if Track is paused set to play at stored tempo_mul
+						target_page->Track[row]->attr_TEMPOMUL = target_page->Track[row]->prepause_TEMPOMUL;
+					}
+				}
+			}
+		#endif
+
 
 
 	//

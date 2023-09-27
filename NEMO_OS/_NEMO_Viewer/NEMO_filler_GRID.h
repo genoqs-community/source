@@ -187,6 +187,13 @@
 			MIR_write_dot( LED_PROGRAM, MIR_BLINK 	);
 		}
 
+		#ifdef FEATURE_IMPORT_CONVERT_530
+			switch ( G_EventsConvert530 ) {
+			case 1: MIR_write_dot( LED_MIX_MASTER, MIR_SHINE_RED ); break;
+			case 2: MIR_write_dot( LED_MIX_MASTER, MIR_SHINE_GREEN ); break;
+			}
+		#endif
+
 	} // GRID_play_mode == GRID_EDIT
 
 
@@ -332,6 +339,12 @@
 	// Show the ESC button -> taking you back to the page
 	MIR_write_dot( LED_RETURN, MIR_GREEN );
 
+	#ifdef FEATURE_NEMO_ANTI_ECHO
+	if ( G_midi_map_controller_mode == OFF ){
+		MIR_write_dot( LED_SELECT_MASTER, 		MIR_RED);
+		MIR_write_dot( LED_SELECT_MASTER, 		MIR_BLINK );
+	}
+	#endif
 
 	// EDIT MASTER
 	switch( CHECK_BIT( GRID_editmode, 0 ) ){

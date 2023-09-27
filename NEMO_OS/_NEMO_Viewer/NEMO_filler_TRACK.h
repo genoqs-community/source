@@ -198,3 +198,18 @@
 			MIR_write_dot( LED_RECORD, MIR_BLINK );
 		}
 	}
+
+#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
+// Show Led if Track available for Transpose
+if ( target_page->Track[row]->attr_STATUS != 0 ){
+	// x2 - Toggle transpose abs pitch mode
+	if (	( target_page->pitch_abs == TRUE )	){
+		MIR_write_dot( LED_SCALE_SEL, MIR_GREEN 	);
+		MIR_write_dot( LED_SCALE_SEL, MIR_BLINK 	);  //
+	}
+	else {
+		MIR_write_dot( LED_SCALE_SEL, MIR_RED 	);
+		MIR_write_dot( LED_SCALE_SEL, MIR_BLINK 	);  //
+	}
+}
+#endif

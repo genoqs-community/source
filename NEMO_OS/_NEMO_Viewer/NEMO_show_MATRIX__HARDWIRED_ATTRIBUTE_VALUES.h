@@ -237,7 +237,11 @@ switch( G_zoom_level ){
 										| Page_get_event_trackpattern( target_page, row ), 
 										NEMO_ROW_IV, 	MIR_RED   );			
 				MIR_augment_trackpattern( Page_get_skippattern(  target_page, row ), NEMO_ROW_IV, MIR_RED   );
-				MIR_augment_trackpattern( Page_get_selection_trackpattern( target_page, row ), NEMO_ROW_IV, MIR_BLINK );		
+				MIR_augment_trackpattern( Page_get_selection_trackpattern( target_page, row ), NEMO_ROW_IV, MIR_BLINK );
+
+				#ifdef FEATURE_ZOOMSTEP_PLUS
+					MIR_augment_trackpattern( 	Page_get_hyperpattern(  target_page, row ), NEMO_ROW_IV, MIR_SHINE_GREEN   );
+				#endif
 				break;
 		}
 

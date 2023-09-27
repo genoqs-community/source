@@ -45,6 +45,37 @@ extern 	void 			shiftAttributeMap( 		Pagestruct* target_page,
 												unsigned int row,
 												unsigned int in_attribute,
 												unsigned char direction );
+#ifdef FEATURE_STEP_EVENT_TRACKS
+extern	unsigned char 	seek_unmasked_step_col( 	Pagestruct* target_page,
+													unsigned int row,
+													unsigned char start_pos,
+													unsigned char end_pos,
+													unsigned int skip_mask );
+
+extern unsigned char 	seek_unmasked_skip_col(		Pagestruct* target_page,
+													unsigned int row,
+													unsigned char start_pos,
+													unsigned char direction,
+													unsigned int skip_mask );
+
+extern void 			shiftSkipsFromPOS( 		Pagestruct* target_page,
+												unsigned int row,
+												unsigned char start_pos,
+												unsigned char end_pos,
+												unsigned char alt_skips,
+												unsigned int skip_mask );
+
+
+#endif
+
+
+extern 	void 			shiftAttributeMapFromPOS( 	Pagestruct* target_page,
+													unsigned int row,
+													unsigned char start_pos,
+													unsigned char end_pos,
+													unsigned int in_attribute,
+													unsigned char allow_skips,
+													unsigned int skip_mask );
 
 extern unsigned char 	row_of_track( Pagestruct* target_page, Trackstruct* target_track );
 extern void 			NEMO_Page_RMX_track( Pagestruct* target_page, unsigned char row );
@@ -234,8 +265,6 @@ void import_stepSELpattern( Pagestruct* target_page ){
 }
 
 
-
-
 // General purpose column pattern builder used by Player returns bitpattern of a column
 // Incoming column value: between 1 and 16
 unsigned int 	PAGE_get_bitpattern(	Pagestruct* target_page, unsigned int col){
@@ -249,6 +278,104 @@ unsigned int 	PAGE_get_bitpattern(	Pagestruct* target_page, unsigned int col){
 	return bitpattern;
 }
 
+
+#ifdef FEATURE_ZOOMSTEP_PLUS
+
+// This renders a matrix row as bitpattern. More efficient that columns.
+unsigned int 	Page_get_hyperpattern( Pagestruct* target_page, unsigned char row ){
+
+	unsigned char col=0;
+	unsigned int bitpattern=0;
+	unsigned char i=0;
+
+	for (col=0; col<16; col++) {
+//		if ( ( target_page->Step[row][col]->hyperTrack_ndx != 10 )
+//				&& ( Step_get_status( target_page->Step[row][col], STEPSTAT_SKIP ) == OFF ) ) {
+//			bitpattern |= (1 << (15-col) );
+//		}
+
+		if ( ( target_page->Step[row][col]->hyperTrack_ndx != 10 )
+				&& ( Step_get_status( target_page->Step[row][col], STEPSTAT_SKIP ) == OFF ) ) {
+
+			// Do not show hyperstep if hyped-track selected
+			// H-S will be shown shine_red in fill_PAGE_sel_TRACK.h
+			if (  ( my_bit_cardinality( target_page->trackSelection ) == 1 )
+						&& (G_zoom_level != zoomTRACK)  )  {
+
+				i = my_bit2ndx( target_page->trackSelection );
+
+				if ( i == target_page->Step[row][col]->hyperTrack_ndx )  {
+					//Hyped Track sel button held
+					continue;
+				}
+			}
+			bitpattern |= (1 << (15-col) );
+		}
+
+	}
+	return bitpattern;
+}
+
+
+// This renders a matrix row as bitpattern. More efficient that columns.
+unsigned int 	Page_get_trackpattern( Pagestruct* target_page, unsigned char row ){
+
+	unsigned char col=0;
+	unsigned int bitpattern=0;
+
+	for (col=0; col<16; col++) {
+		if ( (Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == ON)
+				&& ( Step_get_status( target_page->Step[row][col], STEPSTAT_SKIP ) == OFF )
+				&& ( target_page->Step[row][col]->hyperTrack_ndx == 10 )  )  {
+				// Do not add hyperstep if its Step is On
+
+			bitpattern |= (1 << (15-col) );
+		}
+	}
+	return bitpattern;
+}
+
+
+// This renders a matrix row as bitpattern. More efficient that columns.
+unsigned int 	Page_get_event_trackpattern( Pagestruct* target_page, unsigned char row ) {
+
+	unsigned char col=0;
+	unsigned int bitpattern=0;
+
+	for (col=0; col<16; col++) {
+		if ( 	( Step_get_status( target_page->Step[row][col], STEPSTAT_EVENT  ) == ON )
+			&&	( Step_get_status( target_page->Step[row][col], STEPSTAT_SKIP ) == OFF )  )  {
+
+			bitpattern |= (1 << (15-col) );
+		}
+	}
+	return bitpattern;
+}
+
+
+// This renders a matrix row as bitpattern. More efficient that columns.
+unsigned int 	Page_get_chord_trackpattern( Pagestruct* target_page, unsigned char row ) {
+
+	unsigned char col=0;
+	unsigned int bitpattern=0;
+
+	for (col=0; col<16; col++) {
+		#ifdef FEATURE_ENABLE_CHORD_OCTAVE
+		if ( 	( is_step_chord( target_page->Step[row][col] ) )
+		#else
+		if ( 	( my_bit_cardinality( target_page->Step[row][col]->chord_data & 0x7FF )>0 )
+		#endif
+			&&	( Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == ON )
+			&&  ( Step_get_status( target_page->Step[row][col], STEPSTAT_SKIP ) == OFF )
+			){
+
+			bitpattern |= (1 << (15-col) );
+		}
+	}
+	return bitpattern;
+}
+
+#else
 
 // This renders a matrix row as bitpattern. More efficient that columns.
 unsigned int 	Page_get_hyperpattern( Pagestruct* target_page, unsigned char row ){
@@ -318,7 +445,7 @@ unsigned int 	Page_get_chord_trackpattern( Pagestruct* target_page, unsigned cha
 	}
 	return bitpattern;
 }
-
+#endif
 
 
 // This renders a matrix row as bitpattern. More efficient that columns.
@@ -354,6 +481,83 @@ unsigned int 	Page_get_selectOff_trackpattern(Pagestruct* target_page, unsigned 
 	return bitpattern;
 
 }
+
+#ifdef FEATURE_STEP_SELECT_ALL
+
+// Adds all ON Steps to the current step selection...
+// ... If all Steps already in selection then Selection is erased
+
+void all_ON_stepSELpattern( Pagestruct* target_page ){
+
+	unsigned char row = 0;
+	unsigned char col = 0;
+
+	// Check if all ON Steps already Selected
+	unsigned char stepons = 0;
+	unsigned char seltons = 0;
+	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
+
+		for ( col=0; col < MATRIX_NROF_COLUMNS; col++ ){
+
+			// Is the step ON in reality?
+			if ( Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == ON ) {
+				stepons = stepons + 1;
+				// Is the Step Selected?
+				if (Step_get_status( target_page->Step[row][col], STEPSTAT_SELECT ) == ON ) {
+					seltons = seltons + 1;
+				}
+			}
+
+		} // Column iterator
+	} // Row iterator
+
+	// If all ON Steps already Selected Unselect all steps in page
+	if ( stepons == seltons ){
+
+		for (row=0; row<MATRIX_NROF_ROWS; row++){
+
+			// Clear the stepSELpattern in the page
+			target_page->stepSELpattern[target_page->stepSELpattern_ndx][row] = 0;
+
+			// Clear the selection flag for each step in page
+			for (col=0; col<MATRIX_NROF_COLUMNS; col++){
+
+				Step_set_status( target_page->Step[row][col], STEPSTAT_SELECT, OFF );
+			}
+		}
+		// Reset the counter of selected steps
+		target_page->stepSelection = OFF;
+		target_page->stepAttributeSelection = OFF;
+	}
+
+	else {
+
+		for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
+
+			for ( col=0; col < MATRIX_NROF_COLUMNS; col++ ){
+
+				// If the step is ON in reality
+				if ( Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == ON ) {
+
+					// Set the corresponding bit in the selection array
+					target_page->stepSELpattern[target_page->stepSELpattern_ndx][row] |= ( 1 << (15-col) );
+
+					// Mark the step selected
+					Step_set_status( target_page->Step[row][col], STEPSTAT_SELECT, ON );
+				}
+
+			} // Column iterator
+		} // Row iterator
+
+		// Update the counter of selected steps
+		target_page->stepSelection = get_stepSEL_cardinality( target_page );
+		target_page->stepAttributeSelection = OFF;
+
+	}
+
+}
+
+#endif
 
 #ifdef FEATURE_ENABLE_SONG_UPE
 // Return the bitpattern of the skipped steps
@@ -1703,27 +1907,25 @@ void Step_swap( Pagestruct* target_page, Stepstruct* a_step, Stepstruct* b_step 
 // Move the step in the given direction
 void Step_move( Pagestruct* target_page, unsigned char row, unsigned char col, unsigned char direction ){
 
-	unsigned char swap_col = 0;
-
 	switch( direction ){
 
 		case POS:
-			swap_col = (col + 1) % 16;
+			col = (col + 1) % 16;
 			break;
 
 		case NEG:
 			// Swap step with the left neighbour
 			if ( col == 0 ){
-				swap_col = 15;
+				col = 15;
 			}
 			else{
-				swap_col = col - 1;
+				col = col - 1;
 			}
 			break;
 	}
 
 	// Do the step swap
-	Step_swap( target_page, target_page->Step[row][col], target_page->Step[row][swap_col] );
+	Step_swap( target_page, target_page->Step[row][col], target_page->Step[row][col] );
 }
 
 void Step_zoom( 	Pagestruct* target_page,
@@ -1766,4 +1968,38 @@ void Step_zoom( 	Pagestruct* target_page,
 	G_zoom_level = zoomSTEP;
 }
 
+#ifdef FEATURE_STEP_EVENT_TRACKS
 
+void Step_rotate(Pagestruct* target_page, unsigned char current_row, unsigned char row, unsigned char start_pos, unsigned char end_pos ) {
+
+	unsigned char direction = start_pos < end_pos ? INC : DEC;
+
+	// Execute the actual map shifting
+	shiftAttributeMapFromPOS( target_page, row, end_pos, start_pos, ATTR_VELOCITY, 	 TRUE, OFF );
+	shiftAttributeMapFromPOS( target_page, row, end_pos, start_pos, ATTR_PITCH, 	 TRUE, OFF );
+	shiftAttributeMapFromPOS( target_page, row, end_pos, start_pos, ATTR_LENGTH, 	 TRUE, OFF );
+	shiftAttributeMapFromPOS( target_page, row, end_pos, start_pos, ATTR_START, 	 TRUE, OFF );
+	shiftAttributeMapFromPOS( target_page, row, end_pos, start_pos, ATTR_GROOVE, 	 TRUE, OFF );
+	shiftAttributeMapFromPOS( target_page, row, end_pos, start_pos, ATTR_MIDICC, 	 TRUE, OFF );
+	shiftAttributeMapFromPOS( target_page, row, end_pos, start_pos, ATTR_AMOUNT, 	 TRUE, OFF );
+	shiftAttributeMapFromPOS( target_page, row, end_pos, start_pos, ATTR_STATUS, 	 TRUE, OFF );
+
+	if ( 	( G_zoom_level == zoomSTEP )
+		&&	( row == target_page->stepSelectionSingleRow ) ) {
+		// Keep the coordinates of the selected step intact
+		// Update the selected step column after the shift of the rest
+		shiftStepSelectionCol( target_page, direction );
+	}
+}
+
+
+void Skip_rotate(Pagestruct* target_page, unsigned char current_row, unsigned char row, unsigned char start_pos, unsigned char end_pos ) {
+
+	//unsigned char direction = start_pos < end_pos ? INC : DEC;
+
+	// Execute the actual skip shifting
+	shiftSkipsFromPOS( target_page, row, end_pos, start_pos, TRUE, OFF );
+
+}
+
+#endif

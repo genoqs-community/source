@@ -126,15 +126,37 @@
 			if ( my_bit_cardinality( target_page->trackSelection ) == 1 ){
 				show( ELE_CHORD_SELECTOR, CHORD_SIZE_TRACK );
 			}
-			#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+			#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 			// Toggle transpose abs pitch mode
 			if (	( target_page->pitch_abs == TRUE )	){
 
 				MIR_write_dot( LED_SCALE_SEL, MIR_GREEN 	);
+				MIR_write_dot( LED_SCALE_SEL, MIR_BLINK 	);
 
 			} else {
 
 				MIR_write_dot( LED_SCALE_SEL, MIR_RED 	);
+				MIR_write_dot( LED_SCALE_SEL, MIR_BLINK 	);
 
+			}
+			#endif
+
+			#ifdef FEATURE_ZOOMSTEP_PLUS
+			// If a single track selected is a hyper-track then show the associated hyperstep in the matrix
+			if (  ( my_bit_cardinality( target_page->trackSelection ) == 1 )
+						&& (G_zoom_level != zoomTRACK)  )  {
+						// Only if not in zoomTrack
+
+				i = my_bit2ndx( target_page->trackSelection );
+
+				if ( (target_page->Track[i]->hyper >> 4) != 0x0F ) {
+
+					// Extract the coordinates of the responsible hyperstep
+					row = target_page->Track[i]->hyper >> 4;
+					col = target_page->Track[i]->hyper & 0x0F;
+
+					// Show Hyperstep in matrix shine_red
+					MIR_write_dot( Page_dotIndex( row, col ),  MIR_SHINE_RED );
+				}
 			}
 			#endif

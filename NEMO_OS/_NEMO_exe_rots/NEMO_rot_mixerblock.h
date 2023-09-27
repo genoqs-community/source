@@ -22,7 +22,10 @@
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 //
 
-
+#ifdef FEATURE_STEP_SHIFT
+// SHIFT_SKIPS
+extern unsigned char G_MixShiftSkips;
+#endif
 
 void rot_exe_MIX( unsigned char rotNdx, unsigned char direction, Pagestruct* target_page ){
 
@@ -43,7 +46,17 @@ void rot_exe_MIX( unsigned char rotNdx, unsigned char direction, Pagestruct* tar
 		// ..maybe one day. 
 		// You can get the screen that you want if the target_page->mix MasterStatus is "red"
 		// Needs more digging
+		#ifdef FEATURE_STEP_SHIFT
+		// SHIFT_SKIPS
+		// Turn-off Mix_Timer is shifting skips
+		//		if (  (  target_page->mixAttribute != NEMO_ATTR_POSITION )
+		//	&& ( G_MixShiftSkips != 1 )  )   {
+		if (  target_page->mixAttribute != NEMO_ATTR_POSITION ) {
+			start_MIX_TIMER();
+		}
+		#else
 		start_MIX_TIMER();
+		#endif
 
 		// Normalized index
 		trackNdx = shiftTrackRow + rotNdx - 11;

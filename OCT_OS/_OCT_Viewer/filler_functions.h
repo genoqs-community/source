@@ -2164,7 +2164,91 @@ void display_stepLEN_multiplier( Stepstruct* target_step ){
 }
 
 
+#ifdef FEATURE_TEMPO_MULT_PLUS
 
+// Show the Step LEN multiplier value at LEN row
+void display_stepLEN_multiplier_At_Row( Stepstruct* target_step )  {
+
+	unsigned char i = 0;
+	// target_step->LEN_multiplier )
+	unsigned char j = ( (target_step->event_data & 0xF0) >> 4 );
+
+	for ( i = 1; i < 9; i ++ ) {
+		// Write Step LEN Multiplier in LEN row
+		//13, 24, 35, 46, 57, 68, 79, 90
+		MIR_write_dot( ( ( i * 11 ) + 2), MIR_RED );
+
+		if ( j != i ) {
+			// Step LEN Multiplier shown RED, other options shown ORANGE
+			MIR_write_dot( ( ( i * 11 ) + 2), MIR_GREEN );
+		}
+
+	}
+}
+
+// Show the Track Tempo multiplier value at MCH row
+void display_Track_G_master_tempoMUL_At_Row( Trackstruct* target_track )  {
+
+	unsigned char i = 0;
+
+	unsigned char j = target_track->attr_TEMPOMUL;
+	unsigned char j_div = target_track->attr_TEMPOMUL_SKIP & 0x0F;
+
+	for ( i = 1; i <= 16; i ++ ) {
+
+		if ( ( i > 8 ) && ( i < 15 ) ) continue;
+		// Write Track Tempo MUL in MCH row
+		//20, 31, 42, 53, 64, 75, 86, 97 ALSO 174 & 185
+
+		if ( ( j == 1 ) && ( j_div != 0) ) {
+			// Tempo Divisor
+			if ( i == 1 )  {
+				MIR_write_dot( ( ( i * 11 ) + 9), MIR_GREEN );
+				MIR_write_dot( ( ( i * 11 ) + 9), MIR_RED );
+			}
+			else {
+				MIR_write_dot( ( ( i * 11 ) + 9), MIR_GREEN );
+				if ( j_div +1 != i ) {
+					// Tempo Divisor shown GREEN, other options shown ORANGE
+					MIR_write_dot( ( ( i * 11 ) + 9), MIR_RED );
+				}
+			}
+		}
+
+		if ( j == 0 )  {
+			// Paused Track
+			if ( i == 1 ) {
+				MIR_write_dot( ( ( i * 11 ) + 9), MIR_GREEN );
+				MIR_write_dot( ( ( i * 11 ) + 9), MIR_RED );
+				MIR_write_dot( ( ( i * 11 ) + 9), MIR_BLINK );
+			}
+			else {
+				MIR_write_dot( ( ( i * 11 ) + 9), MIR_GREEN );
+				MIR_write_dot( ( ( i * 11 ) + 9), MIR_RED );
+			}
+		}
+
+		if ( ( j > 0 ) && ( j_div == 0) ) {
+			if ( j == 25 ) {
+				// Special case ( 1/1.5 divisor)
+				MIR_write_dot( ( ( i * 11 ) + 9), MIR_GREEN );
+				if ( i != 15 ) {
+					MIR_write_dot( ( ( i * 11 ) + 9), MIR_RED );
+				}
+			}
+			else {
+			// x1 or Tempo Multiplier
+				MIR_write_dot( ( ( i * 11 ) + 9), MIR_RED );
+				if ( j != i ) {
+					// Tempo Multiplier shown RED, other options shown ORANGE
+					MIR_write_dot( ( ( i * 11 ) + 9), MIR_GREEN );
+				}
+			}
+		}
+	}
+}
+
+#endif
 
 // Displays the value of the tempo multiplier in given track.
 // Logic is on book pg. 256 ff

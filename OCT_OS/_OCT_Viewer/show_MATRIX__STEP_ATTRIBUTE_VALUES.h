@@ -39,6 +39,26 @@
 		MIR_write_numeric_H( target_page->Step[row][col]->attr_PIT, 	1);
 
 		// LENGTH
+		#ifdef FEATURE_TEMPO_MULT_PLUS
+
+		MIR_write_dot( LED_TEMPO, MIR_RED );
+		MIR_write_dot( LED_TEMPO, MIR_GREEN );
+
+		if ( is_pressed_key( KEY_TEMPO ))  {
+			// If Tempo Key held show Step LEN Multiplier in POS row
+			display_stepLEN_multiplier_At_Row( target_page->Step[row][col] );
+		}
+		else  {
+			if ( target_page->Step[row][col]->attr_LEN == LEGATO ){
+				// Step is set to play legato, show legato flag
+				MIR_write_trackpattern ( 0x0f, 2, MIR_GREEN);
+			}
+			else {
+				// The common case is when the length value is shown
+				MIR_write_length_H( target_page->Step[row][col]->attr_LEN, 	2);
+			}
+		}
+		#else
 		if ( target_page->Step[row][col]->attr_LEN == LEGATO ){
 
 			// Step is set to play legato, show legato flag
@@ -48,7 +68,7 @@
 			// The common case is when the length value is shown
 			MIR_write_length_H( target_page->Step[row][col]->attr_LEN, 	2);
 		}
-
+		#endif
 		// START
 		MIR_show_startbar_H (target_page->Step[row][col]->attr_STA, 		3);
 
@@ -145,14 +165,52 @@
 									9,
 									MIR_RED   );
 
+
+		#ifdef FEATURE_ZOOMSTEP_PLUS  // Includes FIX_SHOW_HYPER (modified)
+
+		MIR_augment_trackpattern( Page_get_selection_trackpattern( target_page, row),
+									9, MIR_BLINK );
+
+		if (  (Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == OFF )
+			&& (target_page->Step[row][col]->hyperTrack_ndx == 10 )  )   {
+				// Selected step is off
+				// Color it red if it is off anyway
+				MIR_write_dot( Page_dotIndex( 9, col ),  MIR_RED );
+		}
+
+
+		if (target_page->Step[row][col]->hyperTrack_ndx == 10 ) {
+			MIR_augment_trackpattern( 	Page_get_hyperpattern(  target_page, row ),
+									9, MIR_SHINE_GREEN   );
+		}
+		else {
+			if ( Step_get_status( target_page->Step[row][col], STEPSTAT_SKIP ) == OFF ) {
+				// Selected step is a hyperstep make it shine red
+				MIR_write_dot( Page_dotIndex( 9, col ),  MIR_SHINE_RED );
+			}
+			// Show any other hypersteps
+			int hcol = 0;
+			for (hcol=0; hcol<16; hcol++) {
+				if (  (  (hcol != col) && ( target_page->Step[row][hcol]->hyperTrack_ndx != 10 )  )
+						&& ( Step_get_status( target_page->Step[row][hcol], STEPSTAT_SKIP ) == OFF )  )  {
+
+					MIR_write_dot( Page_dotIndex( 9, hcol ),  MIR_SHINE_GREEN );
+				}
+			}
+		}
+
+
+		#else
 		// Blink the selected step
 		MIR_augment_trackpattern( Page_get_selection_trackpattern( target_page, row ),
-									9,
-									MIR_BLINK );
+								9, MIR_BLINK );
 		if (Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == OFF ){
 			// Color it red if it is off anyway
 			MIR_write_dot( Page_dotIndex( 9, col ),  MIR_RED );
 		}
+		#endif
+
+
 
 
 

@@ -57,7 +57,8 @@ void step_enter_range( 				signed char* target_val,
 
 
 // Value entry in Step mode
-void step_enter_value_PITVELAMT( 	signed char* target_val,
+void step_enter_value_PITVELAMT( 	unsigned char target_attr,
+									signed char* target_val,
 									signed char target_max,
 									signed char target_default,
 									unsigned int keyNdx,
@@ -102,10 +103,42 @@ void step_enter_value_PITVELAMT( 	signed char* target_val,
 				sign = POS;
 			}
 		}
+		#ifdef FEATURE_CLICK_PLUS
+		else {
+			switch( target_attr ) {
+			case NEMO_ATTR_PITCH:
+				if( col == 13 ) {
+					*target_val = target_default;
+				} else if ( col == 14 && ( *target_val >= -target_max + 12 ) ) {
+					// This is the octave- (8vb) button
+					*target_val -= 12;
+				} else if ( col == 15 && ( *target_val <= target_max - 12 ) ) {
+					// This is the octave- (8vb) button
+					*target_val += 12;
+				}
+				break;
+			case NEMO_ATTR_AMOUNT:
+				if( col == 13 || col == 14 ) {
+					*target_val = target_default;
+				}
+				#ifdef FEATURE_STEP_EVENT_TRACKS
+				else if ( col == 15 )  {
+					// Write the value -127 (Eff Step Mask) into the attribute
+					*target_val = -127;
+				}
+				#endif
+				break;
+			default:
+				*target_val = target_default;
+				break;
+			}
+		}
+		#else
 		else{
 			// Write the default value into the attribute
 			*target_val = target_default;
 		}
+		#endif
 	}
 	// SINGLE CLICK
 	else if (DOUBLE_CLICK_TARGET == 0) {
@@ -142,7 +175,7 @@ void step_enter_value_PITVELAMT( 	signed char* target_val,
 				sign = POS;
 			}
 		}
-		else if ( col == 15 ){
+		else if ( col == 12 ){
 			// Modify the sign of the number
 			*target_val *= -1 ;
 		}
@@ -309,6 +342,23 @@ void step_enter_value_MCC( 	signed char* target_val,
 }
 
 
+void step_event_attribute_toggle( Stepstruct* target_step, unsigned char attribute ) {
+	// Click on an active event - turn the event OFF
+	if (	( ( attribute ) == (target_step->event_data & 0x0F) )
+		&&	( Step_get_status( target_step, STEPSTAT_EVENT ) == ON )
+		&& 	( NEMO_step_VER < VER_RANGE )
+		){
+
+		Step_set_status( target_step, STEPSTAT_EVENT,  OFF );
+	} else{
+
+		// Remember the pressed attribute..
+		target_step->event_data = (target_step->event_data & 0xF0 ) | ( attribute );
+
+		// ..and turn the event status bit ON
+		Step_set_status( target_step, STEPSTAT_EVENT, ON );
+	}
+}
 
 
 // Key execution in STEP mode
@@ -324,8 +374,63 @@ void key_exec_STEP( unsigned int keyNdx ){
 
 	// ..and on the selected step
 	Stepstruct* target_step = target_page->Step	[target_page->stepSelectionSingleRow]
-												[target_page->stepSelectionSingleCol];
+	                                           	[target_page->stepSelectionSingleCol];
+	#ifdef FEATURE_STEP_EVENT_TRACKS
+	//
+	// TRACK SELECTORS
+	//
+	if ((keyNdx > 0) && (keyNdx <= 10)) {
+		if( 	( ( NEMO_step_VER == VER_EVENT )
+			||	( NEMO_step_VER == VER_RANGE ) ) ) {
+			unsigned char event_data_attr = ( target_step->event_data & 0x0F ) + 1;
+			// Initialize the event_offsets
+			init_track_event_offsets( target_page->Track[ target_page->stepSelectionSingleRow ] );
+			// Now set the event status..
+			if (target_page->stepSelection == 1){
 
+				switch( keyNdx ){
+					case 1: 	temp = 10;	break;	// EVENT_FLAG_TRACK_MUTE
+					case 2: 	temp = 11;	break;	// EVENT_FLAG_TRACK_SOLO
+					case 3: 	temp = 12;	break;	// EVENT_FLAG_TRACK_RECORD
+					case 4: 	temp = 13;	break;	// EVENT_FLAG_TRACK_PAUSE
+					default:	temp = 20;	break;	// not a valid key press
+				}
+
+				if ( event_data_attr < EVENT_FLAG_TRACK_MUTE ) {
+					target_step->attr_AMT = 0;
+				} else {
+					// D O U B L E - C L I C K  C O N S T R U C T
+					// DOUBLE CLICK SCENARIO
+					if ((DOUBLE_CLICK_TARGET == keyNdx)
+							&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
+
+						// Double click code
+						// ...
+						// Flag Flip Flop
+						TOGGLE_BIT( target_step->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 );
+					} // end of double click scenario
+
+					// SINGLE CLICK SCENARIO
+					else if (DOUBLE_CLICK_TARGET == 0) {
+
+							DOUBLE_CLICK_TARGET = keyNdx;
+							DOUBLE_CLICK_TIMER = ON;
+							// Start the Double click Alarm
+							cyg_alarm_initialize(
+									doubleClickAlarm_hdl,
+									cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+									DOUBLE_CLICK_ALARM_TIME );
+
+						// Single click code
+						// ...
+					}
+				}
+				step_event_attribute_toggle( target_step, temp );
+			}
+		}
+		return;
+	}
+	#endif
 	//
 	// MATRIX
 	//
@@ -782,4 +887,19 @@ void key_exec_STEP( unsigned int keyNdx ){
 	#endif
 		}
 	}
+
+	#ifdef FEATURE_ZOOMSTEP_PLUS
+	if ( keyNdx == KEY_MUTE_MASTER ){
+		row = target_page->stepSelectionSingleRow;
+		col = target_page->stepSelectionSingleCol;
+
+		if (  (  Step_get_status( target_page->Step[row][col], STEPSTAT_SKIP )  ) == OFF )  {
+			Step_set_status( target_page->Step[row][col], STEPSTAT_SKIP, ON );
+		}
+		else {
+			Step_set_status( target_page->Step[row][col], STEPSTAT_SKIP, OFF );
+		}
+
+	}
+	#endif
 }

@@ -178,11 +178,34 @@
 				if ( G_zoom_level == zoomSTEP ){
 
 					// Event model: show selected attribute in step
+					#ifdef FEATURE_STEP_EVENT_TRACKS
+					unsigned char event_data_attr = APPLY_MASK( target_page->Step [target_page->stepSelectionSingleRow][target_page->stepSelectionSingleCol]->event_data, 0x0F ) + 1;
+					// Finally point out the event in the row
+					if( 	( ( event_data_attr == NEMO_ATTR_POSITION ) || ( event_data_attr == NEMO_ATTR_DIRECTION ) )
+						// POS OR DIR ALT MODE
+					&& 	( CHECK_BIT( target_page->Step[ target_page->stepSelectionSingleRow ]
+													  [ target_page->stepSelectionSingleCol ]->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) ) ) {
+
 					MIR_write_buttool (
 						LHS,
 						1 << (target_page->Step [target_page->stepSelectionSingleRow]
 												[target_page->stepSelectionSingleCol]->event_data & 0x0F),
-						MIR_BLINK );
+												MIR_SHINE_GREEN );
+					} else {
+						MIR_write_buttool (
+							LHS,
+							1 << (target_page->Step [target_page->stepSelectionSingleRow]
+													[target_page->stepSelectionSingleCol]->event_data & 0x0F),
+													MIR_BLINK );
+					}
+					#else
+					MIR_write_buttool (
+						LHS,
+						1 << (target_page->Step [target_page->stepSelectionSingleRow]
+												[target_page->stepSelectionSingleCol]->event_data & 0x0F),
+												MIR_BLINK );
+					#endif
+
 //					MIR_write_buttool (
 //						LHS,
 //						1 << (target_page->Step [target_page->stepSelectionSingleRow]

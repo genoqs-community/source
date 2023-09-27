@@ -269,7 +269,7 @@ void rot_exe_EDIT( 	unsigned char rotNdx,
 void rot_exe_MIX2EDIT( 	unsigned char rotNdx,
 							unsigned char direction,
 							Pagestruct* target_page ) {
-#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 	// EDIT_TIMER handling
 	//
 	// Reset timer on every turn, so it doesnt run out

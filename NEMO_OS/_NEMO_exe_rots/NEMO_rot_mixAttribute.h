@@ -218,9 +218,23 @@
 				// control the quickturn timer
 				j = ON;
 
+				#ifdef FEATURE_STEP_SHIFT
+				//SHIFT_SKIPS
+				if (  (target_page->mixAttribute == NEMO_ATTR_POSITION)
+					&& ( G_MixShiftSkips == 0 )  ) {
+						Page_wrap_track (target_page, trackNdx, direction, 1);
+				}
+				// Mix Rots will Shift Skip in Track
+				if (  (target_page->mixAttribute == NEMO_ATTR_POSITION)
+					&& ( G_MixShiftSkips == 1 )  ) {
+					shiftSkips( target_page, trackNdx, direction );
+				}
+
+				#else
 				if (target_page->mixAttribute == NEMO_ATTR_POSITION){
 					Page_wrap_track (target_page, trackNdx, direction, 1);
 				}
+				#endif
 
 				if (   (target_page->mixAttribute == NEMO_ATTR_START)
 					 ||(target_page->mixAttribute == NEMO_ATTR_LENGTH) ) {
@@ -279,9 +293,22 @@
 					// Modify all tracks that are not selected
 					if (i != trackNdx) {
 					
+						#ifdef FEATURE_STEP_SHIFT
+						//SHIFT_SKIPS
+						if (  (target_page->mixAttribute == NEMO_ATTR_POSITION)
+							&& ( G_MixShiftSkips == 0 )  ) {
+								Page_wrap_track( target_page, i, direction^0x03, 1 );
+						}
+						// Mix Rots will Shift Skip in Track
+						if (  (target_page->mixAttribute == NEMO_ATTR_POSITION)
+							&& ( G_MixShiftSkips == 1 )  ) {
+							shiftSkips( target_page, trackNdx, direction );
+						}
+						#else
 						if (target_page->mixAttribute == NEMO_ATTR_POSITION){
 							Page_wrap_track( target_page, i, direction^0x03, 1 );
 						}
+						#endif
 					
 						if (   (target_page->mixAttribute == NEMO_ATTR_START)
 							 ||(target_page->mixAttribute == NEMO_ATTR_LENGTH) ) {

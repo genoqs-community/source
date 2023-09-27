@@ -65,8 +65,6 @@ unsigned char compute_event_offset( unsigned char current_value,
 }
 
 
-
-
 // Perform the event programmed in the in step onto the given track
 void perform_step_event( 	Stepstruct* in_step,
 							Trackstruct* target_track,
@@ -74,16 +72,20 @@ void perform_step_event( 	Stepstruct* in_step,
 							unsigned char in_row,
 							unsigned char locator){
 
-	unsigned char direction = 0;
 
 	unsigned char* target_val = NULL;
 	unsigned char current_value 	= 0;
-	unsigned char min_value		 	= 0;
+	signed short min_value		 	= 0;
 	unsigned char max_value			= 0;
 	unsigned char current_offset	= 0;
 	unsigned char max_offset		= 0;
 	signed char event_value			= 0;
 	unsigned char event_val_rnd		= FALSE;
+	unsigned char event_data_attr	=  APPLY_MASK( in_step->event_data, 0x0F ) + 1;
+
+	#ifdef FEATURE_STEP_EVENT_TRACKS
+	unsigned char is_altmode = CHECK_BIT( in_step->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) ? TRUE : FALSE;
+	#endif
 
 	signed char dice_amount_offset = 0;
 
@@ -107,24 +109,30 @@ void perform_step_event( 	Stepstruct* in_step,
 	// Continue with 0 / void events, because they set the event offset to 0.
 
 	// POSITION attribute requires special handling
-	if (	(( in_step->event_data & 0x0F) + 1 ) == ATTR_POSITION ){
-
+	if ( event_data_attr  == ATTR_POSITION ){
+		#ifdef FEATURE_STEP_EVENT_TRACKS
+		// Perform step events tracks
+		perform_step_event_tracks( target_page, in_row );
+		#else
+		unsigned char direction = 0;
 		// Set the direction
 		direction = INC;
 		if ( event_value < 0 ) direction = DEC;
-
 		Page_wrap_track( 	target_page,
 							in_row,
 							direction,
 							abs( event_value ) %16 );
-
+		#endif
 		// We are done for POSITION event, so return - other attributes are handled below
 		return;
 	}
 
-
+	#ifdef FEATURE_STEP_EVENT_TRACKS
+	// Perform step events tracks
+	perform_step_event_tracks( target_page, in_row );
+	#endif
 	// All other attribute events - make the value assignments for final number crunching..
-	switch( (in_step->event_data & 0x0F) + 1 ){
+	switch( event_data_attr ){
 
 		#ifdef NEMO
 			case NEMO_ATTR_VELOCITY:
@@ -201,13 +209,24 @@ void perform_step_event( 	Stepstruct* in_step,
 
 
 		case ATTR_DIRECTION:
-
+			#ifdef FEATURE_STEP_EVENT_TRACKS
+			if ( !is_altmode ) {
+				target_val 		= &target_track->event_offset[ATTR_DIRECTION];
+				current_value	= target_track->attr_DIR;
+				min_value		= TRACK_MIN_DIRECTION;
+				max_value		= TRACK_MAX_DIRECTION;
+				current_offset	= target_track->event_offset[ATTR_DIRECTION];
+				max_offset		= target_track->event_max[ATTR_DIRECTION];
+			}
+			#else
 			target_val 		= &target_track->event_offset[ATTR_DIRECTION];
 			current_value	= target_track->attr_DIR;
 			min_value		= TRACK_MIN_DIRECTION;
 			max_value		= TRACK_MAX_DIRECTION;
 			current_offset	= target_track->event_offset[ATTR_DIRECTION];
 			max_offset		= target_track->event_max[ATTR_DIRECTION];
+			#endif
+
 
 			break;
 
@@ -279,7 +298,7 @@ void perform_step_event( 	Stepstruct* in_step,
 
 	// An event value of 0 resets the event offset to 0.
 	if ( ( event_value == 0 )
-	&& ( ( ( in_step->event_data & 0x0F) + 1 ) != ATTR_AMOUNT ) ){
+	&& ( event_data_attr != ATTR_AMOUNT ) ){
 
 		// As suggested by Pieter
 		*target_val = 0;

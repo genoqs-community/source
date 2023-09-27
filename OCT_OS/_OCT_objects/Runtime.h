@@ -113,7 +113,7 @@ typedef struct stepstruct{
 	 * 			   0			  EVENT OFF				(EVENT)
 	 * 			   1			  EVENT ON				(EVENT)
 	 * 		  |-5|
-	 * 			0				  empty..
+	 * 			0				  STEP_EVENT_TRACK_ALT_MODE
 	 * 			1
 	 *
 	 * 	   |-6|
@@ -315,7 +315,12 @@ typedef struct trackstruct {
 
 	// Holds the shapeindex of the flows per attribute
 	unsigned char flow_shape[10];
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+
+	#ifdef FEATURE_FIX_CBB_PAUSE
+	unsigned char	prepause_TEMPOMUL;	// Store TEMPOMUL before Track Pause - NOT PERSISTENT
+	#endif
+
+	#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 	unsigned char attr_EMISC;			//ephemeral misc
 	unsigned char attr_GST; 			//PIT ghost (on track select) attribute
 	// attr_STATUS is transpose in channel
@@ -482,7 +487,7 @@ typedef struct pagestruct{
 
 	// Store of the step selection patterns in the page. 16 bits per track.
 	unsigned short stepSELpattern[5][ MATRIX_NROF_ROWS ];
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 	// Transpose pitch absolute mode toggle
 	unsigned char pitch_abs;
 	#endif

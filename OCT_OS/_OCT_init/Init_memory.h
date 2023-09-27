@@ -769,7 +769,7 @@ void PAGE_init (Pagestruct* target_page, pageid_t pageId, booln firstInitBo ){
 // #else
 	target_page->CHAINS_PLAY_HEAD = FALSE;
 // #endif
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 	target_page->pitch_abs = FALSE;
 	#endif
 }

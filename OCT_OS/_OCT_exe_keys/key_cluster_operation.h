@@ -25,14 +25,14 @@
 
 
 // apply a track mute toggle for a single page
-unsigned short apply_page_track_mute( Pagestruct* target_page, Trackstruct* current_track, unsigned short*	trackMutepattern ){
+unsigned short apply_page_track_pattern( Pagestruct* target_page, Trackstruct* current_track, unsigned short*	trackPattern ){
 
 	// MUTE operation depending on the chainstatus - Head or Segment
 	// Head: Check the chain status: mute all tracks in the same chain (new model)
 	// Segment: each track handled on its own.
 
 	unsigned char temp;
-	unsigned short mutepattern = *trackMutepattern;
+	unsigned short pattern = *trackPattern;
 
 	// Depending on the way we choose the track base..
 	switch( target_page->CHAINS_PLAY_HEAD ){
@@ -45,21 +45,21 @@ unsigned short apply_page_track_mute( Pagestruct* target_page, Trackstruct* curr
 			// Loop through the chain of the selected track and mute all chain tracks
 			int i;
 			for ( i=0; i < temp; i++ ){
-				mutepattern ^= ( 1 << row_of_track( target_page, current_track ));
+				pattern ^= ( 1 << row_of_track( target_page, current_track ));
 				current_track = current_track->chain_data[NEXT];
 			}
 			break;
 
 		// Act only on the individual track
 		case FALSE:
-			mutepattern ^=
+			pattern ^=
 				( 1 << row_of_track( target_page, current_track ));
 			break;
 	}
 
-	*trackMutepattern = mutepattern;
+	*trackPattern = pattern;
 
-	return mutepattern;
+	return pattern;
 }
 
 // Computers target page cluster start index (or if not clustered own page index)

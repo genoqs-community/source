@@ -91,7 +91,22 @@
 			}
 			// MIXTGT_ATR mode
 			else if (target_page->mixTarget == 10) {
-
+				#ifdef FEATURE_STEP_SHIFT
+				// SHIFT_SKIPS
+				// Toggle between ATTR_POSITION and Shift Skips
+				if ( ( target_page->mixAttribute == ATTR_POSITION ) && ( keyNdx == 5 ) ) {
+					G_MixShiftSkips ^= 1;
+				}
+				else {
+					// Edit MIX ATTRIBUTE - exit if same attribute selected
+					if (target_page->mixAttribute == keyNdx) {
+						G_zoom_level = zoomPAGE;
+					}
+					else {
+						target_page->mixAttribute = keyNdx;
+					}
+				}
+				#else
 				// Edit MIX ATTRIBUTE - exit if same attribute selected
 				if (target_page->mixAttribute == keyNdx) {
 
@@ -101,6 +116,7 @@
 
 					target_page->mixAttribute = keyNdx;
 				}
+				#endif
 			}
 		}
 	}

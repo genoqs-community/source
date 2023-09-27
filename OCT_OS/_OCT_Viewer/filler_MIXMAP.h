@@ -55,6 +55,15 @@
 				// Selected attribute
 				show( ELE_TRACK_SELECTORS, MIX_ATTRIBUTE_SELECTED );
 
+				#ifdef FEATURE_STEP_SHIFT
+				// SHIFT_SKIPS
+				if (  (  target_page->mixAttribute == ATTR_POSITION )
+							&& ( G_MixShiftSkips == 1 )  )   {
+
+					MIR_write_dot( target_page->mixAttribute,	MIR_SHINE_RED);
+				}
+				#endif
+
 				// ALIGN LED
 				MIR_write_dot( LED_ALIGN, MIR_GREEN );
 				break;

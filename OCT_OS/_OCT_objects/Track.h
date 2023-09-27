@@ -51,8 +51,13 @@ void Track_soft_init( Trackstruct* target_track ){
 	target_track->attr_CCAMT		= 0;
 	target_track->attr_TEMPOMUL			= 1;
 	target_track->attr_TEMPOMUL_SKIP 	= 0;
+
+	#ifdef FEATURE_FIX_CBB_PAUSE
+		target_track->prepause_TEMPOMUL = 1;
+	#endif
+
 	target_track->attr_MISC      	= (1 << 2);		// sets the chord bit
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 	target_track->attr_EMISC		= 0;
 	target_track->attr_STATUS		= TRACK_DEF_MIDITCH;
 	target_track->attr_GST 			= TRACK_DEF_PITCH;
@@ -61,20 +66,20 @@ void Track_soft_init( Trackstruct* target_track ){
 	#ifdef FEATURE_ENABLE_SONG_UPE
 	target_track->ctrl_offset = 0;
 	#endif
-		#ifdef EVENTS_FACTORIZED
+	#ifdef EVENTS_FACTORIZED
 	target_track->event_max[ATTR_VELOCITY]	= TRACK_MAX_VELFACTOR;
-		#endif // EVENTS_FACTORIZED
-		#ifdef EVENTS_ABSOLUTE
+	#endif // EVENTS_FACTORIZED
+	#ifdef EVENTS_ABSOLUTE
 	target_track->event_max[ATTR_VELOCITY]	= TRACK_MAX_VELOCITY;
-		#endif // EVENTS_ABSOLUTE
+	#endif // EVENTS_ABSOLUTE
 	target_track->event_offset[ATTR_VELOCITY] = 0;
 
-		#ifdef EVENTS_FACTORIZED
+	#ifdef EVENTS_FACTORIZED
 	target_track->event_max[ATTR_PITCH]		= TRACK_MAX_PITFACTOR;
-		#endif // EVENTS_FACTORIZED
-		#ifdef EVENTS_ABSOLUTE
+	#endif // EVENTS_FACTORIZED
+	#ifdef EVENTS_ABSOLUTE
 	target_track->event_max[ATTR_PITCH]		= TRACK_MAX_PITCH;
-		#endif // EVENTS_ABSOLUTE
+	#endif // EVENTS_ABSOLUTE
 
 	target_track->event_offset[ATTR_PITCH]	= 0;
 
@@ -103,6 +108,25 @@ void Track_soft_init( Trackstruct* target_track ){
 	target_track->event_max[ATTR_MIDICH]	= TRACK_DEF_RANGE_MCH;
 	target_track->event_offset[ATTR_MIDICH]	= 0;
 
+	#ifdef FEATURE_STEP_EVENT_TRACKS
+	target_track->event_max[EVENT_FLAG_TRACK_MUTE]		= TRACK_DEF_RANGE_EVENT;
+	target_track->event_offset[EVENT_FLAG_TRACK_MUTE]	= 1;
+
+	target_track->event_max[EVENT_FLAG_TRACK_SOLO]		= TRACK_DEF_RANGE_EVENT;
+	target_track->event_offset[EVENT_FLAG_TRACK_SOLO]	= 1;
+
+	target_track->event_max[EVENT_FLAG_TRACK_RECORD]	= TRACK_DEF_RANGE_EVENT;
+	target_track->event_offset[EVENT_FLAG_TRACK_RECORD]	= 1;
+
+	target_track->event_max[EVENT_FLAG_TRACK_PAUSE]	= TRACK_DEF_RANGE_EVENT;
+	target_track->event_offset[EVENT_FLAG_TRACK_PAUSE]	= 1;
+
+	target_track->event_max[EVENT_FLAG_TRACK_ROTATE]	= TRACK_DEF_RANGE_EVENT;
+	target_track->event_offset[EVENT_FLAG_TRACK_ROTATE]	= 1;
+
+	// POS Shift default single track (legacy)
+	target_track->event_max[ATTR_POSITION]	= TRACK_DEF_RANGE_EVENT;
+	#endif
 
 	// For the MAP Attributes only: Index into the factoring array
 	target_track->VEL_factor				= TRACK_DEF_VELFACTOR;
@@ -157,7 +181,7 @@ void Track_hard_init( Trackstruct* target_track, trackid_t trackId ){
 	target_track->chain_data[PLAY] = target_track;
 
 	// Initialization sequence
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 	target_track->attr_STATUS 		= TRACK_DEF_MIDITCH;
 	#else
 	target_track->attr_STATUS 		= OFF;
@@ -244,3 +268,16 @@ void Track_set_MISC( 			Trackstruct* target_track,
 }
 
 
+#ifdef FEATURE_FIX_CBB_PAUSE
+	void Track_schedule_pause( Trackstruct* target_track ) {
+
+		CLEAR_BIT( target_track->prepause_TEMPOMUL, SCHEDULE_UNPAUSE );
+		SET_BIT( target_track->prepause_TEMPOMUL, SCHEDULE_PAUSE );
+	}
+
+	void Track_schedule_unpause( Trackstruct* target_track ) {
+
+		CLEAR_BIT( target_track->prepause_TEMPOMUL, SCHEDULE_PAUSE );
+		SET_BIT( target_track->prepause_TEMPOMUL, SCHEDULE_UNPAUSE );
+	}
+#endif

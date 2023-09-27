@@ -54,7 +54,8 @@
 		tap_step( target_page );
 
 	} // TAP KEY
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+
+	#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 	// x2 - Toggle transpose abs pitch mode
 	if (	( keyNdx == KEY_SCALE_SEL )
 		&&	( target_page->trackSelection != 0 )	){
@@ -63,6 +64,7 @@
 
 	}
 	#endif
+
 	// TRACK "zoom" if single selection
 	if (keyNdx == KEY_ZOOM_TRACK) {
 
@@ -590,14 +592,30 @@
 							STEPSTAT_TOGGLE == ON )
 						){
 
+						#ifdef FEATURE_FIX_CBB_PAUSE
+						if ( target_page->Track[i]->attr_TEMPOMUL == 0 )  {
+							target_page->Track[i]->attr_TEMPOMUL = target_page->Track[i]->prepause_TEMPOMUL & 0x0F;
+							target_page->Track[i]->prepause_TEMPOMUL = 1;
+						}
+						#else
 						target_page->Track[i]->attr_TEMPOMUL = 1;
+						#endif
 
 						PLAYER_preview_step(
 							target_page, i, target_page->Track[i]->attr_LOCATOR-1 );
 					}
 
 					// Finally pause the track: tempomul = 0
+					#ifdef FEATURE_FIX_CBB_PAUSE
+					// Save stored Track Tempomul to prepause_TEMPOMUL if not already paused
+					if ( target_page->Track[i]->attr_TEMPOMUL != 0 ) {
+						target_page->Track[i]->prepause_TEMPOMUL = target_page->Track[i]->attr_TEMPOMUL;
+						target_page->Track[i]->attr_TEMPOMUL = 0;
+					}
+					#else
 					target_page->Track[i]->attr_TEMPOMUL = 0;
+					#endif
+
 				}
 			}
 			break;
@@ -620,11 +638,20 @@
 
 				// UN-PAUSE the tracks in Track selection
 				for ( i=0; i<MATRIX_NROF_ROWS; i++ ){
-
-					// Finally pause the track: tempomul = 0
-					if ( target_page->Track[i]->attr_TEMPOMUL == 0 ){
-						target_page->Track[i]->attr_TEMPOMUL = 1;
+					// Finally only unpause the track if it is part of the Selection
+					if ( ( target_page->trackSelection & (1<<i) )
+						// Locator will be at 0 if sequencer is started with track already paused
+						&& ( target_page->Track[i]->attr_TEMPOMUL == 0 )  )  {
+						#ifdef FEATURE_FIX_CBB_PAUSE
+						Track_schedule_unpause( target_page->Track[i] );
+						#else
+						// Finally un-pause the track: tempomul = 0
+						if ( target_page->Track[i]->attr_TEMPOMUL == 0 ){
+							target_page->Track[i]->attr_TEMPOMUL = 1;
+						}
+						#endif
 					}
+
 				}
 			}
 			break;

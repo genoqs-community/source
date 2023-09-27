@@ -50,6 +50,52 @@ void unarm_page_otm_operations( Pagestruct* target_page ){
 	}
 }
 
+void apply_page_mute_pattern_operation_otm ( Pagestruct* target_page, unsigned short pattern, unsigned char operation_mask ) {
+
+	unsigned char row = target_page->pageNdx % 10;
+	// d_iag_printf( "A>row: %u - OTM Operation: %b - pattern: %b - OTM Mute: %b - Page Mute: %b - OTM Solo: %b - Page Solo: %b\n", row, G_on_the_measure_operation[row], pattern, G_on_the_measure_pattern[row][OPERATION_MUTE], target_page->trackMutepattern, G_on_the_measure_pattern[row][OPERATION_SOLO], target_page->trackSolopattern );
+	SET_MASK( G_on_the_measure_operation[row], G_on_the_measure_operation[row] | operation_mask );
+	G_on_the_measure_pattern_pageNdx[row] = target_page->pageNdx;
+
+	unsigned char mute_armed = CHECK_BIT( G_on_the_measure_operation[row], OPERATION_MUTE );
+	unsigned char solo_armed = CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO );
+
+	if ( CHECK_BIT( operation_mask, OPERATION_MUTE ) ) {
+		G_on_the_measure_pattern[row][OPERATION_MUTE] = pattern;
+	} else {
+		G_on_the_measure_pattern[row][OPERATION_SOLO] = pattern;
+	}
+
+	if ( mute_armed && G_on_the_measure_pattern[row][OPERATION_MUTE] == target_page->trackMutepattern ) {
+		unarm_page_otm_operation(target_page, OPERATION_MUTE );
+	}
+	if ( solo_armed && G_on_the_measure_pattern[row][OPERATION_SOLO] == target_page->trackSolopattern ) {
+		unarm_page_otm_operation(target_page, OPERATION_SOLO );
+	}
+	// d_iag_printf( "B>row: %u - OTM Operation: %b - pattern: %b - OTM Mute: %b - Page Mute: %b - OTM Solo: %b - Page Solo: %b\n", row, G_on_the_measure_operation[row], pattern, G_on_the_measure_pattern[row][OPERATION_MUTE], target_page->trackMutepattern, G_on_the_measure_pattern[row][OPERATION_SOLO], target_page->trackSolopattern );
+}
+
+void apply_page_mute_pattern_operation_direct ( Pagestruct* target_page, unsigned short pattern, unsigned char operation_mask ) {
+
+	unarm_page_otm_operation(target_page, OPERATION_MUTE );
+	unarm_page_otm_operation(target_page, OPERATION_SOLO );
+	if ( page_is_selected_in_MAC_bank( target_page ) && target_page->page_clear == OFF ) {
+		apply_page_cluster_mute_pattern( target_page, pattern, operation_mask );
+	} else if ( CHECK_BIT( operation_mask, OPERATION_MUTE ) ) {
+		CLEAR_MASK( target_page->trackSolopattern, pattern );
+		if ( pattern || !( CHECK_BIT( operation_mask, OPERATION_NOSTORE ) ) ) {
+			target_page->trackMutepatternStored = pattern | ( target_page->trackMutepatternStored & target_page->trackSolopattern );
+		}
+		target_page->trackMutepattern = pattern;
+		//// d_iag_printf( "OPERATION_MUTE Mute:%b - MStore:%b - Solo:%b\n", target_page->trackMutepattern, target_page->trackMutepatternStored, target_page->trackSolopattern );
+	} else {
+		unsigned short unsolo_pattern = SET_APPLY_MASK( target_page->trackSolopattern, DIFF_MASK( target_page->trackSolopattern, pattern ) );
+		CLEAR_MASK( target_page->trackMutepattern, ( target_page->trackSolopattern = pattern ) );
+		SET_MASK( target_page->trackMutepattern, SET_APPLY_MASK( unsolo_pattern, target_page->trackMutepatternStored ) );
+		//// d_iag_printf( "OPERATION_SOLO Mute:%b - MStore:%b - Solo:%b\n\n", target_page->trackMutepattern, target_page->trackMutepatternStored, target_page->trackSolopattern );
+	}
+}
+
 void apply_page_mute_pattern_operation( Pagestruct* target_page, unsigned short pattern, unsigned char operation_mask ){
 
 	unsigned char row = target_page->pageNdx % 10;
@@ -57,46 +103,9 @@ void apply_page_mute_pattern_operation( Pagestruct* target_page, unsigned short 
 		&& 	( CHECK_BIT( G_on_the_measure_mod_bit, row ) )
 		&& 	( is_cluster_playing( target_page ) )
 	){
-		// d_iag_printf( "A>row: %u - OTM Operation: %b - pattern: %b - OTM Mute: %b - Page Mute: %b - OTM Solo: %b - Page Solo: %b\n", row, G_on_the_measure_operation[row], pattern, G_on_the_measure_pattern[row][OPERATION_MUTE], target_page->trackMutepattern, G_on_the_measure_pattern[row][OPERATION_SOLO], target_page->trackSolopattern );
-		SET_MASK( G_on_the_measure_operation[row], G_on_the_measure_operation[row] | operation_mask );
-		G_on_the_measure_pattern_pageNdx[row] = target_page->pageNdx;
-
-		unsigned char mute_armed = CHECK_BIT( G_on_the_measure_operation[row], OPERATION_MUTE );
-		unsigned char solo_armed = CHECK_BIT( G_on_the_measure_operation[row], OPERATION_SOLO );
-
-		if ( CHECK_BIT( operation_mask, OPERATION_MUTE ) ) {
-			G_on_the_measure_pattern[row][OPERATION_MUTE] = pattern;
-
-		} else {
-			G_on_the_measure_pattern[row][OPERATION_SOLO] = pattern;
-		}
-
-		if ( mute_armed && G_on_the_measure_pattern[row][OPERATION_MUTE] == target_page->trackMutepattern ) {
-			// d_iag_printf( "UNARM MUTE \n");
-			unarm_page_otm_operation(target_page, OPERATION_MUTE );
-		}
-		if ( solo_armed && G_on_the_measure_pattern[row][OPERATION_SOLO] == target_page->trackSolopattern ) {
-			// d_iag_printf( "UNARM SOLO\n");
-			unarm_page_otm_operation(target_page, OPERATION_SOLO );
-		}
-		// d_iag_printf( "B>row: %u - OTM Operation: %b - pattern: %b - OTM Mute: %b - Page Mute: %b - OTM Solo: %b - Page Solo: %b\n", row, G_on_the_measure_operation[row], pattern, G_on_the_measure_pattern[row][OPERATION_MUTE], target_page->trackMutepattern, G_on_the_measure_pattern[row][OPERATION_SOLO], target_page->trackSolopattern );
+		apply_page_mute_pattern_operation_otm ( target_page, pattern, operation_mask );
 	} else {
-		unarm_page_otm_operations( target_page );
-		if ( page_is_selected_in_MAC_bank( target_page ) && target_page->page_clear == OFF ) {
-			apply_page_cluster_mute_pattern( target_page, pattern, operation_mask );
-		} else if ( CHECK_BIT( operation_mask, OPERATION_MUTE ) ) {
-			CLEAR_MASK( target_page->trackSolopattern, pattern );
-			if ( pattern || !( CHECK_BIT( operation_mask, OPERATION_NOSTORE ) ) ) {
-				target_page->trackMutepatternStored = pattern | ( target_page->trackMutepatternStored & target_page->trackSolopattern );
-			}
-			target_page->trackMutepattern = pattern;
-			//// d_iag_printf( "OPERATION_MUTE Mute:%b - MStore:%b - Solo:%b\n", target_page->trackMutepattern, target_page->trackMutepatternStored, target_page->trackSolopattern );
-		} else {
-			unsigned short unsolo_pattern = SET_APPLY_MASK( target_page->trackSolopattern, DIFF_MASK( target_page->trackSolopattern, pattern ) );
-			CLEAR_MASK( target_page->trackMutepattern, ( target_page->trackSolopattern = pattern ) );
-			SET_MASK( target_page->trackMutepattern, SET_APPLY_MASK( unsolo_pattern, target_page->trackMutepatternStored ) );
-			//// d_iag_printf( "OPERATION_SOLO Mute:%b - MStore:%b - Solo:%b\n\n", target_page->trackMutepattern, target_page->trackMutepatternStored, target_page->trackSolopattern );
-		}
+		apply_page_mute_pattern_operation_direct( target_page, pattern, operation_mask );
 	}
 }
 
@@ -122,7 +131,7 @@ void apply_page_track_mute_toggle_operation( Pagestruct* target_page, Trackstruc
 		target_pattern = CHECK_BIT( operation_mask, OPERATION_MUTE ) ? target_page->trackMutepattern : target_page->trackSolopattern;
 	}
 
-	apply_page_track_mute( target_page, current_track, &target_pattern );
+	apply_page_track_pattern( target_page, current_track, &target_pattern );
 	apply_page_mute_pattern_operation( target_page, target_pattern, operation_mask );
 }
 
@@ -943,6 +952,19 @@ void sequencer_UNHALT(){
 }
 
 
+void init_track_event_offsets( Trackstruct* target_track ){
+
+	unsigned char attr = 0;
+	for ( attr = 0; attr < TRACK_NROF_ATTRIBUTES; attr++ ){
+		target_track->event_offset[attr] 	= 0;
+		#ifdef FEATURE_STEP_EVENT_TRACKS
+		if ( attr == EVENT_FLAG_TRACK_MUTE - 1 ) {
+			break;
+		}
+		#endif
+	}
+}
+
 // Init the event offsets for the page
 void init_event_offsets( Pagestruct* target_page ){
 
@@ -950,16 +972,16 @@ void init_event_offsets( Pagestruct* target_page ){
 
 	// Row iterator
 	for ( row=0; row < MATRIX_NROF_ROWS; row++ ){
-
-		target_page->Track[row]->event_offset[ATTR_VELOCITY] 	= 0;
-		target_page->Track[row]->event_offset[ATTR_PITCH] 		= 0;
-		target_page->Track[row]->event_offset[ATTR_LENGTH] 		= 0;
-		target_page->Track[row]->event_offset[ATTR_START] 		= 0;
-		target_page->Track[row]->event_offset[ATTR_DIRECTION] 	= 0;
-		target_page->Track[row]->event_offset[ATTR_AMOUNT] 		= 0;
-		target_page->Track[row]->event_offset[ATTR_GROOVE] 		= 0;
-		target_page->Track[row]->event_offset[ATTR_MIDICC] 		= 0;
-		target_page->Track[row]->event_offset[ATTR_MIDICH] 		= 0;
+		//target_page->Track[row]->event_offset[ATTR_VELOCITY] 	= 0;
+		//target_page->Track[row]->event_offset[ATTR_PITCH] 		= 0;
+		//target_page->Track[row]->event_offset[ATTR_LENGTH] 		= 0;
+		//target_page->Track[row]->event_offset[ATTR_START] 		= 0;
+		//target_page->Track[row]->event_offset[ATTR_DIRECTION] 	= 0;
+		//target_page->Track[row]->event_offset[ATTR_AMOUNT] 		= 0;
+		//target_page->Track[row]->event_offset[ATTR_GROOVE] 		= 0;
+		//target_page->Track[row]->event_offset[ATTR_MIDICC] 		= 0;
+		//target_page->Track[row]->event_offset[ATTR_MIDICH] 		= 0;
+		init_track_event_offsets( target_page->Track[row] );
 	}
 }
 
@@ -3282,3 +3304,54 @@ void set_chord_octave( Stepstruct* target_step, unsigned char note_offset, unsig
 	}
 }
 #endif
+
+
+#ifdef FEATURE_IMPORT_CONVERT_530
+
+void import_convert_530( Pagestruct* target_page ) {
+	// Converts machine UI data between the two machines
+	// Swaps PIT/VET Step Event data (legacy) and
+	// Converts UI track numbers for Step Event Track Toggles (v530 on)
+	unsigned char i = 0;
+	unsigned char j = 0;
+	unsigned char temp = 0;
+	// Reverse Step Event PIT/VEL UI event_data (legacy)
+	for (i=0; i<MATRIX_NROF_ROWS; i++) {
+		for (j=0; j<MATRIX_NROF_COLUMNS; j++) {
+
+			temp = ( target_page->Step[i][j]->event_data & 0x0F ) + 1;
+			if ( temp <3 ) {
+
+				if ( temp == 2 ) {
+					target_page->Step[i][j]->event_data = ( ( target_page->Step[i][j]->event_data & 0x0F) | ( 1 ) ) - 1;
+				}
+				else {
+					target_page->Step[i][j]->event_data = ( ( target_page->Step[i][j]->event_data & 0x0F) | ( 2 ) ) - 1;
+				}
+			}
+			#ifdef FEATURE_STEP_EVENT_TRACKS
+				// Differences in UI Trk #'s (Panel Numbering) for Step Event Track Toggles
+				// Convert relevant Step Amt values.
+				unsigned char is_altmode = CHECK_BIT( target_page->Step[i][j]->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) ? TRUE : FALSE;
+				if (  ( (  temp == ATTR_POSITION ) && ( is_altmode ) )
+						|| (  (  temp == ATTR_DIRECTION ) && ( is_altmode ) )
+						|| (  temp >9 )  )  {
+
+					unsigned char amt_preconv = target_page->Step[i][j]->attr_AMT;
+					if ( amt_preconv != 0) {
+						target_page->Step[i][j]->attr_AMT	= 10 - amt_preconv;
+						// Check if attr_AMT was a negative number & adjust accordingly
+						if ( amt_preconv >10 ) {
+							target_page->Step[i][j]->attr_AMT = target_page->Step[i][j]->attr_AMT - 20;
+						}
+					}
+				}
+			#endif
+		}
+	}
+	// Convertion Complete
+	G_EventsConvert530 = 2;
+}
+
+#endif
+

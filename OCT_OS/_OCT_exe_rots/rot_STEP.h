@@ -67,7 +67,11 @@ void rot_exec_STEP( 	Pagestruct* target_page,
 						// If an event is set show the range defined for set event.
 						if ( Step_get_status( target_page->Step[row][col], STEPSTAT_EVENT ) == ON
 			   				){
-
+							#ifdef FEATURE_STEP_EVENT_TRACKS
+							unsigned char target_value = 0;
+							unsigned char temp = ( target_page->Step[row][col]->event_data & 0x0F ) + 1;
+							unsigned char is_altmode = CHECK_BIT( target_page->Step[row][col]->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) ? TRUE : FALSE;
+							#endif
 							// Depending on which event is set, show range
 							switch( (target_page->Step[row][col]->event_data & 0x0F) + 1 ){
 
@@ -100,12 +104,39 @@ void rot_exec_STEP( 	Pagestruct* target_page,
 									break;
 
 								case ATTR_DIRECTION:
-									modify_parameter( 	&target_page->Track[row]->event_max[ATTR_DIRECTION],
+									#ifdef FEATURE_STEP_EVENT_TRACKS
+									if ( is_altmode ) {
+										target_value = target_page->Track[row]->event_max[NEMO_ATTR_DIRECTION] & 0x1F;
+										modify_parameter( 	&target_value,
+															0, TRACK_MAX_RANGE_EVENT,
+															direction, OFF, FIXED );
+
+										target_page->Track[row]->event_max[NEMO_ATTR_DIRECTION] = ( target_page->Track[row]->event_max[NEMO_ATTR_DIRECTION] & 0xE0 ) | target_value;
+
+									}
+									else {
+										modify_parameter( 	&target_page->Track[row]->event_max[ATTR_DIRECTION],
 														TRACK_MIN_RANGE_DIR,
 														TRACK_MAX_RANGE_DIR,
 														direction, OFF, FIXED );
+									}
+									#else
+									modify_parameter( 	&target_page->Track[row]->event_max[ATTR_DIRECTION],
+													TRACK_MIN_RANGE_DIR,
+													TRACK_MAX_RANGE_DIR,
+													direction, OFF, FIXED );
+									#endif
 									break;
+								#ifdef FEATURE_STEP_EVENT_TRACKS
+								case ATTR_POSITION:		// POS
+									target_value = target_page->Track[row]->event_max[ATTR_POSITION] & 0x1F;
+									modify_parameter( 	&target_value,
+														0, TRACK_MAX_RANGE_EVENT,
+														direction, OFF, FIXED );
 
+									target_page->Track[row]->event_max[ATTR_POSITION] = ( target_page->Track[row]->event_max[ATTR_POSITION] & 0xE0 ) | target_value;
+									break;
+									#endif
 								case ATTR_AMOUNT:
 									modify_parameter( 	&target_page->Track[row]->event_max[ATTR_AMOUNT],
 														TRACK_MIN_RANGE_AMT,
@@ -133,6 +164,18 @@ void rot_exec_STEP( 	Pagestruct* target_page,
 														TRACK_MAX_RANGE_MCH,
 														direction, OFF, FIXED );
 									break;
+								#ifdef FEATURE_STEP_EVENT_TRACKS
+								default:
+									temp = ( target_page->Step[row][col]->event_data & 0x0F ) + 1;
+									if ( temp >= EVENT_FLAG_TRACK_MUTE ) {
+										target_value = target_page->Track[row]->event_max[temp] & 0x0F;
+										modify_parameter( 	&target_value,
+															1, TRACK_MAX_RANGE_EVENT,
+															direction, OFF, FIXED );
+										target_page->Track[row]->event_max[temp] = ( target_page->Track[row]->event_max[temp] & 0xF0 ) | target_value;
+									}
+									break;
+								#endif
 
 							} // switch on selected event type
 						} // event is set on this step
@@ -182,18 +225,39 @@ void rot_exec_STEP( 	Pagestruct* target_page,
 						}
 						break;
 
-					#if PHRASE_MODE_SERIOUS
+					//#if PHRASE_MODE_SERIOUS
+					//case DIRECTION:
+					//	PhraseMultiTweakReset();
+					//	PhraseEditStepType( target_page->Step[row][col], direction );
+					//	break;
+					//#endif
 					case DIRECTION:
-						PhraseMultiTweakReset();
-						PhraseEditStepType( target_page->Step[row][col], direction );
+						#ifdef FEATURE_STEP_SHIFT
+							StepShiftRot( target_page, direction );
+						#endif
 						break;
-					#endif
 
 					case AMOUNT:
-						modify_signed_parameter(
-							&target_page->Step[row][col]->attr_AMT,
-							STEP_MIN_AMOUNT, 	STEP_MAX_AMOUNT, 	direction, ON, FIXED );
-						break;
+					#ifdef FEATURE_STEP_EVENT_TRACKS
+					temp = ( target_page->Step[row][col]->event_data & 0x0F ) + 1;
+					if (  ( Step_get_status( target_page->Step[row][col], STEPSTAT_EVENT ) == ON )
+							&&  ( ( temp >= EVENT_FLAG_TRACK_MUTE )
+							||	( ( temp ==  ATTR_POSITION )
+							&&	( CHECK_BIT( target_page->Step[row][col]->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) ) )
+							||	( ( temp ==  ATTR_DIRECTION )
+							&&	( CHECK_BIT( target_page->Step[row][col]->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) ) )	) )  {
+
+						modify_signed_parameter( &target_page->Step[row][col]->attr_AMT, TRACK_MIN_RANGE_EVENT, TRACK_MAX_RANGE_EVENT, direction, ON, FIXED );
+					}
+					else {
+						modify_signed_parameter( 	&target_page->Step[row][col]->attr_AMT,
+								STEP_MIN_AMOUNT, STEP_MAX_AMOUNT, direction, ON, FIXED );
+					}
+					#else
+					// Modify the Amount for the event - since the value is shown anyway
+					modify_signed_parameter( 	&target_page->Step[row][col]->attr_AMT, STEP_MIN_AMOUNT, STEP_MAX_AMOUNT, direction, ON, FIXED );
+					#endif
+					break;
 
 					case GROOVE:
 						PhraseMultiTweakReset();
@@ -204,6 +268,7 @@ void rot_exec_STEP( 	Pagestruct* target_page,
 						modify_signed_parameter(
 							&target_page->Step[row][col]->attr_MCC,
 							STEP_MIN_MIDICC, 	((unsigned char)STEP_MAX_MIDICC), 	direction, ON, FIXED );
+						break;
 				}
 
 				break;

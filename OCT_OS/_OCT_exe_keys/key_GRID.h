@@ -292,6 +292,11 @@
 
 				default:
 
+					#ifdef FEATURE_IMPORT_CONVERT_530
+					// Un-arm Import Convert if new page is clicked
+					G_EventsConvert530 = 0;
+					#endif
+
 					// Compute the grid coordinates from the key index
 					temp = row_of(keyNdx) + (10 * column_of (keyNdx));
 
@@ -1273,6 +1278,27 @@
 
 			} // switch (keyNdx)
 		} // Track mutators
+
+
+		// MIX MASTER KEY
+		// Converts machine UI data between the two machines...
+		// Swaps PIT/VET Step Event data (legacy) and
+		// Converts UI track numbers for Step Event Track Toggles (v530 on)
+		#ifdef FEATURE_IMPORT_CONVERT_530
+
+			target_page = &Page_repository[ GRID_CURSOR ];
+
+			if ( keyNdx == KEY_MIX_MASTER ) {
+				if ( G_EventsConvert530 == 1 ) {
+					import_convert_530( target_page );
+				}
+				else {
+					// Arm for Convertion
+					G_EventsConvert530 = 1;
+				}
+			}
+
+		#endif
 
 
 		//

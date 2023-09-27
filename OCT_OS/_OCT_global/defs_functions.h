@@ -119,8 +119,16 @@
 #define APPLY_MASK(var,mask) (var & mask)
 #define TOGGLE_MASK(var,mask) (var = (var ^ mask))
 #define CLEAR_MASK(var,mask) (var = (var & ~mask))
+
 // Round up providing a width with an even power of 2, will return a number equal to or greater than n, which is a multiple of width, and which is the smallest value meeting that criteria
 #define ROUNDUP(n,width) (((n) + (width) - 1) & ~((width) - 1))
 
 // Remap range.
 #define REMAP_RANGE( low1, high1, low2, high2, value ) ( low2 + ( value - low1 ) * ( high2 - low2 ) / ( high1 - low1 ) )
+#ifndef NEMO
+
+// Conform Oct/Nemo row address
+#define ROW(row) (MATRIX_NROF_ROWS - row)
+#else
+#define ROW(row) (row)
+#endif

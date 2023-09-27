@@ -878,7 +878,12 @@ void PersistentV2_TrackAndStepImport( Pagestruct* targetPagePt, card32 source_ro
 	targetTrackPt->CC_resolution = sourceTrackPt->CC_resolution;
 	targetTrackPt->hyper = sourceTrackPt->hyper;
 	targetTrackPt->gatePosition = 0; // Runtime data member.
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+
+	#ifdef FEATURE_FIX_CBB_PAUSE
+		targetTrackPt->prepause_TEMPOMUL = 1;  // Runtime data member
+	#endif
+
+	#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 	//ghost note (transpose)
 	targetTrackPt->attr_GST = sourceTrackPt->attr_PIT;
 	#endif
@@ -886,7 +891,10 @@ void PersistentV2_TrackAndStepImport( Pagestruct* targetPagePt, card32 source_ro
 	for (i=0; i < TRACK_NROF_ATTRIBUTES; i++) {
 		targetTrackPt->event_max[i] = sourceTrackPt->event_max[i];
 	}
-
+	#ifdef FEATURE_STEP_EVENT_TRACKS
+	// Override legacy default 16 (out of track step event range)
+	targetTrackPt->event_max[NEMO_ATTR_POSITION] = targetTrackPt->event_max[NEMO_ATTR_POSITION] > MATRIX_NROF_VISIBLE_ROWS ? TRACK_DEF_RANGE_EVENT : targetTrackPt->event_max[NEMO_ATTR_POSITION];
+	#endif
 	// STEPS
 	for (i=0; i<MATRIX_NROF_COLUMNS; i++) {
 		PersistentV2_StepImport( &sourcePagePt->Step[source_row][i], targetPagePt->Step[source_row][i]);

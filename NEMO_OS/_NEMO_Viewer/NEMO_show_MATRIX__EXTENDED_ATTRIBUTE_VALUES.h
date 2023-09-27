@@ -185,7 +185,7 @@
 							0,	MIR_BLINK );
 					}
 					break;
-#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 				case NEMO_ATTR_MIDITCH:
 					if ( 	target_page->Track[i]->attr_STATUS
 							+ target_page->Track[i]->event_offset[ATTR_MIDITCH] == 0 ){

@@ -185,7 +185,7 @@ void rot_exe_EDIT( 	unsigned char rotNdx,
 void rot_exe_MIX2EDIT	( 	unsigned char rotNdx,
 							unsigned char direction,
 							Pagestruct* target_page ) {
-#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 	unsigned char i=0;
 // d_iag_printf( "rotNdx:%d dir:%d pgNdx:%d\n", rotNdx, direction, target_page->pageNdx );
 

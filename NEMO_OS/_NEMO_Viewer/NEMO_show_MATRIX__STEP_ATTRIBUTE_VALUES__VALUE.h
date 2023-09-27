@@ -39,6 +39,27 @@
 				break;
 
 			case ( NEMO_ATTR_LENGTH ):
+				#ifdef FEATURE_TEMPO_MULT_PLUS
+				// Show Sel led flash green
+				MIR_write_dot( LED_SELECT_MASTER, MIR_GREEN );
+				MIR_write_dot( LED_SELECT_MASTER, MIR_BLINK );
+
+				if  ( is_pressed_key ( KEY_SELECT_MASTER ) )  {
+					// If LEN attribute key is held show Step LEN Multiplier in ROW I
+					display_stepLEN_multiplier_At_Row( target_page->Step[row][col] );
+				}
+				else  {
+					if ( target_page->Step[row][col]->attr_LEN == LEGATO ){
+						// Step is set to play legato, show legato flag
+						MIR_write_trackpattern ( 0x0f, 0, MIR_GREEN);
+					}
+					else {
+						// The common case is when the length value is shown
+						MIR_write_length_H( target_page->Step[row][col]->attr_LEN, NEMO_ROW_I );
+					}
+					j = 2;
+				}
+				#else
 				if ( target_page->Step[row][col]->attr_LEN == LEGATO ){
 					// Step is set to play legato, show legato flag
 					MIR_write_trackpattern ( 0x0f, 0, MIR_GREEN);
@@ -48,6 +69,7 @@
 					MIR_write_length_H( target_page->Step[row][col]->attr_LEN, NEMO_ROW_I );
 				}
 				j = 2;
+				#endif
 				break;
 
 			case ( NEMO_ATTR_START ):
@@ -103,26 +125,59 @@
 				}
 				j = 11;
 				break;
+
+			#ifdef FEATURE_STEP_SHIFT
+				case ( NEMO_ATTR_DIRECTION ):
+					j = 12;
+					break;
+			#endif
+
 		}
 
 
 
 		// ROW II
 		// All attributes are available
-		if ( target_page->Step[row][col]->phrase_num != 0 ){
-			// Including POS bit
-			MIR_write_trackpattern( 0xF710, 			NEMO_ROW_II, MIR_GREEN );
-		}
-		else{
-			// Without POS bit
-			MIR_write_trackpattern( 0xF700, 			NEMO_ROW_II, MIR_GREEN );
-		}
 
+		#ifdef FEATURE_STEP_SHIFT
+			if ( target_page->Step[row][col]->phrase_num != 0 ){
+				// Including POS bit
+				MIR_write_trackpattern( 0xF718, 			NEMO_ROW_II, MIR_GREEN );
+			}
+			else{
+				// Without POS bit
+				MIR_write_trackpattern( 0xF708, 			NEMO_ROW_II, MIR_GREEN );
+			}
+		#else
+			if ( target_page->Step[row][col]->phrase_num != 0 ){
+				// Including POS bit
+				MIR_write_trackpattern( 0xF710, 			NEMO_ROW_II, MIR_GREEN );
+			}
+			else{
+				// Without POS bit
+				MIR_write_trackpattern( 0xF700, 			NEMO_ROW_II, MIR_GREEN );
+			}
+		#endif
+
+		#ifdef FEATURE_TEMPO_MULT_PLUS
+		// TEMPO_PLUS - if.. is_pressed_key(Selct_Master) attr_LEN then flash green (not orange)
+							// and show Step LEN multiplier on ROW I
+		if ( ( NEMO_selectedStepAttribute == NEMO_ATTR_LENGTH )
+			&& ( is_pressed_key ( KEY_SELECT_MASTER ) )  )  {
+
+			// Show selected attribute as blink green (hence Step LEN multiplier)
+			MIR_write_dot( 34, MIR_BLINK );
+		}
+		else {
+			// Show selected attribute - one only
+			MIR_write_trackpattern( 1 << (15 - j ), 	NEMO_ROW_II, MIR_RED );
+			MIR_write_trackpattern( 1 << (15 - j ), 	NEMO_ROW_II, MIR_BLINK );
+		}
+		#else
 		// Show selected attribute - one only
 		MIR_write_trackpattern( 1 << (15 - j ), 	NEMO_ROW_II, MIR_RED );
 		MIR_write_trackpattern( 1 << (15 - j ), 	NEMO_ROW_II, MIR_BLINK );
-
-
+		#endif
 
 		// ROW III
 		switch( NEMO_selectedStepAttribute ){
@@ -147,7 +202,16 @@
 				MIR_write_trackpattern( 0x0100, 	NEMO_ROW_III, MIR_GREEN );
 		}
 
-		// Indicate VER attribute
-		MIR_write_dot( LED_VER_VALUE, MIR_RED );
+		#ifdef FEATURE_STEP_SHIFT
+			if ( NEMO_selectedStepAttribute != NEMO_ATTR_DIRECTION )  {
+				// Indicate VER attribute
+				MIR_write_dot( LED_VER_VALUE, MIR_RED );
+			}
+		#else
+			// Indicate VER attribute
+			MIR_write_dot( LED_VER_VALUE, MIR_RED );
+		#endif
+
+
 
 

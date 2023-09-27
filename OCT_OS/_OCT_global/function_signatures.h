@@ -60,7 +60,7 @@ extern	void 			make_control_track ( Pagestruct* target_page, unsigned char track
 
 extern void 			apply_page_cluster_track_mute_toggle( Pagestruct* target_page, Trackstruct* current_track, unsigned char operation );
 extern void 			apply_page_cluster_mute_pattern( Pagestruct* target_page, unsigned short pattern, unsigned char operation );
-extern unsigned short	apply_page_track_mute( Pagestruct* target_page, Trackstruct* current_track, unsigned short* trackMutepattern );
+extern unsigned short	apply_page_track_pattern( Pagestruct* target_page, Trackstruct* current_track, unsigned short* trackMutepattern );
 extern	void 			drivePageCursor(Pagestruct* target_page, unsigned int measures);
 extern	void 			align_measure_locators();
 
@@ -232,6 +232,8 @@ extern void 			MIR_write_base12_H( int val, unsigned char target_row );
 extern void 			MIR_write_numeric_C (unsigned char number);
 extern unsigned char 	Step_get_status ( Stepstruct* target_step, unsigned char target_bit);
 extern int 				scale_pitch( Pagestruct* pagePt, int pitch );
+
+extern void 			apply_page_mute_pattern_operation_direct ( Pagestruct* target_page, unsigned short pattern, unsigned char operation_mask );
 
 #ifdef FEATURE_ENABLE_CHORD_OCTAVE
 extern unsigned char 	get_chord_cardinality( Stepstruct* target_step, unsigned char octave_mask );

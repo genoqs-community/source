@@ -109,7 +109,41 @@ void show (unsigned int target, unsigned int content) {
 
 			// Depending on the zoom mode:
 			switch( G_zoom_level ){
+				#ifdef FEATURE_STEP_EVENT_TRACKS
+				case zoomSTEP:
+					if ( content == OPTIONS ) {
+						unsigned char event_data_attr = APPLY_MASK( target_page->Step [target_page->stepSelectionSingleRow][target_page->stepSelectionSingleCol]->event_data, 0x0F ) + 1;
+						unsigned char target_LED = OFF;
+						unsigned char target_LED_color = OFF;
+						if ( Step_get_status( target_page->Step[ target_page->stepSelectionSingleRow ]
+															   [ target_page->stepSelectionSingleCol ],  STEPSTAT_EVENT ) == ON ) {
+							unsigned char event_data_track = event_data_attr - EVENT_FLAG_TRACK_MUTE;
+							target_LED = LED_MIXTGT_USR1 + ( 10 * event_data_track ) + event_data_track ;
 
+							if( CHECK_BIT( target_page->Step[ target_page->stepSelectionSingleRow ]
+															[ target_page->stepSelectionSingleCol ]->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) ) {
+								// Flag ALT Mode
+								target_LED_color = MIR_SHINE_GREEN;
+							} else {
+								// Event model: show selected attribute in step
+								target_LED_color = MIR_BLINK;
+							}
+						}
+
+						for( i = 0; i < 4; i++) {
+							unsigned char current_LED = LED_MIXTGT_USR1 + ( 10 * i ) + i;
+							if(		( current_LED != target_LED )
+								||	( target_LED_color == MIR_BLINK ) ) {
+								MIR_write_dot( current_LED, MIR_RED );
+								MIR_write_dot( current_LED, MIR_GREEN );
+							}
+							if( current_LED == target_LED ) {
+								MIR_write_dot( target_LED, target_LED_color );
+							}
+						}
+					}
+					return;
+				#endif
 				case zoomPAGE:
 				case zoomMIXMAP:
 

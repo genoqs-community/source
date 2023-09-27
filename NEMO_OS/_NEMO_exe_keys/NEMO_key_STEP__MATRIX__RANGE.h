@@ -36,6 +36,10 @@
 			// Fetch the event pointer - in Octopus format
 			temp = target_page->Step [target_page->stepSelectionSingleRow]
 							  		 [target_page->stepSelectionSingleCol]->event_data & 0x0F;
+			#ifdef FEATURE_STEP_EVENT_TRACKS
+			i = temp + 1;
+			unsigned char target_value;
+			#endif
 
 			// The data is in Octopus format..
 			switch( temp ){	
@@ -121,24 +125,53 @@
 	
 				case NEMO_ATTR_MIDICH:
 					// avoid the negative marker here - not relevant.
-					if ( col == 15 ) col = 14;
-					step_enter_value_PITVELAMT( 
-						&(target_page->Track[row]->event_max[NEMO_ATTR_MIDICH]), 
+					if ( col == 12 ) col = 13;
+					step_enter_value_PITVELAMT(
+						NEMO_ATTR_MIDICH, &(target_page->Track[row]->event_max[NEMO_ATTR_MIDICH]),
 						TRACK_MAX_RANGE_MCH, TRACK_DEF_RANGE_MCH, keyNdx, row, col );
 					break;
 
 				case NEMO_ATTR_POSITION:
+					#ifdef FEATURE_STEP_EVENT_TRACKS
+					target_value = target_page->Track[row]->event_max[NEMO_ATTR_POSITION] & 0x1F;
+					step_enter_range( &target_value, TRACK_MAX_RANGE_EVENT, 1, keyNdx, row, col );
+					target_page->Track[row]->event_max[NEMO_ATTR_POSITION] = ( target_page->Track[row]->event_max[NEMO_ATTR_POSITION] & 0xE0 ) | target_value;
+					#else
 					step_enter_range( 
 						&(target_page->Track[row]->event_max[NEMO_ATTR_POSITION]), 
 						TRACK_MAX_RANGE_POS, TRACK_DEF_RANGE_POS, keyNdx, row, col );
+					#endif
 					break;
 
 				case NEMO_ATTR_DIRECTION:
-					step_enter_range( 
-						&(target_page->Track[row]->event_max[NEMO_ATTR_DIRECTION]), 
+					#ifdef FEATURE_STEP_EVENT_TRACKS
+					if ( CHECK_BIT( target_step->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) )  {
+						target_value = target_page->Track[row]->event_max[NEMO_ATTR_DIRECTION] & 0x1F;
+						step_enter_range( &target_value, TRACK_MAX_RANGE_EVENT, 1, keyNdx, row, col );
+						target_page->Track[row]->event_max[NEMO_ATTR_DIRECTION] = ( target_page->Track[row]->event_max[NEMO_ATTR_DIRECTION] & 0xE0 ) | target_value;
+					}
+					else {
+						step_enter_range(
+							&(target_page->Track[row]->event_max[NEMO_ATTR_DIRECTION]),
+							TRACK_MAX_RANGE_DIR, TRACK_DEF_RANGE_DIR, keyNdx, row, col );
+					}
+					#else
+					step_enter_range(
+						&(target_page->Track[row]->event_max[NEMO_ATTR_DIRECTION]),
 						TRACK_MAX_RANGE_DIR, TRACK_DEF_RANGE_DIR, keyNdx, row, col );
+					#endif
 					break;
-
+				#ifdef FEATURE_STEP_EVENT_TRACKS
+				default:
+					target_value = target_page->Track[row]->event_max[i] & 0x0F;
+					if( i >= EVENT_FLAG_TRACK_MUTE ) {
+						step_enter_range(
+							&target_value,
+							TRACK_MAX_RANGE_EVENT, 1, keyNdx, row, col );
+					}
+					target_page->Track[row]->event_max[i] = ( target_page->Track[row]->event_max[i] & 0xF0 ) | target_value;
+					break;
+				#endif
 			} // switch( NEMO_selectedTrackAttribute )
 		} // ROW I Key
 
@@ -157,16 +190,17 @@
 
 			// Select the step event attribute
 			// Initialize the event_offsets
-			target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_VELOCITY] 	= 0;
-			target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_PITCH] 	= 0;
-			target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_LENGTH] 	= 0;
-			target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_START] 	= 0;
-			target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_DIRECTION] = 0;
-			target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_AMOUNT] 	= 0;
-			target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_GROOVE] 	= 0;
-			target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_MIDICC] 	= 0;
-			target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_MIDICH] 	= 0;
-	
+			// target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_VELOCITY] 	= 0;
+			// target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_PITCH] 	= 0;
+			// target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_LENGTH] 	= 0;
+			// target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_START] 	= 0;
+			// target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_DIRECTION] = 0;
+			// target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_AMOUNT] 	= 0;
+			// target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_GROOVE] 	= 0;
+			// target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_MIDICC] 	= 0;
+			// target_page->Track[ target_page->stepSelectionSingleRow ]->event_offset[NEMO_ATTR_MIDICH] 	= 0;
+			init_track_event_offsets( target_page->Track[ target_page->stepSelectionSingleRow ] );
+
 			// Now set the event status..
 			if (target_page->stepSelection == 1){
 				
@@ -188,7 +222,63 @@
 
 				// Do not continue if the pressed key was not valid
 				if ( temp == 20 ) break;
+				#ifdef FEATURE_STEP_EVENT_TRACKS
+				unsigned char event_data_attr = temp + 1;
 
+				if ( 	( event_data_attr < EVENT_FLAG_TRACK_MUTE )
+					&&	( ( target_step->event_data & 0x0F ) + 1 >= EVENT_FLAG_TRACK_MUTE ) ) {
+					target_step->attr_AMT = TRACK_DEF_RANGE_EVENT;
+				}
+				else if (  ( event_data_attr == NEMO_ATTR_POSITION )
+						|| ( event_data_attr == NEMO_ATTR_DIRECTION )  )  {
+
+
+					// D O U B L E - C L I C K  C O N S T R U C T
+					// DOUBLE CLICK SCENARIO
+					if ((DOUBLE_CLICK_TARGET == keyNdx)
+							&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY)) {
+
+						// Double click code
+						// ...
+						// DIR / POS ALT Mode
+						TOGGLE_BIT( target_step->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 );
+
+						if (	( event_data_attr == NEMO_ATTR_DIRECTION ) ) {
+							// Flag Flip Flop -- Check if alt_mode & set Range accordingly
+							unsigned char is_altmode = CHECK_BIT( target_step->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) ? TRUE : FALSE;
+
+							if ( is_altmode ) {
+								// Set range to default 1 else default 5 (Nemo)
+								target_page->Track[ target_page->stepSelectionSingleRow ]->event_max[ATTR_DIRECTION] = TRACK_DEF_RANGE_EVENT;  //Default==1
+							}
+							else {
+								target_page->Track[ target_page->stepSelectionSingleRow ]->event_max[ATTR_DIRECTION] = TRACK_MAX_RANGE_DIR; //Default==5(NEMO)
+							}
+							// Reset attr_AMT to Default
+							target_step->attr_AMT = STEP_DEF_AMOUNT;
+						}
+						else {
+							//POS
+							target_step->attr_AMT = TRACK_DEF_RANGE_EVENT;
+						}
+					} // end of double click scenario
+
+					// SINGLE CLICK SCENARIO
+					else if (DOUBLE_CLICK_TARGET == 0) {
+
+							DOUBLE_CLICK_TARGET = keyNdx;
+							DOUBLE_CLICK_TIMER = ON;
+							// Start the Double click Alarm
+							cyg_alarm_initialize(
+									doubleClickAlarm_hdl,
+									cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+									DOUBLE_CLICK_ALARM_TIME );
+
+						// Single click code
+						// ...
+					}
+				}
+				#endif
 				// Click on an active event - turn the event OFF
 				if (	( ( temp ) == 
 					 	  (target_page->Step[ target_page->stepSelectionSingleRow ]

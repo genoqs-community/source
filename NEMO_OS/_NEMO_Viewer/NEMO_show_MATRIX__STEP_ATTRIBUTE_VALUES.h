@@ -89,13 +89,51 @@
 	MIR_augment_trackpattern( Page_get_skippattern(  target_page, row),
 							NEMO_ROW_IV, 	MIR_RED   );
 
+	#ifdef FEATURE_ZOOMSTEP_PLUS  // Includes FIX_SHOW_HYPER (modified)
+
+
+	MIR_augment_trackpattern( Page_get_selection_trackpattern( target_page, row),
+								NEMO_ROW_IV, MIR_BLINK );
+
+	if (  (Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == OFF )
+		&& (target_page->Step[row][col]->hyperTrack_ndx == 10 )  )   {
+			// Selected step is off
+			// Color it red if it is off anyway
+			MIR_write_dot( Page_dotIndex( NEMO_ROW_IV, col ),  MIR_RED );
+	}
+
+
+	if (target_page->Step[row][col]->hyperTrack_ndx == 10 ) {
+		MIR_augment_trackpattern( 	Page_get_hyperpattern(  target_page, row ),
+								NEMO_ROW_IV, MIR_SHINE_GREEN   );
+	}
+	else {
+		if ( Step_get_status( target_page->Step[row][col], STEPSTAT_SKIP ) == OFF ) {
+			// Selected step is a hyperstep make it shine red
+			MIR_write_dot( Page_dotIndex( NEMO_ROW_IV, col ),  MIR_SHINE_RED );
+		}
+		// Show any other hypersteps
+		int hcol = 0;
+		for (hcol=0; hcol<16; hcol++) {
+			if (  (  (hcol != col) && ( target_page->Step[row][hcol]->hyperTrack_ndx != 10 )  )
+					&& ( Step_get_status( target_page->Step[row][hcol], STEPSTAT_SKIP ) == OFF )  )  {
+
+				MIR_write_dot( Page_dotIndex( NEMO_ROW_IV, hcol ),  MIR_SHINE_GREEN );
+			}
+		}
+	}
+
+
+	#else
 	// Blink the selected step
 	MIR_augment_trackpattern( Page_get_selection_trackpattern( target_page, row),
-							NEMO_ROW_IV, 	MIR_BLINK );
+					NEMO_ROW_IV, 	MIR_BLINK );
 	if (Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == OFF ){
 		// Color it red if it is off anyway
 		MIR_write_dot( Page_dotIndex(
-							NEMO_ROW_IV, 	col ),  MIR_RED );
+					NEMO_ROW_IV, 	col ),  MIR_RED );
 	}
+	#endif
+
 
 

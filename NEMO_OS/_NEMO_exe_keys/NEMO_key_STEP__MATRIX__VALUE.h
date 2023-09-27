@@ -43,25 +43,58 @@
 
 				case NEMO_ATTR_PITCH:
 					step_enter_value_PITVELAMT(
-						&target_step->attr_PIT, STEP_MAX_PITCH, STEP_DEF_PITCH, keyNdx, row, col );
+						NEMO_ATTR_PITCH, &target_step->attr_PIT, STEP_MAX_PITCH, STEP_DEF_PITCH, keyNdx, row, col );
 					break;
 
 				case NEMO_ATTR_VELOCITY:
 					step_enter_value_PITVELAMT(
-						&target_step->attr_VEL, STEP_MAX_VELOCITY, STEP_DEF_VELOCITY, keyNdx, row, col );
+						NEMO_ATTR_VELOCITY, &target_step->attr_VEL, STEP_MAX_VELOCITY, STEP_DEF_VELOCITY, keyNdx, row, col );
 					break;
 
 				case NEMO_ATTR_AMOUNT:
 					step_enter_value_PITVELAMT(
-						&target_step->attr_AMT, STEP_MAX_AMOUNT, STEP_DEF_AMOUNT, keyNdx, row, col );
+						NEMO_ATTR_AMOUNT, &target_step->attr_AMT, STEP_MAX_AMOUNT, STEP_DEF_AMOUNT, keyNdx, row, col );
 					break;
 
+				#ifdef FEATURE_TEMPO_MULT_PLUS
+				unsigned char j = 0;
 				case NEMO_ATTR_LENGTH:
+					if ( ( is_pressed_key ( KEY_SELECT_MASTER ) )
+						&& ( NEMO_selectedStepAttribute == NEMO_ATTR_LENGTH )  )  {
+						// Edit edit Step LEN multiplier with ROW I buttons
+						if ( (( keyNdx - NEMO_ROW_I ) % 11) == 0 ) {
+
+							j = (( keyNdx - NEMO_ROW_I ) / 11);
+
+							if ( j <9 ) {
+								// Only set Step LEN multiplier if valid case
+
+								// Coordinates of currently selected step
+								row = target_page->stepSelectionSingleRow;
+								col = target_page->stepSelectionSingleCol;
+
+								// Set the Step LEN multiplier
+								// target_page->Step[row][col]->LEN_multiplier = j;
+								target_page->Step[row][col]->event_data =
+										( (j<<4) | (target_page->Step[row][col]->event_data & (0x0F)) );
+							}
+						}
+					}
+					else {
+						// Kill event offset ..Set the new value of the LEN_factor
+						// target_page->Track[row]->event_offset[NEMO_ATTR_LENGTH] = 0;
+						step_enter_value_LEN(
+							&target_step->attr_LEN, STEP_MAX_LENGTH, STEP_DEF_LENGTH, keyNdx, row, col );
+					}
+					break;
+					#else
+					case NEMO_ATTR_LENGTH:
 					// Kill event offset ..Set the new value of the LEN_factor
 					// target_page->Track[row]->event_offset[NEMO_ATTR_LENGTH] = 0;
 					step_enter_value_LEN(
-						&target_step->attr_LEN, STEP_MAX_LENGTH, STEP_DEF_LENGTH, keyNdx, row, col );
+							&target_step->attr_LEN, STEP_MAX_LENGTH, STEP_DEF_LENGTH, keyNdx, row, col );
 					break;
+					#endif
 
 				case NEMO_ATTR_START:
 					// Kill event offset ..Set the new value of the STA_factor
@@ -140,6 +173,13 @@
 						NEMO_selectedStepAttribute = NEMO_ATTR_POSITION;
 					}
 					break;
+
+				#ifdef FEATURE_STEP_SHIFT
+					// DIR
+					case 12:
+						NEMO_selectedStepAttribute = NEMO_ATTR_DIRECTION;			break;
+						break;
+				#endif
 			}
 		} // ROW II Key
 

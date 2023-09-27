@@ -70,6 +70,7 @@
 // Standard Octopus matrix;
 #define 	MATRIX_NROF_COLUMNS				16
 #define 	MATRIX_NROF_ROWS				10
+#define 	MATRIX_NROF_VISIBLE_ROWS		MATRIX_NROF_ROWS
 #define		MATRIX_NROF_STEPS				MATRIX_NROF_ROWS * MATRIX_NROF_COLUMNS
 
 // Standard Control panel for now
@@ -424,6 +425,11 @@
 #define		FOLLOW_GRID				1
 #define		FOLLOW_PAGE				2
 #define		FOLLOW_TRACK			3
+
+#ifdef FEATURE_FIX_CBB_PAUSE
+#define		SCHEDULE_PAUSE			4
+#define		SCHEDULE_UNPAUSE		5
+#endif
 
 #ifdef FEATURE_ENABLE_DICE
 // This defines the dice page repository location

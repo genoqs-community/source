@@ -164,21 +164,237 @@ void modify_signed_parameter(	signed char* 	in_parameter,
 
 
 
+#ifdef FEATURE_STEP_EVENT_TRACKS
+unsigned char is_skipped_rotate_step( Stepstruct *target_step ) {
+	return (	( target_step->attr_AMT == -127 )
+			|| 	( target_step->hyperTrack_ndx != 10 )
+			||	( Step_get_status( target_step, STEPSTAT_SKIP ) == ON )
+			// Step Mask is also a Step Event with a VEL==-127 (JB addition)
+			||  ( ( Step_get_status( target_step, STEPSTAT_EVENT == ON ) )
+					&& ( target_step->attr_VEL == -127 ) ) );
+}
+
+// Seek valid step (not Step Mask)
+unsigned char seek_unmasked_step_col( Pagestruct* target_page, unsigned int row, unsigned char start_pos, unsigned char direction, unsigned int skip_mask ) {
+
+	if( 	!( CHECK_BIT( skip_mask, start_pos ) )
+		&&	!( is_skipped_rotate_step( target_page->Step[row][start_pos] ) ) ) {
+		return start_pos;
+	}
+
+	unsigned char col = 0;
+
+	switch( direction ) {
+		case DEC:
+			col = ( start_pos == 0 ) ? MATRIX_NROF_COLUMNS - 1: start_pos - 1;
+			while(	(  start_pos != col )
+				&& ( ( CHECK_BIT( skip_mask, col ) )
+				||	 ( is_skipped_rotate_step( target_page->Step[row][col] ) ) ) )
+			{
+				col = ( col == 0 ) ? MATRIX_NROF_COLUMNS - 1: col - 1;
+			}
+		break;
+		case INC:
+			col = ( start_pos + 1 ) % MATRIX_NROF_COLUMNS;
+			while(	(  start_pos != col )
+				&& ( ( CHECK_BIT( skip_mask, col ) )
+				||	 ( is_skipped_rotate_step( target_page->Step[row][col] ) ) ) )
+			{
+				col = ( col + 1 ) % MATRIX_NROF_COLUMNS;
+			}
+		break;
+	}
+
+	return col;
+}
+
+unsigned char is_skipped_rotate_skip( Stepstruct *target_step ) {
+	return (  ( target_step->attr_AMT == -127 )
+			||  ( ( Step_get_status( target_step, STEPSTAT_EVENT == ON ) )
+								&& ( target_step->attr_VEL == -127 )  )   );
+}
+
+// Seek valid skip (not Step Mask)
+unsigned char seek_unmasked_skip_col( Pagestruct* target_page, unsigned int row, unsigned char start_pos, unsigned char direction, unsigned int skip_mask ) {
+
+	if( 	!( CHECK_BIT( skip_mask, start_pos ) )
+		&&	!( is_skipped_rotate_skip( target_page->Step[row][start_pos] ) ) ) {
+		return start_pos;
+	}
+
+	unsigned char col = 0;
+
+	switch( direction ) {
+		case DEC:
+			col = ( start_pos == 0 ) ? MATRIX_NROF_COLUMNS - 1: start_pos - 1;
+			while(	(  start_pos != col )
+				&& ( ( CHECK_BIT( skip_mask, col ) )
+				||	 ( is_skipped_rotate_skip( target_page->Step[row][col] ) ) ) )
+			{
+				col = ( col == 0 ) ? MATRIX_NROF_COLUMNS - 1: col - 1;
+			}
+		break;
+		case INC:
+			col = ( start_pos + 1 ) % MATRIX_NROF_COLUMNS;
+			while(	(  start_pos != col )
+				&& ( ( CHECK_BIT( skip_mask, col ) )
+				||	 ( is_skipped_rotate_skip( target_page->Step[row][col] ) ) ) )
+			{
+				col = ( col + 1 ) % MATRIX_NROF_COLUMNS;
+			}
+		break;
+	}
+
+	return col;
+}
+
+//
+// SHIFT Step SKIPS of target_track in the given direction
+//
+void shiftSkipsFromPOS( 	Pagestruct* target_page,
+							unsigned int row,
+							unsigned char start_pos,
+							unsigned char end_pos,
+							unsigned char alt_skips,
+							unsigned int skip_mask ){
+
+	// Shifts once and wraps around track boundaries [1,16]
+	unsigned int 	col=0;
+	unsigned char 	buffer_skip = 0;
+
+	unsigned char direction = start_pos < end_pos ? DEC : INC;
+
+
+	if( alt_skips ) {
+		start_pos = seek_unmasked_skip_col( target_page, row, start_pos, direction == INC ? DEC : INC, skip_mask );
+		end_pos = seek_unmasked_skip_col( target_page, row, end_pos, direction, skip_mask );
+	}
+
+
+	unsigned char next_col;
+
+	// Direction of shift movement
+	switch( direction ){
+
+		case DEC:
+			// Copy everything to one column earlier.. except for last column
+			if( start_pos == end_pos ) {
+				break;
+			}
+
+			for (col = start_pos; col < end_pos; col++) {
+
+				if ( col == start_pos ) {
+					// Store the first value in a buffer, to be later filled in the last position.
+					buffer_skip = Step_get_status( target_page->Step[row][col], STEPSTAT_SKIP );
+				}
+
+				next_col = col + 1;
+
+				if( alt_skips ) {
+					col = seek_unmasked_skip_col( target_page, row, col, INC, skip_mask );
+					if ( col == end_pos ) {
+						break;
+					}
+					next_col = seek_unmasked_skip_col( target_page, row, col + 1, INC, skip_mask );
+				}
+
+				if (  (  Step_get_status( target_page->Step[row][next_col], STEPSTAT_SKIP )  ) == ON )  {
+					// Turn on Skip
+					Step_set_status( target_page->Step[row][col], STEPSTAT_SKIP, ON );
+					// Turn off Skip
+					Step_set_status( target_page->Step[row][next_col], STEPSTAT_SKIP, OFF );
+				}
+				else {
+					Step_set_status( target_page->Step[row][col], STEPSTAT_SKIP, OFF );
+				}
+			} // Iterator columns 0-14;
+
+
+			// Last column handler: put buffer value into the last place
+			col = end_pos;
+
+			Step_set_status( target_page->Step[row][col], STEPSTAT_SKIP, buffer_skip );
+
+			break;
 
 
 
+		case INC:
+			// Shift all contents to the right
+			if( start_pos == end_pos ) {
+				break;
+			}
+
+			for ( col = start_pos; col > end_pos; col-- ){
+
+				if ( col == start_pos ) {
+					// Store last value in the buffer, to be filled into the first position
+					buffer_skip = Step_get_status( target_page->Step[row][col], STEPSTAT_SKIP );
+				}
+
+				next_col = col - 1;
+
+				if( alt_skips ) {
+					col = seek_unmasked_skip_col( target_page, row, col, DEC, skip_mask );
+					if ( col == end_pos ) {
+						break;
+					}
+					next_col = seek_unmasked_skip_col( target_page, row, col - 1, DEC, skip_mask );
+				}
+
+				if (  (  Step_get_status( target_page->Step[row][next_col], STEPSTAT_SKIP )  ) == ON )  {
+					// Turn on Skip
+					Step_set_status( target_page->Step[row][col], STEPSTAT_SKIP, ON );
+					// Turn off Skip
+					Step_set_status( target_page->Step[row][next_col], STEPSTAT_SKIP, OFF );
+				}
+				else {
+					Step_set_status( target_page->Step[row][col], STEPSTAT_SKIP, OFF );
+				}
+			} // Column iterator
+
+			// Fill in the buffer value into the first place
+			col = end_pos;
+
+			Step_set_status( target_page->Step[row][col], STEPSTAT_SKIP, buffer_skip );
+
+			break;
+
+
+	} // Direction switch
+}
+
+
+//
+// SHIFT Skip condition of the Step in the given direction
+//
+void shiftSkips( 	Pagestruct* target_page,
+						unsigned int row,
+						unsigned char direction ){
+
+	unsigned char start_pos = direction == DEC ? 0 : MATRIX_NROF_COLUMNS - 1;
+	unsigned char end_pos = direction == DEC ? MATRIX_NROF_COLUMNS - 1 : 0;
+
+	shiftSkipsFromPOS( target_page, row, start_pos, end_pos, FALSE, OFF );
+}
+
+#endif  //FEATURE_STEP_EVENT_TRACKS
 
 //
 // SHIFT MAP of target_track for in_attribute in the given direction
 //
-void shiftAttributeMap( 	Pagestruct* target_page,
+void shiftAttributeMapFromPOS( 	Pagestruct* target_page,
 							unsigned int row,
+							unsigned char start_pos,
+							unsigned char end_pos,
 							unsigned int in_attribute,
-							unsigned char direction ){
+							unsigned char alt_skips,
+							unsigned int skip_mask ){
 
 	// Shifts once and wraps around track boundaries [1,16]
-	unsigned int col=0;
-	unsigned int buffer=0;
+	unsigned int 	col=0;
+	unsigned int 	buffer=0;
 	unsigned int 	buffer_chord_data=0,
 					buffer_chord_up=0,
 					buffer_phrase_num=0,
@@ -189,32 +405,85 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 	Stepstruct* thisStepPt;
 	Stepstruct* nextStepPt;
 
+	unsigned char direction = start_pos < end_pos ? DEC : INC;
+
+	#ifdef FEATURE_STEP_EVENT_TRACKS
+	if( alt_skips ) {
+		start_pos = seek_unmasked_step_col( target_page, row, start_pos, direction == INC ? DEC : INC, skip_mask );
+		end_pos = seek_unmasked_step_col( target_page, row, end_pos, direction, skip_mask );
+	}
+	#endif
+
+	unsigned char next_col;
+
+	unsigned char status_hold_mask = 0;
+	unsigned char status_apply_mask = 0xFF;
+
+	if( !alt_skips ) {
+		// exclude step events from rotation
+		status_hold_mask = 0x30;
+		status_apply_mask = 0xCF;
+		if( G_zoom_level == zoomSTEP ) {
+			// When in zoomSTEP Don't shift focused step selection (in STEP mode all Pages Step selections are OFF except for the focused step)
+			SET_BIT( status_hold_mask, 1 );
+			CLEAR_BIT( status_apply_mask, 1 );
+		}
+	}
+
+
 	// Direction of shift movement
 	switch( direction ){
 
 		case DEC:
-			// Store the first value in a buffer, to be later filled in the last position.
-			buffer 				= *(ptr_of_step_attr_value( target_page, row, 0, in_attribute ));
-			buffer_chord_data 	= target_page->Step[row][0]->chord_data;
-			buffer_chord_up 	= target_page->Step[row][0]->chord_up;
-			buffer_phrase_num 	= target_page->Step[row][0]->phrase_num;
-			buffer_phrase_data 	= target_page->Step[row][0]->phrase_data;
-			buffer_event_data 	= target_page->Step[row][0]->event_data;
-			buffer_hyperTrackNdx = target_page->Step[row][0]->hyperTrack_ndx;
-
 			// Copy everything to one column earlier.. except for last column
-			for (col=0; col < MATRIX_NROF_COLUMNS-1; col++) {
+			if( start_pos == end_pos ) {
+				break;
+			}
 
+			for (col = start_pos; col < end_pos; col++) {
+
+				if ( col == start_pos ) {
+					// Store the first value in a buffer, to be later filled in the last position.
+					buffer 				 = *(ptr_of_step_attr_value( target_page, row, col, in_attribute ));
+					buffer_chord_data 	 = target_page->Step[row][col]->chord_data;
+					buffer_chord_up 	 = target_page->Step[row][col]->chord_up;
+					buffer_phrase_num 	 = target_page->Step[row][col]->phrase_num;
+					buffer_phrase_data 	 = target_page->Step[row][col]->phrase_data;
+					buffer_event_data 	 = target_page->Step[row][col]->event_data;
+					buffer_hyperTrackNdx = target_page->Step[row][col]->hyperTrack_ndx;
+				}
+
+				next_col = col + 1;
+				#ifdef FEATURE_STEP_EVENT_TRACKS
+				if( alt_skips ) {
+					col = seek_unmasked_step_col( target_page, row, col, INC, skip_mask );
+					if ( col == end_pos ) {
+						break;
+					}
+					next_col = seek_unmasked_step_col( target_page, row, col + 1, INC, skip_mask );
+				}
+				#endif
 				thisStepPt 	= target_page->Step[row][col];
-				nextStepPt	= target_page->Step[row][col+1];
+				nextStepPt	= target_page->Step[row][next_col];
 
 				switch( in_attribute ){
 
 					case ATTR_STATUS:
 						// Make sure we don't shift the event bit in status
 						thisStepPt->attr_STATUS =
-							 	( thisStepPt->attr_STATUS & (1 << 4) )
-							|	( nextStepPt->attr_STATUS & 0xEF );
+								( thisStepPt->attr_STATUS & status_hold_mask )
+							|	( nextStepPt->attr_STATUS & status_apply_mask );
+
+						if ( CHECK_BIT( nextStepPt->attr_STATUS, STEPSTAT_EVENT ) ) {
+							// Rotate the event data
+							thisStepPt->event_data =
+									( thisStepPt->event_data & 0xF0 )
+								|	( nextStepPt->event_data & 0x0F );
+						}
+						break;
+
+					case ATTR_AMOUNT:
+						thisStepPt->attr_AMT = nextStepPt->attr_AMT;
 						break;
 
 					case ATTR_PITCH:
@@ -244,13 +513,13 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 					default:
 						// Shift the attribute value with no changes
 						*(ptr_of_step_attr_value( target_page, row, col, in_attribute )) =
-							*(ptr_of_step_attr_value( target_page, row, col+1, in_attribute ));
+							*(ptr_of_step_attr_value( target_page, row, next_col, in_attribute ));
 						break;
 				} // attribute switch
 			} // Iterator columns 0-14;
 
 			// Last column handler: put buffer value into the last place
-			col = MATRIX_NROF_COLUMNS - 1;
+			col = end_pos;
 			thisStepPt 	= target_page->Step[row][col];
 
 			switch( in_attribute ){
@@ -258,8 +527,19 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 				case ATTR_STATUS:
 					// Make sure we don't shift the event bit in status
 					thisStepPt->attr_STATUS =
-							( thisStepPt->attr_STATUS & (1 << 4) ) 	// Old status bit
-						|	( buffer & 0xEF );						// New other bits
+							( thisStepPt->attr_STATUS & status_hold_mask ) 	// Old status bit
+						|	( buffer & status_apply_mask );						// New other bits
+
+					if ( CHECK_BIT( buffer_event_data, STEPSTAT_EVENT ) ) {
+						// Rotate the event data
+						thisStepPt->event_data =
+								( thisStepPt->event_data  	& 0xF0 )
+							|	( buffer_event_data 		& 0x0F );
+					}
+					break;
+
+				case ATTR_AMOUNT:
+					thisStepPt->attr_AMT = buffer;
 					break;
 
 				case ATTR_PITCH:
@@ -296,27 +576,55 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 
 
 		case INC:
-			// Store last value in the buffer, to be filled into the first position
-			buffer = *(ptr_of_step_attr_value( target_page, row, 15, in_attribute ));
-			buffer_chord_data 	= target_page->Step[row][15]->chord_data;
-			buffer_chord_up 	= target_page->Step[row][15]->chord_up;
-			buffer_phrase_num 	= target_page->Step[row][15]->phrase_num;
-			buffer_phrase_data 	= target_page->Step[row][15]->phrase_data;
-			buffer_event_data 	= target_page->Step[row][15]->event_data;
-			buffer_hyperTrackNdx = target_page->Step[row][15]->hyperTrack_ndx;
-
 			// Shift all contents to the right
-			for ( col=MATRIX_NROF_COLUMNS-1; col > 0; col-- ){
+			if( start_pos == end_pos ) {
+				break;
+			}
+
+			for ( col = start_pos; col > end_pos; col-- ){
+
+				if ( col == start_pos ) {
+					// Store last value in the buffer, to be filled into the first position
+					buffer = *(ptr_of_step_attr_value( target_page, row, col, in_attribute ));
+					buffer_chord_data 	 = target_page->Step[row][col]->chord_data;
+					buffer_chord_up 	 = target_page->Step[row][col]->chord_up;
+					buffer_phrase_num 	 = target_page->Step[row][col]->phrase_num;
+					buffer_phrase_data 	 = target_page->Step[row][col]->phrase_data;
+					buffer_event_data 	 = target_page->Step[row][col]->event_data;
+					buffer_hyperTrackNdx = target_page->Step[row][col]->hyperTrack_ndx;
+				}
+
+				next_col = col - 1;
+				#ifdef FEATURE_STEP_EVENT_TRACKS
+				if( alt_skips ) {
+					col = seek_unmasked_step_col( target_page, row, col, DEC, skip_mask );
+					if ( col == end_pos ) {
+						break;
+					}
+					next_col = seek_unmasked_step_col( target_page, row, col - 1, DEC, skip_mask );
+				}
+				#endif
 
 				thisStepPt 	= target_page->Step[row][col];
-				nextStepPt	= target_page->Step[row][col-1];
+				nextStepPt	= target_page->Step[row][next_col];
 
 				switch( in_attribute ){
 
 					case ATTR_STATUS:
 						thisStepPt->attr_STATUS =
-							 	( thisStepPt->attr_STATUS & (1 << 4) )
-							|	( target_page->Step[row][col-1]->attr_STATUS & 0xEF );
+								( thisStepPt->attr_STATUS & status_hold_mask )
+							|	( nextStepPt->attr_STATUS & status_apply_mask );
+
+						if ( CHECK_BIT( nextStepPt->attr_STATUS, STEPSTAT_EVENT ) ) {
+							// Rotate the event data
+							thisStepPt->event_data =
+									( thisStepPt->event_data & 0xF0 )
+								|	( nextStepPt->event_data & 0x0F );
+						}
+						break;
+
+					case ATTR_AMOUNT:
+						thisStepPt->attr_AMT = nextStepPt->attr_AMT;
 						break;
 
 					case ATTR_PITCH:
@@ -333,7 +641,7 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 						}
 
 						// target_page->Step[row][col]->event_data =
-						// target_page->Step[row][col-1]->event_data;
+						// target_page->Step[row][next_col]->event_data;
 						// Make sure we only shift the stepLenMul in event_data, no event attr
 						thisStepPt->event_data =
 							 	( thisStepPt->event_data & 0x0F )
@@ -343,50 +651,60 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 
 					default:
 						*(ptr_of_step_attr_value( target_page, row, col, in_attribute ))
-							= *(ptr_of_step_attr_value( target_page, row, col-1, in_attribute ));
+							= *(ptr_of_step_attr_value( target_page, row, next_col, in_attribute ));
 						break;
 				}
 			} // Column iterator
 
 			// Fill in the buffer value into the first place
-			col = 0;
+			col = end_pos;
 			thisStepPt 	= target_page->Step[row][col];
 
 			switch( in_attribute ){
 
 				case ATTR_STATUS:
 					// Make sure we don't shift the event bit in status
-					target_page->Step[row][0]->attr_STATUS =
-							( buffer & 0xEF )
-						|	( target_page->Step[row][0]->attr_STATUS & (1 << 4) );
+					thisStepPt->attr_STATUS =
+							( buffer & status_apply_mask )
+						|	( thisStepPt->attr_STATUS & status_hold_mask );
+
+					if ( CHECK_BIT( buffer_event_data, STEPSTAT_EVENT ) ) {
+						thisStepPt->event_data =
+								( thisStepPt->event_data	& 0xF0 )
+							|	( buffer_event_data 		& 0x0F );
+					}
+					break;
+
+				case ATTR_AMOUNT:
+					thisStepPt->attr_AMT = buffer;
 					break;
 
 				case ATTR_PITCH:
 					// Only chord data here
-					target_page->Step[row][0]->chord_data 	= buffer_chord_data;
-					target_page->Step[row][0]->chord_up 	= buffer_chord_up;
+					thisStepPt->chord_data 	= buffer_chord_data;
+					thisStepPt->chord_up 	= buffer_chord_up;
 
 					// Shift the phrase data - obsolote - done in another place.
-					// target_page->Step[row][0]->phrase_num 	= buffer_phrase_num;
-					target_page->Step[row][0]->phrase_data 	= buffer_phrase_data;
+					// thisStepPt->phrase_num 	= buffer_phrase_num;
+					thisStepPt->phrase_data 	= buffer_phrase_data;
 
-					target_page->Step[row][0]->hyperTrack_ndx = buffer_hyperTrackNdx;
+					thisStepPt->hyperTrack_ndx = buffer_hyperTrackNdx;
 					if ( thisStepPt->hyperTrack_ndx < MATRIX_NROF_ROWS ){
 						// Make sure we don't touch invalid track indices
 						target_page->Track[thisStepPt->hyperTrack_ndx]->hyper = (row << 4) | col;
 					}
 
-					// target_page->Step[row][0]->event_data 	= buffer_event_data;
+					// thisStepPt->event_data 	= buffer_event_data;
 					// Make sure we only shift the stepLenMul in event_data, no event attr
-					target_page->Step[row][0]->event_data =
-						 	( target_page->Step[row][0]->event_data   & 0x0F )
+					thisStepPt->event_data =
+						 	( thisStepPt->event_data   & 0x0F )
 						|	( buffer_event_data & 0xF0 );
 
 					// No break, fallthrough intended
 
 				default:
 					// Default attribute value shift
-					*(ptr_of_step_attr_value( target_page, row, 0, in_attribute )) = buffer;
+					*(ptr_of_step_attr_value( target_page, row, col, in_attribute )) = buffer;
 					break;
 			} // attribute switch
 
@@ -396,6 +714,19 @@ void shiftAttributeMap( 	Pagestruct* target_page,
 }
 
 
+//
+// SHIFT MAP of target_track for in_attribute in the given direction
+//
+void shiftAttributeMap( 	Pagestruct* target_page,
+							unsigned int row,
+							unsigned int in_attribute,
+							unsigned char direction ){
+
+	unsigned char start_pos = direction == DEC ? 0 : MATRIX_NROF_COLUMNS - 1;
+	unsigned char end_pos = direction == DEC ? MATRIX_NROF_COLUMNS - 1 : 0;
+
+	shiftAttributeMapFromPOS( target_page, row, start_pos, end_pos, in_attribute, FALSE, OFF );
+}
 
 
 // Apply the given rotary to the given Step
@@ -441,7 +772,14 @@ void apply_rotary_to_step( 	unsigned char rotNdx,
 			break;
 
 		case DIRECTION:
-//			PhraseEditStepType( target_step, direction );
+			#ifdef FEATURE_STEP_SHIFT
+				if ( target_page->editorMode == PREVIEW_PERFORM ) {
+					if (   (target_page->trackSelection == 0)
+							&& (target_page->stepSelection  == 0)  ){
+						StepShiftRot( target_page, direction );
+					}
+				}
+			#endif
 			break;
 
 		case AMOUNT:

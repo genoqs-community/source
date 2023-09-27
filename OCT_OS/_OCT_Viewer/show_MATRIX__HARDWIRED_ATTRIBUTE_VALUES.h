@@ -100,6 +100,9 @@
 		MIR_augment_trackpattern( Page_get_selection_trackpattern( target_page, row ), 4, MIR_BLINK );
 
 
+		#ifdef FEATURE_FIX_SHOW_HYPER
+			MIR_augment_trackpattern( 	Page_get_hyperpattern(  target_page, row ), 4, MIR_SHINE_GREEN );
+		#endif
 
 		// DIRECTION
 		MIR_point_numeric 	(	target_page->Track[row]->attr_DIR
@@ -145,6 +148,39 @@
 		}
 
 
+#ifdef FEATURE_TEMPO_MULT_PLUS
+
+	MIR_write_dot( LED_TEMPO, MIR_RED );
+	MIR_write_dot( LED_TEMPO, MIR_GREEN );
+
+	if ( is_pressed_key( KEY_TEMPO ))  {
+		// If Tempo Key held show Step LEN Multiplier in POS row
+		//display_stepLEN_multiplier_At_Row( target_page->Step[row][col] );
+		display_Track_G_master_tempoMUL_At_Row( target_page->Track[row] );
+	}
+	else {
+		// MIDICH
+		j = target_page->Track[row]->attr_MCH
+						+ target_page->Track[row]->event_offset[ATTR_MIDICH];
+
+		if ( j <= 16 ){
+			MIR_point_numeric(	j, 	9,	MIR_GREEN );
+		}
+		else if ( j <= 32 ){
+			MIR_point_numeric(	j-16, 9,	MIR_RED );
+		}
+		else if ( j <= 48 ){
+			MIR_point_numeric(	j-32, 9,	MIR_GREEN );
+			MIR_point_numeric(	j-32, 9,	MIR_BLINK );
+		}
+		else if ( j <= 64 ){
+			MIR_point_numeric(	j-48, 9,	MIR_RED );
+			MIR_point_numeric(	j-48, 9,	MIR_BLINK );
+		}
+	}
+
+#else
+
 		// MIDICH
 		j = target_page->Track[row]->attr_MCH 
 			+ target_page->Track[row]->event_offset[ATTR_MIDICH];
@@ -164,6 +200,4 @@
 			MIR_point_numeric(	j-48, 9,	MIR_BLINK );
 		}
 		
-
-
-
+#endif

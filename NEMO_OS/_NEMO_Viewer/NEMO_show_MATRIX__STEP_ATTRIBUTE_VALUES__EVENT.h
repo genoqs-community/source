@@ -26,7 +26,7 @@
 		// ROW I
 		if ( MODE_OBJECT_SELECTION != BIRDSEYE ){
 
-			MIR_write_numeric_H( 
+			MIR_write_numeric_H(
 				target_page->Step 	[target_page->stepSelectionSingleRow]
 						  		 	[target_page->stepSelectionSingleCol]->attr_AMT,	NEMO_ROW_I );
 		}
@@ -49,6 +49,7 @@
 				// Fetch the event pointer - in Octopus format
 				temp = target_page->Step [target_page->stepSelectionSingleRow]
 								  		 [target_page->stepSelectionSingleCol]->event_data & 0x0F;
+				unsigned char event_data_attr = temp + 1;
 
 				// The data is in Octopus format, so transform to NEMO:
 				switch( temp ){
@@ -62,11 +63,27 @@
 					case 7: 	temp = 6;	break;	// GRV
 					case 8: 	temp = 7;	break;	// MCC
 					case 9: 	temp = 9;	break;	// MCH
+					default:	temp = 20;	break;
 				}
 
-				// Finally point out the event in the row
-				MIR_augment_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_RED   );
-				MIR_augment_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_BLINK );
+				if( temp != 20 ) {
+					#ifdef FEATURE_STEP_EVENT_TRACKS
+					// Finally point out the event in the row
+					if( 	( ( event_data_attr == NEMO_ATTR_POSITION ) || ( event_data_attr == NEMO_ATTR_DIRECTION ) )
+									&& 	( CHECK_BIT( target_page->Step[ target_page->stepSelectionSingleRow ]
+						   	                              [ target_page->stepSelectionSingleCol ]->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) ) ) {
+						// POS OR DIR ALT MODE
+						MIR_write_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_SHINE_GREEN   );
+					} else {
+						MIR_augment_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_RED   );
+						MIR_augment_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_BLINK );
+					}
+					#else
+					// Finally point out the event in the row
+					MIR_augment_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_RED   );
+					MIR_augment_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_BLINK );
+					#endif
+				}
    			}
 		}
 		// Only flow attributes available

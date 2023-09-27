@@ -88,7 +88,18 @@
 				){
 
 				if ( target_page->OPS_mode != BIRDSEYE ){
+					#ifdef FEATURE_STEP_SHIFT
 					show( ELE_TRACK_SELECTORS, MIX_ATTRIBUTE );
+					// SHIFT_SKIPS
+					if (  (  target_page->mixAttribute == ATTR_POSITION )
+							&& ( G_MixShiftSkips == 1 )  )   {
+
+						MIR_write_dot( target_page->mixAttribute,	MIR_SHINE_RED);
+
+					}
+					#else
+					show( ELE_TRACK_SELECTORS, MIX_ATTRIBUTE );
+					#endif
 				}
 			}
 

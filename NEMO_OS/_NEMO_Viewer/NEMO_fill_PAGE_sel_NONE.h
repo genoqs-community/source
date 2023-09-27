@@ -292,8 +292,15 @@
 						show( ELE_EDIT_MASTER, GREEN );
 						show( ELE_EDIT_MASTER, BLINK );
 
-						// This is the JohnK preview mode
-						show( ELE_MATRIX, PREVIEW_STEP );
+						#ifdef FEATURE_STEP_SHIFT
+							if ( ShiftHeldStep == 0 ) {
+								// Show Preview Step if Step is not Dbl-Clicked
+								show( ELE_MATRIX, PREVIEW_STEP );
+							}
+						#else
+							// This is the JohnK preview mode
+							show( ELE_MATRIX, PREVIEW_STEP );
+						#endif
 						break;
 
 					case MIX2EDIT:

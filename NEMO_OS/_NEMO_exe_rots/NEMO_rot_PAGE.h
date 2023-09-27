@@ -153,20 +153,48 @@ void rot_exec_PAGE_local_EDIT( 	Pagestruct* target_page,
 		// Select the edit attribute
 		target_page->editAttribute = rotNdx;
 		
-		// Scan through all steps of the matrix - not very efficient!!
-		for (row=0; row < MATRIX_NROF_ROWS; row++) {
+		#ifdef FEATURE_STEP_SHIFT
 
-			for (col=0; col < MATRIX_NROF_COLUMNS; col++) {
+			switch ( rotNdx ) {
+				case 0:
+					if ( target_page->stepSelection != 0 ) {
+						StepSwapVertical( target_page, direction );
+					}
+					break;
 
-				// STEP SELECTION flag is set
-				if (Step_get_status( target_page->Step[row][col], STEPSTAT_SELECT ) == step_selection ){
+				default:
 
-					// Does what it says - applies the rotary to the step in question.
-					apply_rotary_to_step( rotNdx, direction, target_page, row, col );
+					// Scan through all steps of the matrix - not very efficient!!
+					for (row=0; row < MATRIX_NROF_ROWS; row++) {
 
-				} // Step is selected
-			} // Matrix column scan
-		} // Matrix row scan
+						for (col=0; col < MATRIX_NROF_COLUMNS; col++) {
+
+							// STEP SELECTION flag is set
+							if (Step_get_status( target_page->Step[row][col], STEPSTAT_SELECT ) == step_selection ){
+								// Does what it says - applies the rotary to the step in question.
+								apply_rotary_to_step( rotNdx, direction, target_page, row, col );
+							} // Step is selected
+						} // Matrix column scan
+					} // Matrix row scan
+					break;
+			}
+		#else
+			// Scan through all steps of the matrix - not very efficient!!
+			for (row=0; row < MATRIX_NROF_ROWS; row++) {
+
+				for (col=0; col < MATRIX_NROF_COLUMNS; col++) {
+
+					// STEP SELECTION flag is set
+					if (Step_get_status( target_page->Step[row][col], STEPSTAT_SELECT ) == step_selection ){
+
+						// Does what it says - applies the rotary to the step in question.
+						apply_rotary_to_step( rotNdx, direction, target_page, row, col );
+
+					} // Step is selected
+				} // Matrix column scan
+			} // Matrix row scan
+		#endif
+
 	} // step selection == ON
 
 
@@ -183,63 +211,123 @@ void rot_exec_PAGE_local_EDIT( 	Pagestruct* target_page,
 		// Some other key is pressed, potentially a step key
 		else{
 			
-			// Linear scan through the buttons in question: Selectors and Steps.
-			for( i=1; i <= 185; i++ ){
-			
-				// Not using the provided infrastructure because of the anomalies. may change
-				// There is a key pressed - in the Step Range (exclude the rest)
-				if (	( G_pressed_keys[i] >=  11 )
-					&&	( G_pressed_keys[i] <= 185 ) 
-					&& 	( (( G_pressed_keys[i]-10) % 11) != 0 ) 
+			#ifdef FEATURE_STEP_SHIFT
 
-					// React only to PITCH, VELOCITY, LENGTH and START rotaries
-					&& 	(	( rotNdx == 1 )		// PIT
-						||	( rotNdx == 2 ) 	// VEL
-						||	( rotNdx == 3 ) 	// LEN
-						||	( rotNdx == 4 )	)	// STA
-					){
+				// Linear scan through the buttons in question: Selectors and Steps.
+				for( i=1; i <= 185; i++ ){
 
-					// Compute the key coordinates
-					row = row_of( 		shift_key_track_row( target_page, G_pressed_keys[i], shiftTrackRow ) );
-					col = column_of(	G_pressed_keys[i] );
-					
-					// d_iag_printf( "%d row:%d col:%d  ", pressed_keys[i], row, col );
+					// Not using the provided infrastructure because of the anomalies. may change
+					// There is a key pressed - in the Step Range (exclude the rest)
+					if (	( G_pressed_keys[i] >=  11 )
+							&&	( G_pressed_keys[i] <= 185 )
+							&& 	( (( G_pressed_keys[i]-10) % 11) != 0 )
 
-					// The first knob click activates the step if it is not active
-					if ( Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == OFF ){
-
-						// If we are not in PREVIEW mode
-						if (	( target_page->editorMode != PREVIEW )
-							){
-
-							// Make sure the step gets turned on as we turn the knob
-							Step_set_status( target_page->Step[row][col], STEPSTAT_TOGGLE, ON );
-						}	
-					}
-						
-					// Finally apply the rotary to the step in question.
-					apply_rotary_to_step( rotNdx, direction, target_page, row, col );
-
-					// If we are in PREVIEW mode, play the step as well
-					if (	( target_page->editorMode == PREVIEW )
+							// React to MAIN, PITCH, VELOCITY, LENGTH and START rotaries
+							&& 	(	( rotNdx == 0 )		// BIG
+									||	( rotNdx == 1 )		// PIT
+									||	( rotNdx == 2 ) 	// VEL
+									||	( rotNdx == 3 ) 	// LEN
+									||	( rotNdx == 4 )	)	// STA
 						){
 
-						PLAYER_preview_step( target_page, row, col );
-					}
+						switch ( rotNdx ) {
+							case 0:
+								// Only allow Big Knob if Dbl-Click & Step Held in Preview_Perform
+								if ( ( target_page->editorMode == PREVIEW_PERFORM )
+										&& ( ShiftHeldStep == 1 ) )  {
+									StepShiftRot( target_page, direction );
+								}
+								break;
 
-				} // key pressed in step range
+							default:
+								// Compute the key coordinates
+								row = row_of( 		shift_key_track_row( target_page, G_pressed_keys[i], shiftTrackRow ) );
+								col = column_of(	G_pressed_keys[i] );
 
+								// d_iag_printf( "%d row:%d col:%d  ", pressed_keys[i], row, col );
+
+								// The first knob click activates the step if it is not active
+								if ( Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == OFF ){
+
+									// If we are not in PREVIEW mode
+									if (	( target_page->editorMode != PREVIEW )
+									){
+
+										// Make sure the step gets turned on as we turn the knob
+										Step_set_status( target_page->Step[row][col], STEPSTAT_TOGGLE, ON );
+									}
+								}
+
+								// Finally apply the rotary to the step in question.
+								apply_rotary_to_step( rotNdx, direction, target_page, row, col );
+
+								// If we are in PREVIEW mode, play the step as well
+								if (	( target_page->editorMode == PREVIEW )
+								){
+									PLAYER_preview_step( target_page, row, col );
+								}
+								break;
+
+							} // Switch
+
+					} // key pressed in step range
+			#else
+
+				// Linear scan through the buttons in question: Selectors and Steps.
+				for( i=1; i <= 185; i++ ){
+
+					// Not using the provided infrastructure because of the anomalies. may change
+					// There is a key pressed - in the Step Range (exclude the rest)
+					if (	( G_pressed_keys[i] >=  11 )
+							&&	( G_pressed_keys[i] <= 185 )
+							&& 	( (( G_pressed_keys[i]-10) % 11) != 0 )
+
+							// React only to PITCH, VELOCITY, LENGTH and START rotaries
+							&& 	(	( rotNdx == 1 )		// PIT
+									||	( rotNdx == 2 ) 	// VEL
+									||	( rotNdx == 3 ) 	// LEN
+									||	( rotNdx == 4 )	)	// STA
+						){
+
+						// Compute the key coordinates
+						row = row_of( 		shift_key_track_row( target_page, G_pressed_keys[i], shiftTrackRow ) );
+						col = column_of(	G_pressed_keys[i] );
+
+						// d_iag_printf( "%d row:%d col:%d  ", pressed_keys[i], row, col );
+
+						// The first knob click activates the step if it is not active
+						if ( Step_get_status( target_page->Step[row][col], STEPSTAT_TOGGLE ) == OFF ){
+
+							// If we are not in PREVIEW mode
+							if (	( target_page->editorMode != PREVIEW )
+							){
+
+								// Make sure the step gets turned on as we turn the knob
+								Step_set_status( target_page->Step[row][col], STEPSTAT_TOGGLE, ON );
+							}
+						}
+
+						// Finally apply the rotary to the step in question.
+						apply_rotary_to_step( rotNdx, direction, target_page, row, col );
+
+						// If we are in PREVIEW mode, play the step as well
+						if (	( target_page->editorMode == PREVIEW )
+						){
+							PLAYER_preview_step( target_page, row, col );
+						}
+					} // key pressed in step range
+			#endif
 
 				// Key pressed in Track Selector range, or track(s) lock-selected
-				else if (	
+				else if (
 							(	( G_pressed_keys[i] >=  1 )
 							&&	( G_pressed_keys[i] <= 10 ) )
 						|| 	( G_pressed_keys[i] == 32 )
 					){
-					
+
 					// Compute the key row
 					row = i-1;
-					
+
 					rot_exe_EDIT( rotNdx, direction, target_page );
 
 					// If we are in PREVIEW mode, play the track as well
@@ -250,7 +338,7 @@ void rot_exec_PAGE_local_EDIT( 	Pagestruct* target_page,
 						){
 
 						PLAYER_preview_track( target_page, row );
-					}			
+					}
 
 					// Break out of the key iteration
 					i = 185;
@@ -454,11 +542,21 @@ void rot_exec_PAGE_local( 	Pagestruct* target_page,
 
 	// E D I T O R
 	//
-	else if ((rotNdx >= 1) && (rotNdx <= 10)) {
 
-		// Triggers the normal EDIT block behaviour operations - ON means act on the selected steps
-		rot_exec_PAGE_local_EDIT( target_page, rotNdx, direction, ON );
-	} // else if rotNdx in Editor
+	#ifdef FEATURE_STEP_SHIFT // Used in both Horizontal Shift & Vertical Swap
+		else if ( rotNdx <= 10 ) {
+			// Triggers the normal EDIT block behaviour operations -
+			// ONLY allow big knob to Shift Steps if Selected Steps == 1
+			rot_exec_PAGE_local_EDIT( target_page, rotNdx, direction, ON );
+		}
+
+	#else
+		else if ((rotNdx >= 1) && (rotNdx <= 10)) {
+			// Triggers the normal EDIT block behaviour operations - ON means act on the selected steps
+			rot_exec_PAGE_local_EDIT( target_page, rotNdx, direction, ON );
+		} // else if rotNdx in Editor
+	#endif
+
 }
 
 

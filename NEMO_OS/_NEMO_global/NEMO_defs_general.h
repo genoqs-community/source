@@ -86,6 +86,7 @@
 // Standard Octopus matrix;
 #define 	MATRIX_NROF_COLUMNS				16
 #define 	MATRIX_NROF_ROWS				10
+#define 	MATRIX_NROF_VISIBLE_ROWS		8
 #define		MATRIX_NROF_STEPS				MATRIX_NROF_ROWS * MATRIX_NROF_COLUMNS
 
 // Standard Control panel for now
@@ -450,6 +451,11 @@
 
 // This allows window switching when chain crosses x2 track window
 #define		FOLLOW_CHAIN			7
+
+#ifdef FEATURE_FIX_CBB_PAUSE
+#define		SCHEDULE_PAUSE			4
+#define		SCHEDULE_UNPAUSE		5
+#endif
 
 #ifdef FEATURE_ENABLE_DICE
 // This defines the dice page repository location

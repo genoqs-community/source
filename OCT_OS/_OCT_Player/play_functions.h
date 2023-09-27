@@ -34,6 +34,7 @@ extern void 	MIDI_send( 	unsigned char type,
 
 extern void 	selected_page_cluster_clear( unsigned char grid_cursor );
 extern void 	selected_page_cluster_move( unsigned char grid_cursor, unsigned char prev_grid_cursor );
+extern void 	apply_page_track_mute_toggle_operation( Pagestruct* target_page, Trackstruct* current_track, unsigned char operation_mask );
 
 #ifdef FEATURE_ENABLE_DICE
 extern unsigned char	dice_page_locator( Pagestruct* target_page, unsigned char page_locator_value );
@@ -1016,6 +1017,180 @@ void apply_on_the_measure( Pagestruct* target_page, bool force ) {
 			bank_reset_on_the_measure(row);
 	}
 }
+
+#ifdef FEATURE_STEP_EVENT_TRACKS
+void apply_step_event_tracks( Pagestruct* target_page, unsigned char row, unsigned char event_row, unsigned char event_data_attr, unsigned char on_state, unsigned char is_altmode ){
+
+	switch( event_data_attr ){
+		case EVENT_FLAG_TRACK_MUTE:
+			if ( 	( is_altmode )
+				|| 	( on_state && !CHECK_BIT( target_page->trackMutepattern, event_row ) )
+				|| 	( !on_state && CHECK_BIT( target_page->trackMutepattern, event_row ) ) ) {
+				apply_page_track_mute_toggle_operation( target_page, target_page->Track[event_row], MASK( OPERATION_MUTE ) );
+			}
+			break;
+		case EVENT_FLAG_TRACK_SOLO:
+			if ( 	( is_altmode )
+				|| 	( on_state && !CHECK_BIT( target_page->trackSolopattern, event_row ) )
+				|| 	( !on_state && CHECK_BIT( target_page->trackSolopattern, event_row ) ) ) {
+				apply_page_track_mute_toggle_operation( target_page, target_page->Track[event_row], MASK( OPERATION_SOLO ) );
+			}
+			break;
+		case EVENT_FLAG_TRACK_RECORD:
+			if ( 	( is_altmode )
+				|| 	( on_state && !CHECK_BIT( target_page->priv_track_REC_pattern, event_row ) )
+				|| 	( !on_state && CHECK_BIT( target_page->priv_track_REC_pattern, event_row ) )) {
+				// RECORD operation depending on the chainstatus - Head or Segment
+				Page_flipTrackRecPatternBit( target_page, event_row );
+			}
+			break;
+		case EVENT_FLAG_TRACK_PAUSE:
+			// Schedule OTB pause/unpause
+			if ( 	( is_altmode || on_state )
+				&& 	( target_page->Track[event_row]->attr_TEMPOMUL != 0 ) ) {
+				Track_schedule_pause( target_page->Track[event_row] );
+			} else if( 	( is_altmode || !on_state )
+					&& 	( target_page->Track[event_row]->attr_TEMPOMUL == 0 ) ) {
+				Track_schedule_unpause( target_page->Track[event_row] );
+			}
+			break;
+		case ATTR_POSITION:
+			if ( is_altmode ) {
+				if( ( target_page->Track[row]->event_offset[ATTR_POSITION] == 0xFF ) ) {
+					// event_offset[ATTR_POSITION] stores a column index of step event (rotate) that previously executed (avoids re-triggering by hoping over)
+					break;
+				}
+
+				if( on_state ) {
+					// Rotate track range steps to right of step event
+					Step_rotate( target_page, row, event_row, 0, MATRIX_NROF_COLUMNS - 1 );
+				} else {
+					// Rotate track range steps to left of step event
+					Step_rotate( target_page, row, event_row, MATRIX_NROF_COLUMNS - 1, 0 );
+				}
+			}
+			break;
+		case ATTR_DIRECTION:
+			#ifdef FEATURE_STEP_EVENT_TRACKS
+			if ( is_altmode ) {
+				if( on_state ) {
+					// Rotate track range skips to right of step event
+					Skip_rotate( target_page, row, event_row, 0, MATRIX_NROF_COLUMNS - 1 );
+				} else {
+					// Rotate track range skips to left of step event
+					Skip_rotate( target_page, row, event_row, MATRIX_NROF_COLUMNS - 1, 0 );
+				}
+			}
+			#endif
+			break;
+	}
+}
+
+
+void update_step_event_tracks( Pagestruct* target_page, unsigned char row ) {
+
+	if ( target_page->Track[row]->attr_LOCATOR ) {
+		Trackstruct *target_track 		= target_page->Track[row];
+		unsigned char col 				= target_track->attr_LOCATOR;
+		Stepstruct *in_step 			= target_page->Step[row][col-1];
+		unsigned char event_data_attr	= APPLY_MASK( in_step->event_data, 0x0F ) + 1;
+
+		if( 	( event_data_attr == ATTR_POSITION )
+			&&	( target_page->Track[row]->event_offset[ATTR_POSITION] ) ) {
+			// Determine if we a SKIP flag (0xFF) is required i.e. the spacing between the current and last visit shifted col offset == 1
+			target_page->Track[row]->event_offset[ATTR_POSITION] = ( abs( col - target_page->Track[row]->event_offset[ATTR_POSITION] ) == 1 ) ? 0xFF : OFF;
+		}
+	}
+}
+
+void perform_step_event_tracks( Pagestruct* target_page, unsigned char row ) {
+
+	if ( target_page->Track[row]->attr_LOCATOR ) {
+		Trackstruct *target_track 		= target_page->Track[row];
+		unsigned char col 				= target_track->attr_LOCATOR;
+		Stepstruct *in_step 			= target_page->Step[row][col-1];
+		unsigned char i 				= 0;
+		unsigned char event_row 		= 0;
+		signed char event_value			= 0;
+		unsigned char event_data_attr	= APPLY_MASK( in_step->event_data, 0x0F ) + 1;
+		unsigned char event_range_max 	= target_page->Track[row]->event_max[event_data_attr] & 0x1F;
+		unsigned char is_altmode 		= CHECK_BIT( in_step->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) ? TRUE : FALSE;
+
+		event_value = normalize( ( ( in_step->attr_AMT
+					* Track_AMT_factor[	target_track->AMT_factor
+					+ target_track->event_offset[ATTR_AMOUNT] ] )
+					/ AMT_FACTOR_NEUTRAL_VALUE ), STEP_MIN_AMOUNT, STEP_MAX_AMOUNT );
+
+		if ( 	( !is_altmode )
+			&& 	( event_data_attr  == ATTR_POSITION ) ){
+			// Special handling of legacy POS (event value provide the step width rather than start index)
+			unsigned char direction = ( event_value > 0 ) ? INC : DEC;
+			unsigned char out_row = ( target_track->event_max[event_data_attr] & 0x1F ) + row;
+
+			for( i = row; i < out_row; i++ ) {
+				event_row = i % MATRIX_NROF_VISIBLE_ROWS;
+
+				Page_wrap_track( 	target_page,
+									event_row,
+									direction,
+									abs( event_value ) % 16 );
+			}
+		} else if( event_value != 0 ) {
+			#ifndef NEMO
+			// OCT reverse event_value to correspond with panel numbering
+			event_value = event_value % MATRIX_NROF_VISIBLE_ROWS;
+			event_value = event_value < 0 ? -MATRIX_NROF_VISIBLE_ROWS - event_value : MATRIX_NROF_VISIBLE_ROWS - event_value;
+			#endif
+			// Test if event_row is included as part of the range
+			unsigned char is_row_in_event	= FALSE;
+			for( i = 0; i < event_range_max; i++ ) {
+				event_row = ( ( i + abs(event_value) - 1 ) % MATRIX_NROF_VISIBLE_ROWS );
+				is_row_in_event = !is_row_in_event && row == event_row ? TRUE : is_row_in_event;
+			}
+
+			if ( 	( is_row_in_event )
+				||	( !CHECK_BIT( target_page->trackMutepattern, row ) ) ) {
+				// Apply step event tracks when row is part of event range or unmuted state
+				for( i = 0; i < event_range_max; i++ ) {
+					event_row = ( ( i + abs(event_value) - 1 ) % MATRIX_NROF_VISIBLE_ROWS );
+					if( event_value > 0 ) {
+						// Perform step event tracks (ON state)
+						apply_step_event_tracks( target_page, row, event_row, event_data_attr, ON, is_altmode );
+					} else {
+						// Perform step event tracks (OFF state)
+						apply_step_event_tracks( target_page, row, event_row, event_data_attr, OFF, is_altmode );
+					}
+				}
+			}
+
+			if( 	( event_data_attr == ATTR_POSITION ) && ( is_row_in_event ) ) {
+				// When shifting in the same direction as playing avoid retriggering itself every step)
+				if( ( target_page->Track[row]->event_offset[ATTR_POSITION] == OFF ) ) {
+					// ROT SKIP Switch ON (determine flag next visit)
+					target_page->Track[row]->event_offset[ATTR_POSITION] = col;
+				} else {
+					// ROT SKIP Switch OFF
+					target_page->Track[row]->event_offset[ATTR_POSITION] = OFF;
+				}
+			}
+		}
+	}
+}
+#endif
+
+#ifdef FEATURE_FIX_CBB_PAUSE
+// Unpause scheduled Tracks OTB
+void perform_pause_tracks( Pagestruct *target_page, unsigned char row ) {
+
+	if( CHECK_BIT( target_page->Track[row]->prepause_TEMPOMUL, SCHEDULE_UNPAUSE ) ) {
+		target_page->Track[row]->attr_TEMPOMUL = target_page->Track[row]->prepause_TEMPOMUL & 0x0F;
+		target_page->Track[row]->prepause_TEMPOMUL = 1;
+	} else if( CHECK_BIT( target_page->Track[row]->prepause_TEMPOMUL, SCHEDULE_PAUSE ) ) {
+		target_page->Track[row]->prepause_TEMPOMUL = target_page->Track[row]->attr_TEMPOMUL;
+		target_page->Track[row]->attr_TEMPOMUL = 0;
+	}
+}
+#endif
 
 #ifdef FEATURE_ENABLE_DICE
 // Dice synchronized attribute changes

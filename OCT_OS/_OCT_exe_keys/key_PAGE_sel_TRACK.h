@@ -50,7 +50,7 @@
 		tap_step( target_page );
 
 	} // TAP KEY
-	#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+	#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 	// Toggle transpose abs pitch mode
 	if (	( keyNdx == KEY_SCALE_SEL )
 		&&	( target_page->trackSelection != 0 )	){
@@ -686,14 +686,32 @@
 							STEPSTAT_TOGGLE == ON )
 						){
 
+						#ifdef FEATURE_FIX_CBB_PAUSE
+						if ( target_page->Track[i]->attr_TEMPOMUL == 0 )  {
+							target_page->Track[i]->attr_TEMPOMUL = target_page->Track[i]->prepause_TEMPOMUL & 0x0F;
+							target_page->Track[i]->prepause_TEMPOMUL = 1;
+						}
+						#else
 						target_page->Track[i]->attr_TEMPOMUL = 1;
+						#endif
 
 						PLAYER_preview_step(
 							target_page, i, target_page->Track[i]->attr_LOCATOR-1 );
 					}
 
 					// Finally pause the track: tempomul = 0
+					#ifdef FEATURE_FIX_CBB_PAUSE
+					// Save stored Track Tempomul to prepause_TEMPOMUL if not already paused
+					if ( target_page->Track[i]->attr_TEMPOMUL != 0 ) {
+						target_page->Track[i]->prepause_TEMPOMUL = target_page->Track[i]->attr_TEMPOMUL;
+						target_page->Track[i]->attr_TEMPOMUL = 0;
+					}
+					// Pause the track
 					target_page->Track[i]->attr_TEMPOMUL = 0;
+					#else
+					target_page->Track[i]->attr_TEMPOMUL = 0;
+					#endif
+
 				}
 			}
 			break;
@@ -714,12 +732,23 @@
 				// Start playing the sequencer
 				sequencer_command_PLAY();
 
-				// UN-PAUSE the tracks in Track selection
+				// UN-PAUSE the tracks
 				for ( i=0; i<MATRIX_NROF_ROWS; i++ ){
+					unsigned char should_unpause_track = TRUE;
 
-					// Finally pause the track: tempomul = 0
-					if ( target_page->Track[i]->attr_TEMPOMUL == 0 ){
-						target_page->Track[i]->attr_TEMPOMUL = 1;
+					#ifdef FEATURE_SEL_UNPAUSE
+					should_unpause_track = ( CHECK_BIT( target_page->trackSelection, i ) ) && ( target_page->Track[i]->attr_TEMPOMUL == 0 );
+					#endif
+
+					if ( should_unpause_track ) {
+						#ifdef FEATURE_FIX_CBB_PAUSE
+						Track_schedule_unpause( target_page->Track[i] );
+						#else
+						// Finally unpause the track: tempomul = 0
+						if ( target_page->Track[i]->attr_TEMPOMUL == 0 ){
+							target_page->Track[i]->attr_TEMPOMUL = 1;
+						}
+						#endif
 					}
 				}
 			}

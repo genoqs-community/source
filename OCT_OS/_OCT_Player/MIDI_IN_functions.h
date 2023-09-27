@@ -1071,7 +1071,7 @@ void modify_scale_composition( 	Pagestruct* target_page,
 	}
 }
 
-#ifdef FEATURE_ENABLE_KEYB_TRANSPOSE
+#ifdef FEATURE_ENABLE_KEYBOARD_TRANSPOSE
 // Transpose pitch assignment
 // Offset track base pitch on incoming transpose channel attr_STATUS
 // Restore pitch when key velocity is strong
@@ -1089,7 +1089,7 @@ void transpose_selection(	Pagestruct* target_page,
 			&& ( in_velocity > 0 )
 			&& ( inputMidiChan == target_page->Track[i]->attr_STATUS) ) {
 				// velocity is strong trigger mode
-				in_velocity > 88 ? SET_BIT( target_page->Track[i]->attr_EMISC, GST_TOGGLE ) : CLEAR_BIT( target_page->Track[i]->attr_EMISC;
+				in_velocity > 88 ? SET_BIT( target_page->Track[i]->attr_EMISC, GST_TOGGLE ) : CLEAR_BIT( target_page->Track[i]->attr_EMISC, GST_TOGGLE );
 				if ( CHECK_BIT( target_page->Track[i]->attr_EMISC, GST_TOGGLE) ) {
 					target_page->Track[i]->attr_PIT = target_page->Track[i]->attr_GST;
 				} else {

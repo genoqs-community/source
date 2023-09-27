@@ -26,14 +26,20 @@
 		// ROW I
 		if ( MODE_OBJECT_SELECTION != BIRDSEYE ){
 		
+			unsigned char event_max = 0;
 			// Shows the range value, which is relevant for the event attribute!
 			// Fetch the event pointer - in Octopus format
 			temp = target_page->Step [target_page->stepSelectionSingleRow]
 							  		 [target_page->stepSelectionSingleCol]->event_data & 0x0F;
+
+			#ifdef FEATURE_STEP_EVENT_TRACKS
+			i = temp + 1;
+			#endif
 			// The data is in Octopus format..
 			switch( temp ){
 				case 0: 	// VEL
 					i = NEMO_ATTR_VELOCITY;
+
 					break;
 				case 1:		// PIT
 					i = NEMO_ATTR_PITCH;
@@ -44,7 +50,7 @@
 				case 3:		// STA
 					i = NEMO_ATTR_START;
 					break;
-				case 4:		// POS 	
+				case 4:		// POS
 					i = NEMO_ATTR_POSITION;
 					break;
 				case 5:		// DIR
@@ -63,15 +69,18 @@
 					i = NEMO_ATTR_MIDICH;
 					break;
 			}
+
+			event_max = APPLY_MASK( target_page->Track[row]->event_max[i], 0x1F );
+
 			// Write the actual value out
 			if ( i == NEMO_ATTR_MIDICH ){
 				// The MIDICH range is a natural number
-				MIR_write_numeric_H( target_page->Track[row]->event_max[i],	NEMO_ROW_I );
+				MIR_write_numeric_H( event_max,	NEMO_ROW_I );
 			}
 			else{
 				// All other ranges are 1-16 as factors of the maps are 1-16
-				MIR_fill_numeric( 1, target_page->Track[row]->event_max[i],	NEMO_ROW_I,	MIR_RED		);
-				MIR_fill_numeric( 1, target_page->Track[row]->event_max[i],	NEMO_ROW_I,	MIR_GREEN	);
+				MIR_fill_numeric( 1, event_max,	NEMO_ROW_I,	MIR_RED		);
+				MIR_fill_numeric( 1, event_max,	NEMO_ROW_I,	MIR_GREEN	);
 			}
 		}
 
@@ -94,6 +103,7 @@
 				// Fetch the event pointer - in Octopus format
 				temp = target_page->Step [target_page->stepSelectionSingleRow]
 								  		 [target_page->stepSelectionSingleCol]->event_data & 0x0F;
+				unsigned char event_data_attr = temp + 1;
 
 				// The data is in Octopus format, so transform to NEMO:
 				switch( temp ){
@@ -107,12 +117,30 @@
 					case 7: 	temp = 6;	break;	// GRV
 					case 8: 	temp = 7;	break;	// MCC
 					case 9: 	temp = 9;	break;	// MCH
+					default:	temp = 20;	break;
 				}
 
-				// Finally point out the event in the row
-				MIR_augment_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_RED   );
-				MIR_augment_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_BLINK );
-   			}
+				if( temp != 20 ) {
+					#ifdef FEATURE_STEP_EVENT_TRACKS
+					// Finally point out the event in the row
+					if  (  ( 	( event_data_attr == NEMO_ATTR_POSITION )
+						&& 	( CHECK_BIT( target_page->Step[ target_page->stepSelectionSingleRow ][ target_page->stepSelectionSingleCol ]->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) ) )
+						|| ( 	( event_data_attr == NEMO_ATTR_DIRECTION )
+						&& 	( CHECK_BIT( target_page->Step[ target_page->stepSelectionSingleRow ][ target_page->stepSelectionSingleCol ]->attr_STATUS, STEP_EVENT_TRACK_ALT_MODE + 5 ) ) )   )  {
+
+						// POS ALT MODE
+						MIR_write_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_SHINE_GREEN   );
+					} else {
+						MIR_augment_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_RED   );
+						MIR_augment_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_BLINK );
+					}
+					#else
+					// Finally point out the event in the row
+					MIR_augment_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_RED   );
+					MIR_augment_trackpattern( 1<<(15-temp), NEMO_ROW_II, MIR_BLINK );
+					#endif
+				}
+			}
 		}
 
 		

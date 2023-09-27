@@ -236,6 +236,14 @@
 			MIR_write_dot( LED_PROGRAM, MIR_RED   );
 			MIR_write_dot( LED_PROGRAM, MIR_BLINK );
 		}
+
+	#ifdef FEATURE_IMPORT_CONVERT_530
+	switch ( G_EventsConvert530 ) {
+		case 1: MIR_write_dot( LED_MIX_MASTER, MIR_SHINE_RED ); break;
+		case 2: MIR_write_dot( LED_MIX_MASTER, MIR_SHINE_GREEN ); break;
+	}
+	#endif
+
 	} // GRID_play_mode == GRID_EDIT
 
 

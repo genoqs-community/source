@@ -56,6 +56,20 @@
 							break;
 					}
 				}
+
+				#ifdef FEATURE_STEP_SHIFT
+					if ( ( target_page->editorMode == PREVIEW_PERFORM )
+							&& ( ShiftHeldStep == 1 ) )  {
+						// The following is the normal (OCT) matrix display
+						show ( ELE_MATRIX, STEP_TOGGLE );
+						// Show selected steps
+						show ( ELE_MATRIX, STEP_SELECTION );
+						// Show step skips
+						show (ELE_MATRIX, STEP_SKIPS);
+						// Show Chaselight
+						show( ELE_MATRIX, LAUFLICHT );
+					}
+				#endif
 			}
 
 			// If the editor is just being used
