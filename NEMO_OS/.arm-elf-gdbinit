@@ -1,5 +1,0 @@
-set remotebaud 38400
-target remote /dev/ttyS2
-load
-continue
-

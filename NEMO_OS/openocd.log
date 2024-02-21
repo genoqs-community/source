@@ -1,4 +1,1 @@
-Warn : deprecated option: -p/--pipe. Use '-c "gdb_port pipe; log_output openocd.log"' instead.
-Can't find openocd.cfg
-in procedure 'script'
-Error: couldn't bind to socket: Address already in use
+

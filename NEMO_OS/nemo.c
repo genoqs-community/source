@@ -27,7 +27,7 @@
  */
 #define HEADER(FILE) <BASELINE_PATH/FILE>
 
-#define BASELINE_PATH /home/genoqs/workspace/OCT_OS
+#define BASELINE_PATH /home/genoqs/Dev/genoqs-sources/OCT_OS
 
 #include "_NEMO_global/NEMO_includes.h"
 #include HEADER(_OCT_global/flash-block.h)
@@ -106,7 +106,7 @@ void cyg_user_start( void ){
 
 //	// Enter the device maintenance mode
 //	G_zoom_level = zoomDEVICE;
-//	G_flashload_flag = FALSE;
+	G_flashload_flag = FALSE;
 //
 //	// Code keeper array now uses the memory reserved for the step repository.
 //	G_sysex_stream_keeper = (void*) Step_repository;
