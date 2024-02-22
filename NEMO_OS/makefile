@@ -1,24 +1,33 @@
 
-# Gabriel's paths
-# INCLUDE_PATH 	= /opt/ecos_libs/E7T_eA_34_1_debug_install/include
-# PREFIX      	= /opt/ecos_libs/E7T_eA_34_1_debug_install
- INCLUDE_PATH 	= /opt/ecos_libs/E7T_eA_34_1_install/include
- PREFIX      	= /opt/ecos_libs/E7T_eA_34_1_install
- TOOLPREFIX 	= /home/genoqs/Desktop/software/ecos/gnutools/arm-elf/bin
- BASELINE_PATH	= /home/genoqs/workspace/OCT_OS
+# Introduce two compile modes: 'dev' and anything else (presumably prod). 
+# In dev the output is a symbol table ELF file, 
+# in prod one that is ready to be loaded to the machine.
+ COMPILE_MODE	= dev
 
-CC    = $(TOOLPREFIX)/arm-elf-gcc
-STRIP = $(TOOLPREFIX)/arm-elf-strip
+
+# GS_20240207: adjusted for arm-eabi
+# Pointers to the arm-eabi toolchain location
+ TOOLPREFIX = /opt/ecos/gnutools/arm-eabi/bin
+ CC  		= $(TOOLPREFIX)/arm-eabi-gcc
+ STRIP 		= $(TOOLPREFIX)/arm-eabi-strip
+# Pointers to the ecos runtime location
+ PREFIX		= /opt/genoqs-ecos-runtime
+ INCLUDE_PATH  	= /opt/genoqs-ecos-runtime/include
+
+# Pointer to the OCT_OS code: required so Nemo can find the code that it shares with Octopus
+ BASELINE_PATH	= /home/genoqs/Dev/genoqs-sources/OCT_OS
+
+
 # -----------------------------------------------------------------------
 # USE THE -O2 FOR FINAL VERSION! THIS GIVES US 2.6 MORE CPU PERFORMANCE
 # -----------------------------------------------------------------------
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TOGGLE DEBUG - '-g' flag will corrupt the Octopus memory bank overflow
-CFLAGS = -Wall -O2 #-finline-functions
-#CFLAGS = -g -O0
+#CFLAGS = -Wall -O2 #-finline-functions
+CFLAGS = -g -O0
 
 # Source files used in the system.
-SOURCES = 	nemo.c \
+SOURCES = 	$(BASELINE_PATH)/../NEMO_OS/nemo.c \
 			$(BASELINE_PATH)/_OCT_objects/PersistentV1.c \
 			$(BASELINE_PATH)/_OCT_objects/PersistentV2.c \
 			$(BASELINE_PATH)/_OCT_objects/Persistent.c \
@@ -33,20 +42,38 @@ OBJECTS = $(SOURCES:.c=.o)
 all:	nemo.elf
 
 nemo.elf: $(SOURCES)
-	$(CC) $(CFLAGS) -o nemo.elf -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
-#	$(CC) $(CFLAGS) -o nemo.elf_DEBUG_DONT_DEPLOY -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
-# comment this line to produce a symbol table ELF for the step debugger -- do not upload to Nemo!!!
 
-	
-	$(STRIP) nemo.elf
+    ifeq ($(COMPILE_MODE),dev)
 
-clean:	
-	rm -f nemo.elf $(OBJECTS)
+		# This produces the ELF that contains the symbol table used for the step debugger. This ELF should not be uploaded to Nemo!!
+		$(CC) $(CFLAGS) -o $(BASELINE_PATH)/../NEMO_OS/nemo.elf_DEBUG_DONT_DEPLOY -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
+
+    else
+
+		# Produce an ELF that can be deployed for production use
+		$(CC) $(CFLAGS) -o nemo.elf -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
+		# Strip the ELF file of all symbols etc.
+		$(STRIP) nemo.elf
+
+    endif
+
+
+clean:
+
+    ifeq ($(COMPILE_MODE),dev)
+
+		rm -f nemo.elf_DEBUG_DONT_DEPLOY
+
+    else
+
+		rm -f nemo.elf $(OBJECTS)
+
+    endif
 
 
 
 nemo.o: $(SOURCES)
-	$(CC) -g -c -I$(INCLUDE_PATH) nemo.c
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/../NEMO_OS/nemo.c
 
 PersistentV1.o:
 	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/_OCT_objects/PersistentV1.c
@@ -57,10 +84,10 @@ PersistentV2.o:
 Persistent.o:
 	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/_OCT_objects/Persistent.c
 
-Phrase.o: 
+Phrase.o:
 	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/_OCT_objects/Phrase.c
 
-Phrase-presets.o: 
+Phrase-presets.o:
 	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/_OCT_objects/Phrase-presets.c
 
 flash-block.o:

@@ -1,5 +1,0 @@
-set remotebaud 38400
-target remote /dev/cu.usbserial-00001004
-load
-continue
-

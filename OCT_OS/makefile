@@ -1,25 +1,30 @@
 
-# Gabriel's paths
-INCLUDE_PATH 	= /opt/ecos_libs/E7T_eA_34_1_install/include
-PREFIX      	= /opt/ecos_libs/E7T_eA_34_1_install
-TOOLPREFIX 		= /home/genoqs/Desktop/software/ecos/gnutools/arm-elf/bin
-
-# Rob's paths
-# INCLUDE_PATH 	= /Users/rob/Devel/octopus/octopus-ecos-libs/E7T_eA_34_1_install/include
-# PREFIX 			= /Users/rob/Devel/octopus/octopus-ecos-libs/E7T_eA_34_1_install
-# TOOLPREFIX 		= /Users/rob/Devel/octopus/arm-elf/bin
+# Introduce two compile modes: 'dev' and anything else (presumably prod). 
+# In dev the output is a symbol table ELF file, 
+# in prod one that is ready to be loaded to the machine.
+ COMPILE_MODE	= dev
 
 
-CC    = $(TOOLPREFIX)/arm-elf-gcc
-STRIP = $(TOOLPREFIX)/arm-elf-strip
+# GS_20240207: adjusted for arm-eabi
+# Pointers to the arm-eabi toolchain location
+ TOOLPREFIX = /opt/ecos/gnutools/arm-eabi/bin
+ CC  		= $(TOOLPREFIX)/arm-eabi-gcc
+ STRIP 		= $(TOOLPREFIX)/arm-eabi-strip
+# Pointers to the ecos runtime location
+ PREFIX		= /opt/genoqs-ecos-runtime
+ INCLUDE_PATH  	= /opt/genoqs-ecos-runtime/include
+
+# Pointer to the OCT_OS code: required so Nemo can find the code that it shares with Octopus
+ BASELINE_PATH	= /home/genoqs/Dev/genoqs-sources/OCT_OS
+
 
 # -----------------------------------------------------------------------
 # USE THE -O2 FOR FINAL VERSION! THIS GIVES US 2.6 MORE CPU PERFORMANCE
 # -----------------------------------------------------------------------
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TOGGLE DEBUG - '-g' flag will corrupt the Octopus memory bank overflow
-CFLAGS = -Wall -O2
-#CFLAGS = -g -O0
+#CFLAGS = -Wall -O2
+CFLAGS = -g -O0
 
 # Source files used in the system.
 SOURCES = 	main.c \

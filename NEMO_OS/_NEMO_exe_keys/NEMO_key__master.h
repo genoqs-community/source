@@ -30,6 +30,7 @@
  * genoQs Machines, 07.11.2004
  */
 
+#include "../../../genoqs-sources/OCT_OS/_OCT_objects/Runtime.h"
 extern void CheckAndShowBadThreads( unsigned char flag );
 extern void key_ScaleSelector_mini_functions( unsigned int keyNdx, Pagestruct* target_page );
 extern void key_ScaleSelector_functions( unsigned int keyNdx, Pagestruct* target_page );
@@ -45,6 +46,7 @@ extern void my_sysex_dump( unsigned char dump_type, unsigned char my_grid_cursor
 #ifdef FEATURE_ENABLE_DICE
 #include "../_NEMO_exe_keys/NEMO_key_DICE.h"
 #endif
+#include "../_NEMO_global/NEMO_defs_general.h"
 #include HEADER(_OCT_exe_keys/key_ScaleSelector_mini_functions.h)
 #include HEADER(_OCT_exe_keys/key_mixermap_matrixclick.h)
 #include HEADER(_OCT_exe_keys/key_exe_chainselectors.h)
