@@ -1,10 +1,3 @@
-
-# Introduce two compile modes: 'dev' and anything else (presumably prod). 
-# In dev the output is a symbol table ELF file, 
-# in prod one that is ready to be loaded to the machine.
- COMPILE_MODE	= dev
-
-
 # GS_20240207: adjusted for arm-eabi
 # Pointers to the arm-eabi toolchain location
  TOOLPREFIX = /opt/ecos/gnutools/arm-eabi/bin
@@ -15,7 +8,7 @@
  INCLUDE_PATH  	= /opt/genoqs-ecos-runtime/include
 
 # Pointer to the OCT_OS code: required so Nemo can find the code that it shares with Octopus
- BASELINE_PATH	= /home/genoqs/Dev/genoqs-sources/OCT_OS
+ BASELINE_PATH	= /home/genoqs/Dev/genoqs-sources
 
 
 # -----------------------------------------------------------------------
@@ -27,73 +20,67 @@
 CFLAGS = -g -O0
 
 # Source files used in the system.
-SOURCES = 	$(BASELINE_PATH)/../NEMO_OS/nemo.c \
-			$(BASELINE_PATH)/_OCT_objects/PersistentV1.c \
-			$(BASELINE_PATH)/_OCT_objects/PersistentV2.c \
-			$(BASELINE_PATH)/_OCT_objects/Persistent.c \
-			$(BASELINE_PATH)/_OCT_objects/Phrase.c \
-			$(BASELINE_PATH)/_OCT_objects/Phrase-presets.c \
-			$(BASELINE_PATH)/_OCT_global/flash-block.c \
-			$(BASELINE_PATH)/_OCT_interrupts/cpu-load.c
+SOURCES = 	$(BASELINE_PATH)/NEMO_OS/nemo.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_objects/PersistentV1.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_objects/PersistentV2.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_objects/Persistent.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_objects/Phrase.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_objects/Phrase-presets.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_global/flash-block.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_interrupts/cpu-load.c
 
 # Object files used in the system.
 OBJECTS = $(SOURCES:.c=.o)
 
-all:	nemo.elf
+all: build debug
 
-nemo.elf: $(SOURCES)
+build: clean.build $(SOURCES)
 
-    ifeq ($(COMPILE_MODE),dev)
+	# Produce an ELF that can be deployed for production use
+	$(CC) $(CFLAGS) -o $(BASELINE_PATH)/NEMO_OS/nemo.elf -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
+	# Strip the ELF file of all symbols etc.
+	$(STRIP) $(BASELINE_PATH)/NEMO_OS/nemo.elf
 
-		# This produces the ELF that contains the symbol table used for the step debugger. This ELF should not be uploaded to Nemo!!
-		$(CC) $(CFLAGS) -o $(BASELINE_PATH)/../NEMO_OS/nemo.elf_DEBUG_DONT_DEPLOY -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
+debug: clean.debug $(SOURCES)
 
-    else
+	# This produces the ELF that contains the symbol table used for the step debugger. This ELF should not be uploaded to Nemo!!
+	$(CC) $(CFLAGS) -o $(BASELINE_PATH)/NEMO_OS/nemo.elf_DEBUG_DONT_DEPLOY -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
 
-		# Produce an ELF that can be deployed for production use
-		$(CC) $(CFLAGS) -o nemo.elf -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
-		# Strip the ELF file of all symbols etc.
-		$(STRIP) nemo.elf
+clean: clean.build clean.debug
 
-    endif
+clean.build:
 
+	rm -f $(BASELINE_PATH)/NEMO_OS/nemo.elf $(OBJECTS)
 
-clean:
+clean.debug:
 
-    ifeq ($(COMPILE_MODE),dev)
+	rm -f $(BASELINE_PATH)/NEMO_OS/nemo.elf_DEBUG_DONT_DEPLOY
 
-		rm -f nemo.elf_DEBUG_DONT_DEPLOY
-
-    else
-
-		rm -f nemo.elf $(OBJECTS)
-
-    endif
-
-
+main.o: $(SOURCES)
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/main.c
 
 nemo.o: $(SOURCES)
-	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/../NEMO_OS/nemo.c
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/NEMO_OS/nemo.c
 
 PersistentV1.o:
-	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/_OCT_objects/PersistentV1.c
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_objects/PersistentV1.c
 
 PersistentV2.o:
-	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/_OCT_objects/PersistentV2.c
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_objects/PersistentV2.c
 
 Persistent.o:
-	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/_OCT_objects/Persistent.c
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_objects/Persistent.c
 
 Phrase.o:
-	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/_OCT_objects/Phrase.c
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_objects/Phrase.c
 
 Phrase-presets.o:
-	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/_OCT_objects/Phrase-presets.c
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_objects/Phrase-presets.c
 
 flash-block.o:
-	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/_OCT_global/flash-block.c
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_global/flash-block.c
 
 /cpu-load.o:
-	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/_OCT_interrupts/cpu-load.c
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_interrupts/cpu-load.c
 
 

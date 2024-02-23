@@ -1,10 +1,3 @@
-
-# Introduce two compile modes: 'dev' and anything else (presumably prod). 
-# In dev the output is a symbol table ELF file, 
-# in prod one that is ready to be loaded to the machine.
- COMPILE_MODE	= dev
-
-
 # GS_20240207: adjusted for arm-eabi
 # Pointers to the arm-eabi toolchain location
  TOOLPREFIX = /opt/ecos/gnutools/arm-eabi/bin
@@ -15,7 +8,7 @@
  INCLUDE_PATH  	= /opt/genoqs-ecos-runtime/include
 
 # Pointer to the OCT_OS code: required so Nemo can find the code that it shares with Octopus
- BASELINE_PATH	= /home/genoqs/Dev/genoqs-sources/OCT_OS
+ BASELINE_PATH	= /home/genoqs/Dev/genoqs-sources
 
 
 # -----------------------------------------------------------------------
@@ -23,59 +16,68 @@
 # -----------------------------------------------------------------------
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TOGGLE DEBUG - '-g' flag will corrupt the Octopus memory bank overflow
-#CFLAGS = -Wall -O2
+#CFLAGS = -Wall -O2 #-finline-functions
 CFLAGS = -g -O0
 
 # Source files used in the system.
-SOURCES = 	main.c \
-			_OCT_objects/PersistentV1.c \
-			_OCT_objects/PersistentV2.c \
-			_OCT_objects/Persistent.c \
-			_OCT_objects/Phrase.c \
-			_OCT_objects/Phrase-presets.c \
-			_OCT_global/flash-block.c \
-			_OCT_interrupts/cpu-load.c
+SOURCES = 	$(BASELINE_PATH)/OCT_OS/main.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_objects/PersistentV1.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_objects/PersistentV2.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_objects/Persistent.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_objects/Phrase.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_objects/Phrase-presets.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_global/flash-block.c \
+			$(BASELINE_PATH)/OCT_OS/_OCT_interrupts/cpu-load.c
 
 # Object files used in the system.
 OBJECTS = $(SOURCES:.c=.o)
 
-all:	octopus.elf
+all: build debug
 
-octopus.elf: $(SOURCES)
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TOGGLE DEBUG - '-g' flag will corrupt the Octopus memory overflow
-	$(CC) $(CFLAGS) -o octopus.elf -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
-#	$(CC) $(CFLAGS) -o octopus.elf_DEBUG_DONT_DEPLOY -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
-# comment this line to produce a symbol table ELF for the step debugger -- do not uplaod to Octopus!!!
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TOGGLE DEBUG - '-g' flag will corrupt the Octopus memory overflow
-	$(STRIP) octopus.elf
+build: clean.build $(SOURCES)
 
-clean:
-	rm -f $(OBJECTS) octopus.elf
+	# Produce an ELF that can be deployed for production use
+	$(CC) $(CFLAGS) -o $(BASELINE_PATH)/OCT_OS/octopus.elf -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
+	# Strip the ELF file of all symbols etc.
+	$(STRIP) $(BASELINE_PATH)/OCT_OS/octopus.elf
 
+debug: clean.debug $(SOURCES)
 
+	# This produces the ELF that contains the symbol table used for the step debugger. This ELF should not be uploaded to Octopus!!
+	$(CC) $(CFLAGS) -o $(BASELINE_PATH)/OCT_OS/octopus.elf_DEBUG_DONT_DEPLOY -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
+
+clean: clean.build clean.debug
+
+clean.build:
+
+	rm -f $(BASELINE_PATH)/OCT_OS/octopus.elf $(OBJECTS)
+
+clean.debug:
+
+	rm -f $(BASELINE_PATH)/OCT_OS/octopus.elf_DEBUG_DONT_DEPLOY
 
 main.o: $(SOURCES)
-	$(CC) -g -c -I$(INCLUDE_PATH) main.c
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/main.c
 
-_OCT_objects/PersistentV1.o:
-	$(CC) -g -c -I$(INCLUDE_PATH) _OCT_objects/PersistentV1.c
+PersistentV1.o:
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_objects/PersistentV1.c
 
-_OCT_objects/PersistentV2.o:
-	$(CC) -g -c -I$(INCLUDE_PATH) _OCT_objects/PersistentV2.c
+PersistentV2.o:
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_objects/PersistentV2.c
 
-_OCT_objects/Persistent.o:
-	$(CC) -g -c -I$(INCLUDE_PATH) _OCT_objects/Persistent.c
+Persistent.o:
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_objects/Persistent.c
 
-_OCT_objects/Phrase.o: 
-	$(CC) -g -c -I$(INCLUDE_PATH) _OCT_objects/Phrase.c
+Phrase.o:
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_objects/Phrase.c
 
-_OCT_objects/Phrase-presets.o: 
-	$(CC) -g -c -I$(INCLUDE_PATH) _OCT_objects/Phrase-presets.c
+Phrase-presets.o:
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_objects/Phrase-presets.c
 
-_OCT_global/flash-block.o:
-	$(CC) -g -c -I$(INCLUDE_PATH) _OCT_global/flash-block.c
+flash-block.o:
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_global/flash-block.c
 
-_OCT_interrupts/cpu-load.o:
-	$(CC) -g -c -I$(INCLUDE_PATH) _OCT_interrupts/cpu-load.c
+/cpu-load.o:
+	$(CC) -g -c -I$(INCLUDE_PATH) $(BASELINE_PATH)/OCT_OS/_OCT_interrupts/cpu-load.c
 
 
