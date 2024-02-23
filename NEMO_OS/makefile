@@ -16,8 +16,8 @@
 # -----------------------------------------------------------------------
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! TOGGLE DEBUG - '-g' flag will corrupt the Octopus memory bank overflow
-#CFLAGS = -Wall -O2 #-finline-functions
-CFLAGS = -g -O0
+CFLAGS = -Wall -O2 #-finline-functions
+CFLAGS_DEBUG = -g -O0
 
 # Source files used in the system.
 SOURCES = 	$(BASELINE_PATH)/NEMO_OS/nemo.c \
@@ -44,7 +44,7 @@ build: clean.build $(SOURCES)
 debug: clean.debug $(SOURCES)
 
 	# This produces the ELF that contains the symbol table used for the step debugger. This ELF should not be uploaded to Nemo!!
-	$(CC) $(CFLAGS) -o $(BASELINE_PATH)/NEMO_OS/nemo.elf_DEBUG_DONT_DEPLOY -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
+	$(CC) $(CFLAGS_DEBUG) -o $(BASELINE_PATH)/NEMO_OS/nemo.elf_DEBUG_DONT_DEPLOY -D__ECOS -I$(INCLUDE_PATH) $(SOURCES) -L$(PREFIX)/lib -Ttarget.ld -nostdlib
 
 clean: clean.build clean.debug
 

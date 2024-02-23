@@ -1,7 +1,7 @@
 OCT_MAKE=./OCT_OS/makefile
 NEMO_MAKE=./NEMO_OS/makefile
 
-all: build.octopus build.nemo debug.octopus debug.build.nemo
+all: build.octopus build.nemo debug.octopus debug.nemo
 
 build: build.octopus build.nemo
 
