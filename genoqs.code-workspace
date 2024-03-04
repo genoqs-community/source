@@ -6,11 +6,6 @@
     ],
     "settings": {
         "makefile.launchConfigurations": [
-            {
-                "cwd": "/home/genoqs/Dev/genoqs-sources/NEMO_OS",
-                "binaryPath": "/home/genoqs/Dev/genoqs-sources/NEMO_OS/nemo.elf_DEBUG_DONT_DEPLOY",
-                "binaryArgs": []
-            }
         ]
     }
 }
