@@ -1,0 +1,25 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Debug Nemo",
+            "type": "shell",
+            "command": "make",
+            "args": ["debug.nemo"],
+            "group": {
+                "kind": "build"
+            }
+        },
+        {
+            "label": "Build Debug Octopus",
+            "type": "shell",
+            "command": "make",
+            "args": ["debug.octopus"],
+            "group": {
+                "kind": "build"
+            }
+        }
+    ]
+}
