@@ -68,6 +68,12 @@ extern void set_page_locators( 						Pagestruct* target_page,
 
 extern void apply_on_the_measure( Pagestruct* target_page, bool force );
 
+#ifdef FEATURE_SHOW_MEAS
+	extern unsigned short int G_meas_count;
+	extern unsigned char G_meas_reset;
+	unsigned char advance_gl_count;
+#endif
+
 // General Player functions
 #include "play_functions.h"
 
@@ -91,6 +97,28 @@ void advance_global_locator(){
 	G_global_locator = (G_global_locator % MATRIX_NROF_COLUMNS) +1;
 }
 
+#ifdef FEATURE_SHOW_MEAS
+// Advance the measure counter
+void advance_measure_counter() {
+	unsigned char steps_per_measure = 16; //Currently hardwired to 16 steps per measure
+	advance_gl_count ++;
+	if ( advance_gl_count >steps_per_measure ) {
+		if ( G_meas_reset == 1 )  {
+			// Resets Meas Counter at the end of the measure
+			G_meas_count = 1;
+			G_meas_reset ^= 1;
+		}
+		else {
+			G_meas_count ++;  // New measure
+			if ( G_meas_count == 128) {
+				// Reset Meas count at end of bar 128
+				G_meas_reset = 1;
+			}
+		}
+		advance_gl_count = 1;
+	}
+}
+#endif
 
 // Used to advance the locator in the target_page and in its tracks as well
 // according to G_TTC_abs_value and other conditions.See logic on page 190 book.
@@ -239,6 +267,11 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 		// Advance the global locator - normal speed master
 		advance_global_locator();
 
+		#ifdef FEATURE_SHOW_MEAS
+			// Advance the measure counter
+			advance_measure_counter();
+		#endif
+
 		if ( G_global_locator == 1 ) {
 
 			#ifdef FEATURE_ENABLE_SONG_UPE
@@ -288,6 +321,12 @@ void PLAYER_dispatch( unsigned char in_G_TTC_abs_value ) {
 
 			// First time we are executing this after a start..
 			if ( SEQUENCER_JUST_STARTED == TRUE ) {
+
+				#ifdef FEATURE_SHOW_MEAS
+					G_meas_reset = 0;
+					G_meas_count = 1;
+					advance_gl_count = 1;
+				#endif
 
 				// Do not switch anything just upon sequencer start
 				break;

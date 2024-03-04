@@ -2460,4 +2460,112 @@ unsigned char page_needs_align( Pagestruct* target_page ){
 }
 
 
+#ifdef FEATURE_SHOW_MEAS
+
+extern unsigned char G_meas_reset;
+
+// Writes the current MEAS number since Sequencer Start into Chord Leds
+void MIR_write_chord_meas (unsigned short int meas_count) {
+
+	unsigned char i = 252;  // Chord 1 keyndx
+	unsigned char j = 0;
+	unsigned char rem = 0;
+	unsigned char show_red = 0;
+
+		if (  ( G_run_bit == ON )
+			&& (  ( G_meas_reset == 1 )
+			|| ( meas_count == 128 )  )  )  {
+
+			// Meas counter reset pending
+			MIR_write_dot( 252, MIR_SHINE_RED );
+		}
+		else {
+			if (  ( meas_count > 0 ) && ( meas_count < 65 )  ) MIR_write_dot ( 252, MIR_GREEN );
+			if (  ( meas_count > 64 ) && ( meas_count < 128 )  ) MIR_write_dot ( 252, MIR_RED );
+		}
+		if (  (  ( meas_count > 0 ) && ( meas_count < 9 )  )
+				|| (  ( meas_count > 64 ) && ( meas_count < 73 )  )  )  {
+			MIR_write_dot ( 254, MIR_GREEN );
+		}
+		if (  (  ( meas_count > 8 ) && ( meas_count < 17 )  )
+				|| (  ( meas_count > 72 ) && ( meas_count < 81 )  )  )  {
+			MIR_write_dot ( 254, MIR_RED );
+		}
+		if (  (  ( meas_count > 16 ) && ( meas_count < 25 )  )
+				|| (  ( meas_count > 80 ) && ( meas_count < 89 )  )  )  {
+			MIR_write_dot ( 254, MIR_GREEN );
+			MIR_write_dot ( 254, MIR_RED );
+		}
+		if (  (  ( meas_count > 24 ) && ( meas_count < 33 )  )
+				|| (  ( meas_count > 88 ) && ( meas_count < 97 )  )  )  {
+			MIR_write_dot ( 254, MIR_SHINE_GREEN );
+		}
+
+		if (  (  ( meas_count > 32 ) && ( meas_count < 41 )  )
+				|| (  ( meas_count > 96 ) && ( meas_count < 105 )  )  )  {
+			MIR_write_dot ( 253, MIR_GREEN );
+		}
+		if (  (  ( meas_count > 40 ) && ( meas_count < 49 )  )
+				|| (  ( meas_count > 104 ) && ( meas_count < 113 )  )  )  {
+			MIR_write_dot ( 253, MIR_RED );
+		}
+		if (  (  ( meas_count > 48 ) && ( meas_count < 57 )  )
+				|| (  ( meas_count > 112 ) && ( meas_count < 121 )  )  )  {
+			MIR_write_dot ( 253, MIR_GREEN );
+			MIR_write_dot ( 253, MIR_RED );
+		}
+		if (  (  ( meas_count > 56 ) && ( meas_count < 65 )  )
+				|| (  ( meas_count > 120 ) && ( meas_count < 128 )  )  )  {
+			MIR_write_dot ( 253, MIR_SHINE_GREEN );
+		}
+		if ( meas_count == 128 ) MIR_write_dot( 253, MIR_SHINE_RED );
+
+		// Show Chord leds 1 to 4 for Bars 1 to 8 (1 to 4 Green, 5 to 8 Red)
+		if ( meas_count >8 ) {
+			rem = meas_count % 8;
+			if ( rem == 0 ) {
+				rem = 8;
+			}
+		}
+		else {
+			rem = meas_count;
+		}
+
+		if ( rem >4 ) {
+			show_red = 1;
+			rem = rem - 4;
+		}
+/*
+	if ( show_red )  {
+		switch (rem ) {
+			case 4: MIR_write_dot ( 255, MIR_RED ); break;
+			case 3: MIR_write_dot ( 256, MIR_RED ); break;
+			case 2: MIR_write_dot ( 257, MIR_RED ); break;
+			case 1: MIR_write_dot ( 258, MIR_RED ); break;
+		}
+	}
+	else {
+		switch (rem ) {
+			case 4: MIR_write_dot ( 255, MIR_GREEN ); break;
+			case 3: MIR_write_dot ( 256, MIR_GREEN ); break;
+			case 2: MIR_write_dot ( 257, MIR_GREEN ); break;
+			case 1: MIR_write_dot ( 258, MIR_GREEN ); break;
+		}
+	}
+*/
+		j = 8 - rem;
+
+		for ( i=8; i>j; i-- )  {
+			if ( show_red )  {
+				MIR_write_dot ( i+250, MIR_RED );
+			}
+			else {
+				MIR_write_dot ( i+250, MIR_GREEN );
+			}
+		}
+
+}
+#endif
+
+
 
