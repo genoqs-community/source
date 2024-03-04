@@ -123,6 +123,12 @@
 		// NUMERIC QUADRANT
 		MIR_write_numeric_C( G_master_tempo );
 
+		#ifdef FEATURE_SHOW_MEAS
+			// Show Meas on Chord leds
+			if ( G_show_meas == 1 )  {
+				MIR_write_chord_meas( G_meas_count );
+			}
+		#endif
 
 		// Show cursor Marcel style
 		if ( is_pressed_key( KEY_ZOOM_PAGE ) ){
@@ -352,7 +358,22 @@
 		// EXC - Export Content
 		MIR_write_dot( LED_ALIGN, MIR_GREEN );
 		MIR_write_dot( LED_ALIGN, MIR_BLINK );
+
+		#ifdef FEATURE_SHOW_MEAS
+			// Chord 7 led shows MEAS counter On/Off condition
+			if ( G_show_meas == 1 )  {
+				MIR_write_dot( 252, MIR_GREEN );
+				MIR_write_dot( 252, MIR_BLINK );
+			}
+			else {
+				MIR_write_dot( 252, MIR_GREEN );
+				MIR_write_dot( 252, MIR_RED );
+				MIR_write_dot( 252, MIR_BLINK );
+			}
+		#endif
+
 	}
+
 
 
 	// PLAY mode

@@ -577,3 +577,9 @@ unsigned short	G_last_ctrl_offset[9] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 #ifdef FEATURE_IMPORT_CONVERT_530
 	unsigned char G_EventsConvert530 = 0;
 #endif
+
+#ifdef FEATURE_SHOW_MEAS
+	unsigned char G_show_meas = 1;
+	unsigned short int G_meas_count = 0;
+	unsigned char G_meas_reset = 0;
+#endif

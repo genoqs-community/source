@@ -45,12 +45,14 @@
 #define 	FEATURE_ENABLE_KEYBOARD_TRANSPOSE   TRUE
 
 #define		FEATURE_IMPORT_CONVERT_530		TRUE
+#define		FEATURE_SHOW_MEAS				TRUE
 
 /*
  * Bug tracking spreadsheet
  * https://docs.google.com/spreadsheets/d/1eM8S2VbLz8OsRawqJ4Pzusfqcv13wKgeyLU071252Nk/edit#gid=520555008
  *
  * COMMUNITY EDITION VERSION CHANGES
+ *  0.0.5.40		Octopus Grid feature FEATURE_SHOW_MEAS
  *
  *  0.0.5.30		FINAL VERSION of 0.0.5.3
  *
@@ -269,3 +271,15 @@
  */
 
 
+
+
+#define 	SW_VERSION_MAJOR				 0	// Max 10 - Hundreds
+#define		SW_VERSION_MINOR				 5	// Max 10 - Tens
+#define		SW_VERSION_RELEASE				 3	// Max 10 - Ones
+
+#define		SW_VERSION_INTERNAL				 0	// Max 127 - Row 0 number
+
+// SWITCH between 'MIDI' and 'USB' modes of the MIDI 2 Port
+#define		OCTDEF_UART2_MODE	 			MIDI
+//#define		OCTDEF_UART2_MODE	 			USB
+// POWER-ON LOAD BEHAVIOR

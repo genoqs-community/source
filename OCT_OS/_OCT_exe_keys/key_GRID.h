@@ -87,6 +87,13 @@
 					}
 					break;
 
+				#ifdef FEATURE_SHOW_MEAS
+					case 252:
+						// Chord 7 button MEAS Counter shown
+						G_show_meas ^= 1;
+						break;
+				#endif
+
 		} // switch( keyNdx )
 	}
 
@@ -567,6 +574,38 @@
 			GRID_switch_mode 		^= 1;
 		}
 
+		#ifdef FEATURE_SHOW_MEAS
+		if ( G_run_bit == ON )  {
+			if ( keyNdx == 258 ) {
+				// Chord 1 button Dbl-Clk will reset MEAS Counter
+				if ( G_show_meas == 1 ) {
+					// D O U B L E - C L I C K
+					if (	(	(DOUBLE_CLICK_TARGET == keyNdx)
+							&& (DOUBLE_CLICK_TIMER > DOUBLE_CLICK_ALARM_SENSITIVITY) )
+					){
+
+						// Reset measure counter
+						G_meas_reset ^= 1;
+
+					} // double click is active
+
+					else if ( DOUBLE_CLICK_TARGET == 0 ){
+
+						DOUBLE_CLICK_TARGET = keyNdx;
+						DOUBLE_CLICK_TIMER = ON;
+						// Start the Double click Alarm
+						cyg_alarm_initialize(
+								doubleClickAlarm_hdl,
+								cyg_current_time() + DOUBLE_CLICK_ALARM_TIME,
+								DOUBLE_CLICK_ALARM_TIME );
+
+						// SINGLE CLICK CODE:
+
+					}
+				}
+			}
+		}
+		#endif
 
 
 		//
